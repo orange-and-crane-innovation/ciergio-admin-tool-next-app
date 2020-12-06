@@ -20,7 +20,7 @@ function MyApp({ Component, pageProps }) {
 
 MyApp.propTypes = {
   Component: P.any,
-  pageProps: P.object.isRequired,
+  pageProps: P.object.isRequired
 }
 
 export default MyApp

@@ -22,10 +22,10 @@ function createApolloClient() {
       headers: {
         treat: isBrowser && navigator.userAgent,
         spoil: new Date().getTime(),
-        slave: '',
-      },
+        slave: ''
+      }
     }),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache()
   })
 }
 

@@ -11,8 +11,8 @@ export const handlers = [
             __typename: 'User',
             id: 'f79e82e8-c34a-4dc7-a49e-9fadc0979fda',
             firstName: 'John',
-            lastName: 'Maverick',
-          },
+            lastName: 'Maverick'
+          }
         })
       )
     }
@@ -20,5 +20,5 @@ export const handlers = [
     return res(
       ctx.errors([{ message: 'Unauthorized', success: false, code: 403 }])
     )
-  }),
+  })
 ]

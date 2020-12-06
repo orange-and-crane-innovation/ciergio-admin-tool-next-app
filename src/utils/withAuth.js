@@ -20,15 +20,15 @@ export const withAuth = WrappedComponent => {
         const apolloClient = await initializeApollo()
         console.log('apolloClient', apolloClient)
         const response = await apolloClient.query({
-          query: ME_QUERY,
+          query: ME_QUERY
         })
 
         return {
-          me: response,
+          me: response
         }
       } catch (error) {
         res.writeHead(301, {
-          Location: '/auth/login',
+          Location: '/auth/login'
         })
         res.end()
 

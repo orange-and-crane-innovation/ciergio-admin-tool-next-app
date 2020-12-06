@@ -29,7 +29,7 @@ self.addEventListener('message', async function (event) {
   switch (event.data) {
     case 'KEEPALIVE_REQUEST': {
       sendToClient(client, {
-        type: 'KEEPALIVE_RESPONSE',
+        type: 'KEEPALIVE_RESPONSE'
       })
       break
     }
@@ -37,7 +37,7 @@ self.addEventListener('message', async function (event) {
     case 'INTEGRITY_CHECK_REQUEST': {
       sendToClient(client, {
         type: 'INTEGRITY_CHECK_RESPONSE',
-        payload: INTEGRITY_CHECKSUM,
+        payload: INTEGRITY_CHECKSUM
       })
       break
     }
@@ -48,7 +48,7 @@ self.addEventListener('message', async function (event) {
 
       sendToClient(client, {
         type: 'MOCKING_ENABLED',
-        payload: true,
+        payload: true
       })
       break
     }
@@ -113,7 +113,7 @@ self.addEventListener('fetch', function (event) {
         delete modifiedHeaders[bypassHeaderName]
 
         const originalRequest = new Request(requestClone, {
-          headers: new Headers(modifiedHeaders),
+          headers: new Headers(modifiedHeaders)
         })
 
         return resolve(fetch(originalRequest))
@@ -138,8 +138,8 @@ self.addEventListener('fetch', function (event) {
           referrerPolicy: request.referrerPolicy,
           body,
           bodyUsed: request.bodyUsed,
-          keepalive: request.keepalive,
-        },
+          keepalive: request.keepalive
+        }
       })
 
       const clientMessage = rawClientMessage
@@ -226,7 +226,7 @@ function sendToClient(client, message) {
 function createResponse(clientMessage) {
   return new Response(clientMessage.payload.body, {
     ...clientMessage.payload,
-    headers: clientMessage.payload.headers,
+    headers: clientMessage.payload.headers
   })
 }
 
