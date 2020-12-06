@@ -2,7 +2,7 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    node: true,
+    node: true
   },
   extends: [
     'plugin:react/recommended',
@@ -11,25 +11,22 @@ module.exports = {
     'plugin:jsx-a11y/recommended',
     'prettier',
     'prettier/react',
-    'plugin:prettier/recommended',
+    'plugin:prettier/recommended'
   ],
   settings: {
     react: {
-      version: 'detect',
-    },
+      version: 'detect'
+    }
   },
   parserOptions: {
     ecmaFeatures: {
-      jsx: true,
+      jsx: true
     },
     ecmaVersion: 12,
-    sourceType: 'module',
+    sourceType: 'module'
   },
-  plugins: ['simple-import-sort', 'import', 'react'],
+  plugins: ['import', 'react'],
   rules: {
-    'simple-import-sort/imports': 'error',
-    'simple-import-sort/exports': 'error',
-    'sort-imports': 'off',
     'import/first': 'error',
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
@@ -40,8 +37,8 @@ module.exports = {
       {
         components: ['Link'],
         specialLink: ['hrefLeft', 'hrefRight'],
-        aspects: ['invalidHref', 'preferButton'],
-      },
-    ],
-  },
-};
+        aspects: ['invalidHref', 'preferButton']
+      }
+    ]
+  }
+}

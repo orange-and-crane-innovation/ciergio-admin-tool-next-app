@@ -1,9 +1,7 @@
+import Login from '@app/components/pages/login'
+
 function LoginPage() {
-  return (
-    <div>
-      <h1>Login</h1>
-    </div>
-  )
+  return <Login />
 }
 
 export default LoginPage

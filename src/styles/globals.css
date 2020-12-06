@@ -1,3 +1,49 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: 'Aileron';
+    src: url('/fonts/aileron/Aileron-Heavy.otf') format('opentype'),
+      url('/fonts/aileron/Aileron-Regular.otf') format('opentype');
+  }
+
+  @font-face {
+    font-family: 'NotoSans';
+    src: url('/fonts/noto-sans/NotoSans-Regular.ttf') format('truetype'),
+      url('/fonts/noto-sans/NotoSans-Bold.ttf') format('truetype');
+  }
+}
+
+html {
+  font-size: 16px;
+}
+
+html,
+body,
+#__next {
+  @apply bg-neutral-100 h-full;
+}
+
+a {
+  @apply font-body text-secondary-500;
+}
+
+[type='text'],
+[type='password'] {
+  @apply mt-1 block w-full rounded-md border-gray-300 hover:border-neutral-500 active:border-secondary-500 placeholder-neutral-500;
+}
+
+button,
+.btn {
+  @apply bg-white hover:bg-neutral-100 border border-neutral-300 py-2 px-4 rounded inline-flex justify-center items-center font-heading text-sm;
+}
+
+.btn-primary {
+  @apply bg-primary-500 text-white border-primary-500 hover:bg-primary-700 active:bg-primary-900;
+}
+
+.btn-fluid {
+  @apply w-full;
+}
