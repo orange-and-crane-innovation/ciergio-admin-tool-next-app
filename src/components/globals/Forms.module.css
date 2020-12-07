@@ -1,0 +1,7 @@
+.Label {
+    @apply block mb-8;
+
+    & span {
+      @apply text-neutral-dark font-body font-bold text-sm;
+    }
+  }
