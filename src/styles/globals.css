@@ -47,3 +47,12 @@ button,
 .btn-fluid {
   @apply w-full;
 }
+
+/*  Form Elements WIP - NICK */
+.form-label{
+  font-family: Aileron-Bold,Arial,sans-serif;
+  font-size: 14px;
+  color: #9ca4b6;
+  line-height: 1.6;
+  letter-spacing: .4px;
+}

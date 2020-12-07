@@ -8,11 +8,13 @@ function Component({
   label,
   type,
   classNames,
-  placeholder
+  placeholder,
+  hint
 }) {
   return (
     <label className={style.Label}>
-      {label && <span>{label}</span>}
+      {label && <span>{label}</span>}<br/>
+      {hint && <small className="w-full">{hint}</small>}
       <input
         type={type || 'text'}
         className={`form-input ${classNames || ''}`}
@@ -32,7 +34,8 @@ Component.propTypes = {
   label: P.string,
   type: P.string,
   classNames: P.string,
-  placeholder: P.string
+  placeholder: P.string,
+  hint: P.string
 }
 
 export default Component
