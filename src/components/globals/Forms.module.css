@@ -2,6 +2,6 @@
   @apply block mb-8;
 
   & span {
-    @apply text-neutral-dark font-body font-bold text-sm;
+    @apply text-gray-400 font-bold font-bold text-base mb-9;
   }
 }
