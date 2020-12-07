@@ -13,7 +13,7 @@ function Component({
 }) {
   return (
     <label className={style.Label}>
-      {label && <span>{label}</span>}<br/>
+      {label && <span className="form-label">{label}</span>}<br/>
       {hint && <small className="w-full">{hint}</small>}
       <input
         type={type || 'text'}
