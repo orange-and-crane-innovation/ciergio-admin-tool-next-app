@@ -1,7 +1,8 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
-import fetch from 'cross-fetch'
 import merge from 'deepmerge'
+import crossFetch, { fetch } from 'cross-fetch'
 import { useMemo } from 'react'
+import process from 'process'
 
 export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__'
 export const isBrowser = typeof window !== 'undefined'
@@ -11,15 +12,14 @@ let apolloClient
 export const accountMutationClient = createApolloClient()
 
 function createApolloClient() {
-  console.log('process.env.NEXT_GRAPHQL_API', process.env.NEXT_GRAPHQL_API)
-
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
     link: new HttpLink({
-      uri: process.env.NEXT_GRAPHQL_API,
-      credentials: 'include',
-      fetch: fetch,
+      uri: process.env.NEXT_PUBLIC_API,
+      credentials: 'same-origin',
+      fetch: isBrowser ? (...args) => fetch(...args) : crossFetch,
       headers: {
+        'Content-Type': 'application/json',
         treat: isBrowser && navigator.userAgent,
         spoil: new Date().getTime(),
         slave: ''
