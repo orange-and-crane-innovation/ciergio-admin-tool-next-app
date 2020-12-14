@@ -13,7 +13,7 @@ let apolloClient
 function createApolloClient() {
   const isBrowser = typeof window !== 'undefined'
 
-  const httpLink = new HttpLink({ uri: 'http://localhost:3000/graphql' })
+  const httpLink = new HttpLink({ uri: process.env.NEXT_PUBLIC_API })
 
   const authMiddleware = new ApolloLink((operation, forward) => {
     const token = (isBrowser && localStorage.getItem('token')) || ''
