@@ -1,4 +1,4 @@
-import withAuth from '@app/lib/withAuth'
+import withAuth from '@app/utils/withAuth'
 
 function DashboardPage() {
   return (

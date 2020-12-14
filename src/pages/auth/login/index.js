@@ -3,7 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import Login from '@app/components/pages/login'
-import withGuest from '@app/lib/withGuest'
+import withGuest from '@app/utils/withGuest'
 
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
