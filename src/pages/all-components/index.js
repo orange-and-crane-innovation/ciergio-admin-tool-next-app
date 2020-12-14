@@ -8,10 +8,11 @@ function ComponentsPage() {
         <h1 className="text-2xl font-semibold">Form Components</h1>
 
         <h1 className="text-xl font-semibold my-5">Inputs</h1>
-        <FormInput 
-        label="Label" 
-        placeholder="Type your name" 
-        hint="Ciergio invite will be sent to this email." />
+        <FormInput
+          label="Label"
+          placeholder="Type your name"
+          hint="Ciergio invite will be sent to this email."
+        />
         <Highlight
           code={`<FormInput 
   type="password" //defaul to text
