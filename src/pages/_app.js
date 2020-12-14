@@ -1,4 +1,5 @@
 import '@app/styles/globals.css'
+import '@app/styles/temp-main-content.css'
 
 import { ApolloProvider } from '@apollo/client'
 import { useApollo } from '@app/lib/apollo/apolloClient'

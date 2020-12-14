@@ -1,0 +1,7 @@
+.Label {
+  @apply block mb-8;
+
+  & span {
+    @apply text-gray-400 font-bold font-bold text-base mb-9;
+  }
+}
