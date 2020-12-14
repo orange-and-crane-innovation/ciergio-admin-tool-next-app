@@ -18,7 +18,6 @@ export const withAuth = WrappedComponent => {
     static async getInitialProps({ res }) {
       try {
         const apolloClient = await initializeApollo()
-        console.log('apolloClient', apolloClient)
         const response = await apolloClient.query({
           query: ME_QUERY
         })

@@ -9,23 +9,35 @@ function Component({
   type,
   classNames,
   placeholder,
-  hint
+  hint,
+  rightIcon
 }) {
-  return (
-    <label className={style.Label}>
-      {label && <span className="form-label">{label}</span>}
-      <br />
-      {hint && <small className="w-full">{hint}</small>}
-      <input
-        type={type || 'text'}
-        className={`form-input ${classNames || ''}`}
-        placeholder={placeholder || ``}
-        onChange={onChange}
-        onKeyPress={onKeyPress}
-        onKeyUp={onKeyUp}
-      />
-    </label>
+  const _input = (
+    <div className={`form-input w-full inline-flex ${classNames || ''}`}>
+      <div className="main inline-block">
+        <input
+          type={type || 'text'}
+          className="inline-block p-3"
+          placeholder={placeholder || ``}
+          onChange={onChange}
+          onKeyPress={onKeyPress}
+          onKeyUp={onKeyUp}
+        />
+      </div>
+      {rightIcon && <div className="add-on inline-block">{rightIcon}</div>}
+    </div>
   )
+
+  if (label)
+    return (
+      <label className={style.Label}>
+        <span className="form-label">{label}</span>
+        <br />
+        {hint && <small className="w-full">{hint}</small>}
+        {_input}
+      </label>
+    )
+  else return _input
 }
 
 Component.propTypes = {

@@ -1,24 +1,37 @@
 import { graphql } from 'msw'
 
-export const handlers = [
-  graphql.query('Authenticate', (req, res, ctx) => {
-    console.log('req', req)
+const client = graphql.link('http://localhost:3000/graphql')
 
-    if (req.headers.get('slave')?.length > 0) {
-      return res(
-        ctx.data({
-          user: {
-            __typename: 'User',
-            id: 'f79e82e8-c34a-4dc7-a49e-9fadc0979fda',
-            firstName: 'John',
-            lastName: 'Maverick'
-          }
-        })
-      )
-    }
+export const handlers = [
+  client.mutation('Login', (req, res, ctx) => {
+    return res(
+      ctx.status(403),
+      ctx.data({
+        data: null
+      }),
+      ctx.errors([
+        {
+          message: 'Access denied',
+          positions: [1, 92]
+        }
+      ])
+    )
+  }),
+
+  client.operation((req, res, ctx) => {
+    console.log('ctx', ctx)
 
     return res(
-      ctx.errors([{ message: 'Unauthorized', success: false, code: 403 }])
+      ctx.status(403),
+      ctx.data({
+        data: null
+      }),
+      ctx.errors([
+        {
+          message: 'Access denied',
+          positions: [1, 92]
+        }
+      ])
     )
   })
 ]
