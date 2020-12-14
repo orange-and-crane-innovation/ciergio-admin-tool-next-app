@@ -37,7 +37,7 @@ a {
 
 button,
 .btn {
-  @apply bg-white hover:bg-neutral-100 border border-neutral-300 py-2 px-4 rounded inline-flex justify-center items-center font-heading text-sm;
+  @apply h-10 bg-white hover:bg-neutral-100 border border-neutral-300 py-2 px-4 rounded inline-flex justify-center items-center font-heading text-sm;
 }
 
 .btn-primary {
@@ -55,4 +55,31 @@ button,
   color: #9ca4b6;
   line-height: 1.6;
   letter-spacing: 0.4px;
+}
+
+.icon-spin {
+  -webkit-animation: icon-spin 2s infinite linear;
+  animation: icon-spin 2s infinite linear;
+}
+
+@-webkit-keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+
+@keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
 }

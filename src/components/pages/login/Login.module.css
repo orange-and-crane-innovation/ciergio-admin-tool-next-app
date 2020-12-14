@@ -30,11 +30,34 @@
         @apply font-heading text-base text-neutral-dark mb-8;
       }
 
-      & label {
-        @apply block mb-8;
+      & .formControl {
+        @apply mb-8;
 
-        & span {
-          @apply text-neutral-dark font-body font-bold text-sm;
+        & label {
+          @apply block;
+
+          & .formLabel {
+            @apply block mb-4;
+          }
+
+          & span {
+            @apply text-neutral-dark font-body font-bold text-sm;
+          }
+        }
+      }
+
+      & .hasError {
+        & [type='text'],
+        & [type='password'] {
+          @apply border-red-500;
+        }
+
+        & label {
+          @apply block;
+
+          & span {
+            @apply text-red-500;
+          }
         }
       }
     }

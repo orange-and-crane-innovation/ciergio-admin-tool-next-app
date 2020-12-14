@@ -1,13 +1,28 @@
 import Link from 'next/link'
 import P from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import clsx from 'clsx'
+import { FaCircleNotch } from 'react-icons/fa'
 
 import CiergioChurchIcon from '@app/assets/svg/ciergio-church-icon.svg'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
 import style from './Login.module.css'
 
-function Login({ onLoginSubmit }) {
-  const { handleSubmit, control } = useForm()
+const validationSchema = yup.object().shape({
+  email: yup.string().email().label('Email Address').required(),
+  password: yup.string().label('Password').required()
+})
+
+function Login({ onLoginSubmit, isSubmitting }) {
+  const { handleSubmit, control, errors } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  })
 
   return (
     <main className={style.Login}>
@@ -28,46 +43,68 @@ function Login({ onLoginSubmit }) {
           >
             <h2>Login to your account</h2>
 
-            <label htmlFor="email">
-              <span>Name</span>
-              <Controller
-                name="email"
-                id="email"
-                control={control}
-                defaultValue=""
-                render={({ value, onChange }) => (
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Enter your email"
-                    value={value}
-                    onChange={onChange}
-                  />
+            <div
+              className={clsx([
+                style.formControl,
+                { [style.hasError]: !!errors.email }
+              ])}
+            >
+              <label htmlFor="email">
+                <span className={style.formLabel}>Email Address</span>
+                <Controller
+                  name="email"
+                  id="email"
+                  control={control}
+                  render={({ value, onChange }) => (
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Enter your email"
+                      value={value}
+                      onChange={onChange}
+                    />
+                  )}
+                />
+                {errors?.email && (
+                  <span style={style.error}>{errors.email.message}</span>
                 )}
-              />
-            </label>
+              </label>
+            </div>
 
-            <label htmlFor="password">
-              <span>Password</span>
-              <Controller
-                name="password"
-                id="password"
-                control={control}
-                defaultValue=""
-                render={({ value, onChange }) => (
-                  <input
-                    type="password"
-                    className="form-input"
-                    placeholder="Enter your password"
-                    value={value}
-                    onChange={onChange}
-                  />
+            <div
+              className={clsx([
+                style.formControl,
+                { [style.hasError]: !!errors.password }
+              ])}
+            >
+              <label htmlFor="password">
+                <span className={style.formLabel}>Password</span>
+                <Controller
+                  name="password"
+                  id="password"
+                  control={control}
+                  render={({ value, onChange }) => (
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder="Enter your password"
+                      value={value}
+                      onChange={onChange}
+                    />
+                  )}
+                />
+                {errors?.password && (
+                  <span className={style.error}>{errors.password.message}</span>
                 )}
-              />
-            </label>
+              </label>
+            </div>
 
             <button type="submit" className="btn btn-primary btn-fluid">
-              <span>Login</span>
+              {isSubmitting ? (
+                <FaCircleNotch className="icon-spin" />
+              ) : (
+                <span>Login</span>
+              )}
             </button>
           </form>
         </div>
@@ -77,8 +114,13 @@ function Login({ onLoginSubmit }) {
   )
 }
 
+Login.defaultProps = {
+  isSubmitting: false
+}
+
 Login.propTypes = {
-  onLoginSubmit: P.func.isRequired
+  onLoginSubmit: P.func.isRequired,
+  isSubmitting: P.bool
 }
 
 export default Login

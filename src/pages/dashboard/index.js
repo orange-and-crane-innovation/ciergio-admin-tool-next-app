@@ -1,4 +1,4 @@
-import { withAuth } from '../../utils/withAuth'
+import withAuth from '@app/lib/withAuth'
 
 function DashboardPage() {
   return (

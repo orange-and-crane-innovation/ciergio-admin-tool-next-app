@@ -1,17 +1,13 @@
-import { useCallback } from 'react'
-import { gql, useMutation, useQuery } from '@apollo/client'
+import { gql, useMutation } from '@apollo/client'
+import { useCallback, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 import Login from '@app/components/pages/login'
-
-const HELLO_QUERY = gql`
-  query Hello {
-    message
-  }
-`
+import withGuest from '@app/lib/withGuest'
 
 const LOGIN_MUTATION = gql`
-  mutation login($email: String!, $password: String!) {
-    Login(email: $email, password: $password) {
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
       user {
         id
         firstName
@@ -23,40 +19,36 @@ const LOGIN_MUTATION = gql`
   }
 `
 
-function LoginPage(props) {
-  console.log('props', props)
-
-  const { data: queryData } = useQuery(HELLO_QUERY)
-
-  console.log('queryData', queryData)
-
-  const [login, { data, loading, error }] = useMutation(LOGIN_MUTATION, {
-    onError: _e => {
-      // do nothing
+function LoginPage() {
+  const router = useRouter()
+  const [login, { loading, data, client }] = useMutation(LOGIN_MUTATION, {
+    onError: _e => {},
+    onCompleted: ({ login }) => {
+      localStorage.setItem('token', login.token)
+      client.resetStore()
     }
   })
 
-  console.log('data', data)
-  console.log('loading', loading)
-  console.log('error', error?.message)
+  useEffect(() => {
+    if (!loading && data) {
+      router.replace('/dashboard')
+    }
+  }, [data, loading, router])
 
   const onLoginSubmit = useCallback(
     values => {
-      // console.log('values', values)
       try {
         login({
           variables: {
             ...values
           }
         })
-      } catch (err) {
-        console.log('error', err)
-      }
+      } catch (err) {}
     },
     [login]
   )
 
-  return <Login onLoginSubmit={onLoginSubmit} />
+  return <Login onLoginSubmit={onLoginSubmit} isSubmitting={loading} />
 }
 
-export default LoginPage
+export default withGuest(LoginPage)
