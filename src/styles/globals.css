@@ -26,8 +26,36 @@ body,
   @apply bg-neutral-100 h-full;
 }
 
+[data-background="light"] {
+  @apply text-gray-900;
+  code,
+  pre {
+    @apply text-gray-900;
+  }
+}
+
+[data-background="dark"] {
+  @apply text-white;
+  code,
+  pre {
+    @apply text-white;
+  }
+}
+
+/**
+ * hide scrollbars
+ */
+::-webkit-scrollbar {
+  display: none;
+  width: 0 !important;
+}
+.disable-scrollbars {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
 a {
-  @apply font-body text-secondary-500;
+  @apply font-body text-primary-900 outline-none;
 }
 
 [type='text'],

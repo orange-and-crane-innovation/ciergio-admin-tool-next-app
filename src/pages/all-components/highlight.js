@@ -20,6 +20,10 @@ function Component({ code }) {
   )
 }
 
+Component.defaultProps = {
+  code: ''
+}
+
 Component.propTypes = {
   code: P.string
 }

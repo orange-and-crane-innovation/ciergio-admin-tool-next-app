@@ -1,5 +1,3 @@
-import withAuth from '@app/utils/withAuth'
-
 function DashboardPage() {
   return (
     <div>
@@ -8,4 +6,4 @@ function DashboardPage() {
   )
 }
 
-export default withAuth(DashboardPage)
+export default DashboardPage
