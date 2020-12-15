@@ -3,7 +3,6 @@ import { useCallback, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import Login from '@app/components/pages/login'
-import withGuest from '@app/utils/withGuest'
 
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
@@ -51,4 +50,4 @@ function LoginPage() {
   return <Login onLoginSubmit={onLoginSubmit} isSubmitting={loading} />
 }
 
-export default withGuest(LoginPage)
+export default LoginPage
