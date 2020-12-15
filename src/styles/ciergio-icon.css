@@ -1,0 +1,216 @@
+@font-face {
+	font-family: "ciergio";
+	src: url("../assets//ciergio/ciergio.eot?qh5ryk");
+	src: url("../assets//ciergio/ciergio.eot?qh5ryk#iefix") format("embedded-opentype"),
+		url("../assets//ciergio/ciergio.ttf?qh5ryk") format("truetype"),
+		url("../assets//ciergio/ciergio.woff?qh5ryk") format("woff"),
+		url("../assets//ciergio/ciergio.svg?qh5ryk#ciergio") format("svg");
+	font-weight: normal;
+	font-style: normal;
+	font-display: block;
+}
+
+[class^="ciergio-"],
+[class*=" ciergio-"] {
+	/* use !important to prevent issues with browser extensions that change fonts */
+	font-family: "ciergio" !important;
+	speak: never;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.ciergio-email-at:before {
+	content: "\e93a";
+}
+.ciergio-prayer:before {
+	content: "\e939";
+}
+.ciergio-church:before {
+	content: "\e937";
+}
+.ciergio-donate:before {
+	content: "\e938";
+}
+.ciergio-add-file:before {
+	content: "\e934";
+	color: #9ca4b6;
+}
+.ciergio-doc:before {
+	content: "\e935";
+	color: #9ca4b6;
+}
+.ciergio-pdf:before {
+	content: "\e936";
+	color: #9ca4b6;
+}
+.ciergio-add-photo:before {
+	content: "\e931";
+}
+.ciergio-pin:before {
+	content: "\e932";
+}
+.ciergio-search:before {
+	content: "\e933";
+}
+.ciergio-attachment:before {
+	content: "\e930";
+}
+.ciergio-glanceBills:before {
+	content: "\e927";
+}
+.ciergio-glanceOverdue:before {
+	content: "\e928";
+}
+.ciergio-glanceResident:before {
+	content: "\e929";
+}
+.ciergio-glanceTeam:before {
+	content: "\e92a";
+}
+.ciergio-glanceUnits:before {
+	content: "\e92b";
+}
+.ciergio-glanceIssues:before {
+	content: "\e92c";
+}
+.ciergio-same:before {
+	content: "\e92d";
+}
+.ciergio-arrow-up:before {
+	content: "\e92e";
+	color: #9ca4b6;
+}
+.ciergio-settings:before {
+	content: "\e92f";
+}
+.ciergio-file2:before {
+	content: "\e926";
+}
+.ciergio-pause:before {
+	content: "\e924";
+}
+.ciergio-play:before {
+	content: "\e925";
+}
+.ciergio-tick-2:before {
+	content: "\e922";
+}
+.ciergio-tick:before {
+	content: "\e923";
+}
+.ciergio-analytics:before {
+	content: "\e909";
+}
+.ciergio-dashboard:before {
+	content: "\e91e";
+}
+.ciergio-mail:before {
+	content: "\e91f";
+}
+.ciergio-maintenance:before {
+	content: "\e920";
+}
+.ciergio-organization:before {
+	content: "\e921";
+}
+.ciergio-trash:before {
+	content: "\e900";
+}
+.ciergio-event:before {
+	content: "\e901";
+}
+.ciergio-caret-down:before {
+	content: "\e902";
+}
+.ciergio-arrow-down:before {
+	content: "\e903";
+	color: #9ca4b6;
+}
+.ciergio-bell-badge .path1:before {
+	content: "\e904";
+	color: rgb(19, 33, 55);
+}
+.ciergio-bell-badge .path2:before {
+	content: "\e905";
+	margin-left: -1em;
+	color: rgb(245, 98, 34);
+}
+.ciergio-bell:before {
+	content: "\e906";
+}
+.ciergio-bulletin:before {
+	content: "\e907";
+}
+.ciergio-calendar:before {
+	content: "\e908";
+}
+.ciergio-caret-up:before {
+	content: "\20";
+}
+.ciergio-caret-left:before {
+	content: "\e90a";
+}
+.ciergio-caret-right:before {
+	content: "\e90b";
+}
+.ciergio-chat:before {
+	content: "\e90c";
+}
+.ciergio-circle-minus:before {
+	content: "\e90d";
+}
+.ciergio-circle-plus:before {
+	content: "\e90e";
+}
+.ciergio-close:before {
+	content: "\e90f";
+}
+.ciergio-dues:before {
+	content: "\e910";
+}
+.ciergio-edit:before {
+	content: "\e911";
+}
+.ciergio-employees:before {
+	content: "\e912";
+}
+.ciergio-file:before {
+	content: "\e913";
+}
+.ciergio-info:before {
+	content: "\e914";
+}
+.ciergio-lock:before {
+	content: "\e915";
+}
+.ciergio-map:before {
+	content: "\e916";
+}
+.ciergio-more:before {
+	content: "\e917";
+}
+.ciergio-new-message:before {
+	content: "\e918";
+}
+.ciergio-peso:before {
+	content: "\e919";
+}
+.ciergio-reorder:before {
+	content: "\e91a";
+}
+.ciergio-store:before {
+	content: "\e91b";
+}
+.ciergio-teams:before {
+	content: "\e91c";
+}
+.ciergio-upload:before {
+	content: "\e91d";
+}

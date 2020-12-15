@@ -10,21 +10,31 @@ function Component({
   classNames,
   placeholder,
   hint,
-  rightIcon
+  rightIcon,
+  leftIcon
 }) {
   const _input = (
-    <div className={`form-input w-full inline-flex ${classNames || ''}`}>
-      <div className="main inline-block">
+    <div className={`form-input ${classNames || ''}`}>
+      {leftIcon && (
+        <div className="add-on">
+          <i className={`${leftIcon}`} />
+        </div>
+      )}
+      <div className="main">
         <input
           type={type || 'text'}
-          className="inline-block p-3"
+          className="input"
           placeholder={placeholder || ``}
           onChange={onChange}
           onKeyPress={onKeyPress}
           onKeyUp={onKeyUp}
         />
       </div>
-      {rightIcon && <div className="add-on inline-block">{rightIcon}</div>}
+      {rightIcon && (
+        <div className="add-on">
+          <i className={`${rightIcon}`} />
+        </div>
+      )}
     </div>
   )
 
@@ -48,7 +58,9 @@ Component.propTypes = {
   type: P.string,
   classNames: P.string,
   placeholder: P.string,
-  hint: P.string
+  hint: P.string,
+  rightIcon: P.string,
+  leftIcon: P.string
 }
 
 export default Component

@@ -1,4 +1,6 @@
 import '@app/styles/globals.css'
+import '@app/styles/temp-main-content.css'
+import '@app/styles/ciergio-icon.css'
 
 import { ApolloProvider } from '@apollo/client'
 import P from 'prop-types'
