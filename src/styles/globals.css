@@ -65,7 +65,7 @@ a {
 
 button,
 .btn {
-  @apply h-10 bg-white hover:bg-neutral-100 border border-neutral-300 py-2 px-4 rounded inline-flex justify-center items-center font-heading text-sm;
+  @apply h-10 bg-white hover:bg-neutral-100 border border-neutral-300 py-6 px-6 rounded inline-flex justify-center items-center font-heading text-sm;
 }
 
 .btn-primary {

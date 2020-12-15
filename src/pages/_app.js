@@ -1,5 +1,7 @@
 // Styles
 import '@app/styles/globals.css'
+import '@app/styles/temp-main-content.css'
+import '@app/styles/ciergio-icon.css'
 import '@app/styles/animate.css'
 import '@app/styles/components/buttons.css'
 
