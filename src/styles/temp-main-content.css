@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 .content-title {
   font-family: Aileron;
   font-weight: 900;
@@ -43,50 +42,50 @@
 *:focus {
   outline: none;
 }
-.content-wrap .toolbar{
-  @apply grid grid-cols-5 w-full mb-5
+.content-wrap .toolbar {
+  @apply grid grid-cols-5 w-full mb-5;
 }
 /* FORM INPUT */
 .form-input {
-  @apply overflow-hidden w-full inline-flex rounded-md border border-gray-200 p-0 bg-white
+  @apply overflow-hidden w-full inline-flex rounded-md border border-gray-200 p-0 bg-white;
 }
 .form-input .main input.input {
-  @apply m-0 outline-none focus:outline-none inline-block p-3 border-0
+  @apply m-0 outline-none focus:outline-none inline-block p-3 border-0;
 }
 .form-input .main {
-  @apply inline-block
+  @apply inline-block;
 }
 .form-input .main {
   width: calc(100% - 40px);
 }
 .form-input .add-on {
-  @apply inline-block content-end p-2 pb-0 w-12
+  @apply inline-block content-end p-2 pb-0 w-12;
 }
-.form-input .add-on i{
-  @apply text-2xl
+.form-input .add-on i {
+  @apply text-2xl;
 }
 /* LIST GROUP */
-.list-group{
-  @apply bg-white rounded-md border border-gray-200
+.list-group {
+  @apply bg-white rounded-md border border-gray-200;
 }
-.list-group .header{
-  @apply p-6 grid grid-cols-2 w-full
+.list-group .header {
+  @apply p-6 grid grid-cols-2 w-full;
 }
-.list-group .header .title{
-  @apply pt-3 inline-flex space-x-2 content-center text-xl font-semibold
+.list-group .header .title {
+  @apply pt-3 inline-flex space-x-2 content-center text-xl font-semibold;
 }
-.list-group .header .actions{
-  @apply p-0 text-right
+.list-group .header .actions {
+  @apply p-0 text-right;
 }
-.list-group .content{
-  @apply border-t border-gray-200
+.list-group .content {
+  @apply border-t border-gray-200;
 }
-.list-group .content ul{
-  @apply p-0 m-0
+.list-group .content ul {
+  @apply p-0 m-0;
 }
-.list-group .content ul li{
-  @apply p-5 bg-neutral-100 border-b border-gray-200
+.list-group .content ul li {
+  @apply p-5 bg-neutral-100 border-b border-gray-200;
 }
-.list-group .content ul li:nth-child(even){
-  @apply bg-white
+.list-group .content ul li:nth-child(even) {
+  @apply bg-white;
 }
