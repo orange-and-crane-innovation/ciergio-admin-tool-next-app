@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* GLOBAL */
+input,
+select,
+button {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  /* -webkit-appearance: none; */
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: '';
+}
+select::-ms-expand {
+  display: none !important;
+}
+input:focus,
+select:focus,
+select:active {
+  border: 0 !important;
+  outline: none !important;
+  --tw-ring-inset: var(--tw-empty, /*!*/ /*!*/) !important;
+  --tw-ring-offset-width: 0px !important;
+  --tw-ring-offset-color: #fff !important;
+  --tw-ring-color: #fff !important;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
+    var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
+    calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), 0 0 #fff !important;
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+    var(--tw-shadow, 0 0 #fff) !important;
+  border-color: #fff;
+}
+
+/* CONTENT AREA */
 .content-title {
   font-family: Aileron;
   font-weight: 900;
@@ -45,11 +79,25 @@
 .content-wrap .toolbar {
   @apply grid grid-cols-5 w-full mb-5;
 }
+/* BUTTON */
+.btn {
+  @apply max-w-full;
+}
+.btn .main {
+  @apply pt-2;
+}
+.btn .add-on {
+  @apply inline-block content-end p-2 pb-0 pl-0;
+}
+.btn .add-on i {
+  @apply text-2xl;
+}
 /* FORM INPUT */
 .form-input {
   @apply overflow-hidden w-full inline-flex rounded-md border border-gray-200 p-0 bg-white;
 }
-.form-input .main input.input {
+.form-input .main input.input,
+.form-input .main select {
   @apply m-0 outline-none focus:outline-none inline-block p-3 border-0;
 }
 .form-input .main {
@@ -64,28 +112,56 @@
 .form-input .add-on i {
   @apply text-2xl;
 }
+
+/* FORM SELECT */
+.form-select {
+  @apply overflow-hidden w-full inline-flex rounded-md border border-gray-200 p-0 bg-white;
+}
+.form-select .main select {
+  @apply m-0 outline-none focus:outline-none inline-block p-3 border-0;
+}
+.form-select .main {
+  @apply inline-block;
+}
+.form-select .main {
+  /* width: calc(100% - 40px); */
+  width: 100%;
+}
+.form-select .add-on {
+  @apply inline-block content-end p-2 pb-0 w-12;
+}
+.form-select .add-on i {
+  @apply text-2xl;
+}
+
 /* LIST GROUP */
-.list-group {
-  @apply bg-white rounded-md border border-gray-200;
+.card {
+  @apply bg-white rounded-md border border-gray-200 mb-5;
 }
-.list-group .header {
-  @apply p-6 grid grid-cols-2 w-full;
+.card .header {
+  @apply p-5 grid grid-cols-3 w-full;
 }
-.list-group .header .title {
+.card .header .title {
   @apply pt-3 inline-flex space-x-2 content-center text-xl font-semibold;
 }
-.list-group .header .actions {
-  @apply p-0 text-right;
+.card .header .actions {
+  @apply p-0 text-right col-span-2;
 }
-.list-group .content {
+.card .header .actions > div {
+  @apply inline-block;
+}
+.card .header .actions > div > * {
+  @apply ml-2;
+}
+.card .content {
   @apply border-t border-gray-200;
 }
-.list-group .content ul {
+.card .content ul {
   @apply p-0 m-0;
 }
-.list-group .content ul li {
+.card .content ul li {
   @apply p-5 bg-neutral-100 border-b border-gray-200;
 }
-.list-group .content ul li:nth-child(even) {
+.card .content ul li:nth-child(even) {
   @apply bg-white;
 }

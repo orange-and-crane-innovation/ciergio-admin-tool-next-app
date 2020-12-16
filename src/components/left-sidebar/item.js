@@ -1,13 +1,14 @@
-import React, {useState} from 'react'
-import {useRouter} from 'next/router'
+/* eslint-disable react/prop-types */
+import React, { useState } from 'react'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
-import {FiChevronRight} from 'react-icons/fi'
+import { FiChevronRight } from 'react-icons/fi'
 
-const Item = ({url, icon, title, badge, items}) => {
+const Item = ({ url, icon, title, badge, items }) => {
   const [hidden, setHidden] = useState(true)
   const router = useRouter()
-  let {pathname} = {...router}
-  let active = pathname === url ? true : false
+  const { pathname } = { ...router }
+  let active = pathname === url
   if (pathname === '/' && url === '/dashboard') {
     active = true
   }
@@ -34,7 +35,8 @@ const Item = ({url, icon, title, badge, items}) => {
       onClick={() => setHidden(!hidden)}
       className={`left-sidebar-item ${active ? 'active' : ''} ${
         hidden ? 'hidden-sibling' : 'open-sibling'
-      }`}>
+      }`}
+    >
       {icon}
       <span className="title">{title}</span>
       {badge && (

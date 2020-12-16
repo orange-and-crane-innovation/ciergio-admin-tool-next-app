@@ -10,7 +10,7 @@ function Component({ primary, full, label, onClick, rightIcon, leftIcon }) {
       }`}
     >
       {leftIcon && (
-        <div className="add-on inline-block mr-2">
+        <div className="add-on inline-block">
           <i className={`${leftIcon} text-xl`} />
         </div>
       )}

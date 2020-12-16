@@ -1,6 +1,7 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 
-const Empty = ({children}) => {
+const Empty = ({ children }) => {
   return <>{children}</>
 }
 
