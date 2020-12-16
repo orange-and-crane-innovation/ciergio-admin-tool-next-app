@@ -1,4 +1,4 @@
-import { Button, FormInput, FormSelect, Card } from '@app/components/globals'
+import { Button, FormInput, FormSelect } from '@app/components/globals'
 import Highlight from './highlight'
 
 function Components() {
