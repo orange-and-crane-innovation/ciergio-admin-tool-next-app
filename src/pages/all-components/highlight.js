@@ -4,7 +4,7 @@ import P from 'prop-types'
 
 function Component({ code }) {
   return (
-    <div className="text-xs">
+    <div className="text-xs mb-3">
       <SyntaxHighlighter
         language="jsx"
         lineProps={{

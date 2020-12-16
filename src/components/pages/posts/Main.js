@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Button, FormInput } from '@app/components/globals'
+import { Button, FormInput, FormSelect, Card } from '@app/components/globals'
 
 function Component() {
   return (
@@ -25,9 +25,8 @@ function Component() {
       <div className="toolbar">
         <div className="p-0 inline-flex space-x-2 col-span-2">
           <div className="p-0 w-1/2">
-            <FormInput
-              placeholder="Search by title"
-              rightIcon="ciergio-caret-down"
+            <FormSelect
+              options={[{ label: 'Option 1', value: 'option1val' }]}
             />
           </div>
           <div className="p-0 w-1/2">
@@ -40,23 +39,21 @@ function Component() {
           <FormInput placeholder="Search by title" rightIcon="ciergio-search" />
         </div>
       </div>
-      {/* LIST GROUP */}
-      <div className="list-group">
-        <div className="header">
-          <div className="title">All Posts</div>
-          <div className="actions">
-            <Button leftIcon="ciergio-circle-plus" label="Create Post" />
-          </div>
-        </div>
-        <div className="content">
+      <Card 
+        title="All Posts"
+        actions={[
+          <Button leftIcon="ciergio-circle-plus" label="Create Post" />,
+          <Button leftIcon="ciergio-circle-plus" label="Create Post" />
+        ]}
+        content={
           <ul>
-            <li>test</li>
-            <li>test</li>
-            <li>test</li>
-            <li>test</li>
-          </ul>
-        </div>
-      </div>
+          <li>test</li>
+          <li>test</li>
+          <li>test</li>
+          <li>test</li>
+        </ul>
+        }
+      />
     </section>
   )
 }
