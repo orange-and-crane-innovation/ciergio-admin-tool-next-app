@@ -1,11 +1,11 @@
-[data-left-sidebar="light"] {
+[data-left-sidebar='light'] {
   .left-sidebar {
     @apply text-gray-900;
     @apply bg-white border-gray-100;
   }
 }
 
-[data-left-sidebar="dark"] {
+[data-left-sidebar='dark'] {
   .left-sidebar {
     @apply text-white;
     background: color(theme('colors.gray.900') tint(5%));
@@ -17,12 +17,12 @@
   .arrow {
     transform: rotate(90deg);
     transition: transform 0.15s ease-in-out;
-    [data-collapsed="true"] & {
+    [data-collapsed='true'] & {
       @apply hidden;
     }
   }
 
-  [data-collapsed="false"] {
+  [data-collapsed='false'] {
     .hidden-sibling {
       + ul {
         @apply hidden;
@@ -34,7 +34,7 @@
       }
     }
   }
-  [data-collapsed="true"] {
+  [data-collapsed='true'] {
     .hidden-sibling {
       + ul {
         @apply block;
@@ -45,18 +45,18 @@
   .left-sidebar-1 {
     .logo {
       @apply uppercase font-bold text-base tracking-wider flex flex-row items-center justify-start h-16 w-full whitespace-nowrap pl-4;
-      max-width: calc(theme("spacing.1") * 64);
+      max-width: calc(theme('spacing.1') * 64);
       @apply text-primary-900;
       span {
         transition: all 0.15s ease-in-out;
       }
-      [data-collapsed="false"] & {
+      [data-collapsed='false'] & {
         span {
           @apply visible opacity-100;
         }
       }
-      [data-collapsed="true"] & {
-        max-width: calc(theme("spacing.1") * 16);
+      [data-collapsed='true'] & {
+        max-width: calc(theme('spacing.1') * 16);
         span {
           @apply invisible opacity-0;
         }
@@ -69,14 +69,14 @@
 
   .left-sidebar-item {
     @apply font-body flex flex-row h-10 items-center text-base justify-start relative whitespace-nowrap truncate w-full rounded-none border-0 outline-none focus:outline-none p-0;
-    min-width: calc(theme("spacing.1") * 16);
-    max-width: calc(theme("spacing.1") * 64);
-    width: calc(theme("spacing.1") * 64);
+    min-width: calc(theme('spacing.1') * 16);
+    max-width: calc(theme('spacing.1') * 64);
+    width: calc(theme('spacing.1') * 64);
     > svg {
-      width: calc(theme("spacing.1") * 16);
+      width: calc(theme('spacing.1') * 16);
     }
-    [data-collapsed="true"] & {
-      width: calc(theme("spacing.1") * 16);
+    [data-collapsed='true'] & {
+      width: calc(theme('spacing.1') * 16);
       > .title {
         width: 0;
       }
@@ -84,7 +84,7 @@
     &.open-sibling {
       @apply text-primary-900;
       &:after {
-        content: "";
+        content: '';
         display: block;
         position: absolute;
         top: 0;
@@ -95,7 +95,7 @@
       }
     }
     &:after {
-      content: "";
+      content: '';
       display: none;
       position: absolute;
       top: 0;
@@ -113,7 +113,7 @@
     }
   }
 
-  [data-collapsed="false"] {
+  [data-collapsed='false'] {
     .l0 {
       @apply truncate;
       > .left-sidebar-item {
@@ -123,7 +123,7 @@
       }
     }
   }
-  [data-collapsed="true"] {
+  [data-collapsed='true'] {
     .l0 {
       > .left-sidebar-item {
         > .title {
@@ -139,70 +139,70 @@
       transition: opacity 0.2s ease-in-out;
       display: block;
       opacity: 0;
-      content: "";
+      content: '';
       position: absolute;
       z-index: 1;
-      top: calc((theme("spacing.1") * 8) - 2px);
+      top: calc((theme('spacing.1') * 8) - 2px);
       left: 0;
       right: 0;
       height: 1px;
       width: 100%;
     }
-    [data-left-sidebar="light"] & {
+    [data-left-sidebar='light'] & {
       &::before {
         @apply bg-gray-200;
       }
     }
-    [data-left-sidebar="dark"] & {
+    [data-left-sidebar='dark'] & {
       &::before {
         @apply bg-gray-800;
       }
     }
-    [data-collapsed="true"] & {
+    [data-collapsed='true'] & {
       &::before {
         opacity: 1;
       }
     }
     span {
       transition: opacity 0.15s ease-in-out;
-      [data-collapsed="false"] & {
+      [data-collapsed='false'] & {
         @apply visible opacity-100;
       }
-      [data-collapsed="true"] & {
+      [data-collapsed='true'] & {
         @apply invisible opacity-0;
       }
     }
   }
 
-  [data-collapsed="false"] {
+  [data-collapsed='false'] {
     ul ul .left-sidebar-item {
-      padding-left: calc(theme("spacing.1") * 16);
+      padding-left: calc(theme('spacing.1') * 16);
     }
     ul ul ul .left-sidebar-item {
-      padding-left: calc(theme("spacing.1") * 20);
+      padding-left: calc(theme('spacing.1') * 20);
     }
     ul ul ul ul .left-sidebar-item {
-      padding-left: calc(theme("spacing.1") * 24);
+      padding-left: calc(theme('spacing.1') * 24);
     }
     ul ul ul ul ul .left-sidebar-item {
-      padding-left: calc(theme("spacing.1") * 28);
+      padding-left: calc(theme('spacing.1') * 28);
     }
   }
 
   .left-sidebar-1 {
     @apply text-sm;
-    [data-left-sidebar="light"] & {
+    [data-left-sidebar='light'] & {
       @apply bg-white border-gray-200 text-gray-900;
     }
-    [data-left-sidebar="dark"] & {
+    [data-left-sidebar='dark'] & {
       @apply text-white;
-      background: color(theme("colors.gray.900") tint(5%));
-      border-color: color(theme("colors.gray.900") tint(10%));
+      background: color(theme('colors.gray.900') tint(5%));
+      border-color: color(theme('colors.gray.900') tint(10%));
     }
     .badge {
       @apply hidden !important;
     }
-    [data-collapsed="true"][data-left-sidebar="light"] & {
+    [data-collapsed='true'][data-left-sidebar='light'] & {
       ul > li {
         &:not(.l0) {
           @apply bg-white;
@@ -212,17 +212,17 @@
         }
       }
     }
-    [data-collapsed="true"][data-left-sidebar="dark"] & {
+    [data-collapsed='true'][data-left-sidebar='dark'] & {
       ul > li {
         &:not(.l0) {
-          background: color(theme("colors.gray.900") tint(5%));
+          background: color(theme('colors.gray.900') tint(5%));
         }
         > ul {
-          background: color(theme("colors.gray.900") tint(5%));
+          background: color(theme('colors.gray.900') tint(5%));
         }
       }
     }
-    [data-collapsed="true"] & {
+    [data-collapsed='true'] & {
       ul > li {
         @apply relative;
         &.l0 {

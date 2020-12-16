@@ -26,7 +26,7 @@ body,
   @apply bg-neutral-100 h-full;
 }
 
-[data-background="light"] {
+[data-background='light'] {
   @apply text-gray-900;
   code,
   pre {
@@ -34,7 +34,7 @@ body,
   }
 }
 
-[data-background="dark"] {
+[data-background='dark'] {
   @apply text-white;
   code,
   pre {
