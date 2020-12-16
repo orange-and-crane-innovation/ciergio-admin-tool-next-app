@@ -3,7 +3,7 @@ import Highlight from './highlight'
 
 function Components() {
   return (
-<div className="grid grid-cols-4 gap-4">
+<div className="grid grid-cols-3 gap-4">
       <div className="">
         <h1 className="text-xl font-semibold">Inputs</h1>
         <FormInput
