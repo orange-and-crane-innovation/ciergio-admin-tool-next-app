@@ -1,17 +1,15 @@
-const plugin = require('tailwindcss/plugin')
-
 module.exports = {
   purge: [],
-  //purge: ['./src/**/*.js'],
+  // purge: ['./src/**/*.js'],
   prefix: '',
   important: false,
   separator: ':',
   theme: {
-    extend: {      
+    extend: {
       typography: {
         DEFAULT: {}
       },
-      customForms: (theme) => ({
+      customForms: () => ({
         DEFAULT: {
           input: {
             '&:focus': {
@@ -52,76 +50,78 @@ module.exports = {
           500: '#9CA4B6'
         },
         gray: {
-          '50': '#fafafa',
-          '100': '#f5f5f5',
-          '200': '#eeeeee',
-          '300': '#e0e0e0',
-          '400': '#bdbdbd',
-          '500': '#9e9e9e',
-          '600': '#757575',
-          '700': '#616161',
-          '800': '#424242',
-          890: '#3a3a3a', //tint %10 or lighten %10
-          895: '#2e2e2e', //tint 5% or lighten 5%
-          '900': '#212121'
+          50: '#fafafa',
+          100: '#f5f5f5',
+          200: '#eeeeee',
+          300: '#e0e0e0',
+          400: '#bdbdbd',
+          500: '#9e9e9e',
+          600: '#757575',
+          700: '#616161',
+          800: '#424242',
+          890: '#3a3a3a', // tint %10 or lighten %10
+          895: '#2e2e2e', // tint 5% or lighten 5%
+          900: '#212121'
         },
         'blue-gray': {
-          '50': '#eceff1',
-          '100': '#cfd8dc',
-          '200': '#b0bec5',
-          '300': '#90a4ae',
-          '400': '#78909c',
-          '500': '#607d8b',
-          '600': '#546e7a',
-          '700': '#455a64',
-          '800': '#37474f',
-          '900': '#263238'
+          50: '#eceff1',
+          100: '#cfd8dc',
+          200: '#b0bec5',
+          300: '#90a4ae',
+          400: '#78909c',
+          500: '#607d8b',
+          600: '#546e7a',
+          700: '#455a64',
+          800: '#37474f',
+          900: '#263238'
         },
         black: '#000000',
         white: '#FFFFFF'
       },
       spacing: {
         px: '1px',
-        '0': '0',
-        '1': '0.25rem',
-        '2': '0.5rem',
-        '3': '0.75rem',
-        '4': '1rem',
-        '5': '1.25rem',
-        '6': '1.5rem',
-        '8': '2rem',
-        '10': '2.5rem',
-        '12': '3rem',
-        '16': '4rem',
-        '20': '5rem',
-        '24': '6rem',
-        '32': '8rem',
-        '40': '10rem',
-        '48': '12rem',
-        '56': '14rem',
-        '64': '16rem',
-        '96': '24rem',
-        '128': '32rem'
+        0: '0',
+        1: '0.25rem',
+        2: '0.5rem',
+        3: '0.75rem',
+        4: '1rem',
+        5: '1.25rem',
+        6: '1.5rem',
+        8: '2rem',
+        10: '2.5rem',
+        12: '3rem',
+        16: '4rem',
+        20: '5rem',
+        24: '6rem',
+        32: '8rem',
+        40: '10rem',
+        48: '12rem',
+        56: '14rem',
+        64: '16rem',
+        96: '24rem',
+        128: '32rem'
       },
-      backgroundColor: (theme) => theme('colors'),
+      backgroundColor: theme => theme('colors'),
       backgroundImage: {
         none: 'none',
         'gradient-to-t': 'linear-gradient(to top, var(--gradient-color-stops))',
         'gradient-to-tr':
           'linear-gradient(to top right, var(--gradient-color-stops))',
-        'gradient-to-r': 'linear-gradient(to right, var(--gradient-color-stops))',
+        'gradient-to-r':
+          'linear-gradient(to right, var(--gradient-color-stops))',
         'gradient-to-br':
           'linear-gradient(to bottom right, var(--gradient-color-stops))',
         'gradient-to-b':
           'linear-gradient(to bottom, var(--gradient-color-stops))',
         'gradient-to-bl':
           'linear-gradient(to bottom left, var(--gradient-color-stops))',
-        'gradient-to-l': 'linear-gradient(to left, var(--gradient-color-stops))',
+        'gradient-to-l':
+          'linear-gradient(to left, var(--gradient-color-stops))',
         'gradient-to-tl':
           'linear-gradient(to top left, var(--gradient-color-stops))'
       },
-      gradientColorStops: (theme) => theme('colors'),
-      backgroundOpacity: (theme) => theme('opacity'),
+      gradientColorStops: theme => theme('colors'),
+      backgroundOpacity: theme => theme('opacity'),
       backgroundPosition: {
         bottom: 'bottom',
         center: 'center',
@@ -138,11 +138,11 @@ module.exports = {
         cover: 'cover',
         contain: 'contain'
       },
-      borderColor: (theme) => ({
+      borderColor: theme => ({
         ...theme('colors'),
         DEFAULT: theme('colors.gray.200', 'currentColor')
       }),
-      borderOpacity: (theme) => theme('opacity'),
+      borderOpacity: theme => theme('opacity'),
       borderRadius: {
         none: '0',
         sm: '0.125rem',
@@ -153,10 +153,10 @@ module.exports = {
       },
       borderWidth: {
         DEFAULT: '1px',
-        '0': '0',
-        '2': '2px',
-        '4': '4px',
-        '8': '8px'
+        0: '0',
+        2: '2px',
+        4: '4px',
+        8: '8px'
       },
       boxShadow: {
         xs: '0 0 0 1px rgba(0, 0, 0, 0.05)',
@@ -185,29 +185,29 @@ module.exports = {
         move: 'move',
         'not-allowed': 'not-allowed'
       },
-      divideColor: (theme) => theme('borderColor'),
-      divideOpacity: (theme) => theme('borderOpacity'),
-      divideWidth: (theme) => theme('borderWidth'),
+      divideColor: theme => theme('borderColor'),
+      divideOpacity: theme => theme('borderOpacity'),
+      divideWidth: theme => theme('borderWidth'),
       fill: {
         current: 'currentColor'
       },
       flex: {
-        '1': '1 1 0%',
+        1: '1 1 0%',
         auto: '1 1 auto',
         initial: '0 1 auto',
         none: 'none'
       },
       flexGrow: {
-        '0': '0',
+        0: '0',
         DEFAULT: '1'
       },
       flexShrink: {
-        '0': '0',
+        0: '0',
         DEFAULT: '1'
       },
       fontFamily: {
         heading: ['Aileron', 'san-serif'],
-        body: ['NotoSans', 'san-serif'],
+        body: ['NotoSans', 'san-serif']
       },
       fontSize: {
         '3xs': '0.6rem',
@@ -234,14 +234,14 @@ module.exports = {
         extrabold: '800',
         black: '900'
       },
-      height: (theme) => ({
+      height: theme => ({
         auto: 'auto',
         ...theme('spacing'),
         full: '100%',
         screen: '100vh'
       }),
       inset: {
-        '0': '0',
+        0: '0',
         auto: 'auto'
       },
       letterSpacing: {
@@ -259,21 +259,21 @@ module.exports = {
         normal: '1.5',
         relaxed: '1.625',
         loose: '2',
-        '3': '.75rem',
-        '4': '1rem',
-        '5': '1.25rem',
-        '6': '1.5rem',
-        '7': '1.75rem',
-        '8': '2rem',
-        '9': '2.25rem',
-        '10': '2.5rem'
+        3: '.75rem',
+        4: '1rem',
+        5: '1.25rem',
+        6: '1.5rem',
+        7: '1.75rem',
+        8: '2rem',
+        9: '2.25rem',
+        10: '2.5rem'
       },
       listStyleType: {
         none: 'none',
         disc: 'disc',
         decimal: 'decimal'
       },
-      margin: (theme, {negative}) => ({
+      margin: (theme, { negative }) => ({
         auto: 'auto',
         ...theme('spacing'),
         ...negative(theme('spacing'))
@@ -282,7 +282,7 @@ module.exports = {
         full: '100%',
         screen: '100vh'
       },
-      maxWidth: (theme, {breakpoints}) => ({
+      maxWidth: (theme, { breakpoints }) => ({
         none: 'none',
         xs: '20rem',
         sm: '24rem',
@@ -298,12 +298,12 @@ module.exports = {
         ...breakpoints(theme('screens'))
       }),
       minHeight: {
-        '0': '0',
+        0: '0',
         full: '100%',
         screen: '100vh'
       },
       minWidth: {
-        '0': '0',
+        0: '0',
         full: '100%'
       },
       objectPosition: {
@@ -318,33 +318,33 @@ module.exports = {
         top: 'top'
       },
       opacity: {
-        '0': '0',
-        '25': '0.25',
-        '50': '0.5',
-        '75': '0.75',
-        '100': '1'
+        0: '0',
+        25: '0.25',
+        50: '0.5',
+        75: '0.75',
+        100: '1'
       },
       order: {
         first: '-9999',
         last: '9999',
         none: '0',
-        '1': '1',
-        '2': '2',
-        '3': '3',
-        '4': '4',
-        '5': '5',
-        '6': '6',
-        '7': '7',
-        '8': '8',
-        '9': '9',
-        '10': '10',
-        '11': '11',
-        '12': '12'
+        1: '1',
+        2: '2',
+        3: '3',
+        4: '4',
+        5: '5',
+        6: '6',
+        7: '7',
+        8: '8',
+        9: '9',
+        10: '10',
+        11: '11',
+        12: '12'
       },
-      padding: (theme) => theme('spacing'),
-      placeholderColor: (theme) => theme('colors'),
-      placeholderOpacity: (theme) => theme('opacity'),
-      space: (theme, {negative}) => ({
+      padding: theme => theme('spacing'),
+      placeholderColor: theme => theme('colors'),
+      placeholderOpacity: theme => theme('opacity'),
+      space: (theme, { negative }) => ({
         ...theme('spacing'),
         ...negative(theme('spacing'))
       }),
@@ -352,13 +352,13 @@ module.exports = {
         current: 'currentColor'
       },
       strokeWidth: {
-        '0': '0',
-        '1': '1',
-        '2': '2'
+        0: '0',
+        1: '1',
+        2: '2'
       },
-      textColor: (theme) => theme('colors'),
-      textOpacity: (theme) => theme('opacity'),
-      width: (theme) => ({
+      textColor: theme => theme('colors'),
+      textOpacity: theme => theme('opacity'),
+      width: theme => ({
         auto: 'auto',
         ...theme('spacing'),
         '1/2': '50%',
@@ -392,28 +392,28 @@ module.exports = {
       }),
       zIndex: {
         auto: 'auto',
-        '0': '0',
-        '10': '10',
-        '20': '20',
-        '30': '30',
-        '40': '40',
-        '50': '50'
+        0: '0',
+        10: '10',
+        20: '20',
+        30: '30',
+        40: '40',
+        50: '50'
       },
-      gap: (theme) => theme('spacing'),
+      gap: theme => theme('spacing'),
       gridTemplateColumns: {
         none: 'none',
-        '1': 'repeat(1, minmax(0, 1fr))',
-        '2': 'repeat(2, minmax(0, 1fr))',
-        '3': 'repeat(3, minmax(0, 1fr))',
-        '4': 'repeat(4, minmax(0, 1fr))',
-        '5': 'repeat(5, minmax(0, 1fr))',
-        '6': 'repeat(6, minmax(0, 1fr))',
-        '7': 'repeat(7, minmax(0, 1fr))',
-        '8': 'repeat(8, minmax(0, 1fr))',
-        '9': 'repeat(9, minmax(0, 1fr))',
-        '10': 'repeat(10, minmax(0, 1fr))',
-        '11': 'repeat(11, minmax(0, 1fr))',
-        '12': 'repeat(12, minmax(0, 1fr))'
+        1: 'repeat(1, minmax(0, 1fr))',
+        2: 'repeat(2, minmax(0, 1fr))',
+        3: 'repeat(3, minmax(0, 1fr))',
+        4: 'repeat(4, minmax(0, 1fr))',
+        5: 'repeat(5, minmax(0, 1fr))',
+        6: 'repeat(6, minmax(0, 1fr))',
+        7: 'repeat(7, minmax(0, 1fr))',
+        8: 'repeat(8, minmax(0, 1fr))',
+        9: 'repeat(9, minmax(0, 1fr))',
+        10: 'repeat(10, minmax(0, 1fr))',
+        11: 'repeat(11, minmax(0, 1fr))',
+        12: 'repeat(12, minmax(0, 1fr))'
       },
       gridColumn: {
         auto: 'auto',
@@ -432,44 +432,44 @@ module.exports = {
       },
       gridColumnStart: {
         auto: 'auto',
-        '1': '1',
-        '2': '2',
-        '3': '3',
-        '4': '4',
-        '5': '5',
-        '6': '6',
-        '7': '7',
-        '8': '8',
-        '9': '9',
-        '10': '10',
-        '11': '11',
-        '12': '12',
-        '13': '13'
+        1: '1',
+        2: '2',
+        3: '3',
+        4: '4',
+        5: '5',
+        6: '6',
+        7: '7',
+        8: '8',
+        9: '9',
+        10: '10',
+        11: '11',
+        12: '12',
+        13: '13'
       },
       gridColumnEnd: {
         auto: 'auto',
-        '1': '1',
-        '2': '2',
-        '3': '3',
-        '4': '4',
-        '5': '5',
-        '6': '6',
-        '7': '7',
-        '8': '8',
-        '9': '9',
-        '10': '10',
-        '11': '11',
-        '12': '12',
-        '13': '13'
+        1: '1',
+        2: '2',
+        3: '3',
+        4: '4',
+        5: '5',
+        6: '6',
+        7: '7',
+        8: '8',
+        9: '9',
+        10: '10',
+        11: '11',
+        12: '12',
+        13: '13'
       },
       gridTemplateRows: {
         none: 'none',
-        '1': 'repeat(1, minmax(0, 1fr))',
-        '2': 'repeat(2, minmax(0, 1fr))',
-        '3': 'repeat(3, minmax(0, 1fr))',
-        '4': 'repeat(4, minmax(0, 1fr))',
-        '5': 'repeat(5, minmax(0, 1fr))',
-        '6': 'repeat(6, minmax(0, 1fr))'
+        1: 'repeat(1, minmax(0, 1fr))',
+        2: 'repeat(2, minmax(0, 1fr))',
+        3: 'repeat(3, minmax(0, 1fr))',
+        4: 'repeat(4, minmax(0, 1fr))',
+        5: 'repeat(5, minmax(0, 1fr))',
+        6: 'repeat(6, minmax(0, 1fr))'
       },
       gridRow: {
         auto: 'auto',
@@ -482,23 +482,23 @@ module.exports = {
       },
       gridRowStart: {
         auto: 'auto',
-        '1': '1',
-        '2': '2',
-        '3': '3',
-        '4': '4',
-        '5': '5',
-        '6': '6',
-        '7': '7'
+        1: '1',
+        2: '2',
+        3: '3',
+        4: '4',
+        5: '5',
+        6: '6',
+        7: '7'
       },
       gridRowEnd: {
         auto: 'auto',
-        '1': '1',
-        '2': '2',
-        '3': '3',
-        '4': '4',
-        '5': '5',
-        '6': '6',
-        '7': '7'
+        1: '1',
+        2: '2',
+        3: '3',
+        4: '4',
+        5: '5',
+        6: '6',
+        7: '7'
       },
       transformOrigin: {
         center: 'center',
@@ -512,27 +512,27 @@ module.exports = {
         'top-left': 'top left'
       },
       scale: {
-        '0': '0',
-        '50': '.5',
-        '75': '.75',
-        '90': '.9',
-        '95': '.95',
-        '100': '1',
-        '105': '1.05',
-        '110': '1.1',
-        '125': '1.25',
-        '150': '1.5'
+        0: '0',
+        50: '.5',
+        75: '.75',
+        90: '.9',
+        95: '.95',
+        100: '1',
+        105: '1.05',
+        110: '1.1',
+        125: '1.25',
+        150: '1.5'
       },
       rotate: {
         '-180': '-180deg',
         '-90': '-90deg',
         '-45': '-45deg',
-        '0': '0',
-        '45': '45deg',
-        '90': '90deg',
-        '180': '180deg'
+        0: '0',
+        45: '45deg',
+        90: '90deg',
+        180: '180deg'
       },
-      translate: (theme, {negative}) => ({
+      translate: (theme, { negative }) => ({
         ...theme('spacing'),
         ...negative(theme('spacing')),
         '-full': '-100%',
@@ -544,10 +544,10 @@ module.exports = {
         '-12': '-12deg',
         '-6': '-6deg',
         '-3': '-3deg',
-        '0': '0',
-        '3': '3deg',
-        '6': '6deg',
-        '12': '12deg'
+        0: '0',
+        3: '3deg',
+        6: '6deg',
+        12: '12deg'
       },
       transitionProperty: {
         none: 'none',
@@ -566,24 +566,24 @@ module.exports = {
         'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)'
       },
       transitionDuration: {
-        '75': '75ms',
-        '100': '100ms',
-        '150': '150ms',
-        '200': '200ms',
-        '300': '300ms',
-        '500': '500ms',
-        '700': '700ms',
-        '1000': '1000ms'
+        75: '75ms',
+        100: '100ms',
+        150: '150ms',
+        200: '200ms',
+        300: '300ms',
+        500: '500ms',
+        700: '700ms',
+        1000: '1000ms'
       },
       transitionDelay: {
-        '75': '75ms',
-        '100': '100ms',
-        '150': '150ms',
-        '200': '200ms',
-        '300': '300ms',
-        '500': '500ms',
-        '700': '700ms',
-        '1000': '1000ms'
+        75: '75ms',
+        100: '100ms',
+        150: '150ms',
+        200: '200ms',
+        300: '300ms',
+        500: '500ms',
+        700: '700ms',
+        1000: '1000ms'
       },
       animation: {
         none: 'none',
@@ -594,13 +594,13 @@ module.exports = {
       },
       keyframes: {
         spin: {
-          to: {transform: 'rotate(360deg)'}
+          to: { transform: 'rotate(360deg)' }
         },
         ping: {
-          '75%, 100%': {transform: 'scale(2)', opacity: '0'}
+          '75%, 100%': { transform: 'scale(2)', opacity: '0' }
         },
         pulse: {
-          '50%': {opacity: '.5'}
+          '50%': { opacity: '.5' }
         },
         bounce: {
           '0%, 100%': {

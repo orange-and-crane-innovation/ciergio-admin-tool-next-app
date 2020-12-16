@@ -3,7 +3,7 @@ import Highlight from './highlight'
 
 function Components() {
   return (
-<div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       <div className="">
         <h1 className="text-xl font-semibold">Inputs</h1>
         <FormInput
@@ -18,7 +18,8 @@ function Components() {
   placeholder="Type your name" optional
   className="custom-class" //optional
   hint="Ciergio invite will be sent to this email." />
-/>`} />
+/>`}
+        />
         <FormInput
           label="With Icon"
           placeholder="Search"
@@ -31,8 +32,8 @@ function Components() {
   rightIcon="ciergio-search"
 />`}
         />
-        </div>
-        <div className="">
+      </div>
+      <div className="">
         <h1 className="text-xl font-semibold">Buttons</h1>
         <div className="inline-flex space-x-4 mb-2">
           <div className="flex-1">
@@ -49,9 +50,9 @@ function Components() {
           <Button primary full />
         </div>
         <div className="mb-2">
-          <Button full leftIcon="ciergio-circle-plus" label="Custom Label"/>
+          <Button full leftIcon="ciergio-circle-plus" label="Custom Label" />
         </div>
-        
+
         <Highlight
           code={`<Button primary />
 <Button full />
@@ -66,13 +67,16 @@ function Components() {
 `}
         />
       </div>
-    {/* SELECT FORM */}
-        <div className="">
+      {/* SELECT FORM */}
+      <div className="">
         <h1 className="text-xl font-semibold">Select</h1>
         <FormSelect
-              options={[{ label: 'Option 1', value: 'option1val' },{ label: 'Option 2', value: 'option2val' }]}
-            />
-        
+          options={[
+            { label: 'Option 1', value: 'option1val' },
+            { label: 'Option 2', value: 'option2val' }
+          ]}
+        />
+
         <Highlight
           code={`<FormSelect
   options={[
@@ -82,11 +86,14 @@ function Components() {
 />`}
         />
         <FormSelect
-              options={[{ label: 'Option 1', value: 'option1val' },{ label: 'Option 2', value: 'option2val' }]}
-              label="With Label"
-              hint="and hint"
-            />
-        
+          options={[
+            { label: 'Option 1', value: 'option1val' },
+            { label: 'Option 2', value: 'option2val' }
+          ]}
+          label="With Label"
+          hint="and hint"
+        />
+
         <Highlight
           code={`<FormSelect
   options={[
@@ -96,7 +103,7 @@ function Components() {
 />`}
         />
       </div>
-  </div>
+    </div>
   )
 }
 

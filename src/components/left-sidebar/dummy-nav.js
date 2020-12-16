@@ -1,21 +1,5 @@
 import React from 'react'
-import {
-  FiToggleLeft,
-  FiList,
-  FiActivity,
-  FiCalendar,
-  FiStar,
-  FiDroplet,
-  FiGrid,
-  FiClock,
-  FiCopy,
-  FiUser,
-  FiPieChart,
-  FiCompass,
-  FiHelpCircle,
-  FiShoppingCart,
-  FiHome
-} from 'react-icons/fi'
+import { FiActivity, FiCompass } from 'react-icons/fi'
 
 const navigation = [
   {
@@ -90,9 +74,9 @@ const navigation = [
             items: []
           }
         ]
-      },
+      }
     ]
-  },
+  }
 ]
 
-export default navigation;
+export default navigation

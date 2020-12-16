@@ -4,8 +4,7 @@ import Title from './title'
 import Item from './item'
 import Logo from './logo'
 
-const LeftSidebar = ({navigation}) => {
-
+const LeftSidebar = ({ navigation }) => {
   return (
     <div className="left-sidebar left-sidebar-1">
       <Logo show={true} />

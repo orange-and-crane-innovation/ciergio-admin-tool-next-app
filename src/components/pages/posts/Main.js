@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-key */
 import Link from 'next/link'
 import { Button, FormInput, FormSelect, Card } from '@app/components/globals'
 
@@ -39,7 +40,7 @@ function Component() {
           <FormInput placeholder="Search by title" rightIcon="ciergio-search" />
         </div>
       </div>
-      <Card 
+      <Card
         title="All Posts"
         actions={[
           <Button leftIcon="ciergio-circle-plus" label="Create Post" />,
@@ -47,11 +48,11 @@ function Component() {
         ]}
         content={
           <ul>
-          <li>test</li>
-          <li>test</li>
-          <li>test</li>
-          <li>test</li>
-        </ul>
+            <li>test</li>
+            <li>test</li>
+            <li>test</li>
+            <li>test</li>
+          </ul>
         }
       />
     </section>

@@ -1,5 +1,5 @@
 import React from 'react'
-import {FiBox, FiMenu} from 'react-icons/fi'
+import { FiBox, FiMenu } from 'react-icons/fi'
 import Link from 'next/link'
 
 const Logo = () => {
@@ -12,10 +12,9 @@ const Logo = () => {
         </a>
       </Link>
       <button
-        onClick={() =>
-          console.log('HELLO')
-        }
-        className="ml-auto mr-4 block lg:hidden">
+        onClick={() => console.log('HELLO')}
+        className="ml-auto mr-4 block lg:hidden"
+      >
         <FiMenu size={20} />
       </button>
     </div>

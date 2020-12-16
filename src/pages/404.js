@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 
-const ErrorPage = ({ statusCode }) => {
+const ErrorPage = () => {
   return (
     <div className="flex flex-col w-full max-w-xl text-center">
       <img
@@ -12,8 +12,8 @@ const ErrorPage = ({ statusCode }) => {
       <h1 className="text-6xl text-blue-gray-700 mb-4">404</h1>
 
       <div className="mb-8 text-center text-grey-900">
-        We're sorry. The page you requested could not be found. Please go back
-        to the homepage or contact us
+        We&apos;re sorry. The page you requested could not be found. Please go
+        back to the homepage or contact us
       </div>
       <div className="flex w-full">
         <Link href="/">

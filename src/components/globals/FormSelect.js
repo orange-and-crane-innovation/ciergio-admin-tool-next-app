@@ -1,10 +1,9 @@
+/* eslint-disable jsx-a11y/no-onchange */
 import style from './Forms.module.css'
 import P from 'prop-types'
 
 function Component({
   onChange,
-  onKeyPress,
-  onKeyUp,
   label,
   type,
   classNames,
@@ -21,10 +20,14 @@ function Component({
           placeholder={placeholder || ``}
           onChange={onChange}
         >
-          {options.map(({label,value})=><option key={label} value={value}>{label}</option>)}
+          {options.map(({ label, value }) => (
+            <option key={label} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
       </div>
-        {/* <div className="add-on">
+      {/* <div className="add-on">
           <i className={`ciergio-caret-down`} />
         </div> */}
     </div>

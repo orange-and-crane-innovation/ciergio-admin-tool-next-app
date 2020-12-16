@@ -1,6 +1,7 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 
-const Title = ({children}) => {
+const Title = ({ children }) => {
   return (
     <div className="left-sidebar-title">
       <span>{children}</span>
