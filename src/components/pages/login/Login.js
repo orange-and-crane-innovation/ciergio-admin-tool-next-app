@@ -3,9 +3,9 @@ import P from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import clsx from 'clsx'
-import { FaCircleNotch } from 'react-icons/fa'
 
+import FormInput from '@app/components/forms/form-input'
+import Button from '@app/components/button'
 import CiergioChurchIcon from '@app/assets/svg/ciergio-church-icon.svg'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
 import style from './Login.module.css'
@@ -43,69 +43,46 @@ function Login({ onLoginSubmit, isSubmitting }) {
           >
             <h2>Login to your account</h2>
 
-            <div
-              className={clsx([
-                style.formControl,
-                { [style.hasError]: !!errors.email }
-              ])}
-            >
-              <label htmlFor="email">
-                <span className={style.formLabel}>Email Address</span>
-                <Controller
-                  name="email"
-                  id="email"
-                  control={control}
-                  render={({ value, onChange }) => (
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Enter your email"
-                      value={value}
-                      onChange={onChange}
-                    />
-                  )}
+            <Controller
+              name="email"
+              control={control}
+              render={({ name, value, onChange, ...props }) => (
+                <FormInput
+                  name={name}
+                  value={value}
+                  label="Email Address"
+                  placeholder="Enter you email"
+                  error={errors?.email?.message ?? null}
+                  onChange={onChange}
+                  inputProps={props}
                 />
-                {errors?.email && (
-                  <span style={style.error}>{errors.email.message}</span>
-                )}
-              </label>
-            </div>
-
-            <div
-              className={clsx([
-                style.formControl,
-                { [style.hasError]: !!errors.password }
-              ])}
-            >
-              <label htmlFor="password">
-                <span className={style.formLabel}>Password</span>
-                <Controller
-                  name="password"
-                  id="password"
-                  control={control}
-                  render={({ value, onChange }) => (
-                    <input
-                      type="password"
-                      className="form-input"
-                      placeholder="Enter your password"
-                      value={value}
-                      onChange={onChange}
-                    />
-                  )}
-                />
-                {errors?.password && (
-                  <span className={style.error}>{errors.password.message}</span>
-                )}
-              </label>
-            </div>
-
-            <button type="submit" className="btn btn-primary btn-fluid">
-              {isSubmitting ? (
-                <FaCircleNotch className="icon-spin" />
-              ) : (
-                <span>Login</span>
               )}
-            </button>
+            />
+
+            <Controller
+              name="password"
+              control={control}
+              render={({ name, value, onChange, ...props }) => (
+                <FormInput
+                  type="password"
+                  name={name}
+                  value={value}
+                  label="Password"
+                  placeholder="Enter you password"
+                  error={errors?.password?.message ?? null}
+                  onChange={onChange}
+                  inputProps={props}
+                />
+              )}
+            />
+
+            <Button
+              label="Login"
+              type="submit"
+              loading={isSubmitting}
+              fluid
+              primary
+            />
           </form>
         </div>
         <Link href="/auth/forgot-password">I forgot my password</Link>
