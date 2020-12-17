@@ -1,0 +1,12 @@
+.Button {
+  @apply h-4 bg-white border border-neutral-300 py-5 px-6 rounded inline-flex justify-center items-center font-heading text-sm;
+  @apply hover:bg-neutral-100;
+
+  &.isPrimary {
+    @apply bg-primary-500 text-white border-primary-500 hover:bg-primary-700 active:bg-primary-900;
+  }
+
+  &.isFluid {
+    @apply w-full;
+  }
+}
