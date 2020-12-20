@@ -1,19 +1,16 @@
-import React from 'react'
-import { FiActivity, FiCompass } from 'react-icons/fi'
-
 const navigation = [
   {
     title: 'Applications',
     items: [
       {
         url: '/dashboard',
-        icon: <FiCompass size={20} />,
+        icon: 'ciergio-store',
         title: 'Dashboard',
         items: []
       },
       {
         url: '/',
-        icon: <FiActivity size={20} />,
+        icon: 'ciergio-file',
         title: 'Group Menu 1',
         items: [
           {
@@ -45,7 +42,7 @@ const navigation = [
       },
       {
         url: '/',
-        icon: <FiActivity size={20} />,
+        icon: 'ciergio-file',
         title: 'Group Menu 2',
         items: [
           {

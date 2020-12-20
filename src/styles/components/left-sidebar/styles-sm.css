@@ -30,7 +30,7 @@
   }
 
   .left-sidebar-item {
-    @apply font-body flex flex-row h-10 items-center text-base justify-start relative whitespace-nowrap rounded-none border-0 outline-none focus:outline-none p-0;
+    @apply font-body flex flex-row h-16 items-center text-base justify-start relative whitespace-nowrap rounded-none border-0 outline-none focus:outline-none py-4;
     min-width: calc(theme('spacing.1') * 16);
     max-width: calc(theme('spacing.1') * 64);
     width: calc(theme('spacing.1') * 64);
@@ -39,15 +39,11 @@
     }
     &.open-sibling {
       @apply text-primary-900;
-      &:after {
-        content: '';
+      /* &:after {
         display: block;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 4px;
-        @apply bg-primary-500;
+      } */
+      + ul {
+        @apply bg-gray-50;
       }
     }
     &:after {
@@ -63,9 +59,9 @@
     &:hover,
     &.active {
       @apply text-primary-900 text-base;
-      &:after {
+      /* &:after {
         display: block;
-      }
+      } */
     }
   }
 
@@ -96,7 +92,7 @@
   }
 
   .left-sidebar-1 {
-    @apply text-sm shadow-lg;
+    @apply text-sm shadow-lg z-10;
     [data-left-sidebar='light'] & {
       @apply bg-white border-gray-200 text-gray-900;
     }
@@ -107,6 +103,9 @@
     }
     .badge {
       @apply hidden !important;
+    }
+    i.icon {
+      @apply px-4 text-xl;
     }
   }
 }

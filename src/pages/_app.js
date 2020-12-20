@@ -15,6 +15,8 @@ import P from 'prop-types'
 
 import { useApollo } from '@app/lib/apollo/client'
 
+import Layout from '@app/layouts'
+
 if (process.env.NODE_ENV !== 'production') {
   require('@app/lib/msw')
 }
@@ -30,7 +32,9 @@ function MyApp({ Component, pageProps }) {
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
       </Head>
-      <Component {...pageProps} />
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
     </ApolloProvider>
   )
 }

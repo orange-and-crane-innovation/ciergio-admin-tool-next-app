@@ -1,5 +1,5 @@
-/* eslint-disable react/prop-types */
 import React from 'react'
+import P from 'prop-types'
 
 const Title = ({ children }) => {
   return (
@@ -7,6 +7,9 @@ const Title = ({ children }) => {
       <span>{children}</span>
     </div>
   )
+}
+Title.propTypes = {
+  children: P.string || P.element
 }
 
 export default Title
