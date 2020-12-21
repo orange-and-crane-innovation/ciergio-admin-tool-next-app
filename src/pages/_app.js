@@ -1,12 +1,14 @@
 // Styles
 import '@app/styles/globals.css'
-// import '@app/styles/temp-main-content.css'
-// import '@app/styles/ciergio-icon.css'
-// import '@app/styles/animate.css'
-// import '@app/styles/components/buttons.css'
+import '@app/styles/temp-main-content.css'
+import '@app/styles/ciergio-icon.css'
+import '@app/styles/animate.css'
+import '@app/styles/components/buttons.css'
+import '@app/styles/components/dropdowns.css'
 
 import '@app/styles/components/left-sidebar/styles-lg.css'
 import '@app/styles/components/left-sidebar/styles-sm.css'
+import '@app/styles/components/header-nav/navbar.css'
 import '@app/styles/layouts/layout-1.css'
 
 import Head from 'next/head'

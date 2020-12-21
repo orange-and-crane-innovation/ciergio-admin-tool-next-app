@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { FiChevronRight } from 'react-icons/fi'
 
-const Item = ({ url, icon, title, badge, items }) => {
+const Item = ({ url, icon, title, items }) => {
   const [hidden, setHidden] = useState(true)
   const router = useRouter()
   const { pathname } = { ...router }
@@ -22,11 +22,6 @@ const Item = ({ url, icon, title, badge, items }) => {
         <a className={`left-sidebar-item ${active ? 'active' : ''}`}>
           {icon && <i className={`icon ${icon}`}></i>}
           <span className="title">{title}</span>
-          {badge && (
-            <span className={`badge badge-circle badge-sm ${badge.color}`}>
-              {badge.text}
-            </span>
-          )}
         </a>
       </Link>
     )
@@ -40,11 +35,6 @@ const Item = ({ url, icon, title, badge, items }) => {
     >
       {icon && <i className={`icon ${icon}`}></i>}
       <span className="title">{title}</span>
-      {badge && (
-        <span className={`badge badge-circle badge-sm ${badge.color}`}>
-          {badge.text}
-        </span>
-      )}
       <FiChevronRight className="ml-auto arrow" />
     </button>
   )
@@ -53,7 +43,6 @@ Item.propTypes = {
   url: P.string,
   icon: P.string,
   title: P.string,
-  badge: P.object,
   items: P.array
 }
 

@@ -4,10 +4,10 @@ import Title from './title'
 import Item from './item'
 import Logo from './logo'
 
-const LeftSidebar = ({ navigation }) => {
+const LeftSidebar = ({ navigation, onToggle, isCollapsed }) => {
   return (
     <div className="left-sidebar left-sidebar-1">
-      <Logo show={true} />
+      <Logo show={true} onToggle={onToggle} isCollapsed={isCollapsed} />
       {navigation.map((menu, i) => (
         <React.Fragment key={i}>
           <Title>{menu.title}</Title>
@@ -57,7 +57,9 @@ LeftSidebar.defaultProps = {
 }
 
 LeftSidebar.propTypes = {
-  navigation: P.array.isRequired
+  navigation: P.array.isRequired,
+  onToggle: P.func,
+  isCollapsed: P.bool
 }
 
 export default LeftSidebar
