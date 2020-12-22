@@ -58,6 +58,11 @@ a {
   @apply font-body text-primary-900 outline-none;
 }
 
+[type='text'],
+[type='password'] {
+  @apply mt-1 block w-full rounded-md border-gray-300 hover:border-neutral-500 active:border-secondary-500 placeholder-neutral-500;
+}
+
 /*  Form Elements WIP - NICK */
 .form-label {
   font-family: Aileron-Bold, Arial, sans-serif;
@@ -91,5 +96,45 @@ a {
   100% {
     -webkit-transform: rotate(359deg);
     transform: rotate(359deg);
+  }
+}
+
+.rdw-editor-wrapper {
+  height: 45vh;
+  @apply border;
+  @apply bg-white;
+}
+
+.rdw-editor-main {
+  @apply py-2 px-4;
+}
+
+.rdw-link-modal {
+  right: calc(100% - 30px);
+  box-shadow: none !important;
+  height: auto !important;
+  box-shadow: 3px 3px 5px #bfbdbd !important;
+}
+
+.rdw-link-modal-label,
+.rdw-link-modal-input,
+.rdw-link-modal-target-option > span {
+  @apply text-md !important;
+}
+
+.rdw-link-modal-btn {
+  @apply rounded-md !important;
+}
+
+.rdw-link-modal-btn:nth-child(1) {
+  @apply bg-primary-500 !important;
+  @apply text-white !important;
+
+  &:hover {
+    @apply bg-primary-700 !important;
+  }
+
+  &:active {
+    @apply bg-primary-900 !important;
   }
 }

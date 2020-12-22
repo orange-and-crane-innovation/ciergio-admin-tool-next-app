@@ -1,0 +1,15 @@
+.FormSelect {
+  @apply block w-full px-2 py-2 pr-8;
+  @apply bg-white;
+  @apply border border-neutral-400;
+  @apply cursor-pointer;
+  @apply rounded;
+
+  &:hover {
+    @apply border-gray-500;
+  }
+
+  &:active {
+    @apply outline-none;
+  }
+}

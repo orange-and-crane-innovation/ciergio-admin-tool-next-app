@@ -1,0 +1,43 @@
+.toast {
+  @apply relative px-6 py-4;
+  @apply border-0 rounded;
+  @apply text-white;
+
+  &.success {
+    @apply bg-success-500;
+  }
+
+  &.danger {
+    @apply bg-danger-500;
+  }
+
+  &.warning {
+    @apply bg-warning-500;
+  }
+
+  &.info {
+    @apply bg-info-500;
+  }
+
+  .icon {
+    @apply inline-block mr-5;
+    @apply align-middle;
+    @apply text-xl;
+  }
+
+  .content {
+    @apply inline-block mr-8;
+    @apply align-middle;
+  }
+
+  .button {
+    @apply absolute right-0 top-0 mt-2 mr-4;
+    @apply border-0 bg-transparent;
+    @apply text-2xl font-semibold leading-none;
+    @apply outline-none;
+
+    &:focus {
+      @apply outline-none;
+    }
+  }
+}
