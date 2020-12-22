@@ -112,11 +112,11 @@
   }
 }
 
-[data-background="light"] {
+[data-background='light'] {
   .dropdown {
-      .dropdown-title {
-        @apply bg-white text-gray-900;
-      }
+    .dropdown-title {
+      @apply bg-white text-gray-900;
+    }
     .dropdown-content {
       @apply bg-white;
       .dropdown-item {
@@ -135,7 +135,7 @@
   }
 }
 
-[data-background="dark"] {
+[data-background='dark'] {
   .dropdown {
     .dropdown-title {
       @apply bg-gray-800 text-white;

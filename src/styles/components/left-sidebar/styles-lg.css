@@ -70,7 +70,7 @@
   }
 
   .left-sidebar-item {
-    @apply font-body flex flex-row h-16 items-center; 
+    @apply font-body flex flex-row h-16 items-center;
     @apply text-base justify-start relative whitespace-nowrap;
     @apply truncate w-full rounded-none border-0 outline-none;
     @apply focus:outline-none py-4;

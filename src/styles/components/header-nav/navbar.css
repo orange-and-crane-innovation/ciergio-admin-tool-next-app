@@ -1,4 +1,4 @@
-.main{
+.main {
   .navbar {
     min-height: 50px;
     @apply border-b py-2 px-4;
@@ -14,7 +14,8 @@
         @apply p-2.5 h-16 rounded-full max-w-full;
       }
       &.user-info {
-        .user-info-name, .user-info-title {
+        .user-info-name,
+        .user-info-title {
           max-width: 236px;
           text-overflow: ellipsis;
           display: block;
@@ -29,7 +30,7 @@
           @apply text-base;
         }
       }
-      .user-dropdown {        
+      .user-dropdown {
       }
       &.small {
         img {
@@ -49,14 +50,14 @@
   }
 }
 
-[data-navbar="light"] {
+[data-navbar='light'] {
   .navbar {
     @apply text-gray-900 shadow-lg z-10;
     @apply bg-white border-gray-100;
   }
 }
 
-[data-navbar="dark"] {
+[data-navbar='dark'] {
   .navbar {
     @apply text-white;
     background: color(theme('colors.gray.900') tint(5%));

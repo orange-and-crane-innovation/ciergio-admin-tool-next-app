@@ -1,6 +1,6 @@
+import { useMemo } from 'react'
 import clsx from 'clsx'
 import P from 'prop-types'
-import { useMemo } from 'react'
 import { FaCircleNotch } from 'react-icons/fa'
 
 import styles from './Button.module.css'
@@ -15,7 +15,7 @@ function Button({
   warning,
   info,
   loading,
-  classNames,
+  className,
   ...props
 }) {
   const buttonClasses = useMemo(
@@ -26,9 +26,10 @@ function Button({
         [styles.isDanger]: danger,
         [styles.isWarning]: warning,
         [styles.isInfo]: info,
-        [styles.isFluid]: fluid
+        [styles.isFluid]: fluid,
+        [className]: !!className
       }),
-    [fluid, primary, success, danger, warning, info]
+    [primary, success, danger, warning, info, fluid, className]
   )
 
   const renderLabel = useMemo(() => {
@@ -36,11 +37,7 @@ function Button({
   }, [label, loading])
 
   return (
-    <button
-      type={type}
-      className={`${styles.Button} ${buttonClasses} ${classNames}`}
-      {...props}
-    >
+    <button type={type} className={buttonClasses} {...props}>
       {renderLabel}
     </button>
   )
@@ -61,7 +58,7 @@ Button.propTypes = {
   warning: P.bool,
   info: P.bool,
   loading: P.bool,
-  classNames: P.string
+  className: P.string
 }
 
 export default Button
