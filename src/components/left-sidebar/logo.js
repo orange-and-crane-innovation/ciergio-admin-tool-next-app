@@ -1,8 +1,9 @@
 import React from 'react'
+import P from 'prop-types'
 import { FiBox, FiMenu } from 'react-icons/fi'
 import Link from 'next/link'
 
-const Logo = () => {
+const Logo = ({ onToggle, isCollapsed }) => {
   return (
     <div className="logo truncate">
       <Link href="/">
@@ -12,13 +13,20 @@ const Logo = () => {
         </a>
       </Link>
       <button
-        onClick={() => console.log('HELLO')}
+        onClick={() => {
+          onToggle(!isCollapsed)
+        }}
         className="ml-auto mr-4 block lg:hidden"
       >
         <FiMenu size={20} />
       </button>
     </div>
   )
+}
+
+Logo.propTypes = {
+  onToggle: P.func,
+  isCollapsed: P.bool
 }
 
 export default Logo
