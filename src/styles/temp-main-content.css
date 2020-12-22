@@ -46,24 +46,26 @@ select:active {
 }
 
 .content-tabs {
+  @apply col-span-4 pt-3;
 }
 
-.content-tabs li {
-  list-style: none;
+.content-tabs .tab {
+  @apply inline-block mr-5 px-1 text-lg;
   position: relative;
 }
 
-.content-tabs li a {
+.content-tabs .tab span {
   color: #9ca4b6;
 }
 
-.content-tabs li.active a,
-.content-tabs li:hover a {
+.content-tabs .tab.active span,
+.content-tabs .tab:hover span {
   color: #0871f4;
+  cursor: pointer;
 }
 
-.content-tabs li.active::after,
-.content-tabs li:hover::after {
+.content-tabs .tab.active::after,
+.content-tabs .tab:hover::after {
   content: '';
   position: absolute;
   width: 100%;
@@ -79,6 +81,7 @@ select:active {
 .content-wrap .toolbar {
   @apply grid grid-cols-5 w-full mb-5;
 }
+
 /* BUTTON */
 .btn {
   @apply max-w-full;
@@ -154,7 +157,7 @@ select:active {
   @apply ml-2;
 }
 .card .content {
-  @apply border-t border-gray-200;
+  @apply border-t border-gray-200 pb-4;
 }
 .card .content ul {
   @apply p-0 m-0;
@@ -163,5 +166,25 @@ select:active {
   @apply p-5 bg-neutral-100 border-b border-gray-200;
 }
 .card .content ul li:nth-child(even) {
+  @apply bg-white;
+}
+
+.card .content table {
+  @apply min-w-full;
+}
+
+.card .content table thead tr th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.card .content table td {
+  @apply py-2 px-5;
+}
+
+.card .content table tbody tr {
+  @apply bg-neutral-100;
+}
+
+.card .content table tbody tr:nth-child(even) {
   @apply bg-white;
 }
