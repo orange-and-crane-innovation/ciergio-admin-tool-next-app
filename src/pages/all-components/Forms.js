@@ -1,7 +1,36 @@
+import React, { useState } from 'react'
+
 import { Button, FormInput, FormSelect } from '@app/components/globals'
+
+import FormTextArea from '@app/components/forms/form-textarea'
+import UploaderImage from '@app/components/uploader/image'
+
 import Highlight from './highlight'
 
 function Components() {
+  const [loading, setLoading] = useState(false)
+  const [imageUrl, setImageUrl] = useState()
+
+  const onUploadImage = e => {
+    const reader = new FileReader()
+    const formData = new FormData()
+    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0]
+
+    setLoading(true)
+    if (file) {
+      reader.onloadend = () => {
+        setImageUrl(reader.result)
+      }
+      reader.readAsDataURL(file)
+      formData.append('photos', file)
+      setLoading(false)
+    }
+  }
+
+  const onRemoveImage = () => {
+    setImageUrl(null)
+  }
+
   return (
     <div className="grid grid-cols-3 gap-4">
       <div className="">
@@ -13,12 +42,12 @@ function Components() {
         />
         <Highlight
           code={`<FormInput 
-  type="password" //defaul to text
-  label="Label" //optional
-  placeholder="Type your name" optional
-  className="custom-class" //optional
-  hint="Ciergio invite will be sent to this email." />
-/>`}
+            type="password" //default to text
+            label="Label" //optional
+            placeholder="Type your name" optional
+            className="custom-class" //optional
+            hint="Ciergio invite will be sent to this email." />
+          />`}
         />
         <FormInput
           label="With Icon"
@@ -27,10 +56,10 @@ function Components() {
         />
         <Highlight
           code={`<FormInput 
-  label="With Icon"
-  placeholder="Search"
-  rightIcon="ciergio-search"
-/>`}
+            label="With Icon"
+            placeholder="Search"
+            rightIcon="ciergio-search"
+          />`}
         />
       </div>
       <div className="">
@@ -55,16 +84,16 @@ function Components() {
 
         <Highlight
           code={`<Button primary />
-<Button full />
-<Button label="Custom" />
-<Button primary full />
-<Button onClick="(e)=>{}" />
-<Button 
-  full 
-  leftIcon="ciergio-circle-plus" 
-  label="Custom Label"
-/>
-`}
+            <Button full />
+            <Button label="Custom" />
+            <Button primary full />
+            <Button onClick="(e)=>{}" />
+            <Button 
+              full 
+              leftIcon="ciergio-circle-plus" 
+              label="Custom Label"
+            />
+          `}
         />
       </div>
       {/* SELECT FORM */}
@@ -79,11 +108,11 @@ function Components() {
 
         <Highlight
           code={`<FormSelect
-  options={[
-    { label: 'Option 1', value: 'option1val' },
-    { label: 'Option 2', value: 'option2val' }
-  ]}
-/>`}
+            options={[
+              { label: 'Option 1', value: 'option1val' },
+              { label: 'Option 2', value: 'option2val' }
+            ]}
+          />`}
         />
         <FormSelect
           options={[
@@ -96,11 +125,37 @@ function Components() {
 
         <Highlight
           code={`<FormSelect
-  options={[
-    { label: 'Option 1', value: 'option1val' },
-    { label: 'Option 2', value: 'option2val' }
-  ]}
-/>`}
+            options={[
+              { label: 'Option 1', value: 'option1val' },
+              { label: 'Option 2', value: 'option2val' }
+            ]}
+          />`}
+        />
+      </div>
+
+      <div className="">
+        <h1 className="text-xl font-semibold">Text Area</h1>
+        <FormTextArea maxLength={500} withCounter />
+        <br />
+        <Highlight code={`<FormTextArea maxLength={500} withCounter />`} />
+      </div>
+
+      <div className="">
+        <h1 className="text-xl font-semibold">Image Uploader</h1>
+        <UploaderImage
+          imageUrl={imageUrl}
+          loading={loading}
+          onUploadImage={onUploadImage}
+          onRemoveImage={onRemoveImage}
+        />
+        <br />
+        <Highlight
+          code={` <UploaderImage
+              imageUrl={imageUrl}
+              loading={loading}
+              onUploadImage={onUploadImage}
+              onRemoveImage={onRemoveImage}
+            />`}
         />
       </div>
     </div>

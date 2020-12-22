@@ -1,0 +1,44 @@
+.imageUploaderContainer {
+  @apply relative w-32 h-32;
+  @apply font-body font-normal text-sm leading-7;
+  @apply bg-white;
+
+  &.over {
+    @apply bg-primary-100;
+  }
+
+  .imageUploaderControl {
+    @apply hidden;
+  }
+
+  .imageUploaderImage {
+    @apply w-32 h-32 p-2;
+    @apply flex items-center justify-center;
+    @apply border border-neutral-500 border-dashed;
+    @apply bg-cover bg-center;
+    @apply cursor-pointer;
+  }
+
+  .imageUploaderImageContent {
+    @apply flex flex-col items-center justify-center;
+    @apply pointer-events-none;
+  }
+
+  .imageUploaderButton {
+    @apply absolute w-6 h-6;
+    @apply flex items-center justify-center;
+    @apply bg-neutral-dark opacity-50;
+    @apply text-white;
+    @apply rounded;
+    top: 5px;
+    right: 5px;
+
+    &:hover {
+      @apply opacity-100;
+    }
+
+    &:focus {
+      @apply outline-none;
+    }
+  }
+}
