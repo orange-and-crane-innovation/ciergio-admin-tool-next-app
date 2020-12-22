@@ -1,0 +1,27 @@
+.cardContainer {
+  @apply w-full mb-4;
+  @apply bg-white;
+  @apply border border-neutral-300;
+  @apply rounded-md;
+  @apply overflow-hidden;
+
+  .cardHeaderControl {
+    @apply p-4;
+    @apply border-b;
+  }
+
+  .cardContentControl {
+    @apply p-4;
+    @apply border-t border-b;
+
+    &.no-border {
+      @apply p-0;
+      @apply border-0;
+    }
+  }
+
+  .cardFooterControl {
+    @apply p-4;
+    @apply border-t;
+  }
+}
