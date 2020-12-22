@@ -12,7 +12,7 @@ function Directory() {
   const [activeTab, setActiveTab] = useState(1)
 
   return (
-    <section className={'content-wrap py-5 px-8'}>
+    <section className={`content-wrap`}>
       <h1 className="content-title mb-5">Directory</h1>
       <div className="toolbar">
         <Tabs tabs={tabs} activeTab={activeTab} handleTab={setActiveTab} />

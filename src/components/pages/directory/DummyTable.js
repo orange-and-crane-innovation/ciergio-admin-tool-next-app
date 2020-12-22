@@ -1,4 +1,6 @@
+import React from 'react'
 import P from 'prop-types'
+import Draggable from '@app/components/globals/Draggable'
 
 function DummyDirectoryTable() {
   return (
@@ -97,8 +99,29 @@ function DummyDirectoryTable() {
   )
 }
 
+const directoryList = [
+  {
+    id: 0,
+    name: 'Red Cross'
+  },
+  {
+    id: 1,
+    name: 'PHRC Headquarters'
+  },
+  {
+    id: 2,
+    name: 'McDonalds'
+  },
+  {
+    id: 3,
+    name: 'Suds Laundry Services'
+  }
+]
+
 function DummyManageDirectoryList() {
-  return <p>Manage Directory List</p>
+  const [list, setList] = React.useState(directoryList)
+
+  return <Draggable list={list} onListChange={setList} />
 }
 
 function ActiveTable({ active }) {
@@ -106,7 +129,7 @@ function ActiveTable({ active }) {
 }
 
 ActiveTable.propTypes = {
-  active: P.bool
+  active: P.number
 }
 
 export default ActiveTable
