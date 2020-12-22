@@ -1,0 +1,40 @@
+.paginationContainer {
+  @apply flex flex-col items-center justify-between;
+  @apply font-body font-normal text-base leading-normal;
+
+  .paginationContent {
+    @apply flex;
+    @apply font-bold;
+
+    .paginationContentInner {
+      @apply flex items-center;
+    }
+
+    .paginationContentItem {
+      @apply p-2;
+    }
+
+    .paginationItemActive {
+      @apply pointer-events-none;
+      @apply text-neutral-300;
+    }
+  }
+}
+
+@screen sm {
+  .paginationContainer {
+    @apply flex-row;
+  }
+}
+
+@screen md {
+  .paginationContainer {
+    @apply flex-row;
+  }
+}
+
+@screen lg {
+  .paginationContainer {
+    @apply flex-row;
+  }
+}
