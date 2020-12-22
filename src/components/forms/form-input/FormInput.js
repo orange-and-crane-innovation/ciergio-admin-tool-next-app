@@ -12,6 +12,7 @@ function FormInput({
   value,
   error,
   placeholder,
+  maxLength,
   onChange,
   containerClassName,
   labelClassName,
@@ -47,11 +48,12 @@ function FormInput({
         className={inputClasses}
         placeholder={placeholder}
         value={value}
+        maxLength={maxLength}
         onChange={onChange}
         {...inputProps}
       />
     )
-  }, [inputClasses, inputProps, onChange, placeholder, value])
+  }, [type, inputClasses, inputProps, onChange, placeholder, maxLength, value])
 
   const renderError = useMemo(() => {
     return error ? <span className={errorClasses}>{error}</span> : null
@@ -81,6 +83,7 @@ FormInput.propTypes = {
   label: P.string,
   value: P.any,
   placeholder: P.string,
+  maxLength: P.number,
   error: P.string,
   onChange: P.func.isRequired,
   containerClassName: P.string,
