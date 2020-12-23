@@ -58,20 +58,6 @@ a {
   @apply font-body text-primary-900 outline-none;
 }
 
-[type='text'],
-[type='password'] {
-  @apply mt-1 block w-full rounded-md border-gray-300 hover:border-neutral-500 active:border-secondary-500 placeholder-neutral-500;
-}
-
-/*  Form Elements WIP - NICK */
-.form-label {
-  font-family: Aileron-Bold, Arial, sans-serif;
-  font-size: 14px;
-  color: #9ca4b6;
-  line-height: 1.6;
-  letter-spacing: 0.4px;
-}
-
 .icon-spin {
   -webkit-animation: icon-spin 2s infinite linear;
   animation: icon-spin 2s infinite linear;
