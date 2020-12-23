@@ -1,6 +1,6 @@
 import React from 'react'
 import P from 'prop-types'
-import Draggable from '@app/components/globals/Draggable'
+import { Draggable } from '@app/components/globals'
 
 function DummyDirectoryTable() {
   return (
