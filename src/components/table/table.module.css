@@ -1,0 +1,56 @@
+.tableContainer {
+  @apply overflow-auto;
+
+  .tableControl {
+    @apply w-full;
+    @apply font-body font-normal text-base leading-relaxed;
+    @apply table-auto;
+
+    .tableHeader {
+      @apply font-heading font-bold;
+      @apply text-neutral-500;
+
+      tr {
+        @apply border-b;
+      }
+
+      th {
+        @apply px-8 py-4;
+        @apply text-left;
+        @apply border-t;
+      }
+
+      th:first-child {
+        @apply border-t border-l;
+      }
+
+      th:last-child {
+        @apply border-t border-r;
+      }
+    }
+
+    .tableBody {
+      @apply font-body font-normal;
+
+      tr:nth-child(even) {
+        @apply bg-neutral-100;
+      }
+
+      td {
+        @apply px-8 py-4 max-w-lg;
+        @apply border-b;
+        @apply break-words;
+      }
+
+      td:first-child {
+        @apply px-8 py-4;
+      }
+    }
+  }
+}
+
+@screen lg {
+  .tableContainer {
+    max-height: 45vh;
+  }
+}
