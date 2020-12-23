@@ -15,6 +15,8 @@ function Button({
   warning,
   info,
   loading,
+  leftIcon,
+  rightIcon,
   className,
   ...props
 }) {
@@ -36,9 +38,19 @@ function Button({
     return loading ? <FaCircleNotch className="icon-spin" /> : label
   }, [label, loading])
 
+  const renderLeftIcon = useMemo(() => {
+    return <span className="mr-2">{leftIcon}</span>
+  }, [leftIcon])
+
+  const renderRightIcon = useMemo(() => {
+    return <span className="ml-2">{rightIcon}</span>
+  }, [rightIcon])
+
   return (
     <button type={type} className={buttonClasses} {...props}>
+      {renderLeftIcon}
       {renderLabel}
+      {renderRightIcon}
     </button>
   )
 }
@@ -58,6 +70,8 @@ Button.propTypes = {
   warning: P.bool,
   info: P.bool,
   loading: P.bool,
+  leftIcon: P.any,
+  rightIcon: P.any,
   className: P.string
 }
 
