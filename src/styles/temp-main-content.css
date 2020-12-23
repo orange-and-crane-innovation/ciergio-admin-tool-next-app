@@ -87,10 +87,10 @@ select:active {
   @apply max-w-full;
 }
 .btn .main {
-  @apply pt-2;
+  @apply pt-1;
 }
 .btn .add-on {
-  @apply inline-block content-end p-2 pb-0 pl-0;
+  @apply inline-block content-end pt-1 pb-0 pl-0 pr-2;
 }
 .btn .add-on i {
   @apply text-2xl;
