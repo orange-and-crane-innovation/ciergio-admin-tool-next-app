@@ -1,0 +1,20 @@
+.Draggable {
+  @apply m-0 p-0 list-none;
+
+  & .DraggableItem {
+    @apply flex items-center cursor-move mb-1 rounded;
+
+    &.DropArea {
+      @apply text-white bg-white relative;
+
+      &::before {
+        content: 'Drop Here';
+        @apply text-base text-gray-300 pl-8 text-sm w-full h-full border border-dashed absolute flex items-center justify-items-center;
+
+        & span {
+          display: none;
+        }
+      }
+    }
+  }
+}
