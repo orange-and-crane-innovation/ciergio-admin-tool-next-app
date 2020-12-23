@@ -1,5 +1,5 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+import P from 'prop-types'
 
 import TabButton from './tab-button'
 
@@ -20,10 +20,10 @@ const TabLabel = ({ id, activeId, children, handleClick }) => {
 }
 
 TabLabel.propTypes = {
-  id: PropTypes.string,
-  activeId: PropTypes.string,
-  children: PropTypes.any,
-  handleClick: PropTypes.func
+  id: P.string,
+  activeId: P.string,
+  children: P.any,
+  handleClick: P.func
 }
 
 export default TabLabel
