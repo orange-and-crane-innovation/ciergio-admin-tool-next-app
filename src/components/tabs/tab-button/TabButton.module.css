@@ -1,0 +1,26 @@
+.tabButton {
+  @apply text-neutral-600 py-4 px-6 block text-blue-500 font-medium text-base;
+
+  .tabIcon {
+    @apply inline-block mr-4;
+  }
+
+  &:focus {
+    @apply outline-none;
+  }
+
+  &:hover,
+  &:active {
+    @apply border-b border-neutral-400;
+    @apply text-blue-500;
+  }
+
+  &.isDisabled {
+    @apply cursor-pointer pointer-events-none;
+    @apply bg-neutral-300;
+  }
+
+  &.isSelected {
+    @apply border-b-2 border-blue-500;
+  }
+}

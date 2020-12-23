@@ -1,5 +1,6 @@
 .CreatePostContainer {
   @apply pt-4 pb-8 px-8 max-w-5xl;
+  @apply text-base;
 
   .CreateContentContainer {
     @apply p-4;
@@ -18,14 +19,25 @@
   }
 
   .CreatePostSubContent {
-    @apply flex items-center mb-4;
+    @apply relative flex items-center mb-4;
 
     .CreatePostSubContentGrow {
       @apply flex-grow;
     }
 
+    .CreatePostInputCustom {
+      @apply font-heading;
+      @apply border-0 border-b;
+      @apply text-lg leading-5 font-black;
+
+      &:focus,
+      &:active {
+        @apply border-none;
+      }
+    }
+
     .CreatePostCounter {
-      @apply ml-2 text-md text-neutral-500;
+      @apply absolute top-2 right-4 text-md text-neutral-500;
     }
   }
 
@@ -40,24 +52,28 @@
 
   .CreatePostCardContent {
     @apply max-w-lg;
+  }
 
-    .CreatePostVideoInput {
-      @apply mb-2;
-      @apply font-body font-semibold text-md leading-relaxed;
+  .CreatePostVideoContent {
+    @apply max-w-xl;
+  }
+
+  .CreatePostVideoInputContent {
+    @apply relative flex items-center mb-4;
+  }
+
+  .CreatePostVideoContainer {
+    @apply relative;
+    padding-top: 56.25%;
+
+    .CreatePostVideoPlayer {
+      @apply absolute top-0 left-0;
     }
+  }
 
-    .CreatePostVideoInputContent {
-      @apply flex items-center mb-4;
-    }
-
-    .CreatePostVideoContainer {
-      @apply relative;
-      padding-top: 56.25%;
-
-      .CreatePostVideoPlayer {
-        @apply absolute top-0 left-0;
-      }
-    }
+  .CreatePostVideoInput {
+    @apply mb-2;
+    @apply font-body font-semibold text-md leading-relaxed;
   }
 
   .CreatePostPublishContent {
@@ -97,15 +113,15 @@
   }
 
   .CreatePostVideoButtonClose {
-    @apply -ml-8 mr-4;
+    @apply absolute top-3 right-4;
     @apply cursor-pointer;
-
-    &:hover {
-      @apply text-xl;
-    }
   }
 
   .CreatePostVideoLoading {
-    @apply ml-2;
+    @apply absolute top-3 -right-6;
+  }
+
+  .TextError {
+    @apply -mt-6 font-semibold text-danger-500;
   }
 }

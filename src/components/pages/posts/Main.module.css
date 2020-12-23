@@ -1,0 +1,14 @@
+.PostContainer {
+  @apply pt-4 pb-8 px-8;
+
+  .PostHeader {
+    @apply mb-5;
+    @apply font-heading font-black;
+    @apply text-neutral-dark text-3xl leading-10;
+  }
+
+  .CardHeader {
+    @apply font-heading font-black;
+    @apply text-base leading-7;
+  }
+}

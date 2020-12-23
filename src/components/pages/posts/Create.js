@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-key */
 import React, { useState } from 'react'
-import ReactPlayer from 'react-player/lazy'
+import ReactPlayer from 'react-player'
 import { FaSpinner, FaTimes } from 'react-icons/fa'
 
 import Card from '@app/components/card'
@@ -16,7 +16,7 @@ const CreatePosts = () => {
   const [loading, setLoading] = useState(false)
   const [imageUrl, setImageUrl] = useState()
   const [videoUrl, setVideoUrl] = useState()
-  const [videoError, setVideoError] = useState(false)
+  const [videoError, setVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
   const [inputMaxLength] = useState(65)
   const [textCount, setTextCount] = useState(0)
@@ -64,25 +64,24 @@ const CreatePosts = () => {
 
   const onVideoChange = e => {
     setVideoLoading(true)
+    setVideoError(null)
     setVideoUrl(e.target.value)
   }
 
   const onVideoError = () => {
     setVideoLoading(false)
-    setVideoError(true)
+    setVideoError('Invalid video link')
   }
 
   const onVideoClear = () => {
-    const video = document.getElementById('video-input')
-    video.value = null
     setVideoUrl(null)
     setVideoLoading(false)
-    setVideoError(false)
+    setVideoError(null)
   }
 
   const onVideoReady = () => {
     setVideoLoading(false)
-    setVideoError(false)
+    setVideoError(null)
   }
 
   return (
@@ -110,6 +109,7 @@ const CreatePosts = () => {
             <div className={style.CreatePostSubContent}>
               <div className={style.CreatePostSubContentGrow}>
                 <FormInput
+                  inputClassName={style.CreatePostInputCustom}
                   type="text"
                   name="title"
                   placeholder="What's the title of your bulletin post?"
@@ -141,11 +141,11 @@ const CreatePosts = () => {
               <div className={style.CreatePostVideoInputContent}>
                 <div className="flex-grow">
                   <FormInput
-                    id="video-input"
                     name="video"
                     placeholder="Add Youtube link here"
                     onBlur={onCountChar}
                     onChange={onVideoChange}
+                    value={videoUrl || ''}
                   />
                 </div>
                 <FaTimes
@@ -160,20 +160,25 @@ const CreatePosts = () => {
                   }  `}
                 />
               </div>
-              {videoUrl && (
+            </div>
+            {videoUrl && !videoError && (
+              <div className={style.CreatePostVideoContent}>
+                <div className={style.CreatePostVideoInput}>Preview Video</div>
                 <div className={style.CreatePostVideoContainer}>
                   <ReactPlayer
+                    controls
                     width="100%"
                     height="100%"
                     className={style.CreatePostVideoPlayer}
                     url={videoUrl}
                     onError={onVideoError}
                     onReady={onVideoReady}
-                    isError={videoError}
                   />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {videoError && <p className={style.TextError}>{videoError}</p>}
           </div>
         }
       />
@@ -223,14 +228,14 @@ const CreatePosts = () => {
           default
           type="button"
           label="Save as Draft"
-          classNames={style.CreatePostFooterButton}
+          className={style.CreatePostFooterButton}
         />
         <span>
           <Button
             default
             type="button"
             label="Preview"
-            classNames={style.CreatePostFooterButton}
+            className={style.CreatePostFooterButton}
           />
           <Button type="button" label="Publish Post" primary />
         </span>

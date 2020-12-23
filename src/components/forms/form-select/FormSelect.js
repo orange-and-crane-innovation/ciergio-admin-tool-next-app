@@ -3,11 +3,11 @@ import styles from './FormSelect.module.css'
 import React from 'react'
 import PropTypes from 'prop-types'
 
-const InputSelect = ({ options, onChange, disabled }) => {
+const InputSelect = ({ options, onChange, disabled, className }) => {
   return (
     <React.Fragment>
       <select
-        className={styles.FormSelect}
+        className={`${styles.FormSelect} ${styles.className}`}
         onChange={onChange}
         disabled={disabled}
       >
@@ -26,7 +26,8 @@ const InputSelect = ({ options, onChange, disabled }) => {
 InputSelect.propTypes = {
   options: PropTypes.array.isRequired,
   onChange: PropTypes.func,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  className: PropTypes.string
 }
 
 export default InputSelect

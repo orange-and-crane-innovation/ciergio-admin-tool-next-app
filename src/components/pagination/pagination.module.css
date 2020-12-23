@@ -4,7 +4,7 @@
 
   .paginationContent {
     @apply flex;
-    @apply font-bold;
+    @apply font-semibold;
 
     .paginationContentInner {
       @apply flex items-center;
@@ -16,7 +16,7 @@
 
     .paginationItemActive {
       @apply pointer-events-none;
-      @apply text-neutral-300;
+      @apply text-neutral-500;
     }
   }
 }
