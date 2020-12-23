@@ -1,2 +1,3 @@
-import TabButton from "./TabButton"
+import TabButton from './TabButton'
+
 export default TabButton

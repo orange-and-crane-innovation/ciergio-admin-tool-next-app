@@ -39,12 +39,12 @@ function Button({
   }, [label, loading])
 
   const renderLeftIcon = useMemo(() => {
-    return <span className="mr-2">{leftIcon}</span>
-  }, [leftIcon])
+    return !loading ? <span className="mr-2">{leftIcon}</span> : null
+  }, [leftIcon, loading])
 
   const renderRightIcon = useMemo(() => {
-    return <span className="ml-2">{rightIcon}</span>
-  }, [rightIcon])
+    return !loading ? <span className="ml-2">{rightIcon}</span> : null
+  }, [loading, rightIcon])
 
   return (
     <button type={type} className={buttonClasses} {...props}>
@@ -70,8 +70,8 @@ Button.propTypes = {
   warning: P.bool,
   info: P.bool,
   loading: P.bool,
-  leftIcon: P.any,
-  rightIcon: P.any,
+  leftIcon: P.node,
+  rightIcon: P.node,
   className: P.string
 }
 
