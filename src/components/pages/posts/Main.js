@@ -5,7 +5,7 @@ import { Button, FormInput, FormSelect, Card } from '@app/components/globals'
 function Component() {
   return (
     // <main className={style.Login}>
-    <section className={'content-wrap py-5 px-8'}>
+    <section className={'content-wrap'}>
       <h1 className="content-title mb-5">Bulletin Post</h1>
       <div className="toolbar">
         <ul className="content-tabs col-span-4 pt-3">
