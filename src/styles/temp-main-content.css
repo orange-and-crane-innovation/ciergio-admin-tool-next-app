@@ -78,6 +78,11 @@ select:active {
 *:focus {
   outline: none;
 }
+
+.content-wrap {
+  @apply py-5 px-8;
+}
+
 .content-wrap .toolbar {
   @apply grid grid-cols-5 w-full mb-5;
 }
