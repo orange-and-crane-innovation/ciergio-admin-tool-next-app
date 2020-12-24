@@ -2,7 +2,8 @@
 import React from 'react'
 import { FaPlusCircle } from 'react-icons/fa'
 
-import { Card, Tabs, Table, Button } from '@app/components/globals'
+import { Card, Tabs, Table } from '@app/components/globals'
+import Button from '@app/components/button'
 import { DummyManageDirectoryList } from './DummyTable'
 
 const tableRowData = [
@@ -59,6 +60,9 @@ function Directory() {
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
+            <div className="flex items-center justify-between">
+              <h1 className="font-bold text-base px-8 py-4">Companies</h1>
+            </div>
             <Card
               noPadding
               header={
@@ -67,23 +71,19 @@ function Directory() {
                 </div>
               }
               content={<Table rowNames={tableRowData} items={tableData} />}
+              className="rounded-t-none"
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <Card
-              noPadding
-              header={
-                <div className="flex items-center justify-between">
-                  <Button
-                    default
-                    leftIcon={<FaPlusCircle />}
-                    label="Add Category"
-                    onClick={() => {}}
-                  />
-                </div>
-              }
-              content={<DummyManageDirectoryList />}
-            />
+            <div className="w-full flex items-center justify-end pt-4 pr-4">
+              <Button
+                default
+                leftIcon={<FaPlusCircle />}
+                label="Add Category"
+                onClick={() => {}}
+              />
+            </div>
+            <Card noPadding content={<DummyManageDirectoryList />} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
