@@ -124,7 +124,7 @@ const PostComponent = () => {
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
-            <div className="flex items-center justify-between mb-4 flex-col md:flex-row">
+            <div className="flex items-center justify-between m-4 flex-col md:flex-row">
               <div className="flex items-center justify-between w-full md:w-1/4">
                 <FormSelect options={bulkOptions} />
                 <Button primary type="button" label="Apply" className="ml-2" />
