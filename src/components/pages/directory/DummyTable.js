@@ -1,5 +1,4 @@
 import React from 'react'
-import P from 'prop-types'
 import { Draggable } from '@app/components/globals'
 
 function DummyDirectoryTable() {
@@ -124,12 +123,4 @@ function DummyManageDirectoryList() {
   return <Draggable list={list} onListChange={setList} />
 }
 
-function ActiveTable({ active }) {
-  return active === 1 ? <DummyDirectoryTable /> : <DummyManageDirectoryList />
-}
-
-ActiveTable.propTypes = {
-  active: P.number
-}
-
-export default ActiveTable
+export { DummyDirectoryTable, DummyManageDirectoryList }
