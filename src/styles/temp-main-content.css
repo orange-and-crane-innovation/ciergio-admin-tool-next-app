@@ -37,6 +37,7 @@ select:active {
 
 /* CONTENT AREA */
 .content-title {
+  @apply mb-5;
   font-family: Aileron;
   font-weight: 900;
   font-style: normal;
@@ -161,9 +162,7 @@ select:active {
 .card .header .actions > div > * {
   @apply ml-2;
 }
-.card .content {
-  @apply border-t border-gray-200 pb-4;
-}
+
 .card .content ul {
   @apply p-0 m-0;
 }
@@ -184,10 +183,6 @@ select:active {
 
 .card .content table td {
   @apply py-2 px-5;
-}
-
-.card .content table tbody tr {
-  @apply bg-neutral-100;
 }
 
 .card .content table tbody tr:nth-child(even) {

@@ -1,12 +1,12 @@
 .tabContainer {
-  @apply container;
+  @apply container bg-white;
 
   .tabLabel {
-    @apply mb-4 flex flex-col sm:flex-row;
+    @apply flex flex-col sm:flex-row;
     @apply border-b;
   }
 
   .tabPanel {
-    @apply w-full p-4;
+    @apply w-full p-0 pb-2;
   }
 }
