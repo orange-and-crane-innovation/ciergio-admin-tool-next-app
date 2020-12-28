@@ -11,7 +11,9 @@ const itemType = {
   LIST: 'li'
 }
 
-const Component = ({ list, onListChange }) => {
+const Component = ({ list, onListChange, rowNames }) => {
+  const hasReorderColumn = rowNames.find(row => row.name === 'Reorder')
+
   const moveCard = useCallback(
     (dragIndex, hoverIndex) => {
       const dragItem = list[dragIndex]
@@ -34,8 +36,9 @@ const Component = ({ list, onListChange }) => {
         key={item.id}
         index={index}
         id={item.id}
-        text={item.name}
+        item={item}
         onMoveCard={moveCard}
+        reorder={hasReorderColumn}
       />
     )
   }
@@ -43,12 +46,18 @@ const Component = ({ list, onListChange }) => {
   return (
     <DndProvider backend={HTML5Backend}>
       <table className={style.Draggable}>
-        <thead>
-          <tr>
-            <th scope="col">Reorder</th>
-            <th scope="col">Category</th>
-          </tr>
-        </thead>
+        {rowNames?.length > 0 ? (
+          <thead>
+            <tr>
+              {!hasReorderColumn ? <th> </th> : null}
+              {rowNames.map((row, index) => (
+                <th key={index} width={row.width}>
+                  {row.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        ) : null}
         <tbody>{list.map((item, index) => renderListItem(item, index))}</tbody>
       </table>
     </DndProvider>
@@ -57,10 +66,11 @@ const Component = ({ list, onListChange }) => {
 
 Component.propTypes = {
   list: P.array,
-  onListChange: P.func
+  onListChange: P.func,
+  rowNames: P.array
 }
 
-const ListItem = ({ index, id, onMoveCard, text }) => {
+const ListItem = ({ index, id, onMoveCard, item, reorder }) => {
   const listItemRef = useRef(null)
 
   const [, drop] = useDrop({
@@ -106,6 +116,18 @@ const ListItem = ({ index, id, onMoveCard, text }) => {
 
   drag(drop(listItemRef))
 
+  const listItem = Object?.entries(item).map(([key, value], rowIndex) => {
+    if (key !== 'id') {
+      return (
+        <td key={rowIndex} className={style.ItemData}>
+          <span>{value}</span>
+        </td>
+      )
+    }
+
+    return null
+  })
+
   return (
     <tr
       ref={listItemRef}
@@ -115,9 +137,7 @@ const ListItem = ({ index, id, onMoveCard, text }) => {
       <td className={[style.ItemData, style.DragIcon].join(' ')}>
         <FaEquals className="mr-4 text-base cursor-move" />
       </td>
-      <td className={style.ItemData}>
-        <span>{text}</span>
-      </td>
+      {listItem}
     </tr>
   )
 }
@@ -127,7 +147,8 @@ ListItem.propTypes = {
   index: P.number,
   onMoveCard: P.func,
   text: P.string,
-  id: P.number
+  id: P.number,
+  reorder: P.bool
 }
 
 export default Component

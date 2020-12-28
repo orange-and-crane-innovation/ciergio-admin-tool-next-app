@@ -27,7 +27,7 @@ const tableData = {
   offset: 0,
   data: [
     {
-      name: 'Red Cross',
+      title: 'Red Cross',
       category: 'Emergency',
       address: '96 Novella Knolls'
     },

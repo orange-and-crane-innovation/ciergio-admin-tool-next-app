@@ -117,10 +117,26 @@ const directoryList = [
   }
 ]
 
+const directoryRowNames = [
+  {
+    name: 'Reorder',
+    width: '10%'
+  },
+  {
+    name: 'Category'
+  }
+]
+
 function DummyManageDirectoryList() {
   const [list, setList] = React.useState(directoryList)
 
-  return <Draggable list={list} onListChange={setList} />
+  return (
+    <Draggable
+      list={list}
+      onListChange={setList}
+      rowNames={directoryRowNames}
+    />
+  )
 }
 
 export { DummyDirectoryTable, DummyManageDirectoryList }
