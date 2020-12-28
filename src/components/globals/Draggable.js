@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react'
 import P from 'prop-types'
-import { CgMathEqual } from 'react-icons/cg'
+import { FaEquals } from 'react-icons/fa'
 import { DndProvider, useDrag, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import update from 'immutability-helper'
@@ -109,12 +109,13 @@ const ListItem = ({ index, id, onMoveCard, text }) => {
   return (
     <tr
       ref={listItemRef}
-      style={{ opacity: isDragging ? 0.3 : 1, cursor: 'move' }}
+      style={{ opacity: isDragging ? 0.3 : 1 }}
+      className={style.DraggableItem}
     >
-      <td>
-        <CgMathEqual className="mr-4" />
+      <td className={[style.ItemData, style.DragIcon].join(' ')}>
+        <FaEquals className="mr-4 text-base cursor-move" />
       </td>
-      <td>
+      <td className={style.ItemData}>
         <span>{text}</span>
       </td>
     </tr>

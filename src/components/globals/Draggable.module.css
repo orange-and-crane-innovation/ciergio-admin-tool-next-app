@@ -1,19 +1,26 @@
 .Draggable {
-  @apply m-0 p-0 list-none;
+  @apply m-0 p-0 min-w-full;
+
+  & th {
+    @apply px-6 py-3 text-left text-base font-bold text-gray-500 tracking-wider;
+  }
 
   & .DraggableItem {
-    @apply flex items-center cursor-move mb-1 rounded;
+    @apply mb-1 rounded bg-white;
 
-    &.DropArea {
-      @apply text-white bg-white relative;
+    &:nth-child(even) {
+      @apply bg-neutral-100;
+    }
 
-      &::before {
-        content: 'Drop Here';
-        @apply text-base text-gray-300 pl-8 text-sm w-full h-full border border-dashed absolute flex items-center justify-items-center;
+    & .ItemData {
+      @apply p-4 px-6;
 
-        & span {
-          display: none;
-        }
+      & span {
+        @apply text-base text-left;
+      }
+
+      &.DragIcon {
+        width: 90px !important;
       }
     }
   }
