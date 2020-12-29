@@ -1,8 +1,10 @@
 /* eslint-disable react/jsx-key */
-import React from 'react'
+import React, { useState } from 'react'
 import { FaPlusCircle } from 'react-icons/fa'
 
 import { Card, Tabs, Table } from '@app/components/globals'
+import Modal from '@app/components/modal'
+import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import { DummyManageDirectoryList } from './DummyTable'
 
@@ -50,6 +52,9 @@ const tableData = {
 }
 
 function Directory() {
+  const [newCategory, setNewCategory] = useState('')
+  const [showModal, setShowModal] = useState(false)
+
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title">Directory</h1>
@@ -80,10 +85,27 @@ function Directory() {
                 default
                 leftIcon={<FaPlusCircle />}
                 label="Add Category"
-                onClick={() => {}}
+                onClick={() => setShowModal(old => !old)}
               />
             </div>
             <Card noPadding content={<DummyManageDirectoryList />} />
+            <Modal
+              title="Add Category"
+              okText="Add"
+              visible={showModal}
+              onShow={() => setShowModal(old => !old)}
+              onCancel={() => setShowModal(old => !old)}
+            >
+              <div className="w-full">
+                <FormInput
+                  label="Add Category Name"
+                  placeholder="Enter new category"
+                  onChange={e => setNewCategory(e.target.value)}
+                  name="category-name"
+                  value={newCategory}
+                />
+              </div>
+            </Modal>
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

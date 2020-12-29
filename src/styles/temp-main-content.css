@@ -172,3 +172,12 @@ select:active {
 .card .content ul li:nth-child(even) {
   @apply bg-white;
 }
+
+/* MODAL */
+.modal-overlay {
+  @apply absolute z-50 overflow-auto bg-opacity-25 bg-gray-400 w-screen h-screen top-0 left-0;
+}
+
+.modal {
+  @apply p-8 pt-0 bg-white w-full max-w-md m-auto flex-col flex;
+}
