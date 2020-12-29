@@ -98,7 +98,7 @@ function Directory() {
             >
               <div className="w-full">
                 <FormInput
-                  label="Add Category Name"
+                  label="New Category Name"
                   placeholder="Enter new category"
                   onChange={e => setNewCategory(e.target.value)}
                   name="category-name"

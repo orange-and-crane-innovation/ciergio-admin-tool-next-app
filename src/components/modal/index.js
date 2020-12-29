@@ -14,11 +14,11 @@ function Component({
   return (
     <div className={['modal-overlay', visible ? 'flex' : 'hidden'].join(' ')}>
       <div className="modal">
-        <div className="modal-header flex justify-between align-center p-4">
-          <div className="flex align-center justify-center">
+        <div className="modal-header">
+          <div className="modal-title">
             <span className="text-black text-base font-bold">{title}</span>
           </div>
-          <div className="flex align-center justify-center">
+          <div className="modal-close-icon">
             <span
               className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
               onClick={onShow}
@@ -29,7 +29,7 @@ function Component({
           </div>
         </div>
         <div className="modal-content">{children}</div>
-        <div className="modal-footer w-full flex justify-between">
+        <div className="modal-footer">
           <Button
             default
             label={cancelText}

@@ -179,5 +179,21 @@ select:active {
 }
 
 .modal {
-  @apply p-8 pt-0 bg-white w-full max-w-md m-auto flex-col flex;
+  @apply bg-white w-full max-w-md m-auto flex-col flex rounded transition ease-in-out duration-700; 
+}
+
+.modal .modal-header {
+  @apply flex justify-between items-center border-b-2 p-4;
+}
+
+.modal .modal-content {
+  @apply p-4 border-b-2;
+}
+
+.modal .modal-footer {
+  @apply w-full flex justify-between p-4;
+}
+
+.modal .modal-footer button {
+  margin-bottom: 0 !important;
 }
