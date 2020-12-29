@@ -25,7 +25,10 @@ const Table = ({ rowNames, items }) => {
             items.data &&
             items.data.map((item, index) => {
               listItem = Object.entries(item).map(([key, value], rowIndex) => {
-                return <td key={rowIndex}>{value}</td>
+                if (key !== 'id') {
+                  return <td key={rowIndex}>{value}</td>
+                }
+                return null
               })
 
               return <tr key={index}>{listItem}</tr>

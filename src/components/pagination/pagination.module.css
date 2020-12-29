@@ -1,5 +1,5 @@
 .paginationContainer {
-  @apply flex flex-col items-center justify-between;
+  @apply flex flex-col items-center justify-between px-4;
   @apply font-body font-normal text-base leading-normal;
 
   .paginationContent {

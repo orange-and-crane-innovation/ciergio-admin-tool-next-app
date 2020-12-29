@@ -1,124 +1,154 @@
-import React, { useState } from 'react'
+import React, { useRef, useCallback } from 'react'
 import P from 'prop-types'
-import { CgMathEqual } from 'react-icons/cg'
+import { FaEquals } from 'react-icons/fa'
+import { DndProvider, useDrag, useDrop } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import update from 'immutability-helper'
+
 import style from './Draggable.module.css'
 
-const initialDnDState = {
-  draggedFrom: null,
-  draggedTo: null,
-  isDragging: false,
-  originalOrder: [],
-  updatedOrder: []
+const itemType = {
+  LIST: 'li'
 }
 
-const Component = ({ list, onListChange }) => {
-  const [dragAndDrop, setDragAndDrop] = useState(initialDnDState)
+const Component = ({ list, onListChange, rowNames }) => {
+  const hasReorderColumn = rowNames.find(row => row.name === 'Reorder')
 
-  const handleOnDragStart = e => {
-    const initialPosition = Number(e.currentTarget.dataset.position)
+  const moveCard = useCallback(
+    (dragIndex, hoverIndex) => {
+      const dragItem = list[dragIndex]
+      onListChange(
+        update(list, {
+          $splice: [
+            [dragIndex, 1],
+            [hoverIndex, 0, dragItem]
+          ]
+        })
+      )
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [list]
+  )
 
-    setDragAndDrop({
-      // we spread the previous content
-      // of the hook variable
-      // so we don't override the properties
-      // not being updated
-      ...dragAndDrop,
-
-      draggedFrom: initialPosition, // set the draggedFrom position
-      isDragging: true,
-      originalOrder: list // store the current state of "list"
-    })
-
-    // Note: this is only for Firefox.
-    // Without it, the DnD won't work.
-    // But we are not using it.
-    e.dataTransfer.setData('text/html', '')
-  }
-  const handleOnDrop = e => {
-    // we use the updater function
-    // for the "list" hook
-    onListChange(dragAndDrop.updatedOrder)
-
-    // and reset the state of
-    // the DnD
-    setDragAndDrop({
-      ...dragAndDrop,
-      draggedFrom: null,
-      draggedTo: null,
-      isDragging: false
-    })
-  }
-
-  const handleOnDragOver = e => {
-    e.preventDefault()
-
-    // Store the content of the original list
-    // in this variable that we'll update
-    let newList = dragAndDrop.originalOrder
-
-    // index of the item being dragged
-    const draggedFrom = dragAndDrop.draggedFrom
-
-    // index of the drop area being hovered
-    const draggedTo = Number(e.currentTarget.dataset.position)
-
-    // get the element that's at the position of "draggedFrom"
-    const itemDragged = newList[draggedFrom]
-
-    // filter out the item being dragged
-    const remainingItems = newList.filter(
-      (item, index) => index !== draggedFrom
+  const renderListItem = (item, index) => {
+    return (
+      <ListItem
+        key={item.id}
+        index={index}
+        id={item.id}
+        item={item}
+        onMoveCard={moveCard}
+        reorder={hasReorderColumn}
+      />
     )
-
-    // update the list
-    newList = [
-      ...remainingItems.slice(0, draggedTo),
-      itemDragged,
-      ...remainingItems.slice(draggedTo)
-    ]
-
-    // since this event fires many times
-    // we check if the targets are actually
-    // different:
-    if (draggedTo !== dragAndDrop.draggedTo) {
-      setDragAndDrop({
-        ...dragAndDrop,
-
-        // save the updated list state
-        // we will render this onDrop
-        updatedOrder: newList,
-        draggedTo: draggedTo
-      })
-    }
   }
 
   return (
-    <ul className={style.Draggable}>
-      {list.map((item, index) => (
-        <li
-          data-position={index}
-          key={index}
-          onDragStart={handleOnDragStart}
-          onDrop={handleOnDrop}
-          onDragOver={handleOnDragOver}
-          draggable="true"
-          className={`${style.DraggableItem} ${
-            dragAndDrop?.draggedTo === Number(index) ? style.DropArea : ''
-          }`}
-        >
-          <div className="flex items-center">
-            <CgMathEqual className="mr-4" />
-            <span>{item.name}</span>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <DndProvider backend={HTML5Backend}>
+      <table className={style.Draggable}>
+        {rowNames?.length > 0 ? (
+          <thead>
+            <tr>
+              {!hasReorderColumn ? <th> </th> : null}
+              {rowNames.map((row, index) => (
+                <th key={index} width={row.width}>
+                  {row.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        ) : null}
+        <tbody>{list.map((item, index) => renderListItem(item, index))}</tbody>
+      </table>
+    </DndProvider>
   )
 }
 
 Component.propTypes = {
   list: P.array,
-  onListChange: P.func
+  onListChange: P.func,
+  rowNames: P.array
+}
+
+const ListItem = ({ index, id, onMoveCard, item, reorder }) => {
+  const listItemRef = useRef(null)
+
+  const [, drop] = useDrop({
+    accept: itemType.LIST,
+    hover(listItem, monitor) {
+      if (!listItemRef.current) {
+        return
+      }
+
+      const dragIndex = listItem.index
+      const hoverIndex = index
+
+      if (dragIndex === hoverIndex) {
+        return
+      }
+
+      const hoverBoundingRect = listItemRef.current?.getBoundingClientRect()
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+      const clientOffset = monitor.getClientOffset()
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return
+      }
+
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return
+      }
+
+      onMoveCard(dragIndex, hoverIndex)
+
+      listItem.index = hoverIndex
+    }
+  })
+
+  const [{ isDragging }, drag] = useDrag({
+    item: { type: itemType.LIST, id, index },
+    collect: monitor => ({
+      isDragging: monitor.isDragging()
+    })
+  })
+
+  drag(drop(listItemRef))
+
+  const listItem = Object?.entries(item).map(([key, value], rowIndex) => {
+    if (key !== 'id') {
+      return (
+        <td key={rowIndex} className={style.ItemData}>
+          <span>{value}</span>
+        </td>
+      )
+    }
+
+    return null
+  })
+
+  return (
+    <tr
+      ref={listItemRef}
+      style={{ opacity: isDragging ? 0.3 : 1 }}
+      className={style.DraggableItem}
+    >
+      <td className={[style.ItemData, style.DragIcon].join(' ')}>
+        <FaEquals className="mr-4 text-base cursor-move" />
+      </td>
+      {listItem}
+    </tr>
+  )
+}
+
+ListItem.propTypes = {
+  item: P.object,
+  index: P.number,
+  onMoveCard: P.func,
+  text: P.string,
+  id: P.number,
+  reorder: P.bool
 }
 
 export default Component
