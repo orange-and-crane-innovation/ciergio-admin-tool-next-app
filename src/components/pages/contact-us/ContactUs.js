@@ -64,6 +64,8 @@ function ContactUs() {
   })
 
   const [reorder, setReorder] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+
   return (
     <section className={`content-wrap`}>
       <h1 className="content-title">Contact Page</h1>
@@ -80,7 +82,10 @@ function ContactUs() {
           <FormInput
             type="text"
             placeholder="Search"
+            name="search-contact-input"
             leftIcon="ciergio-search"
+            onChange={e => setSearchInput(e.target.value)}
+            value={searchInput}
           />
         </div>
       </div>
