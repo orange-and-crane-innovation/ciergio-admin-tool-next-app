@@ -7,7 +7,7 @@ const TabLabel = ({ id, activeId, children, handleClick }) => {
   const selectTab = () => {
     handleClick(id)
   }
-  console.log(activeId)
+
   return (
     <li className="-mb-px mr-1">
       <TabButton
