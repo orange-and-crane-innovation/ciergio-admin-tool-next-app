@@ -4,7 +4,7 @@ import Button from '@app/components/button'
 function Component({
   title,
   visible,
-  onShow,
+  onClose,
   okText,
   cancelText,
   onOk,
@@ -16,13 +16,13 @@ function Component({
       <div className="modal">
         <div className="modal-header">
           <div className="modal-title">
-            <span className="text-black text-base font-bold">{title}</span>
+            <span>{title}</span>
           </div>
           <div className="modal-close-icon">
             <span
               className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
-              onClick={onShow}
-              onKeyDown={onShow}
+              onClick={onClose}
+              onKeyDown={onClose}
               role="button"
               tabIndex={0}
             />
@@ -51,7 +51,7 @@ Component.defaultProps = {
 Component.propTypes = {
   title: P.string,
   visible: P.bool.isRequired,
-  onShow: P.func.isRequired,
+  onClose: P.func.isRequired,
   children: P.string || P.element,
   okText: P.string,
   cancelText: P.string,

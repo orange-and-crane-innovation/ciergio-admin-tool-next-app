@@ -179,11 +179,15 @@ select:active {
 }
 
 .modal {
-  @apply bg-white w-full max-w-md m-auto flex-col flex rounded transition ease-in-out duration-700; 
+  @apply bg-white w-full max-w-md m-auto flex-col flex rounded transition ease-in-out duration-700;
 }
 
 .modal .modal-header {
   @apply flex justify-between items-center border-b-2 p-4;
+}
+
+.modal .modal-header .modal-title span {
+  @apply text-black text-base font-bold;
 }
 
 .modal .modal-content {

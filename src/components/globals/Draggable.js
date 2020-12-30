@@ -148,7 +148,7 @@ ListItem.propTypes = {
   onMoveCard: P.func,
   text: P.string,
   id: P.number,
-  reorder: P.bool
+  reorder: P.bool || P.object
 }
 
 export default Component

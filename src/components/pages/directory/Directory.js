@@ -51,9 +51,49 @@ const tableData = {
   ]
 }
 
+const directoryCategories = [
+  {
+    id: 0,
+    name: 'Red Cross'
+  },
+  {
+    id: 1,
+    name: 'PHRC Headquarters'
+  },
+  {
+    id: 2,
+    name: 'McDonalds'
+  },
+  {
+    id: 3,
+    name: 'Suds Laundry Services'
+  }
+]
+
 function Directory() {
   const [newCategory, setNewCategory] = useState('')
   const [showModal, setShowModal] = useState(false)
+
+  const handleShowModal = () => setShowModal(old => !old)
+
+  const handleClearModal = () => {
+    if (newCategory !== '') {
+      setNewCategory('')
+    }
+
+    handleShowModal()
+  }
+
+  const handleOk = () => {
+    directoryCategories.push({
+      id: directoryCategories.length,
+      name: newCategory
+    })
+
+    handleClearModal()
+  }
+
+  const handleInputChange = e => setNewCategory(e.target.value)
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
@@ -88,19 +128,23 @@ function Directory() {
                 onClick={() => setShowModal(old => !old)}
               />
             </div>
-            <Card noPadding content={<DummyManageDirectoryList />} />
+            <Card
+              noPadding
+              content={<DummyManageDirectoryList data={directoryCategories} />}
+            />
             <Modal
               title="Add Category"
               okText="Add"
               visible={showModal}
-              onShow={() => setShowModal(old => !old)}
-              onCancel={() => setShowModal(old => !old)}
+              onClose={handleClearModal}
+              onCancel={handleClearModal}
+              onOk={handleOk}
             >
               <div className="w-full">
                 <FormInput
                   label="New Category Name"
                   placeholder="Enter new category"
-                  onChange={e => setNewCategory(e.target.value)}
+                  onChange={handleInputChange}
                   name="category-name"
                   value={newCategory}
                 />

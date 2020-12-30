@@ -1,24 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import P from 'prop-types'
 import { Draggable } from '@app/components/globals'
-
-const directoryList = [
-  {
-    id: 0,
-    name: 'Red Cross'
-  },
-  {
-    id: 1,
-    name: 'PHRC Headquarters'
-  },
-  {
-    id: 2,
-    name: 'McDonalds'
-  },
-  {
-    id: 3,
-    name: 'Suds Laundry Services'
-  }
-]
 
 const directoryRowNames = [
   {
@@ -30,8 +12,12 @@ const directoryRowNames = [
   }
 ]
 
-function DummyManageDirectoryList() {
-  const [list, setList] = React.useState(directoryList)
+function DummyManageDirectoryList({ data }) {
+  const [list, setList] = React.useState(data)
+
+  useEffect(() => {
+    setList(data)
+  }, [data])
 
   return (
     <Draggable
@@ -40,6 +26,10 @@ function DummyManageDirectoryList() {
       rowNames={directoryRowNames}
     />
   )
+}
+
+DummyManageDirectoryList.propTypes = {
+  data: P.array
 }
 
 export { DummyManageDirectoryList }
