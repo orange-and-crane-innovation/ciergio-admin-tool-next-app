@@ -1,6 +1,5 @@
 import React, { useRef, useCallback } from 'react'
 import P from 'prop-types'
-import { FaEquals } from 'react-icons/fa'
 import { DndProvider, useDrag, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import update from 'immutability-helper'
@@ -135,7 +134,7 @@ const ListItem = ({ index, id, onMoveCard, item, reorder }) => {
       className={style.DraggableItem}
     >
       <td className={[style.ItemData, style.DragIcon].join(' ')}>
-        <FaEquals className="mr-4 text-base cursor-move" />
+        <span className="ciergio-reorder" />
       </td>
       {listItem}
     </tr>
