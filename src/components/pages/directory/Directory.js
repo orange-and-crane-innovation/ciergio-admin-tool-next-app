@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-key */
 import React, { useState } from 'react'
+import { useRouter } from 'next/router'
 import { FaPlusCircle } from 'react-icons/fa'
 
 import { Card, Tabs, Table } from '@app/components/globals'
@@ -73,6 +74,7 @@ const directoryCategories = [
 function Directory() {
   const [newCategory, setNewCategory] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const router = useRouter()
 
   const handleShowModal = () => setShowModal(old => !old)
 
@@ -115,7 +117,19 @@ function Directory() {
                   <span>Companies</span>
                 </div>
               }
-              content={<Table rowNames={tableRowData} items={tableData} />}
+              content={
+                <Table
+                  rowNames={tableRowData}
+                  items={tableData}
+                  onRowClick={item => {
+                    const company = item.title
+                      .toLowerCase()
+                      .replaceAll(' ', '-')
+
+                    router.push(`directory/companies/${company}`)
+                  }}
+                />
+              }
               className="rounded-t-none"
             />
           </Tabs.TabPanel>

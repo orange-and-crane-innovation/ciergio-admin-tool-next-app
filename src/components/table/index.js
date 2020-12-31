@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import styles from './table.module.css'
 
-const Table = ({ rowNames, items }) => {
+const Table = ({ rowNames, items, onRowClick }) => {
   let listItem = []
   return (
     <div className={styles.tableContainer}>
@@ -31,7 +31,11 @@ const Table = ({ rowNames, items }) => {
                 return null
               })
 
-              return <tr key={index}>{listItem}</tr>
+              return (
+                <tr key={index} onClick={() => onRowClick(item) || null}>
+                  {listItem}
+                </tr>
+              )
             })}
 
           {listItem.length === 0 && (
@@ -52,7 +56,8 @@ const Table = ({ rowNames, items }) => {
 
 Table.propTypes = {
   rowNames: PropTypes.array,
-  items: PropTypes.object
+  items: PropTypes.object,
+  onRowClick: PropTypes.func
 }
 
 export default Table
