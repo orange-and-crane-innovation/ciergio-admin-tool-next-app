@@ -71,6 +71,23 @@ const navigation = [
             items: []
           }
         ]
+      },
+      {
+        url: '/notifications',
+        icon: 'ciergio-bulletin',
+        title: 'Notifications',
+        items: [
+          {
+            url: '/notifications/upcoming',
+            title: 'View All Notifications',
+            items: []
+          },
+          {
+            url: '/notifications/create',
+            title: 'Create Notification',
+            items: []
+          }
+        ]
       }
     ]
   }
