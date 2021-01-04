@@ -3,6 +3,7 @@ import P from 'prop-types'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
+import Pagination from '@app/components/pagination'
 
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
@@ -121,6 +122,12 @@ function Contact({ name }) {
         noPadding
         content={<Table rowNames={tableRowData} items={contacts} />}
         className="rounded-t-none"
+      />
+      <Pagination
+        items={contacts}
+        activePage={1}
+        onPageClick={e => alert('Page ' + e)}
+        onLimitChange={e => alert('Show ' + e.target.value)}
       />
       <Modal
         title="Add a Contact"
