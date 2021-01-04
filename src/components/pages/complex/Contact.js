@@ -4,6 +4,7 @@ import FormSelect from '@app/components/forms/form-select'
 import { Card } from '@app/components/globals'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
+import UploaderImage from '@app/components/uploader/image'
 import { yupResolver } from '@hookform/resolvers/yup'
 import P from 'prop-types'
 import React, { useState } from 'react'
@@ -55,6 +56,8 @@ function Contact({ name }) {
 
   const [showModal, setShowModal] = useState(false)
   const [contacts, setContacts] = useState(tableData)
+  const [imageUrl, setImageUrl] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleShowModal = () => setShowModal(old => !old)
 
@@ -74,6 +77,26 @@ function Contact({ name }) {
       ]
     }))
     handleShowModal()
+  }
+
+  const handleUploadImage = e => {
+    const reader = new FileReader()
+    const formData = new FormData()
+    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0]
+
+    setLoading(true)
+    if (file) {
+      reader.onloadend = () => {
+        setImageUrl(reader.result)
+      }
+      reader.readAsDataURL(file)
+      formData.append('photos', file)
+      setLoading(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setImageUrl(null)
   }
 
   return (
@@ -109,6 +132,20 @@ function Contact({ name }) {
         <div className="w-full">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>
           <form>
+            <div className="flex justify-between mb-4">
+              <p>
+                Upload a photo that’s easily recognizable by your residents.
+              </p>
+
+              <div>
+                <UploaderImage
+                  imageUrl={imageUrl}
+                  loading={loading}
+                  onUploadImage={handleUploadImage}
+                  onRemoveImage={handleRemoveImage}
+                />
+              </div>
+            </div>
             <Controller
               name="contact_category"
               control={control}
