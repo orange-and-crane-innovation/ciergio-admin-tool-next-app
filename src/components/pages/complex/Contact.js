@@ -1,3 +1,9 @@
+import React, { useState } from 'react'
+import P from 'prop-types'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { Controller, useForm } from 'react-hook-form'
+import * as yup from 'yup'
+
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
@@ -5,12 +11,8 @@ import { Card } from '@app/components/globals'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
 import UploaderImage from '@app/components/uploader/image'
-import { yupResolver } from '@hookform/resolvers/yup'
-import P from 'prop-types'
-import React, { useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+
 import { FaPlusCircle } from 'react-icons/fa'
-import * as yup from 'yup'
 
 const tableRowData = [
   {
