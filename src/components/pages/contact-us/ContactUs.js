@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
-import { Card, Table, Draggable } from '@app/components/globals'
 import Button from '@app/components/button'
-import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
-
+import FormSelect from '@app/components/forms/form-select'
+import { Card, Draggable, Table } from '@app/components/globals'
+import React, { useState } from 'react'
 import { FaPlusCircle } from 'react-icons/fa'
 
 const tableRowData = [
