@@ -1,5 +1,6 @@
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
+import FormSelect from '@app/components/forms/form-select'
 import { Card } from '@app/components/globals'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
@@ -62,7 +63,6 @@ function Contact({ name }) {
   }
 
   const handleOk = values => {
-    console.log({ values })
     const { contact_name: name } = values
     setContacts(old => ({
       ...old,
@@ -109,6 +109,35 @@ function Contact({ name }) {
         <div className="w-full">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>
           <form>
+            <Controller
+              name="contact_category"
+              control={control}
+              render={({ name, value, onChange, ...props }) => (
+                <FormSelect
+                  options={[
+                    {
+                      label: 'Emergency',
+                      value: 'emergency'
+                    },
+                    {
+                      label: 'Admin Contacts',
+                      value: 'admin-contacts'
+                    },
+                    {
+                      label: 'Sponsored',
+                      value: 'sponsored'
+                    },
+                    {
+                      label: 'Services',
+                      value: 'services'
+                    }
+                  ]}
+                  placeholder="Choose a contact category"
+                  onChange={onChange}
+                  value={value}
+                />
+              )}
+            />
             <Controller
               name="contact_name"
               control={control}
