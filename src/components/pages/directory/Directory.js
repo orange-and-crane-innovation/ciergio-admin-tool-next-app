@@ -126,7 +126,7 @@ function Directory() {
                       .toLowerCase()
                       .replaceAll(' ', '-')
 
-                    router.push(`directory/companies/${company}`)
+                    router.push(`/directory/companies/${company}`)
                   }}
                 />
               }
