@@ -1,6 +1,5 @@
-import React from 'react'
 import PropTypes from 'prop-types'
-
+import React from 'react'
 import styles from './table.module.css'
 
 const Table = ({ rowNames, items, onRowClick }) => {
@@ -32,7 +31,16 @@ const Table = ({ rowNames, items, onRowClick }) => {
               })
 
               return (
-                <tr key={index} onClick={() => onRowClick(item) || null}>
+                <tr
+                  key={index}
+                  onClick={() => {
+                    if (onRowClick) {
+                      onRowClick(item)
+                    }
+
+                    return null
+                  }}
+                >
                   {listItem}
                 </tr>
               )
