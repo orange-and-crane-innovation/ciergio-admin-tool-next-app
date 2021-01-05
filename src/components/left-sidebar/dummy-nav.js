@@ -83,6 +83,23 @@ const navigation = [
         icon: 'ciergio-email-at',
         title: 'Contact Us',
         items: []
+      },
+      {
+        url: '/notifications',
+        icon: 'ciergio-bulletin',
+        title: 'Notifications',
+        items: [
+          {
+            url: '/notifications/list',
+            title: 'View All Notifications',
+            items: []
+          },
+          {
+            url: '/notifications/create',
+            title: 'Create Notification',
+            items: []
+          }
+        ]
       }
     ]
   }
