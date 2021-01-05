@@ -78,7 +78,7 @@ const navigation = [
         title: 'Notifications',
         items: [
           {
-            url: '/notifications/upcoming',
+            url: '/notifications/list',
             title: 'View All Notifications',
             items: []
           },
