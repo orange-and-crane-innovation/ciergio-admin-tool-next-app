@@ -4,7 +4,7 @@ const navigation = [
     items: [
       {
         url: '/dashboard',
-        icon: 'ciergio-store',
+        icon: 'ciergio-dashboard',
         title: 'Dashboard',
         items: []
       },
@@ -71,6 +71,18 @@ const navigation = [
             items: []
           }
         ]
+      },
+      {
+        url: '/directory',
+        icon: 'ciergio-store',
+        title: 'Directory',
+        items: []
+      },
+      {
+        url: '/contact-us',
+        icon: 'ciergio-email-at',
+        title: 'Contact Us',
+        items: []
       }
     ]
   }
