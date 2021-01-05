@@ -9,12 +9,14 @@ import FormSelect from '@app/components/forms/form-select'
 import FormTextArea from '@app/components/forms/form-textarea'
 import Button from '@app/components/button'
 import UploaderImage from '@app/components/uploader/image'
+import showToast from '@app/utils/toast'
 
 import style from './Create.module.css'
 
 const CreatePosts = () => {
   const [loading, setLoading] = useState(false)
-  const [imageUrl, setImageUrl] = useState()
+  const [imageUrls, setImageUrls] = useState([])
+  const [maxImages] = useState(3)
   const [videoUrl, setVideoUrl] = useState()
   const [videoError, setVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
@@ -43,23 +45,31 @@ const CreatePosts = () => {
   }
 
   const onUploadImage = e => {
-    const reader = new FileReader()
-    const formData = new FormData()
-    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0]
+    const files = e.target.files ? e.target.files : e.dataTransfer.files
 
-    setLoading(true)
-    if (file) {
-      reader.onloadend = () => {
-        setImageUrl(reader.result)
+    if (files) {
+      if (files.length > maxImages) {
+        showToast('info', `Maximum of ${maxImages} files only`)
+      } else {
+        setLoading(true)
+        for (const file of files) {
+          const reader = new FileReader()
+
+          reader.onloadend = () => {
+            setImageUrls(imageUrls => [...imageUrls, reader.result])
+            setLoading(false)
+          }
+          reader.readAsDataURL(file)
+        }
       }
-      reader.readAsDataURL(file)
-      formData.append('photos', file)
-      setLoading(false)
     }
   }
 
-  const onRemoveImage = () => {
-    setImageUrl(null)
+  const onRemoveImage = e => {
+    const images = imageUrls.filter(image => {
+      return image !== e.currentTarget.dataset.id
+    })
+    setImageUrls(images)
   }
 
   const onVideoChange = e => {
@@ -93,7 +103,9 @@ const CreatePosts = () => {
         content={
           <div className={style.CreateContentContainer}>
             <UploaderImage
-              imageUrl={imageUrl}
+              multiple
+              maxImages={maxImages}
+              imageUrls={imageUrls}
               loading={loading}
               onUploadImage={onUploadImage}
               onRemoveImage={onRemoveImage}
@@ -123,7 +135,12 @@ const CreatePosts = () => {
               </div>
             </div>
             <h2 className={style.CreatePostHeaderSmall}>Content</h2>
-            <FormTextArea maxLength={500} withCounter />
+            <FormTextArea
+              maxLength={500}
+              options={['link', 'history']}
+              placeholder="Write your text here"
+              withCounter
+            />
           </div>
         }
       />
