@@ -17,14 +17,19 @@ function CreateNotification() {
             content={
               <div className="p-4">
                 <div className="title">
+                  <h1 className="pb-4 text-base text-gray-500 font-bold">
+                    Title
+                  </h1>
                   <FormInput
                     value={notificationTitle}
                     onChange={e => setNotificationTitle(e.target.title)}
                     placeholder={`What's is the title of your notification?`}
-                    label="Title"
                   />
                 </div>
-                <div className="message">
+                <div className="message mt-8">
+                  <h1 className="pb-4 text-base text-gray-500 font-bold">
+                    Content
+                  </h1>
                   <FormTextArea />
                 </div>
               </div>
