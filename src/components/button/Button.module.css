@@ -33,5 +33,4 @@
   &.disabled {
     @apply bg-gray-300 cursor-not-allowed text-white;
   }
-
 }
