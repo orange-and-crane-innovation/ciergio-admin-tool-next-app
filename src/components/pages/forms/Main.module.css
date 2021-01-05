@@ -1,0 +1,44 @@
+.FormContainer {
+  @apply pt-4 pb-8 px-8;
+
+  .FormHeader {
+    @apply mb-5;
+    @apply font-heading font-black;
+    @apply text-neutral-dark text-3xl leading-10;
+  }
+
+  .HeaderSmall {
+    @apply my-5;
+    @apply font-body;
+    @apply text-neutral-dark text-base leading-7;
+  }
+
+  .CardHeader {
+    @apply font-heading font-black;
+    @apply text-base leading-7;
+  }
+
+  .ContentFlex {
+    @apply flex items-center justify-between;
+  }
+
+  .MainControl {
+    @apply flex items-center justify-between mt-6 flex-col md:flex-row;
+  }
+
+  .BulkControl {
+    @apply flex items-center justify-between w-full md:w-1/4;
+  }
+
+  .CategoryControl {
+    @apply flex items-center justify-end w-full flex-col md:w-1/2 md:flex-row;
+  }
+
+  .SearchControl {
+    @apply relative w-full md:w-80 md:ml-2;
+
+    .SearchControlIcon {
+      @apply absolute top-4 right-4;
+    }
+  }
+}
