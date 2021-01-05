@@ -172,3 +172,32 @@ select:active {
 .card .content ul li:nth-child(even) {
   @apply bg-white;
 }
+
+/* MODAL */
+.modal-overlay {
+  @apply absolute z-50 overflow-auto bg-opacity-25 bg-gray-400 w-screen h-screen top-0 left-0;
+}
+
+.modal {
+  @apply bg-white w-full max-w-md m-auto flex-col flex rounded transition ease-in-out duration-700;
+}
+
+.modal .modal-header {
+  @apply flex justify-between items-center border-b-2 p-4;
+}
+
+.modal .modal-header .modal-title span {
+  @apply text-black text-base font-bold;
+}
+
+.modal .modal-content {
+  @apply p-4 border-b-2;
+}
+
+.modal .modal-footer {
+  @apply w-full flex justify-between p-4;
+}
+
+.modal .modal-footer button {
+  margin-bottom: 0 !important;
+}

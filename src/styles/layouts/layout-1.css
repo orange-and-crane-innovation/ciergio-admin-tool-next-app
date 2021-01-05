@@ -2,7 +2,7 @@
   [data-layout='layout-1'] {
     width: 100%;
     .wrapper {
-      @apply flex flex-row items-stretch relative;
+      @apply relative flex flex-row items-stretch relative;
       .left-sidebar {
         @apply absolute top-0 left-0 bottom-0 h-full w-64 z-10;
         @apply transform transition-transform duration-300 ease-in-out -translate-x-64;
@@ -23,7 +23,7 @@
   [data-layout='layout-1'] {
     width: 100%;
     .wrapper {
-      @apply flex flex-row items-stretch;
+      @apply relative flex flex-row items-stretch;
       .left-sidebar {
         @apply w-full;
         min-width: calc(theme('spacing.1') * 16);
