@@ -12,5 +12,6 @@
   &:active,
   &:focus {
     @apply outline-none;
+    @apply border-neutral-500;
   }
 }
