@@ -7,7 +7,7 @@ const InputSelect = ({ options, onChange, disabled, className }) => {
   return (
     <React.Fragment>
       <select
-        className={`${styles.FormSelect} ${styles.className}`}
+        className={`${styles.FormSelect} ${styles.className} ${className}`}
         onChange={onChange}
         disabled={disabled}
       >
