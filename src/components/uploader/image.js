@@ -8,8 +8,16 @@ import { FaSpinner, FaRegTrashAlt } from 'react-icons/fa'
 import ImageAdd from '@app/assets/svg/image-add.svg'
 import styles from './image.module.css'
 
-const UploaderImage = ({ loading, imageUrl, onUploadImage, onRemoveImage }) => {
+const UploaderImage = ({
+  loading,
+  imageUrls,
+  multiple,
+  maxImages,
+  onUploadImage,
+  onRemoveImage
+}) => {
   const [isOver, setIsOver] = useState(false)
+  let uploadedImages
 
   const containerClass = isOver
     ? `${styles.imageUploaderContainer} ${styles.over}`
@@ -38,46 +46,61 @@ const UploaderImage = ({ loading, imageUrl, onUploadImage, onRemoveImage }) => {
     setIsOver(false)
   }
 
+  if (imageUrls && imageUrls.length > 0) {
+    uploadedImages = imageUrls.map((imageUrl, index) => {
+      return (
+        <div key={index} className={containerClass}>
+          <div
+            className={styles.imageUploaderImage}
+            style={{ backgroundImage: `url(${!loading && imageUrl})` }}
+          />
+          <button
+            type="button"
+            className={styles.imageUploaderButton}
+            data-id={imageUrl}
+            onClick={e => {
+              handleRemoveImage()
+              onRemoveImage(e)
+            }}
+          >
+            <FaRegTrashAlt />
+          </button>
+        </div>
+      )
+    })
+  }
+
   return (
-    <div className={containerClass}>
-      <input
-        className={styles.imageUploaderControl}
-        type="file"
-        id="image"
-        name="image"
-        onChange={onUploadImage}
-        accept="image/jpg, image/jpeg, image/png"
-      />
-      <div
-        className={styles.imageUploaderImage}
-        style={{ backgroundImage: `url(${!loading && imageUrl})` }}
-        onClick={handleImageChange}
-        onDrop={handleOnDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-      >
-        {loading ? (
-          <FaSpinner className="icon-spin" />
-        ) : (
-          !imageUrl && (
-            <span className={styles.imageUploaderImageContent}>
-              <ImageAdd />
-              Add Image
-            </span>
-          )
-        )}
-      </div>
-      {!loading && imageUrl && (
-        <button
-          type="button"
-          className={styles.imageUploaderButton}
-          onClick={() => {
-            handleRemoveImage()
-            onRemoveImage()
-          }}
-        >
-          <FaRegTrashAlt />
-        </button>
+    <div className="flex">
+      {uploadedImages}
+      {imageUrls && imageUrls.length < maxImages && (
+        <div className={containerClass}>
+          <input
+            className={styles.imageUploaderControl}
+            type="file"
+            id="image"
+            name="image"
+            multiple={multiple}
+            onChange={onUploadImage}
+            accept="image/jpg, image/jpeg, image/png"
+          />
+          <div
+            className={styles.imageUploaderImage}
+            onClick={handleImageChange}
+            onDrop={handleOnDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            {loading ? (
+              <FaSpinner className="icon-spin" />
+            ) : (
+              <span className={styles.imageUploaderImageContent}>
+                <ImageAdd />
+                Add Image
+              </span>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )
@@ -85,7 +108,9 @@ const UploaderImage = ({ loading, imageUrl, onUploadImage, onRemoveImage }) => {
 
 UploaderImage.propTypes = {
   loading: PropTypes.bool,
-  imageUrl: PropTypes.string,
+  imageUrls: PropTypes.array,
+  multiple: PropTypes.bool,
+  maxImages: PropTypes.number,
   onUploadImage: PropTypes.func,
   onRemoveImage: PropTypes.func
 }
