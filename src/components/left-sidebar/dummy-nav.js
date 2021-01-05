@@ -73,6 +73,18 @@ const navigation = [
         ]
       },
       {
+        url: '/posts',
+        icon: 'ciergio-bulletin',
+        title: 'Bulletin',
+        items: []
+      },
+      {
+        url: '/forms',
+        icon: 'ciergio-file',
+        title: 'Forms',
+        items: []
+      },
+      {
         url: '/directory',
         icon: 'ciergio-store',
         title: 'Directory',

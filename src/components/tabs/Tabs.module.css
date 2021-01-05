@@ -1,5 +1,5 @@
 .tabContainer {
-  @apply container bg-white;
+  @apply container;
 
   .tabLabel {
     @apply flex flex-col sm:flex-row;

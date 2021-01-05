@@ -4,7 +4,7 @@ import P from 'prop-types'
 import dynamic from 'next/dynamic'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 
-const FormTextArea = ({ maxLength, withCounter }) => {
+const FormTextArea = ({ maxLength, placeholder, options, withCounter }) => {
   const [editorState, setEditorState] = useState()
 
   const Editor = dynamic(
@@ -22,9 +22,9 @@ const FormTextArea = ({ maxLength, withCounter }) => {
     <div className="flex flex-col">
       <Editor
         editorState={editorState}
-        placeholder={'Write your text here'}
+        placeholder={placeholder}
         toolbar={{
-          options: ['link', 'history']
+          options: options
         }}
         onEditorStateChange={onEditorStateChange}
         handleBeforeInput={val => {
@@ -58,6 +58,8 @@ const FormTextArea = ({ maxLength, withCounter }) => {
 FormTextArea.propTypes = {
   editorState: P.any,
   maxLength: P.number,
+  placeholder: P.string,
+  options: P.array,
   withCounter: P.bool
 }
 

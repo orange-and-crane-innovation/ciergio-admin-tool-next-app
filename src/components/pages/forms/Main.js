@@ -12,7 +12,7 @@ import Pagination from '@app/components/pagination'
 
 import styles from './Main.module.css'
 
-const PostComponent = () => {
+const FormComponent = () => {
   const [searchText, setSearchText] = useState()
 
   const bulkOptions = [
@@ -53,16 +53,6 @@ const PostComponent = () => {
       value: 'unpublished'
     }
   ]
-  const categoryOptions = [
-    {
-      label: 'Announcements',
-      value: 'announcements'
-    },
-    {
-      label: 'Emergency',
-      value: 'emergency'
-    }
-  ]
   const tableRowData = [
     {
       name: 'Title',
@@ -71,10 +61,6 @@ const PostComponent = () => {
     {
       name: 'Author',
       width: '20%'
-    },
-    {
-      name: 'Category',
-      width: ''
     },
     {
       name: 'Status',
@@ -91,37 +77,32 @@ const PostComponent = () => {
     offset: 0,
     data: [
       {
-        title: 'Post 1',
+        title: 'Forms 1',
         author: 'Author 1',
-        category: 'Category 1',
         status: 'Published',
         button: <FaEllipsisH />
       },
       {
-        title: 'Post 2',
+        title: 'Forms 2',
         author: 'Author 2',
-        category: 'Category 2',
         status: 'Published',
         button: <FaEllipsisH />
       },
       {
-        title: 'Post 3',
+        title: 'Forms 3',
         author: 'Author 3',
-        category: 'Category3',
         status: 'Published',
         button: <FaEllipsisH />
       },
       {
-        title: 'Post 4',
+        title: 'Forms 4',
         author: 'Author 4',
-        category: 'Category 4',
         status: 'Published',
         button: <FaEllipsisH />
       },
       {
-        title: 'Post 5',
+        title: 'Forms 5',
         author: 'Author 5',
-        category: 'Category 5',
         status: 'Published',
         button: <FaEllipsisH />
       }
@@ -137,17 +118,17 @@ const PostComponent = () => {
   }
 
   const goToCreatePage = () => {
-    window.location.href = 'posts/create'
+    window.location.href = 'forms/create'
   }
 
   return (
-    <div className={styles.PostContainer}>
-      <h1 className={styles.PostHeader}>Bulletin Board</h1>
+    <div className={styles.FormContainer}>
+      <h1 className={styles.FormHeader}>Forms</h1>
 
       <Tabs defaultTab="1">
         <Tabs.TabLabels>
-          <Tabs.TabLabel id="1">All Posts</Tabs.TabLabel>
-          <Tabs.TabLabel id="2">My Posts</Tabs.TabLabel>
+          <Tabs.TabLabel id="1">All Forms</Tabs.TabLabel>
+          <Tabs.TabLabel id="2">My Forms</Tabs.TabLabel>
           <Tabs.TabLabel id="3">Trash</Tabs.TabLabel>
         </Tabs.TabLabels>
         <Tabs.TabPanels>
@@ -158,7 +139,6 @@ const PostComponent = () => {
                 <Button primary type="button" label="Apply" className="ml-2" />
               </div>
               <div className={styles.CategoryControl}>
-                <FormSelect options={categoryOptions} />
                 <div className={styles.SearchControl}>
                   <FormInput
                     name="search"
@@ -185,11 +165,11 @@ const PostComponent = () => {
               noPadding
               header={
                 <div className={styles.ContentFlex}>
-                  <span className={styles.CardHeader}>All Posts</span>
+                  <span className={styles.CardHeader}>All Forms</span>
                   <Button
                     default
                     leftIcon={<FaPlusCircle />}
-                    label="Create Post"
+                    label="Upload Form"
                     onClick={goToCreatePage}
                   />
                 </div>
@@ -212,7 +192,6 @@ const PostComponent = () => {
               </div>
               <div className={styles.CategoryControl}>
                 <FormSelect options={filterOptions} />
-                <FormSelect options={categoryOptions} />
                 <div className={styles.SearchControl}>
                   <FormInput
                     name="search"
@@ -239,11 +218,11 @@ const PostComponent = () => {
               noPadding
               header={
                 <div className={styles.ContentFlex}>
-                  <span className={styles.CardHeader}>My Posts</span>
+                  <span className={styles.CardHeader}>My Forms</span>
                   <Button
                     default
                     leftIcon={<FaPlusCircle />}
-                    label="Create Post"
+                    label="Upload Form"
                     onClick={goToCreatePage}
                   />
                 </div>
@@ -260,7 +239,7 @@ const PostComponent = () => {
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
             <div className={styles.HeaderSmall}>
-              Articles in Trash will be automatically deleted after{' '}
+              Forms in Trash will be automatically deleted after{' '}
               <strong>30 days</strong>.
             </div>
             <div className={styles.MainControl}>
@@ -269,7 +248,6 @@ const PostComponent = () => {
                 <Button primary type="button" label="Apply" className="ml-2" />
               </div>
               <div className={styles.CategoryControl}>
-                <FormSelect options={categoryOptions} />
                 <div className={styles.SearchControl}>
                   <FormInput
                     name="search"
@@ -297,12 +275,6 @@ const PostComponent = () => {
               header={
                 <div className={styles.ContentFlex}>
                   <span className={styles.CardHeader}>Trash</span>
-                  <Button
-                    default
-                    leftIcon={<FaPlusCircle />}
-                    label="Create Post"
-                    onClick={goToCreatePage}
-                  />
                 </div>
               }
               content={<Table rowNames={tableRowData} items={tableData} />}
@@ -321,4 +293,4 @@ const PostComponent = () => {
   )
 }
 
-export default PostComponent
+export default FormComponent
