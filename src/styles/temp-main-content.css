@@ -19,7 +19,6 @@ select::-ms-expand {
 input:focus,
 select:focus,
 select:active {
-  border: 0 !important;
   outline: none !important;
   --tw-ring-inset: var(--tw-empty, /*!*/ /*!*/) !important;
   --tw-ring-offset-width: 0px !important;
