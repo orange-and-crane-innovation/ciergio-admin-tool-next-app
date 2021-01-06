@@ -17,7 +17,9 @@ function Button({
   loading,
   leftIcon,
   rightIcon,
+  icon,
   className,
+  disabled,
   ...props
 }) {
   const buttonClasses = useMemo(
@@ -29,28 +31,42 @@ function Button({
         [styles.isWarning]: warning,
         [styles.isInfo]: info,
         [styles.isFluid]: fluid,
+        [styles.disabled]: disabled,
         [className]: !!className
       }),
-    [primary, success, danger, warning, info, fluid, className]
+    [primary, success, danger, warning, info, fluid, className, disabled]
   )
 
   const renderLabel = useMemo(() => {
-    return loading ? <FaCircleNotch className="icon-spin" /> : label
-  }, [label, loading])
+    return loading ? (
+      <FaCircleNotch className="icon-spin" />
+    ) : !icon ? (
+      label
+    ) : null
+  }, [label, icon, loading])
 
   const renderLeftIcon = useMemo(() => {
-    return !loading ? <span className="mr-2">{leftIcon}</span> : null
+    return !loading && leftIcon ? (
+      <span className="mr-2">{leftIcon}</span>
+    ) : null
   }, [leftIcon, loading])
 
   const renderRightIcon = useMemo(() => {
-    return !loading ? <span className="ml-2">{rightIcon}</span> : null
+    return !loading && rightIcon ? (
+      <span className="ml-2">{rightIcon}</span>
+    ) : null
   }, [loading, rightIcon])
+
+  const renderOnlyIcon = useMemo(() => {
+    return !loading ? <span className="m-0 text-base">{icon}</span> : null
+  }, [loading, icon])
 
   return (
     <button type={type} className={buttonClasses} {...props}>
       {renderLeftIcon}
       {renderLabel}
       {renderRightIcon}
+      {renderOnlyIcon}
     </button>
   )
 }
@@ -72,7 +88,9 @@ Button.propTypes = {
   loading: P.bool,
   leftIcon: P.node,
   rightIcon: P.node,
-  className: P.string
+  icon: P.node,
+  className: P.string,
+  disabled: P.bool
 }
 
 export default Button
