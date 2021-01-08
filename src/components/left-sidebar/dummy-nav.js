@@ -27,7 +27,7 @@ const navigation = [
       },
       {
         url: '/residents',
-        icon: 'ciergio-teams',
+        icon: 'ciergio-employees',
         title: 'My Residents',
         items: [
           {
