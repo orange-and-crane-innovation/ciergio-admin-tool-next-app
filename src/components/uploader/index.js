@@ -53,7 +53,6 @@ const Uploader = ({
   }
 
   const getFileSize = file => {
-    console.log(file)
     const size = file.size
     if (size === 0) return '0 Bytes'
 
@@ -87,6 +86,7 @@ const Uploader = ({
             type="button"
             className={styles.uploaderButton}
             data-id={file}
+            data-name={files[index] && files[index].name}
             onClick={e => {
               handleRemove()
               onRemove(e)
