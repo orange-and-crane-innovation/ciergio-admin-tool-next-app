@@ -20,6 +20,7 @@ function Button({
   icon,
   className,
   disabled,
+  noBorder,
   ...props
 }) {
   const buttonClasses = useMemo(
@@ -32,9 +33,20 @@ function Button({
         [styles.isInfo]: info,
         [styles.isFluid]: fluid,
         [styles.disabled]: disabled,
+        [styles.noBorder]: noBorder,
         [className]: !!className
       }),
-    [primary, success, danger, warning, info, fluid, className, disabled]
+    [
+      primary,
+      success,
+      danger,
+      warning,
+      info,
+      fluid,
+      className,
+      disabled,
+      noBorder
+    ]
   )
 
   const renderLabel = useMemo(() => {
@@ -90,7 +102,8 @@ Button.propTypes = {
   rightIcon: P.node,
   icon: P.node,
   className: P.string,
-  disabled: P.bool
+  disabled: P.bool,
+  noBorder: P.bool
 }
 
 export default Button

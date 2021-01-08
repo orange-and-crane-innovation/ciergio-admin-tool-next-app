@@ -3,13 +3,13 @@ import PropTypes from 'prop-types'
 
 import styles from './card.module.css'
 
-const Card = ({ header, content, footer, noPadding }) => {
+const Card = ({ header, content, footer, noPadding, containerClass }) => {
   const contentClass = noPadding
     ? `${styles.cardContentControl} ${styles.noPadding}`
     : styles.cardContentControl
 
   return (
-    <div className={styles.cardContainer}>
+    <div className={`${styles.cardContainer} ${containerClass}`}>
       {header && <div className={styles.cardHeaderControl}>{header}</div>}
       <div className={contentClass}>{content}</div>
       {footer && <div className={styles.cardFooterControl}>{footer}</div>}
@@ -21,7 +21,8 @@ Card.propTypes = {
   header: PropTypes.any,
   content: PropTypes.any,
   footer: PropTypes.any,
-  noPadding: PropTypes.bool
+  noPadding: PropTypes.bool,
+  containerClass: PropTypes.string
 }
 
 export default Card

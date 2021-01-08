@@ -1,0 +1,46 @@
+.cardContainer {
+  @apply w-full mb-4;
+  @apply bg-white;
+  @apply border border-neutral-300;
+  @apply rounded-md;
+  @apply overflow-auto;
+  min-height: 10rem;
+
+  .cardSubContainer {
+    @apply flex items-center;
+  }
+
+  .cardLeftPanel {
+    @apply block w-24;
+    @apply flex items-center justify-center;
+    @apply bg-neutral-500 text-white;
+    @apply text-5xl;
+    min-height: 10rem;
+
+    &.isPrimary {
+      @apply bg-primary-500;
+    }
+
+    &.isSuccess {
+      @apply bg-success-500;
+    }
+
+    &.isDanger {
+      @apply bg-danger-500;
+    }
+
+    &.isWarning {
+      @apply bg-warning-500;
+    }
+
+    &.isInfo {
+      @apply bg-info-500;
+    }
+  }
+
+  .cardRightPanel {
+    @apply p-4 w-full;
+    @apply bg-white;
+    @apply flex flex-col;
+  }
+}

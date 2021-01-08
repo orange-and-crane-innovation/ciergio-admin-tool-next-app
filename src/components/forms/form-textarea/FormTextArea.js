@@ -2,10 +2,14 @@ import React, { useState } from 'react'
 
 import P from 'prop-types'
 import dynamic from 'next/dynamic'
+import { EditorState, convertToRaw } from 'draft-js'
+import draftToHtml from 'draftjs-to-html'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 
+import styles from './FormTextArea.module.css'
+
 const FormTextArea = ({ maxLength, placeholder, options, withCounter }) => {
-  const [editorState, setEditorState] = useState()
+  const [editorState, setEditorState] = useState(EditorState.createEmpty())
 
   const Editor = dynamic(
     () => {
@@ -19,7 +23,7 @@ const FormTextArea = ({ maxLength, placeholder, options, withCounter }) => {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className={styles.FormTextAreaContainer}>
       <Editor
         editorState={editorState}
         placeholder={placeholder}
@@ -42,7 +46,7 @@ const FormTextArea = ({ maxLength, placeholder, options, withCounter }) => {
         }}
       />
       {withCounter && (
-        <div className="mt-2 text-right text-neutral-500">
+        <div className={styles.FormCounter}>
           {`${
             maxLength -
             ((editorState &&
@@ -51,6 +55,10 @@ const FormTextArea = ({ maxLength, placeholder, options, withCounter }) => {
           } character(s) left`}
         </div>
       )}
+      <textarea
+        disabled
+        value={draftToHtml(convertToRaw(editorState.getCurrentContent()))}
+      />
     </div>
   )
 }

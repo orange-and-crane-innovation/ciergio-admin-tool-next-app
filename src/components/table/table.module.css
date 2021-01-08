@@ -48,9 +48,3 @@
     }
   }
 }
-
-@screen lg {
-  .tableContainer {
-    max-height: 45vh;
-  }
-}

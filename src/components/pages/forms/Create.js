@@ -12,7 +12,7 @@ import style from './Create.module.css'
 
 const CreatePosts = () => {
   const [loading, setLoading] = useState(false)
-  const [files, setFiles] = useState({})
+  const [files, setFiles] = useState([])
   const [fileUrls, setFileUrls] = useState([])
   const [maxFiles] = useState(3)
   const [inputMaxLength] = useState(65)
@@ -36,7 +36,7 @@ const CreatePosts = () => {
           const reader = new FileReader()
 
           reader.onloadend = () => {
-            setFiles(data)
+            setFiles(files => [...files, file])
             setFileUrls(fileUrls => [...fileUrls, reader.result])
             setLoading(false)
           }
@@ -51,6 +51,11 @@ const CreatePosts = () => {
       return file !== e.currentTarget.dataset.id
     })
     setFileUrls(url)
+
+    const data = files.filter(file => {
+      return file.name !== e.currentTarget.dataset.name
+    })
+    setFiles(data)
   }
 
   return (

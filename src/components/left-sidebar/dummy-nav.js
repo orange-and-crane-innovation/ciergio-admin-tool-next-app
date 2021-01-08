@@ -9,6 +9,28 @@ const navigation = [
         items: []
       },
       {
+        url: '/properties',
+        icon: 'ciergio-organization',
+        title: 'My Properties',
+        items: [
+          {
+            url: '/properties/company',
+            title: 'My Company',
+            items: []
+          },
+          {
+            url: '/properties/manage/unit-types',
+            title: 'Manage Unit Types',
+            items: []
+          },
+          {
+            url: '/properties/manage/categories',
+            title: 'Manage Global Categories',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/staff',
         icon: 'ciergio-teams',
         title: 'My Staff',
@@ -45,7 +67,7 @@ const navigation = [
       {
         url: '/posts',
         icon: 'ciergio-bulletin',
-        title: 'Bulletin',
+        title: 'Bulletin Board',
         items: []
       },
       {
