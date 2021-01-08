@@ -1,0 +1,20 @@
+.pageContainer {
+  @apply flex flex-col items-start;
+  @apply font-body font-normal text-base leading-normal;
+
+  .itemContainer {
+    @apply w-full mb-2;
+    @apply rounded-md;
+
+    button {
+      @apply w-full py-2 px-4;
+      @apply bg-transparent hover:bg-neutral-300;
+      @apply text-left rounded-md;
+    }
+
+    &.itemActive {
+      @apply pointer-events-none;
+      @apply bg-neutral-300;
+    }
+  }
+}
