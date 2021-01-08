@@ -1,19 +1,15 @@
 import React, { useState } from 'react'
-import P from 'prop-types'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { Controller, useForm } from 'react-hook-form'
-import * as yup from 'yup'
 
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import Table from '@app/components/table'
-import Modal from '@app/components/modal'
 import { Card } from '@app/components/globals'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
+import AddResidentModal from '../AddResidentModal'
 
 const floors = [
   {
@@ -60,38 +56,11 @@ const tableRows = [
   }
 ]
 
-const validationSchema = yup.object().shape({
-  unit_number: yup.string().label('Unit #').required,
-  first_name: yup.string().label('First Name').required(),
-  last_name: yup.string().label('Last Name').required(),
-  resident_type: yup.string().label('Resident Type').required,
-  resident_email: yup.string().email().label('Resident Email')
-})
-
 function AllResidents() {
-  const { handleSubmit, control, errors } = useForm({
-    resolver: yupResolver(validationSchema),
-    defaultValues: {
-      unit_number: '',
-      first_name: '',
-      last_name: '',
-      resident_type: '',
-      resident_email: ''
-    }
-  })
-
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState('')
 
   const handleShowModal = () => setShowModal(old => !old)
-
-  const handleClearModal = () => {
-    handleShowModal()
-  }
-
-  const handleOk = () => {
-    handleClearModal()
-  }
 
   return (
     <section className="content-wrap">
@@ -146,119 +115,9 @@ function AllResidents() {
         </div>
       </div>
       <Card content={<Table rowNames={tableRows} items={[]} />} />
-      <Modal
-        title="Add Resident"
-        okText="Add Resident"
-        visible={showModal}
-        onClose={handleClearModal}
-        onCancel={handleClearModal}
-        onOk={handleSubmit(handleOk)}
-      >
-        <AddResidentContent form={{ control, errors }} />
-      </Modal>
+      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
     </section>
   )
-}
-
-function AddResidentContent({ form }) {
-  const { control } = form
-
-  return (
-    <div className="w-full">
-      <form>
-        <h3 className="font-bold text-sm mb-4">Unit #</h3>
-        <Controller
-          name="unit_number"
-          control={control}
-          render={({ name, onChange, value }) => (
-            <FormSelect
-              name={name}
-              onChange={onChange}
-              value={value}
-              options={[
-                {
-                  label: 'Unit 1',
-                  value: 'unit-1'
-                }
-              ]}
-            />
-          )}
-        />
-        <div className="w-full flex flex-col">
-          <h3 className="text-sm font-bold mb-4">About the Resident</h3>
-          <div className="w-full flex justify-between align-center">
-            <Controller
-              name="first_name"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="First Name"
-                  placeholder="Enter first name"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  inputClassName="w-full rounded border-gray-300"
-                />
-              )}
-            />
-            <Controller
-              name="last_name"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Last Name"
-                  placeholder="Enter last name"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  inputClassName="w-full rounded border-gray-300"
-                />
-              )}
-            />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold mb-4">Resident Type</h3>
-            <Controller
-              name="resident_type"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormSelect
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  options={accountTypes}
-                />
-              )}
-            />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold ">Resident Email (optional)</h3>
-            <p className="text-xs mb-4">
-              An invite will be sent if an email is provided.
-            </p>
-            <Controller
-              name="resident_email"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  placeholder="Enter email address"
-                  type="email"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  inputClassName="w-full rounded border-gray-300"
-                />
-              )}
-            />
-          </div>
-        </div>
-      </form>
-    </div>
-  )
-}
-
-AddResidentContent.propTypes = {
-  form: P.object
 }
 
 export default AllResidents
