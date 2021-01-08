@@ -10,7 +10,8 @@ import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
 
-import AddResidentModal from '@app/components/pages/residents/AddResidentModal.js'
+import AddResidentModal from '@app/components/pages/residents/AddResidentModal'
+import ViewResidentModal from './ViewResidentModal'
 
 const tableRows = [
   {
@@ -31,11 +32,67 @@ const tableRows = [
   }
 ]
 
+const tableData = {
+  count: 161,
+  limit: 10,
+  offset: 0,
+  data: [
+    {
+      full_name: 'Jane Cooper',
+      first_name: 'Jane',
+      last_name: 'Cooper',
+      email: 'jane.cooper@gmail.com',
+      birthday: 'Jan 1, 1990',
+      gender: 'female',
+      date_reg: 'Jun 19, 2020',
+      last_active: 'June 19, 2020',
+      device_used: 'Apple - iPhone X'
+    },
+    {
+      full_name: 'Cameron Williamson',
+      first_name: 'Cameron',
+      last_name: 'Williamson',
+      email: 'cameron@gmail.com',
+      birthday: 'Jan 1, 1990',
+      gender: 'male',
+      date_reg: 'Jun 19, 2020',
+      last_active: 'June 19, 2020',
+      device_used: 'Apple - iPhone 12'
+    },
+    {
+      full_name: 'Jenny Wilson',
+      first_name: 'Jenny',
+      last_name: 'Wilson',
+      email: 'jenny.wilson@gmail.com',
+      birthday: 'Jan 1, 1990',
+      gender: 'female',
+      date_reg: 'Jun 19, 2020',
+      last_active: 'June 19, 2020',
+      device_used: 'Samsung - Note 10S'
+    },
+    {
+      full_name: 'Jacob Jones',
+      first_name: 'Jacob',
+      last_name: 'Jones',
+      email: 'jacob@gmail.com',
+      birthday: 'Jan 1, 1990',
+      gender: 'male',
+      date_reg: 'Jun 19, 2020',
+      last_active: 'June 19, 2020',
+      device_used: 'Apple - iPhone 11'
+    }
+  ]
+}
+
 function MyMembers() {
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [viewResident, setViewResident] = useState(false)
+  const [selectedResident, setSelectedResident] = useState(null)
 
   const handleShowModal = () => setShowModal(old => !old)
+
+  const handleResidentView = () => setViewResident(old => !old)
 
   return (
     <section className="content-wrap">
@@ -92,8 +149,24 @@ function MyMembers() {
           />
         </div>
       </div>
-      <Card content={<Table rowNames={tableRows} items={[]} />} />
+      <Card
+        content={
+          <Table
+            rowNames={tableRows}
+            items={tableData}
+            onRowClick={resident => {
+              setSelectedResident(resident)
+              setViewResident(old => !old)
+            }}
+          />
+        }
+      />
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
+      <ViewResidentModal
+        showModal={viewResident}
+        onShowModal={handleResidentView}
+        resident={selectedResident}
+      />
     </section>
   )
 }
