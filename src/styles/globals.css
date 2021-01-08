@@ -86,7 +86,7 @@ a {
 }
 
 .rdw-editor-wrapper {
-  height: 45vh;
+  @apply h-full;
   @apply border;
   @apply bg-white;
 }
