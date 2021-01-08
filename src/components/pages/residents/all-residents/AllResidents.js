@@ -4,6 +4,7 @@ import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import Table from '@app/components/table'
+import Pagination from '@app/components/pagination'
 import { Card } from '@app/components/globals'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
@@ -115,6 +116,12 @@ function AllResidents() {
         </div>
       </div>
       <Card content={<Table rowNames={tableRows} items={[]} />} />
+      <Pagination
+        items={{ count: 10, limit: 10, offset: 0, data: [] }}
+        activePage={1}
+        onPageClick={e => alert('Page ' + e)}
+        onLimitChange={e => alert('Show ' + e.target.value)}
+      />
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
     </section>
   )
