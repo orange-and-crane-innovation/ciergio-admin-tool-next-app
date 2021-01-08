@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-key */
 import React, { useState } from 'react'
+import { useRouter } from 'next/router'
 import { FaPlusCircle, FaSearch, FaTimes, FaEllipsisH } from 'react-icons/fa'
 
 import Card from '@app/components/card'
@@ -13,6 +14,7 @@ import Pagination from '@app/components/pagination'
 import styles from './Main.module.css'
 
 const PostComponent = () => {
+  const router = useRouter()
   const [searchText, setSearchText] = useState()
 
   const bulkOptions = [
@@ -137,7 +139,7 @@ const PostComponent = () => {
   }
 
   const goToCreatePage = () => {
-    window.location.href = 'posts/create'
+    router.push('posts/create')
   }
 
   return (
