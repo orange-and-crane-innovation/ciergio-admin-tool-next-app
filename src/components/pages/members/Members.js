@@ -10,6 +10,8 @@ import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
 
+import AddResidentModal from '@app/components/pages/residents/AddResidentModal.js'
+
 const tableRows = [
   {
     name: 'Name',
@@ -31,6 +33,9 @@ const tableRows = [
 
 function MyMembers() {
   const [searchText, setSearchText] = useState('')
+  const [showModal, setShowModal] = useState(false)
+
+  const handleShowModal = () => setShowModal(old => !old)
 
   return (
     <section className="content-wrap">
@@ -82,12 +87,13 @@ function MyMembers() {
             default
             leftIcon={<FaPlusCircle />}
             label="Add Resident"
-            // onClick={handleShowModal}
+            onClick={handleShowModal}
             className="mr-4 mt-4"
           />
         </div>
       </div>
       <Card content={<Table rowNames={tableRows} items={[]} />} />
+      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
     </section>
   )
 }
