@@ -26,6 +26,23 @@ const navigation = [
         ]
       },
       {
+        url: '/residents',
+        icon: 'ciergio-teams',
+        title: 'My Residents',
+        items: [
+          {
+            url: '/residents/all-residents',
+            title: 'All Residents',
+            items: []
+          },
+          {
+            url: '/residents/invites-requests',
+            title: 'Invites & Requests',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/posts',
         icon: 'ciergio-bulletin',
         title: 'Bulletin',
