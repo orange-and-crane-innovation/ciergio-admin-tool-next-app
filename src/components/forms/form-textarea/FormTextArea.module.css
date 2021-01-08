@@ -1,0 +1,8 @@
+.FormTextAreaContainer {
+  @apply flex flex-col h-128;
+
+  .FormCounter {
+    @apply my-2;
+    @apply text-right text-neutral-500;
+  }
+}
