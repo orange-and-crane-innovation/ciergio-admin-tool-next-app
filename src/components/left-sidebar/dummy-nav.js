@@ -104,6 +104,12 @@ const navigation = [
             items: []
           }
         ]
+      },
+      {
+        url: '/my-members',
+        icon: 'ciergio-employees',
+        title: 'My Members',
+        items: []
       }
     ]
   }

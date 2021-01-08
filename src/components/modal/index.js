@@ -9,6 +9,7 @@ function Component({
   cancelText,
   onOk,
   onCancel,
+  footer,
   children
 }) {
   return (
@@ -29,15 +30,17 @@ function Component({
           </div>
         </div>
         <div className="modal-content">{children}</div>
-        <div className="modal-footer">
-          <Button
-            default
-            label={cancelText}
-            onClick={onCancel}
-            className="mr-4 w-full"
-          />
-          <Button primary label={okText} onClick={onOk} className=" w-full" />
-        </div>
+        {footer !== null ? (
+          <div className="modal-footer">
+            <Button
+              default
+              label={cancelText}
+              onClick={onCancel}
+              className="mr-4 w-full"
+            />
+            <Button primary label={okText} onClick={onOk} className=" w-full" />
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -56,7 +59,8 @@ Component.propTypes = {
   okText: P.string,
   cancelText: P.string,
   onOk: P.func,
-  onCancel: P.func
+  onCancel: P.func,
+  footer: P.bool
 }
 
 export default Component
