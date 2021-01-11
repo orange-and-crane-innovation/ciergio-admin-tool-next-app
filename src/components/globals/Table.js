@@ -68,7 +68,7 @@ const Component = ({
                       {...(enableSorting
                         ? column.getHeaderProps(column.getSortByToggleProps())
                         : column.getHeaderProps())}
-                      className={`font-bold text-black border-b border-gray-200 py-4 pl-8 text-left ${headerClassNames}`}
+                      className={`font-bold text-neutral-500 border-b border-gray-200 py-4 pl-8 text-left ${headerClassNames}`}
                     >
                       <div className="flex justify-start align-center">
                         {
@@ -112,7 +112,7 @@ const Component = ({
                   onClick={() => {
                     if (!onRowClick) return null
 
-                    onRowClick(row.values)
+                    onRowClick(row.original)
                   }}
                 >
                   {
