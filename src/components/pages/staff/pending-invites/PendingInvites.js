@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import Table, { Action } from '@app/components/globals/Table'
-import { Card } from '@app/components/globals'
+import { Card, Table, Action } from '@app/components/globals'
 
 import { FaTimes, FaSearch } from 'react-icons/fa'
 

@@ -4,13 +4,11 @@ import P from 'prop-types'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import Table from '@app/components/globals/Table'
-import { Card } from '@app/components/globals'
+import { Card, Table, Action } from '@app/components/globals'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
-import { GoKebabHorizontal } from 'react-icons/go'
 
 import AddResidentModal from '../AddResidentModal'
 
@@ -72,7 +70,7 @@ function AllResidents() {
       {
         id: 'action',
         accessor: row => row,
-        Cell: ResidentAction
+        Cell: Action
       }
     ],
     []
@@ -223,14 +221,6 @@ function ResidentCell({ value }) {
   )
 }
 
-function ResidentAction({ value }) {
-  return (
-    <div className="w-full flex justify-end pr-8">
-      <GoKebabHorizontal onClick={() => console.log({ value })} />
-    </div>
-  )
-}
-
 function ResidentInviteButton({ value }) {
   if (value.active) return null
 
@@ -252,10 +242,6 @@ function ResidentType({ value }) {
 }
 
 ResidentCell.propTypes = {
-  value: P.object
-}
-
-ResidentAction.propTypes = {
   value: P.object
 }
 
