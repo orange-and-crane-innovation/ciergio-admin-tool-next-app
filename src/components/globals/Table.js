@@ -15,7 +15,8 @@ const Component = ({
   pagination,
   rowSelection,
   enableSorting,
-  onRowClick
+  onRowClick,
+  emptyText
 }) => {
   const data = payload.data
   const tableInstance = useTable(
@@ -99,8 +100,7 @@ const Component = ({
         </thead>
         {/* Apply the table body props */}
         <tbody {...getTableBodyProps()} className="pb-4">
-          {
-            // Loop over the table rows
+          {rows?.length > 0 ? ( // Loop over the table rows
             rows.map((row, rowIndex) => {
               // Prepare the row for display
               prepareRow(row)
@@ -138,7 +138,13 @@ const Component = ({
                 </tr>
               )
             })
-          }
+          ) : (
+            <tr>
+              <td className="px-8 py-4 text-center" colSpan={columns.length}>
+                {emptyText}
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
       {pagination ? (
@@ -203,6 +209,10 @@ CellIndeterminateCheckbox.propTypes = {
   row: P.object
 }
 
+Component.defaultProps = {
+  emptyText: 'No Data'
+}
+
 Component.propTypes = {
   columns: P.array || P.object,
   payload: P.object,
@@ -210,7 +220,8 @@ Component.propTypes = {
   pagination: P.object || P.bool,
   rowSelection: P.bool,
   enableSorting: P.bool,
-  onRowClick: P.func
+  onRowClick: P.func,
+  emptyText: P.string
 }
 
 export default Component

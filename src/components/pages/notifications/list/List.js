@@ -2,11 +2,10 @@ import React, { useState } from 'react'
 import P from 'prop-types'
 import { useRouter } from 'next/router'
 import Tabs from '@app/components/tabs'
-import Table from '@app/components/table'
 import Button from '@app/components/button'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
-import { Card } from '@app/components/globals'
+import { Card, Table } from '@app/components/globals'
 
 import { FaPlusCircle, FaSearch, FaTimes } from 'react-icons/fa'
 
@@ -92,7 +91,7 @@ function NotificationsList() {
             <Card
               noPadding
               content={
-                <Table rowNames={upcomingTableRows} items={upcomingData} />
+                <Table columns={upcomingTableRows} payload={upcomingData} />
               }
               className="rounded-t-none"
             />
@@ -104,7 +103,7 @@ function NotificationsList() {
             <Card
               noPadding
               content={
-                <Table rowNames={publishedTableRows} items={publishedData} />
+                <Table columns={publishedTableRows} payload={publishedData} />
               }
             />
           </Tabs.TabPanel>
@@ -112,14 +111,14 @@ function NotificationsList() {
             <Header title={`Drafts (${draftsData.data.length})`} />
             <Card
               noPadding
-              content={<Table rowNames={otherTableRows} items={draftsData} />}
+              content={<Table columns={otherTableRows} payload={draftsData} />}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="4">
             <Header title={`Trash (${trashData.data.length})`} />
             <Card
               noPadding
-              content={<Table rowNames={otherTableRows} items={trashData} />}
+              content={<Table columns={otherTableRows} payload={trashData} />}
             />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
