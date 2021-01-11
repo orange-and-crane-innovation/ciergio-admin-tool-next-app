@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import Table from '@app/components/table'
+import Table, { Action } from '@app/components/globals/Table'
 import { Card } from '@app/components/globals'
 
 import { FaTimes, FaSearch } from 'react-icons/fa'
@@ -37,25 +37,6 @@ const assignmentOptions = [
   }
 ]
 
-const staffRows = [
-  {
-    name: 'Invites',
-    width: ''
-  },
-  {
-    name: 'Account Type',
-    width: ''
-  },
-  {
-    name: 'Assignment',
-    width: ''
-  },
-  {
-    name: 'Date Sent',
-    width: ''
-  }
-]
-
 const bulkOptions = [
   {
     label: 'Unpublished',
@@ -69,6 +50,62 @@ const bulkOptions = [
 
 function PendingInvites() {
   const [searchText, setSearchText] = useState('')
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Invites',
+        accessor: 'invite'
+      },
+      {
+        Header: 'Account Type',
+        accessor: 'account_type'
+      },
+      {
+        Header: 'Assignment',
+        accessor: 'assignment'
+      },
+      {
+        Header: 'Date Sent',
+        accessor: 'date_sent'
+      },
+      {
+        id: 'action',
+        accessor: row => row,
+        Cell: Action
+      }
+    ],
+    []
+  )
+
+  const staffData = React.useMemo(
+    () => ({
+      count: 161,
+      limit: 10,
+      offset: 0,
+      data: [
+        {
+          invite: 'Brandie Lane',
+          account_type: 'Electrician',
+          assignment: 'Tower 1',
+          date_sent: 'Mar 24, 2020'
+        },
+        {
+          invite: 'Max Murphy',
+          account_type: 'Electrician',
+          assignment: 'Lemon Towers',
+          date_sent: 'Mar 24, 2020'
+        },
+        {
+          invite: 'Ralph Bell',
+          account_type: 'Security',
+          assignment: 'Tower 3',
+          date_sent: 'Mar 24, 2020'
+        }
+      ]
+    }),
+    []
+  )
 
   return (
     <section className="content-wrap">
@@ -100,9 +137,12 @@ function PendingInvites() {
         </div>
       </div>
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Pending Staff (0)`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`Pending Invites (${staffData.data.length})`}</h1>
       </div>
-      <Card noPadding content={<Table rowNames={staffRows} items={[]} />} />
+      <Card
+        noPadding
+        content={<Table columns={columns} payload={staffData} />}
+      />
     </section>
   )
 }

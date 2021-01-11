@@ -4,6 +4,7 @@ import P from 'prop-types'
 import { useTable, useRowSelect, useSortBy } from 'react-table'
 
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import { GoKebabHorizontal } from 'react-icons/go'
 
 import Pagination from '../pagination'
 
@@ -172,6 +173,18 @@ const CellIndeterminateCheckbox = ({ row }) => (
     <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
   </div>
 )
+
+export const Action = ({ value }) => {
+  return (
+    <div className="w-full flex justify-end pr-8">
+      <GoKebabHorizontal onClick={() => console.log({ value })} />
+    </div>
+  )
+}
+
+Action.propTypes = {
+  value: P.object
+}
 
 HeaderIndeterminateCheckbox.propTypes = {
   getToggleAllRowsSelectedProps: P.func
