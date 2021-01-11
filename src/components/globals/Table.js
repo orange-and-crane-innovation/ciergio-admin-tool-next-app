@@ -1,11 +1,34 @@
-import React from 'react'
+/* eslint-disable react/display-name */
+import React, { forwardRef, useEffect, useRef } from 'react'
 import P from 'prop-types'
-import { useTable } from 'react-table'
+import { useTable, useRowSelect } from 'react-table'
 import Pagination from '../pagination'
 
-const Component = ({ columns, payload, headerClassNames, pagination }) => {
+const Component = ({
+  columns,
+  payload,
+  headerClassNames,
+  pagination,
+  rowSelection
+}) => {
   const data = payload.data
-  const tableInstance = useTable({ columns, data })
+  const tableInstance = useTable({ columns, data }, useRowSelect, hooks => {
+    if (!rowSelection) return null
+
+    hooks.visibleColumns.push(columns => [
+      // Let's make a column for selection
+      {
+        id: 'selection',
+        // The header can use the table's getToggleAllRowsSelectedProps method
+        // to render a checkbox
+        Header: HeaderIndeterminateCheckbox,
+        // The cell can use the individual row's getToggleRowSelectedProps method
+        // to the render a checkbox
+        Cell: CellIndeterminateCheckbox
+      },
+      ...columns
+    ])
+  })
   const {
     getTableProps,
     getTableBodyProps,
@@ -81,7 +104,7 @@ const Component = ({ columns, payload, headerClassNames, pagination }) => {
         </tbody>
       </table>
       {pagination ? (
-        <div className="px-4 bg-none">
+        <div className="px-4">
           <Pagination
             items={payload}
             activePage={1}
@@ -94,11 +117,48 @@ const Component = ({ columns, payload, headerClassNames, pagination }) => {
   )
 }
 
+const IndeterminateCheckbox = forwardRef((obj, ref) => {
+  const { indeterminate, ...rest } = obj
+  const defaultRef = useRef()
+  const resolvedRef = ref || defaultRef
+
+  useEffect(() => {
+    resolvedRef.current.indeterminate = indeterminate
+  }, [resolvedRef, indeterminate])
+
+  return (
+    <>
+      <input type="checkbox" ref={resolvedRef} {...rest} />
+    </>
+  )
+})
+
+const HeaderIndeterminateCheckbox = ({ getToggleAllRowsSelectedProps }) => (
+  <div>
+    <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+  </div>
+)
+
+const CellIndeterminateCheckbox = ({ row }) => (
+  <div>
+    <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+  </div>
+)
+
+HeaderIndeterminateCheckbox.propTypes = {
+  getToggleAllRowsSelectedProps: P.func
+}
+
+CellIndeterminateCheckbox.propTypes = {
+  row: P.object
+}
+
 Component.propTypes = {
   columns: P.array || P.object,
   payload: P.object,
   headerClassNames: P.string,
-  pagination: P.object
+  pagination: P.object || P.bool,
+  rowSelection: P.bool
 }
 
 export default Component
