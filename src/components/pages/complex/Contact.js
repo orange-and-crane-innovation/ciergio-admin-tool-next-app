@@ -8,18 +8,11 @@ import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import { Card } from '@app/components/globals'
+import { Card, Table } from '@app/components/globals'
 import Modal from '@app/components/modal'
-import Table from '@app/components/table'
 import UploaderImage from '@app/components/uploader/image'
 
 import { FaPlusCircle } from 'react-icons/fa'
-
-const tableRowData = [
-  {
-    name: 'Name'
-  }
-]
 
 const tableData = {
   count: 161,
@@ -27,16 +20,16 @@ const tableData = {
   offset: 0,
   data: [
     {
-      title: 'Red Cross'
+      name: 'Red Cross'
     },
     {
-      title: 'PRHC Headquarters'
+      name: 'PRHC Headquarters'
     },
     {
-      title: 'McDonalds'
+      name: 'McDonalds'
     },
     {
-      title: 'Suds Laundry Services'
+      name: 'Suds Laundry Services'
     }
   ]
 }
@@ -102,6 +95,16 @@ function Contact({ name }) {
     setImageUrl(null)
   }
 
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Name',
+        accessor: 'name'
+      }
+    ],
+    []
+  )
+
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title capitalize">{`${name} Directory`}</h1>
@@ -120,7 +123,7 @@ function Contact({ name }) {
       </div>
       <Card
         noPadding
-        content={<Table rowNames={tableRowData} items={contacts} />}
+        content={<Table columns={columns} payload={contacts} />}
         className="rounded-t-none"
       />
       <Pagination

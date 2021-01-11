@@ -3,9 +3,7 @@ import React, { useState } from 'react'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import Table from '@app/components/table'
-import Pagination from '@app/components/pagination'
-import { Card } from '@app/components/globals'
+import { Card, Table, Action } from '@app/components/globals'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
@@ -16,20 +14,25 @@ import ViewResidentModal from './ViewResidentModal'
 
 const tableRows = [
   {
-    name: 'Name',
-    width: ''
+    Header: 'Name',
+    accessor: 'full_name'
   },
   {
-    name: 'Email',
-    width: ''
+    Header: 'Email',
+    accessor: 'email'
   },
   {
-    name: 'Date Registered',
-    width: ''
+    Header: 'Date Registered',
+    accessor: 'date_reg'
   },
   {
-    name: 'Last Activity',
-    width: ''
+    Header: 'Last Activity',
+    accessor: 'last_active'
+  },
+  {
+    id: 'action',
+    accessor: row => row,
+    Cell: Action
   }
 ]
 
@@ -153,21 +156,17 @@ function MyMembers() {
       <Card
         content={
           <Table
-            rowNames={tableRows}
-            items={tableData}
+            columns={tableRows}
+            payload={tableData}
             onRowClick={resident => {
               setSelectedResident(resident)
               setViewResident(old => !old)
             }}
+            pagination
           />
         }
       />
-      <Pagination
-        items={tableData}
-        activePage={1}
-        onPageClick={e => alert('Page ' + e)}
-        onLimitChange={e => alert('Show ' + e.target.value)}
-      />
+
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
       <ViewResidentModal
         showModal={viewResident}

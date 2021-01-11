@@ -3,8 +3,7 @@ import React, { useState } from 'react'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import Table from '@app/components/table'
-import { Card } from '@app/components/globals'
+import { Card, Table, Action } from '@app/components/globals'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
@@ -19,28 +18,58 @@ const bulkOptions = [
   }
 ]
 
-const tableRows = [
-  {
-    name: 'Unit Number',
-    width: ''
-  },
-  {
-    name: 'Email',
-    width: ''
-  },
-  {
-    name: 'Account Type',
-    width: ''
-  },
-  {
-    name: 'Date Sent',
-    width: ''
-  }
-]
-
 function InvitesRequests() {
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState('')
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Unit #',
+        accessor: 'unit_number'
+      },
+      {
+        Header: 'Email',
+        accessor: 'email_address'
+      },
+      {
+        Header: 'Account Type',
+        accessor: 'account_type'
+      },
+      {
+        accessor: 'date_sent'
+      },
+      {
+        id: 'action',
+        accessor: row => row,
+        Cell: Action
+      }
+    ],
+    []
+  )
+
+  const residentsData = React.useMemo(
+    () => ({
+      count: 161,
+      limit: 10,
+      offset: 0,
+      data: [
+        {
+          unit_number: 101,
+          email_address: 'brandie.lane@gmail.com',
+          account_type: 'Unit Owner',
+          date_sent: 'December 20, 2020'
+        },
+        {
+          unit_number: 102,
+          email_address: 'max_murphy@gmail.com',
+          account_type: 'Relative',
+          date_sent: 'December 20, 2020'
+        }
+      ]
+    }),
+    []
+  )
 
   const handleShowModal = () => setShowModal(old => !old)
 
@@ -95,7 +124,17 @@ function InvitesRequests() {
           />
         </div>
       </div>
-      <Card content={<Table rowNames={tableRows} items={[]} />} />
+      <Card
+        content={
+          <Table
+            columns={columns}
+            payload={residentsData}
+            rowSelection
+            pagination
+            enableSorting
+          />
+        }
+      />
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
     </section>
   )

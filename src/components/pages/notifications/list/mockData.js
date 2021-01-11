@@ -1,45 +1,59 @@
+import { Action } from '@app/components/globals'
+
 export const upcomingTableRows = [
   {
-    name: 'Scheduled',
-    width: '40%'
+    Header: 'Scheduled',
+    accessor: 'scheduled'
   },
   {
-    name: 'Title',
-    width: '20%'
+    Header: 'Title',
+    accessor: 'title'
   },
   {
-    name: 'Category',
-    width: ''
+    Header: 'Category',
+    accessor: 'category'
+  },
+  {
+    id: 'action',
+    Cell: Action
   }
 ]
 
 export const publishedTableRows = [
   {
-    name: 'Last Published',
-    width: '40%'
+    Header: 'Last Published',
+    accessor: 'lastPublished'
   },
   {
-    name: 'Title',
-    width: '20%'
+    Header: 'Title',
+    accessor: 'title'
   },
   {
-    name: 'Category',
-    width: ''
+    Header: 'Category',
+    accessor: 'category'
+  },
+  {
+    id: 'action',
+    Cell: Action
   }
 ]
 
 export const otherTableRows = [
   {
-    name: 'Last Modified',
-    width: '40%'
+    Header: 'Last Modified',
+    accessor: 'lastModified'
   },
   {
-    name: 'Title',
-    width: '20%'
+    Header: 'Title',
+    accessor: 'title'
   },
   {
-    name: 'Category',
-    width: ''
+    Header: 'Category',
+    accessor: 'category'
+  },
+  {
+    id: 'action',
+    Cell: Action
   }
 ]
 

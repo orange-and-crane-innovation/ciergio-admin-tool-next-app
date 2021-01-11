@@ -2,9 +2,8 @@ import React, { useState } from 'react'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import Table from '@app/components/table'
 import Modal from '@app/components/modal'
-import { Card } from '@app/components/globals'
+import { Card, Table, Action } from '@app/components/globals'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
@@ -40,21 +39,6 @@ const assignmentOptions = [
   }
 ]
 
-const staffRows = [
-  {
-    name: 'Name',
-    width: ''
-  },
-  {
-    name: 'Role',
-    width: ''
-  },
-  {
-    name: 'Assignment',
-    width: ''
-  }
-]
-
 function AllStaff() {
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState('')
@@ -69,6 +53,55 @@ function AllStaff() {
   const handleOk = () => {
     handleClearModal()
   }
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Name',
+        accessor: 'name'
+      },
+      {
+        Header: 'Role',
+        accessor: 'role'
+      },
+      {
+        Header: 'Assignment',
+        accessor: 'assignment'
+      },
+      {
+        id: 'action',
+        accessor: row => row,
+        Cell: Action
+      }
+    ],
+    []
+  )
+
+  const staffData = React.useMemo(
+    () => ({
+      count: 161,
+      limit: 10,
+      offset: 0,
+      data: [
+        {
+          name: 'Brandie Lane',
+          role: 'Building Admin',
+          assignment: 'Tower 1'
+        },
+        {
+          name: 'Max Murphy',
+          role: 'Electrician',
+          assignment: 'Lemon Towers'
+        },
+        {
+          name: 'Ralph Bell',
+          role: 'Plumber',
+          assignment: 'Tower 3'
+        }
+      ]
+    }),
+    []
+  )
 
   return (
     <section className="content-wrap">
@@ -121,7 +154,10 @@ function AllStaff() {
           />
         </div>
       </div>
-      <Card noPadding content={<Table rowNames={staffRows} items={[]} />} />
+      <Card
+        noPadding
+        content={<Table columns={columns} payload={staffData} />}
+      />
       <Modal
         title="Invite Staff"
         okText="Invite Staff"

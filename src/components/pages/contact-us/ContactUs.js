@@ -7,23 +7,22 @@ import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
 import Modal from '@app/components/modal'
-import Table from '@app/components/table'
 import UploaderImage from '@app/components/uploader/image'
-import { Card, Draggable } from '@app/components/globals'
+import { Card, Draggable, Table } from '@app/components/globals'
 import { FaPlusCircle } from 'react-icons/fa'
 
 const tableRowData = [
   {
-    name: 'Title',
-    width: '40%'
+    Header: 'Title',
+    accessor: 'title'
   },
   {
-    name: 'Name',
-    width: '20%'
+    Header: 'Name',
+    accessor: 'name'
   },
   {
-    name: 'Email',
-    width: ''
+    Header: 'Email',
+    accessor: 'email'
   }
 ]
 
@@ -212,7 +211,7 @@ function ContactUs() {
               rowNames={tableRowData}
             />
           ) : (
-            <Table rowNames={tableRowData} items={contacts} />
+            <Table columns={tableRowData} payload={contacts} />
           )
         }
       />
