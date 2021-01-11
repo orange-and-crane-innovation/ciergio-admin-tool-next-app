@@ -1,15 +1,17 @@
 import React from 'react'
 import P from 'prop-types'
 import { useTable } from 'react-table'
+import Pagination from '../pagination'
 
-const Component = ({ columns, data, headerClassNames }) => {
+const Component = ({ columns, payload, headerClassNames, pagination }) => {
+  const data = payload.data
   const tableInstance = useTable({ columns, data })
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    rows,
-    prepareRow
+    prepareRow,
+    rows
   } = tableInstance
 
   return (
@@ -78,14 +80,25 @@ const Component = ({ columns, data, headerClassNames }) => {
           }
         </tbody>
       </table>
+      {pagination ? (
+        <div className="px-4 bg-none">
+          <Pagination
+            items={payload}
+            activePage={1}
+            onPageClick={e => alert('Page ' + e)}
+            onLimitChange={e => alert('Show ' + e.target.value)}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }
 
 Component.propTypes = {
   columns: P.array || P.object,
-  data: P.array,
-  headerClassNames: P.string
+  payload: P.object,
+  headerClassNames: P.string,
+  pagination: P.object
 }
 
 export default Component
