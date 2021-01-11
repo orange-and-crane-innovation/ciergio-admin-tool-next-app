@@ -1,37 +1,44 @@
+import React from 'react'
 import P from 'prop-types'
 import { useRouter } from 'next/router'
 
-import Table from '@app/components/table'
-import { Card } from '@app/components/globals'
-
-const tableRowData = [
-  {
-    name: 'Name'
-  }
-]
-
-const tableData = {
-  count: 161,
-  limit: 10,
-  offset: 0,
-  data: [
-    {
-      title: 'Red Cross'
-    },
-    {
-      title: 'PRHC Headquarters'
-    },
-    {
-      title: 'McDonalds'
-    },
-    {
-      title: 'Suds Laundry Services'
-    }
-  ]
-}
+import { Card, Table } from '@app/components/globals'
 
 function Company({ name }) {
   const router = useRouter()
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Name',
+        accessor: 'name'
+      }
+    ],
+    []
+  )
+
+  const tableData = React.useMemo(
+    () => ({
+      count: 161,
+      limit: 10,
+      offset: 0,
+      data: [
+        {
+          name: 'Red Cross'
+        },
+        {
+          name: 'PRHC Headquarters'
+        },
+        {
+          name: 'McDonalds'
+        },
+        {
+          name: 'Suds Laundry Services'
+        }
+      ]
+    }),
+    []
+  )
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
@@ -43,10 +50,10 @@ function Company({ name }) {
         noPadding
         content={
           <Table
-            rowNames={tableRowData}
-            items={tableData}
+            columns={columns}
+            payload={tableData}
             onRowClick={item => {
-              const contact = item.title.toLowerCase().replaceAll(' ', '-')
+              const contact = item.name.toLowerCase().replaceAll(' ', '-')
 
               router.push(`/directory/complex/${contact}`)
             }}

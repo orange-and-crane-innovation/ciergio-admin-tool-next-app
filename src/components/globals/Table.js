@@ -14,7 +14,8 @@ const Component = ({
   headerClassNames,
   pagination,
   rowSelection,
-  enableSorting
+  enableSorting,
+  onRowClick
 }) => {
   const data = payload.data
   const tableInstance = useTable(
@@ -105,7 +106,15 @@ const Component = ({
               prepareRow(row)
               return (
                 // Apply the row props
-                <tr key={rowIndex} {...row.getRowProps()}>
+                <tr
+                  key={rowIndex}
+                  {...row.getRowProps()}
+                  onClick={() => {
+                    if (!onRowClick) return null
+
+                    onRowClick(row.values)
+                  }}
+                >
                   {
                     // Loop over the rows cells
                     row.cells.map((cell, cellIndex) => {
@@ -200,7 +209,8 @@ Component.propTypes = {
   headerClassNames: P.string,
   pagination: P.object || P.bool,
   rowSelection: P.bool,
-  enableSorting: P.bool
+  enableSorting: P.bool,
+  onRowClick: P.func
 }
 
 export default Component

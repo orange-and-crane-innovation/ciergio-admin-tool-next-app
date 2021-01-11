@@ -9,49 +9,6 @@ import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import { DummyManageDirectoryList } from './DummyTable'
 
-const tableRowData = [
-  {
-    name: 'Name',
-    width: '40%'
-  },
-  {
-    name: 'Category',
-    width: '20%'
-  },
-  {
-    name: 'Address',
-    width: ''
-  }
-]
-
-const tableData = {
-  count: 161,
-  limit: 10,
-  offset: 0,
-  data: [
-    {
-      title: 'Red Cross',
-      category: 'Emergency',
-      address: '96 Novella Knolls'
-    },
-    {
-      title: 'PRHC Headquarters',
-      category: 'Company',
-      address: '0870 Dennis Stream'
-    },
-    {
-      title: 'McDonalds',
-      category: 'Delivery',
-      address: '4182 Bartholome Drive Suite 279'
-    },
-    {
-      title: 'Suds Laundry Services',
-      category: 'Services',
-      address: '65 Letitia Center Apt. 341'
-    }
-  ]
-}
-
 const directoryCategories = [
   {
     id: 0,
@@ -74,6 +31,7 @@ const directoryCategories = [
 function Directory() {
   const [newCategory, setNewCategory] = useState('')
   const [showModal, setShowModal] = useState(false)
+
   const router = useRouter()
 
   const handleShowModal = () => setShowModal(old => !old)
@@ -97,6 +55,55 @@ function Directory() {
 
   const handleInputChange = e => setNewCategory(e.target.value)
 
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Name',
+        accessor: 'name'
+      },
+      {
+        Header: 'Category',
+        accessor: 'category'
+      },
+      {
+        Header: 'Address',
+        accessor: 'address'
+      }
+    ],
+    []
+  )
+
+  const directoryData = React.useMemo(
+    () => ({
+      count: 161,
+      limit: 10,
+      offset: 0,
+      data: [
+        {
+          name: 'Red Cross',
+          category: 'Emergency',
+          address: '96 Novella Knolls'
+        },
+        {
+          name: 'PRHC Headquarters',
+          category: 'Company',
+          address: '0870 Dennis Stream'
+        },
+        {
+          name: 'McDonalds',
+          category: 'Delivery',
+          address: '4182 Bartholome Drive Suite 279'
+        },
+        {
+          name: 'Suds Laundry Services',
+          category: 'Services',
+          address: '65 Letitia Center Apt. 341'
+        }
+      ]
+    }),
+    []
+  )
+
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title">Directory</h1>
@@ -119,13 +126,10 @@ function Directory() {
               }
               content={
                 <Table
-                  rowNames={tableRowData}
-                  items={tableData}
+                  columns={columns}
+                  payload={directoryData}
                   onRowClick={item => {
-                    const company = item.title
-                      .toLowerCase()
-                      .replaceAll(' ', '-')
-
+                    const company = item.name.toLowerCase().replaceAll(' ', '-')
                     router.push(`/directory/companies/${company}`)
                   }}
                 />
