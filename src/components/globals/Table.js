@@ -1,7 +1,10 @@
 /* eslint-disable react/display-name */
 import React, { forwardRef, useEffect, useRef } from 'react'
 import P from 'prop-types'
-import { useTable, useRowSelect } from 'react-table'
+import { useTable, useRowSelect, useSortBy } from 'react-table'
+
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa'
+
 import Pagination from '../pagination'
 
 const Component = ({
@@ -9,26 +12,32 @@ const Component = ({
   payload,
   headerClassNames,
   pagination,
-  rowSelection
+  rowSelection,
+  enableSorting
 }) => {
   const data = payload.data
-  const tableInstance = useTable({ columns, data }, useRowSelect, hooks => {
-    if (!rowSelection) return null
+  const tableInstance = useTable(
+    { columns, data },
+    useSortBy,
+    useRowSelect,
+    hooks => {
+      if (!rowSelection) return null
 
-    hooks.visibleColumns.push(columns => [
-      // Let's make a column for selection
-      {
-        id: 'selection',
-        // The header can use the table's getToggleAllRowsSelectedProps method
-        // to render a checkbox
-        Header: HeaderIndeterminateCheckbox,
-        // The cell can use the individual row's getToggleRowSelectedProps method
-        // to the render a checkbox
-        Cell: CellIndeterminateCheckbox
-      },
-      ...columns
-    ])
-  })
+      hooks.visibleColumns.push(columns => [
+        // Let's make a column for selection
+        {
+          id: 'selection',
+          // The header can use the table's getToggleAllRowsSelectedProps method
+          // to render a checkbox
+          Header: HeaderIndeterminateCheckbox,
+          // The cell can use the individual row's getToggleRowSelectedProps method
+          // to the render a checkbox
+          Cell: CellIndeterminateCheckbox
+        },
+        ...columns
+      ])
+    }
+  )
   const {
     getTableProps,
     getTableBodyProps,
@@ -53,13 +62,32 @@ const Component = ({
                     // Apply the header cell props
                     <th
                       key={idx}
-                      {...column.getHeaderProps()}
+                      {...(enableSorting
+                        ? column.getHeaderProps(column.getSortByToggleProps())
+                        : column.getHeaderProps())}
                       className={`font-bold text-black border-b border-gray-200 py-4 pl-8 text-left ${headerClassNames}`}
                     >
-                      {
-                        // Render the header
-                        column.render('Header')
-                      }
+                      <div className="flex justify-start align-center">
+                        {
+                          <span>
+                            {
+                              // Render the header
+                              column.render('Header')
+                            }
+                          </span>
+                        }
+                        <span>
+                          {column.isSorted ? (
+                            column.isSortedDesc ? (
+                              <FaChevronDown className="relative top-1 left-1" />
+                            ) : (
+                              <FaChevronUp className="relative top-1 left-1" />
+                            )
+                          ) : (
+                            ''
+                          )}
+                        </span>
+                      </div>
                     </th>
                   ))
                 }
@@ -158,7 +186,8 @@ Component.propTypes = {
   payload: P.object,
   headerClassNames: P.string,
   pagination: P.object || P.bool,
-  rowSelection: P.bool
+  rowSelection: P.bool,
+  enableSorting: P.bool
 }
 
 export default Component
