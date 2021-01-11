@@ -79,71 +79,76 @@ function AllResidents() {
   )
 
   const residentsData = React.useMemo(
-    () => [
-      {
-        unit_number: 101,
-        resident_name: 'Brandie Lane',
-        contact_number: '09778562090',
-        account_type: 'Unit Owner',
-        active: true
-      },
-      {
-        unit_number: 101,
-        resident_name: 'Max Murphy',
-        contact_number: '09778562090',
-        account_type: 'Relative',
-        active: false
-      },
-      {
-        unit_number: 102,
-        resident_name: 'Ralph Bell',
-        contact_number: '09778562090',
-        account_type: 'Other',
-        active: false
-      },
-      {
-        unit_number: 103,
-        resident_name: 'Victoria Miles',
-        contact_number: '09778562090',
-        account_type: 'Unit Owner',
-        active: true
-      },
-      {
-        unit_number: 103,
-        resident_name: 'Wendy Jones',
-        contact_number: '09778562090',
-        account_type: 'Staff',
-        active: true
-      },
-      {
-        unit_number: 104,
-        resident_name: 'Judith Cooper',
-        contact_number: '09778562090',
-        account_type: 'Staff',
-        active: true
-      },
-      {
-        unit_number: 105,
-        resident_name: 'Wendy Jones',
-        contact_number: '09778562090',
-        account_type: 'Unit Owner',
-        active: true
-      },
-      {
-        unit_number: 105,
-        resident_name: 'Albert Howard',
-        contact_number: '09778562090',
-        account_type: 'Housemate',
-        active: true
-      },
-      {
-        unit_number: 105,
-        resident_name: 'Priscilla Richards',
-        contact_number: '09778562090',
-        account_type: 'Housemate',
-        active: false
-      }
-    ],
+    () => ({
+      count: 161,
+      limit: 10,
+      offset: 0,
+      data: [
+        {
+          unit_number: 101,
+          resident_name: 'Brandie Lane',
+          contact_number: '09778562090',
+          account_type: 'Unit Owner',
+          active: true
+        },
+        {
+          unit_number: 101,
+          resident_name: 'Max Murphy',
+          contact_number: '09778562090',
+          account_type: 'Relative',
+          active: false
+        },
+        {
+          unit_number: 102,
+          resident_name: 'Ralph Bell',
+          contact_number: '09778562090',
+          account_type: 'Other',
+          active: false
+        },
+        {
+          unit_number: 103,
+          resident_name: 'Victoria Miles',
+          contact_number: '09778562090',
+          account_type: 'Unit Owner',
+          active: true
+        },
+        {
+          unit_number: 103,
+          resident_name: 'Wendy Jones',
+          contact_number: '09778562090',
+          account_type: 'Staff',
+          active: true
+        },
+        {
+          unit_number: 104,
+          resident_name: 'Judith Cooper',
+          contact_number: '09778562090',
+          account_type: 'Staff',
+          active: true
+        },
+        {
+          unit_number: 105,
+          resident_name: 'Wendy Jones',
+          contact_number: '09778562090',
+          account_type: 'Unit Owner',
+          active: true
+        },
+        {
+          unit_number: 105,
+          resident_name: 'Albert Howard',
+          contact_number: '09778562090',
+          account_type: 'Housemate',
+          active: true
+        },
+        {
+          unit_number: 105,
+          resident_name: 'Priscilla Richards',
+          contact_number: '09778562090',
+          account_type: 'Housemate',
+          active: false
+        }
+      ]
+    }),
     []
   )
 
@@ -201,7 +206,9 @@ function AllResidents() {
           />
         </div>
       </div>
-      <Card content={<Table columns={columns} data={residentsData} />} />
+      <Card
+        content={<Table columns={columns} payload={residentsData} pagination />}
+      />
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
     </section>
   )
