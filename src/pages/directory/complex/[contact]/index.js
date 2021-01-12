@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import Contacts from '@app/components/pages/complex'
+import Contacts from '@app/components/pages/directory/complex'
 
 function ContactList() {
   const router = useRouter()
