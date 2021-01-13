@@ -71,6 +71,12 @@ const navigation = [
         items: []
       },
       {
+        url: '/maintenance',
+        icon: 'ciergio-maintenance',
+        title: 'Maintenance & Repairs',
+        items: []
+      },
+      {
         url: '/forms',
         icon: 'ciergio-file',
         title: 'Forms',
