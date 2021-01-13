@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { useRouter } from 'next/router'
+
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
@@ -48,6 +50,7 @@ const bulkOptions = [
 ]
 
 function PendingInvites() {
+  const router = useRouter()
   const [searchText, setSearchText] = useState('')
 
   const columns = React.useMemo(
@@ -106,6 +109,10 @@ function PendingInvites() {
     []
   )
 
+  const handleRowClick = staff => {
+    router.push(`/staff/profile?name=${staff.invite?.toLowerCase()}`)
+  }
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">Pending Staff Invites</h1>
@@ -140,7 +147,13 @@ function PendingInvites() {
       </div>
       <Card
         noPadding
-        content={<Table columns={columns} payload={staffData} />}
+        content={
+          <Table
+            columns={columns}
+            payload={staffData}
+            onRowClick={handleRowClick}
+          />
+        }
       />
     </section>
   )

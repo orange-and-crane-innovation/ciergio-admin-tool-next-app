@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { useRouter } from 'next/router'
+
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
@@ -40,6 +42,7 @@ const assignmentOptions = [
 ]
 
 function AllStaff() {
+  const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState('')
   const [staffEmail, setStaffEmail] = useState('')
@@ -103,6 +106,10 @@ function AllStaff() {
     []
   )
 
+  const handleRowClick = staff => {
+    router.push(`/staff/profile?name=${staff.name?.toLowerCase()}`)
+  }
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">Staff List</h1>
@@ -156,7 +163,13 @@ function AllStaff() {
       </div>
       <Card
         noPadding
-        content={<Table columns={columns} payload={staffData} />}
+        content={
+          <Table
+            columns={columns}
+            payload={staffData}
+            onRowClick={handleRowClick}
+          />
+        }
       />
       <Modal
         title="Invite Staff"

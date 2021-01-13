@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
-
-import Company from '@app/components/pages/company'
+import Company from '@app/components/pages/directory/company'
 
 function CompanyPage() {
   const router = useRouter()
