@@ -1,7 +1,9 @@
 import Button from '@app/components/button'
+import Tabs from '@app/components/tabs'
 import { Card } from '@app/components/globals'
 import { GoKebabHorizontal } from 'react-icons/go'
 import { AiOutlineUserAdd } from 'react-icons/ai'
+import Comments from '../Comments'
 
 function Ticket() {
   return (
@@ -89,6 +91,21 @@ function Ticket() {
                 </div>
               }
             />
+
+            <Tabs defaultTab="1">
+              <Tabs.TabLabels>
+                <Tabs.TabLabel id="1">Comment</Tabs.TabLabel>
+                <Tabs.TabLabel id="2">History</Tabs.TabLabel>
+              </Tabs.TabLabels>
+              <Tabs.TabPanels>
+                <Tabs.TabPanel id="1">
+                  <Comments />
+                </Tabs.TabPanel>
+                <Tabs.TabPanel id="2">
+                  <p>Ticket History</p>
+                </Tabs.TabPanel>
+              </Tabs.TabPanels>
+            </Tabs>
           </div>
         </div>
       </div>
