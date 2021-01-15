@@ -6,7 +6,7 @@ import LeftSidebar from '@app/components/left-sidebar'
 
 // TODO: Update with proper navigtion coming from state/props
 import navigation from '@app/components/left-sidebar/dummy-nav'
-import withGuest from '@app/utils/withGuest'
+import withAuth from '@app/utils/withAuth'
 
 const Layout = ({ children }) => {
   const [collapsed, setCollapse] = useState(false)
@@ -52,4 +52,4 @@ Layout.propTypes = {
   children: P.node
 }
 
-export default withGuest(Layout)
+export default withAuth(Layout)

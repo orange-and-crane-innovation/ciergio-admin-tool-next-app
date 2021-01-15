@@ -16,7 +16,7 @@ function createApolloClient() {
   const httpLink = new HttpLink({ uri: process.env.NEXT_PUBLIC_API })
 
   const authMiddleware = new ApolloLink((operation, forward) => {
-    const token = (isBrowser && localStorage.getItem('token')) || ''
+    const token = (isBrowser && localStorage.getItem('keep')) || ''
     // add the authorization to the headers
     operation.setContext({
       headers: {
