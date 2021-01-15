@@ -2,6 +2,7 @@
   @apply relative px-6 py-4;
   @apply border-0 rounded;
   @apply text-white;
+  @apply flex items-center;
 
   &.success {
     @apply bg-success-500;
@@ -27,7 +28,7 @@
 
   .content {
     @apply inline-block mr-8;
-    @apply align-middle;
+    @apply text-left;
   }
 
   .button {

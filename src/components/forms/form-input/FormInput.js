@@ -44,6 +44,8 @@ function FormInput({
   const renderInput = useMemo(() => {
     return (
       <input
+        id={id}
+        name={name}
         type={type}
         className={inputClasses}
         placeholder={placeholder}

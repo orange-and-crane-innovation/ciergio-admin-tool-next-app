@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import ReactPagination from 'react-js-pagination'
+import {
+  FaAngleLeft,
+  FaAngleRight,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight
+} from 'react-icons/fa'
 
 import FormSelect from '@app/components/forms/form-select'
 
@@ -63,23 +69,23 @@ const Pagination = ({ items, activePage, onPageClick, onLimitChange }) => {
           pageRangeDisplayed={5}
           onChange={onPageClick}
           prevPageText={
-            <span>
-              <i className="fa fa-angle-left"></i> Prev
+            <span className={styles.flexCenter}>
+              <FaAngleLeft className="mr-1" /> Prev
             </span>
           }
           nextPageText={
-            <span>
-              Next <i className="fa fa-angle-right"></i>
+            <span className={styles.flexCenter}>
+              Next <FaAngleRight className="ml-1" />
             </span>
           }
           firstPageText={
-            <span>
-              <i className="fa fa-angle-double-left"></i> First
+            <span className={styles.flexCenter}>
+              <FaAngleDoubleLeft className="mr-1" /> First
             </span>
           }
           lastPageText={
-            <span>
-              Last <i className="fa fa-angle-double-right"></i>
+            <span className={styles.flexCenter}>
+              Last <FaAngleDoubleRight className="ml-1" />
             </span>
           }
           innerClass={styles.paginationContentInner}
@@ -88,8 +94,13 @@ const Pagination = ({ items, activePage, onPageClick, onLimitChange }) => {
           disabledClass={styles.paginationItemActive}
         />
       </div>
-      <div>
-        <FormSelect options={limitOptions} onChange={onLimitChange} />
+      <div className={styles.paginationLimitContainer}>
+        <FormSelect
+          value={limit}
+          options={limitOptions}
+          onChange={onLimitChange}
+          noCloseIcon
+        />
       </div>
     </div>
   )

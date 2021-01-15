@@ -1,0 +1,7 @@
+.SearchControlContainer {
+  @apply relative w-full;
+
+  .SearchControlIcon {
+    @apply absolute top-4 right-4;
+  }
+}

@@ -1,0 +1,11 @@
+.pageloaderContainer {
+  @apply p-4;
+  @apply flex flex-col items-center justify-center m-auto;
+}
+
+.fullPageloaderContainer {
+  @apply absolute top-0 left-0 right-0 bottom-0 z-40;
+  @apply flex flex-col items-center justify-center;
+  @apply bg-neutral-dark;
+  background: rgba(0, 0, 0, 0.25);
+}

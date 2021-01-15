@@ -124,3 +124,9 @@ a {
     @apply bg-primary-900 !important;
   }
 }
+
+[data-reach-dialog-content] {
+  @apply p-0 !important;
+  @apply bg-transparent !important;
+  @apply border-transparent !important;
+}

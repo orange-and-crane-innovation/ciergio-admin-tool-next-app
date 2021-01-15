@@ -16,7 +16,8 @@ function FormCheckbox({
   isChecked,
   isDisabled,
   onChange,
-  className
+  className,
+  ...rest
 }) {
   const checkboxClasses = useMemo(
     () =>
@@ -42,6 +43,7 @@ function FormCheckbox({
         defaultChecked={isChecked}
         disabled={isDisabled}
         onChange={onChange}
+        {...rest}
       />
       {label && (
         <label htmlFor={id} className="ml-2 cursor-pointer">

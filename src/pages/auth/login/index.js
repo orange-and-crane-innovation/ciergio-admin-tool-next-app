@@ -7,13 +7,9 @@ import Login from '@app/components/pages/login'
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
-      user {
-        id
-        firstName
-        lastName
-        fullName
-      }
-      token
+      processId
+      message
+      slave
     }
   }
 `
@@ -23,7 +19,7 @@ function LoginPage() {
   const [login, { loading, data, client }] = useMutation(LOGIN_MUTATION, {
     onError: _e => {},
     onCompleted: ({ login }) => {
-      localStorage.setItem('token', login.token)
+      localStorage.setItem('token', login.slave)
       client.resetStore()
     }
   })

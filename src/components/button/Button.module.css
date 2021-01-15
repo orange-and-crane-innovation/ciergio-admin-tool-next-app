@@ -31,7 +31,10 @@
   }
 
   &.disabled {
-    @apply bg-gray-300 cursor-not-allowed text-white;
+    @apply bg-neutral-300 border-neutral-300;
+    @apply text-white;
+    @apply cursor-not-allowed;
+    @apply pointer-events-none;
   }
 
   &.noBorder {

@@ -1,17 +1,32 @@
-.FormSelect {
-  @apply block w-full px-2 py-2 pr-8 mb-4;
-  @apply bg-white;
-  @apply border border-neutral-300;
-  @apply cursor-pointer;
-  @apply rounded-md;
+.FormSelectContainer {
+  @apply relative w-full;
 
-  &:hover {
-    @apply border-neutral-500;
+  .FormSelect {
+    @apply block w-full pl-2 py-2 pr-8 mb-4 pr-16;
+    @apply bg-white;
+    @apply border border-neutral-300;
+    @apply cursor-pointer;
+    @apply rounded-md;
+
+    &:hover {
+      @apply border-neutral-500;
+    }
+
+    &:active,
+    &:focus {
+      @apply outline-none;
+      @apply border-neutral-500;
+    }
+
+    &:disabled {
+      @apply bg-neutral-300;
+      @apply pointer-events-none;
+      @apply cursor-not-allowed;
+    }
   }
 
-  &:active,
-  &:focus {
-    @apply outline-none;
-    @apply border-neutral-500;
+  .FormSelectIcon {
+    @apply absolute top-4 right-10;
+    @apply text-neutral-500;
   }
 }
