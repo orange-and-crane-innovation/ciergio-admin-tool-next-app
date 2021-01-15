@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-key */
 import React from 'react'
-import { useRouter } from 'next/router'
+// import { useRouter } from 'next/router'
 import { FaEllipsisH } from 'react-icons/fa'
 import { FiEdit2, FiTrash2, FiFile } from 'react-icons/fi'
 
@@ -15,11 +15,11 @@ import UnitPage from '../unit'
 import styles from './index.module.css'
 
 const BuildingDataComponent = () => {
-  const router = useRouter()
+  // const router = useRouter()
 
-  const goToComplexData = id => {
-    router.push(`/properties/complex/${id}`)
-  }
+  // const goToComplexData = id => {
+  //   router.push(`/properties/complex/${id}`)
+  // }
 
   const dropdownData = [
     {

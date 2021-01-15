@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-key */
 import React, { useState } from 'react'
 import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
-import { FiEdit2, FiTrash2 } from 'react-icons/fi'
+import { FiEdit2 } from 'react-icons/fi'
 
 import Card from '@app/components/card'
 import Button from '@app/components/button'
