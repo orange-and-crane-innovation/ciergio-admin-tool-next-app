@@ -4,11 +4,17 @@ import { useEffect, useState } from 'react'
 
 const ME_QUERY = gql`
   query Authenticate {
-    me {
-      id
+    getProfile {
+      _id
+      avatar
       firstName
       lastName
-      fullName
+      email
+      contactNo
+      jobTitle
+      status
+      createdAt
+      updatedAt
     }
   }
 `
@@ -18,7 +24,10 @@ const withAuth = WrappedComponent => {
     const [loaded, setLoaded] = useState(false)
     const router = useRouter()
     const { loading, error } = useQuery(ME_QUERY, {
-      onError: () => {}
+      onError: () => {},
+      onCompleted: ({ getProfile }) => {
+        localStorage.setItem('profile', getProfile)
+      }
     })
 
     useEffect(() => {
