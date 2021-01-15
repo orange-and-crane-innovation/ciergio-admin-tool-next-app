@@ -1,23 +1,27 @@
 import { useQuery, gql } from '@apollo/client'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import * as GraphQLVar from './schema-varibles'
 
-const ME_QUERY = gql`
-  query Authenticate {
-    me {
-      id
-      firstName
-      lastName
-      fullName
+const verifySession = gql`
+    query {
+      getProfile{
+        ${GraphQLVar.User}
+        accounts {
+          ${GraphQLVar.Page}
+          data {
+            ${GraphQLVar.UserAccount}
+          }
+        }
+      }
     }
-  }
-`
+  `
 
 const withGuest = WrappedComponent => {
   const GuestComponent = props => {
     const [loaded, setLoaded] = useState(false)
     const router = useRouter()
-    const { loading, data } = useQuery(ME_QUERY, {
+    const { loading, data } = useQuery(verifySession, {
       onError: () => {}
     })
 

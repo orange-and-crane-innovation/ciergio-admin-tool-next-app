@@ -19,7 +19,7 @@ function LoginPage() {
   const [login, { loading, data, client }] = useMutation(LOGIN_MUTATION, {
     onError: _e => {},
     onCompleted: ({ login }) => {
-      localStorage.setItem('token', login.slave)
+      localStorage.setItem('keep', login.slave)
       client.resetStore()
     }
   })
