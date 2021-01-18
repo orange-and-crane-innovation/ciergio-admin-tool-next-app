@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-key */
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { debounce } from 'lodash'
@@ -183,6 +183,73 @@ const PostComponent = () => {
     }
   ] = useMutation(BULK_UPDATE_MUTATION)
 
+  const onCheck = useCallback(
+    e => {
+      const data = e.target.getAttribute('data-id')
+      const allCheck = document.getElementsByName('checkbox_select_all')[0]
+      const checkboxes = document.querySelectorAll(
+        'input[name="checkbox"]:checked'
+      )
+
+      if (e.target.checked) {
+        if (!selectedData.includes(data)) {
+          setSelectedData(prevState => [...prevState, data])
+        }
+        setIsBulkDisabled(false)
+      } else {
+        setSelectedData(prevState => [
+          ...prevState.filter(item => item !== data)
+        ])
+        if (checkboxes.length === 0) {
+          setSelectedBulk('')
+          setIsBulkDisabled(true)
+          setIsBulkButtonDisabled(true)
+        }
+      }
+
+      if (checkboxes.length === limitPage) {
+        allCheck.checked = true
+      } else {
+        allCheck.checked = false
+      }
+    },
+    [limitPage, selectedData]
+  )
+
+  const handleShowModal = useCallback(
+    (type, id) => {
+      const selected = data?.getAllPost?.post?.filter(item => item._id === id)
+
+      if (selected) {
+        switch (type) {
+          case 'details': {
+            setModalTitle('Article Details')
+            setModalContent(
+              <PostDetailsCard
+                date={selected[0].createdAt}
+                avatar={selected[0].author.user?.avatar}
+                firstName={selected[0].author?.user?.firstName}
+                lastName={selected[0].author?.user?.lasttName}
+                count={selected[0].views?.count}
+                uniqueCount={selected[0].views?.unique?.count}
+              />
+            )
+            break
+          }
+          case 'views': {
+            setModalTitle('Who Viewed this Article')
+            setModalContent(
+              <ViewsCard data={selected[0].views?.unique?.users} />
+            )
+            break
+          }
+        }
+        setShowModal(old => !old)
+      }
+    },
+    [data]
+  )
+
   useEffect(() => {
     if (!loading && data) {
       const tableData = {
@@ -285,7 +352,7 @@ const PostComponent = () => {
         }))
       )
     }
-  }, [loading, data, error])
+  }, [loading, data, error, onCheck, handleShowModal])
 
   useEffect(() => {
     if (!loadingBulk && errorBulk) {
@@ -372,63 +439,6 @@ const PostComponent = () => {
         ])
         checkboxes[i].checked = false
       }
-    }
-  }
-
-  const onCheck = e => {
-    const data = e.target.getAttribute('data-id')
-    const allCheck = document.getElementsByName('checkbox_select_all')[0]
-    const checkboxes = document.querySelectorAll(
-      'input[name="checkbox"]:checked'
-    )
-
-    if (e.target.checked) {
-      if (!selectedData.includes(data)) {
-        setSelectedData(prevState => [...prevState, data])
-      }
-      setIsBulkDisabled(false)
-    } else {
-      setSelectedData(prevState => [...prevState.filter(item => item !== data)])
-      if (checkboxes.length === 0) {
-        setSelectedBulk('')
-        setIsBulkDisabled(true)
-        setIsBulkButtonDisabled(true)
-      }
-    }
-
-    if (checkboxes.length === limitPage) {
-      allCheck.checked = true
-    } else {
-      allCheck.checked = false
-    }
-  }
-
-  const handleShowModal = (type, id) => {
-    const selected = data?.getAllPost?.post?.filter(item => item._id === id)
-
-    if (selected) {
-      switch (type) {
-        case 'details': {
-          setModalTitle('Article Details')
-          setModalContent(
-            <PostDetailsCard
-              date={selected[0].createdAt}
-              avatar={selected[0].author.user?.avatar}
-              firstName={selected[0].author?.user?.firstName}
-              lastName={selected[0].author?.user?.lasttName}
-              count={selected[0].views?.count}
-              uniqueCount={selected[0].views?.unique?.count}
-            />
-          )
-          break
-        }
-        case 'views': {
-          setModalTitle('Who Viewed this Article')
-          setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
-          break
-        }
-      }
-      setShowModal(old => !old)
     }
   }
 
