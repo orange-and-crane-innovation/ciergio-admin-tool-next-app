@@ -1,38 +1,24 @@
 /* eslint-disable react/jsx-key */
-import React, { useState } from 'react'
-import { useRouter } from 'next/router'
-import { FaPlusCircle } from 'react-icons/fa'
+import React, { useState, useMemo } from 'react'
+import { useQuery } from '@apollo/client'
+import Link from 'next/link'
 
-import { Card, Tabs, Table } from '@app/components/globals'
+import { Card, Tabs } from '@app/components/globals'
+import Table from '@app/components/table'
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import { DummyManageDirectoryList } from './DummyTable'
 
-const directoryCategories = [
-  {
-    id: 0,
-    name: 'Red Cross'
-  },
-  {
-    id: 1,
-    name: 'PHRC Headquarters'
-  },
-  {
-    id: 2,
-    name: 'McDonalds'
-  },
-  {
-    id: 3,
-    name: 'Suds Laundry Services'
-  }
-]
+import { DummyManageDirectoryList } from './DummyTable'
+import { FaPlusCircle } from 'react-icons/fa'
+
+import { GET_COMPANIES, GET_CONTACT_CATEGORY } from './queries'
 
 function Directory() {
+  const { data: companies } = useQuery(GET_COMPANIES)
+  const { data: categories } = useQuery(GET_CONTACT_CATEGORY)
   const [newCategory, setNewCategory] = useState('')
   const [showModal, setShowModal] = useState(false)
-
-  const router = useRouter()
 
   const handleShowModal = () => setShowModal(old => !old)
 
@@ -45,64 +31,51 @@ function Directory() {
   }
 
   const handleOk = () => {
-    directoryCategories.push({
-      id: directoryCategories.length,
-      name: newCategory
-    })
-
     handleClearModal()
   }
 
   const handleInputChange = e => setNewCategory(e.target.value)
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
-        Header: 'Name',
-        accessor: 'name'
-      },
-      {
-        Header: 'Category',
-        accessor: 'category'
-      },
-      {
-        Header: 'Address',
-        accessor: 'address'
+        name: 'Name',
+        width: ''
       }
     ],
     []
   )
 
-  const directoryData = React.useMemo(
+  const directoryData = useMemo(
     () => ({
-      count: 161,
-      limit: 10,
-      offset: 0,
-      data: [
-        {
-          name: 'Red Cross',
-          category: 'Emergency',
-          address: '96 Novella Knolls'
-        },
-        {
-          name: 'PRHC Headquarters',
-          category: 'Company',
-          address: '0870 Dennis Stream'
-        },
-        {
-          name: 'McDonalds',
-          category: 'Delivery',
-          address: '4182 Bartholome Drive Suite 279'
-        },
-        {
-          name: 'Suds Laundry Services',
-          category: 'Services',
-          address: '65 Letitia Center Apt. 341'
-        }
-      ]
+      count: companies?.getCompanies.count || 0,
+      limit: companies?.getCompanies.limit || 0,
+      data:
+        companies?.getCompanies?.data?.map(item => {
+          return {
+            name: (
+              <Link href={`/directory/companies/${item._id}`}>
+                <span className="text-blue-600 cursor-pointer">
+                  {item.name}
+                </span>
+              </Link>
+            )
+          }
+        }) || []
     }),
-    []
+    [companies?.getCompanies]
   )
+
+  const directoryCategories = useMemo(() => {
+    const cats = categories?.getContactCategories?.data
+
+    if (cats?.length > 0) {
+      return cats.map(c => ({
+        label: c.name,
+        value: c._id
+      }))
+    }
+  }, [categories?.getContactCategories?.data])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
@@ -124,16 +97,7 @@ function Directory() {
                   <span>Companies</span>
                 </div>
               }
-              content={
-                <Table
-                  columns={columns}
-                  payload={directoryData}
-                  onRowClick={item => {
-                    const company = item.name.toLowerCase().replaceAll(' ', '-')
-                    router.push(`/directory/companies/${company}`)
-                  }}
-                />
-              }
+              content={<Table rowNames={columns} items={directoryData} />}
               className="rounded-t-none"
             />
           </Tabs.TabPanel>
