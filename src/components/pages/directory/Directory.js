@@ -1,6 +1,9 @@
 /* eslint-disable react/jsx-key */
 import React, { useState, useMemo } from 'react'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
+import { Controller, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 import Link from 'next/link'
 
 import { Card, Tabs } from '@app/components/globals'
@@ -9,14 +12,33 @@ import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 
-import { DummyManageDirectoryList } from './DummyTable'
+import ManageDirectory from './ManageDirectory'
 import { FaPlusCircle } from 'react-icons/fa'
 
-import { GET_COMPANIES, GET_CONTACT_CATEGORY } from './queries'
+import { GET_COMPANIES, GET_CONTACT_CATEGORY, CREATE_CATEGORY } from './queries'
+
+const validationSchema = yup.object().shape({
+  category_name: yup.string().label('New Category Name').required()
+})
 
 function Directory() {
+  const { handleSubmit, control } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      category_name: ''
+    }
+  })
+
   const { data: companies } = useQuery(GET_COMPANIES)
-  const { data: categories } = useQuery(GET_CONTACT_CATEGORY)
+  const { data: categories, refetch: refetchCategories } = useQuery(
+    GET_CONTACT_CATEGORY
+  )
+  const [createCategory] = useMutation(CREATE_CATEGORY, {
+    onCompleted: () => {
+      handleClearModal()
+      refetchCategories()
+    }
+  })
   const [newCategory, setNewCategory] = useState('')
   const [showModal, setShowModal] = useState(false)
 
@@ -30,11 +52,11 @@ function Directory() {
     handleShowModal()
   }
 
-  const handleOk = () => {
-    handleClearModal()
+  const handleOk = values => {
+    createCategory({ variables: { data: { name: values.category_name } } })
   }
 
-  const handleInputChange = e => setNewCategory(e.target.value)
+  // const handleInputChange = e => console.log(e.target.value)
 
   const columns = useMemo(
     () => [
@@ -71,8 +93,7 @@ function Directory() {
 
     if (cats?.length > 0) {
       return cats.map(c => ({
-        label: c.name,
-        value: c._id
+        name: c.name
       }))
     }
   }, [categories?.getContactCategories?.data])
@@ -102,7 +123,7 @@ function Directory() {
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <div className="w-full flex items-center justify-end pt-4 pr-4">
+            <div className="w-full flex items-center justify-end pt-4">
               <Button
                 default
                 leftIcon={<FaPlusCircle />}
@@ -112,26 +133,36 @@ function Directory() {
             </div>
             <Card
               noPadding
-              content={<DummyManageDirectoryList data={directoryCategories} />}
+              content={<ManageDirectory data={directoryCategories} />}
             />
-            <Modal
-              title="Add Category"
-              okText="Add"
-              visible={showModal}
-              onClose={handleClearModal}
-              onCancel={handleClearModal}
-              onOk={handleOk}
-            >
-              <div className="w-full">
-                <FormInput
-                  label="New Category Name"
-                  placeholder="Enter new category"
-                  onChange={handleInputChange}
-                  name="category-name"
-                  value={newCategory}
-                />
-              </div>
-            </Modal>
+            {showModal ? (
+              <Modal
+                title="Add Category"
+                okText="Add"
+                visible={showModal}
+                onClose={handleClearModal}
+                onCancel={handleClearModal}
+                onOk={handleSubmit(handleOk)}
+              >
+                <div className="w-full">
+                  <form>
+                    <Controller
+                      name="category_name"
+                      control={control}
+                      render={({ value, onChange, name }) => (
+                        <FormInput
+                          name={name}
+                          label="New Category Name"
+                          placeholder="Enter new category"
+                          onChange={onChange}
+                          value={value}
+                        />
+                      )}
+                    />
+                  </form>
+                </div>
+              </Modal>
+            ) : null}
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

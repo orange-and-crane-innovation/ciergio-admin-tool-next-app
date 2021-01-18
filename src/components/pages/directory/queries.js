@@ -98,3 +98,16 @@ export const CREATE_CONTACT = gql`
     }
   }
 `
+
+export const CREATE_CATEGORY = gql`
+  mutation addCategory($data: InputContactCategory) {
+    createContactCategory(data: $data) {
+      _id
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`

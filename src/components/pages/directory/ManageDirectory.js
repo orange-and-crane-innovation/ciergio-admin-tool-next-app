@@ -12,7 +12,7 @@ const directoryRowNames = [
   }
 ]
 
-function DummyManageDirectoryList({ data }) {
+function ManageDirectory({ data }) {
   const [list, setList] = React.useState(data)
 
   useEffect(() => {
@@ -28,8 +28,8 @@ function DummyManageDirectoryList({ data }) {
   )
 }
 
-DummyManageDirectoryList.propTypes = {
+ManageDirectory.propTypes = {
   data: P.array
 }
 
-export { DummyManageDirectoryList }
+export default ManageDirectory
