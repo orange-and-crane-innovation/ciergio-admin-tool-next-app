@@ -1,18 +1,22 @@
 import React, { useState } from 'react'
 import P from 'prop-types'
+import { useQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
-import Pagination from '@app/components/pagination'
 
+import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import { Card, Table } from '@app/components/globals'
+import Table from '@app/components/table'
 import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
+import { Card } from '@app/components/globals'
 
 import { FaPlusCircle } from 'react-icons/fa'
+
+import { GET_COMPANY } from '../queries'
 
 const tableData = {
   count: 161,
@@ -40,13 +44,19 @@ const validationSchema = yup.object().shape({
   contact_address: yup.string().label('Contact Address')
 })
 
-function Contact({ name }) {
+function Contact({ id }) {
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       contact_name: '',
       contact_number: '',
       contact_address: ''
+    }
+  })
+
+  const { data: companies } = useQuery(GET_COMPANY, {
+    variables: {
+      companyId: id
     }
   })
 
@@ -105,6 +115,7 @@ function Contact({ name }) {
     []
   )
 
+  const name = companies?.length > 0 ? companies[0].name : ''
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title capitalize">{`${name} Directory`}</h1>
@@ -238,7 +249,7 @@ function Contact({ name }) {
 }
 
 Contact.propTypes = {
-  name: P.string
+  id: P.string
 }
 
 export default Contact

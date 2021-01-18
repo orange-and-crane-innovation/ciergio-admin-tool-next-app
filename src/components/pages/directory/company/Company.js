@@ -1,45 +1,48 @@
-import React from 'react'
+import React, { useMemo } from 'react'
+import { useQuery } from '@apollo/client'
+import Link from 'next/link'
 import P from 'prop-types'
-import { useRouter } from 'next/router'
 
-import { Card, Table } from '@app/components/globals'
+import { Card } from '@app/components/globals'
+import Table from '@app/components/table'
 
-function Company({ name }) {
-  const router = useRouter()
+import { GET_COMPANY, GET_COMPLEXES } from '../queries'
 
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: 'Name',
-        accessor: 'name'
-      }
-    ],
-    []
-  )
+const columns = [
+  {
+    name: 'Name',
+    width: ''
+  }
+]
 
-  const tableData = React.useMemo(
+function Company({ id }) {
+  const { data: complexes } = useQuery(GET_COMPLEXES, {
+    variables: { companyId: id }
+  })
+  const { data: companies } = useQuery(GET_COMPANY, {
+    variables: { companyId: id }
+  })
+
+  const directoryData = useMemo(
     () => ({
-      count: 161,
-      limit: 10,
-      offset: 0,
-      data: [
-        {
-          name: 'Red Cross'
-        },
-        {
-          name: 'PRHC Headquarters'
-        },
-        {
-          name: 'McDonalds'
-        },
-        {
-          name: 'Suds Laundry Services'
-        }
-      ]
+      count: complexes?.getComplexes.count || 0,
+      limit: complexes?.getComplexes.limit || 0,
+      data:
+        complexes?.getComplexes?.data?.map(item => {
+          return {
+            name: (
+              <Link href={`/directory/companies/${item._id}`}>
+                <span className="text-blue-600 cursor-pointer">
+                  {item.name}
+                </span>
+              </Link>
+            )
+          }
+        }) || []
     }),
-    []
+    [complexes?.getComplexes]
   )
-
+  const name = companies?.getCompanies?.data[0]?.name
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title capitalize">{`${name} Directory`}</h1>
@@ -48,17 +51,7 @@ function Company({ name }) {
       </div>
       <Card
         noPadding
-        content={
-          <Table
-            columns={columns}
-            payload={tableData}
-            onRowClick={item => {
-              const contact = item.name.toLowerCase().replaceAll(' ', '-')
-
-              router.push(`/directory/complex/${contact}`)
-            }}
-          />
-        }
+        content={<Table rowNames={columns} items={directoryData} />}
         className="rounded-t-none"
       />
     </section>
@@ -66,7 +59,7 @@ function Company({ name }) {
 }
 
 Company.propTypes = {
-  name: P.string
+  id: P.string
 }
 
 export default Company

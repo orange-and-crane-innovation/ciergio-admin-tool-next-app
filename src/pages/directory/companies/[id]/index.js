@@ -3,9 +3,9 @@ import Company from '@app/components/pages/directory/company'
 
 function CompanyPage() {
   const router = useRouter()
-  const { company } = router.query
+  const { id } = router.query
 
-  return <Company name={company} />
+  return <Company id={id} />
 }
 
 export default CompanyPage

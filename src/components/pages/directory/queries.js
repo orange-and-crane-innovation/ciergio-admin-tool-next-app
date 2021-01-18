@@ -13,9 +13,20 @@ export const GET_COMPANIES = gql`
   }
 `
 
+export const GET_COMPANY = gql`
+  query getCompany($companyId: String) {
+    getCompanies(where: { _id: $companyId }) {
+      data {
+        name
+        _id
+      }
+    }
+  }
+`
+
 export const GET_COMPLEXES = gql`
-  query getComplexes($companyId: String!) {
-    getComplexes(where: { companyId: $companyId }) {
+  {
+    getComplexes {
       count
       limit
       skip

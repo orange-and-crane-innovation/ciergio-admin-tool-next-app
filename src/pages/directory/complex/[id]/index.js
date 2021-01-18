@@ -3,9 +3,9 @@ import Contacts from '@app/components/pages/directory/complex'
 
 function ContactList() {
   const router = useRouter()
-  const { contact } = router.query
+  const { id } = router.query
 
-  return <Contacts name={contact} />
+  return <Contacts id={id} />
 }
 
 export default ContactList
