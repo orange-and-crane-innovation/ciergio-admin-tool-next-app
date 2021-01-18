@@ -11,11 +11,20 @@ import Table from '@app/components/table'
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
+import Dropdown from '@app/components/dropdown'
 
 import ManageDirectory from './ManageDirectory'
-import { FaPlusCircle } from 'react-icons/fa'
 
-import { GET_COMPANIES, GET_CONTACT_CATEGORY, CREATE_CATEGORY } from './queries'
+import { FaPlusCircle } from 'react-icons/fa'
+import { AiOutlineEllipsis } from 'react-icons/ai'
+
+import {
+  GET_COMPANIES,
+  GET_CONTACT_CATEGORY,
+  CREATE_CATEGORY,
+  EDIT_CATEGORY,
+  DELETE_CATEGORY
+} from './queries'
 
 const validationSchema = yup.object().shape({
   category_name: yup.string().label('New Category Name').required()
@@ -35,28 +44,72 @@ function Directory() {
   )
   const [createCategory] = useMutation(CREATE_CATEGORY, {
     onCompleted: () => {
-      handleClearModal()
+      handleClearModal('create')
       refetchCategories()
     }
   })
+  const [editCategory] = useMutation(EDIT_CATEGORY, {
+    onCompleted: () => {
+      handleClearModal('edit')
+      refetchCategories()
+    }
+  })
+  const [deleteCategory] = useMutation(DELETE_CATEGORY, {
+    onCompleted: () => {
+      handleClearModal('delete')
+      refetchCategories()
+    }
+  })
+
   const [newCategory, setNewCategory] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [selectedId, setSelectedId] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
 
-  const handleShowModal = () => setShowModal(old => !old)
+  const handleShowModal = (view, id) => {
+    setSelectedId(id)
+    switch (view) {
+      case 'create':
+        setShowModal(old => !old)
+        break
+      case 'edit':
+        setShowEditCategoryModal(old => !old)
+        break
+      case 'delete':
+        setShowDeleteCategoryModal(old => !old)
+        break
+      default:
+        break
+    }
+  }
 
-  const handleClearModal = () => {
+  const handleClearModal = type => {
     if (newCategory !== '') {
       setNewCategory('')
     }
 
-    handleShowModal()
+    handleShowModal(type, '')
   }
 
   const handleOk = values => {
     createCategory({ variables: { data: { name: values.category_name } } })
   }
 
-  // const handleInputChange = e => console.log(e.target.value)
+  const handleEditCategory = values => {
+    setSelectedCategory('')
+    editCategory({
+      variables: {
+        data: { name: values.category_name },
+        categoryId: selectedId
+      }
+    })
+  }
+
+  const handleDeleteCategory = () => {
+    deleteCategory({ variables: { categoryId: selectedId } })
+  }
 
   const columns = useMemo(
     () => [
@@ -92,9 +145,33 @@ function Directory() {
     const cats = categories?.getContactCategories?.data
 
     if (cats?.length > 0) {
-      return cats.map(c => ({
-        name: c.name
-      }))
+      return cats.map(c => {
+        const dropdownData = [
+          {
+            label: 'Edit Category',
+            icon: <span className="ciergio-edit" />,
+            function: () => {
+              setSelectedCategory(c.name)
+              handleShowModal('edit', c._id)
+            }
+          },
+          {
+            label: 'Delete Category',
+            icon: <span className="ciergio-trash" />,
+            function: () => {
+              setSelectedCategory(c.name)
+              handleShowModal('delete', c._id)
+            }
+          }
+        ]
+
+        return {
+          name: c.name,
+          dropdown: (
+            <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+          )
+        }
+      })
     }
   }, [categories?.getContactCategories?.data])
 
@@ -128,41 +205,88 @@ function Directory() {
                 default
                 leftIcon={<FaPlusCircle />}
                 label="Add Category"
-                onClick={() => setShowModal(old => !old)}
+                onClick={() => setShowModal('create', null)}
               />
             </div>
             <Card
               noPadding
               content={<ManageDirectory data={directoryCategories} />}
             />
-            {showModal ? (
-              <Modal
-                title="Add Category"
-                okText="Add"
-                visible={showModal}
-                onClose={handleClearModal}
-                onCancel={handleClearModal}
-                onOk={handleSubmit(handleOk)}
-              >
-                <div className="w-full">
-                  <form>
-                    <Controller
-                      name="category_name"
-                      control={control}
-                      render={({ value, onChange, name }) => (
-                        <FormInput
-                          name={name}
-                          label="New Category Name"
-                          placeholder="Enter new category"
-                          onChange={onChange}
-                          value={value}
-                        />
-                      )}
-                    />
-                  </form>
+            <Modal
+              title="Add Category"
+              okText="Add"
+              visible={showModal}
+              onClose={() => handleClearModal('create')}
+              onCancel={() => handleClearModal('create')}
+              onOk={handleSubmit(handleOk)}
+            >
+              <div className="w-full">
+                <form>
+                  <Controller
+                    name="category_name"
+                    control={control}
+                    render={({ value, onChange, name }) => (
+                      <FormInput
+                        name={name}
+                        label="New Category Name"
+                        placeholder="Enter new category"
+                        onChange={onChange}
+                        value={value}
+                      />
+                    )}
+                  />
+                </form>
+              </div>
+            </Modal>
+            <Modal
+              title="Edit Category"
+              okText="Okay"
+              visible={showEditCategoryModal}
+              onClose={() => handleClearModal('edit')}
+              onCancel={() => handleClearModal('edit')}
+              onOk={handleSubmit(handleEditCategory)}
+            >
+              <div className="w-full">
+                <form>
+                  <Controller
+                    name="category_name"
+                    control={control}
+                    render={({ value, onChange, name }) => (
+                      <FormInput
+                        name={name}
+                        label="New Category Name"
+                        placeholder="Enter new category"
+                        onChange={onChange}
+                        value={value || selectedCategory}
+                      />
+                    )}
+                  />
+                </form>
+              </div>
+            </Modal>
+            <Modal
+              title="Delete Category"
+              okText="Yes, delete"
+              visible={showDeleteCategoryModal}
+              onClose={() => handleClearModal('delete')}
+              onCancel={() => handleClearModal('delete')}
+              onOk={handleDeleteCategory}
+            >
+              <div className="w-full">
+                <div>
+                  <p className="mb-4">
+                    <span className="font-medium">Warning: </span>{' '}
+                    {`You're about to delete `}
+                    <span className="font-medium">{selectedCategory}</span>
+                  </p>
+                  <p className="mb-4">
+                    You will remove this category for everyone together with the
+                    contacts associated with it.
+                  </p>
+                  <p>Are you sure you want to delete?</p>
                 </div>
-              </Modal>
-            ) : null}
+              </div>
+            </Modal>
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

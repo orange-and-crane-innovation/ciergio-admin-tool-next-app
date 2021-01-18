@@ -111,3 +111,32 @@ export const CREATE_CATEGORY = gql`
     }
   }
 `
+
+export const EDIT_CATEGORY = gql`
+  mutation editCategory(
+    $data: InputUpdateContactCategory
+    $categoryId: String
+  ) {
+    updateContactCategory(data: $data, contactCategoryId: $categoryId) {
+      _id
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`
+
+export const DELETE_CATEGORY = gql`
+  mutation deleteCategory($categoryId: String) {
+    deleteContactCategory(contactCategoryId: $categoryId) {
+      _id
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`
