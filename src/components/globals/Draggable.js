@@ -37,7 +37,7 @@ const Component = ({ list, onListChange, rowNames }) => {
         id={item.id}
         item={item}
         onMoveCard={moveCard}
-        reorder={hasReorderColumn}
+        reorder={hasReorderColumn !== undefined}
       />
     )
   }
@@ -57,7 +57,13 @@ const Component = ({ list, onListChange, rowNames }) => {
             </tr>
           </thead>
         ) : null}
-        <tbody>{list.map((item, index) => renderListItem(item, index))}</tbody>
+        <tbody>
+          {list.map((item, index) => (
+            <React.Fragment key={index}>
+              {renderListItem(item, index)}
+            </React.Fragment>
+          ))}
+        </tbody>
       </table>
     </DndProvider>
   )
@@ -69,7 +75,7 @@ Component.propTypes = {
   rowNames: P.array
 }
 
-const ListItem = ({ index, id, onMoveCard, item, reorder }) => {
+const ListItem = ({ index, id, onMoveCard, item }) => {
   const listItemRef = useRef(null)
 
   const [, drop] = useDrop({

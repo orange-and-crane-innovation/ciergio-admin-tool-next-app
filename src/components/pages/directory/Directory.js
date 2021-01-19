@@ -1,108 +1,178 @@
 /* eslint-disable react/jsx-key */
-import React, { useState } from 'react'
-import { useRouter } from 'next/router'
-import { FaPlusCircle } from 'react-icons/fa'
+import React, { useState, useMemo } from 'react'
+import { useQuery, useMutation } from '@apollo/client'
+import { Controller, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import Link from 'next/link'
 
-import { Card, Tabs, Table } from '@app/components/globals'
+import { Card, Tabs } from '@app/components/globals'
+import Table from '@app/components/table'
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import { DummyManageDirectoryList } from './DummyTable'
+import Dropdown from '@app/components/dropdown'
 
-const directoryCategories = [
+import ManageDirectory from './ManageDirectory'
+
+import { initializeApollo } from '@app/lib/apollo/client'
+
+import { FaPlusCircle } from 'react-icons/fa'
+import { AiOutlineEllipsis } from 'react-icons/ai'
+
+import {
+  GET_COMPANIES,
+  GET_CONTACT_CATEGORY,
+  CREATE_CATEGORY,
+  EDIT_CATEGORY,
+  DELETE_CATEGORY
+} from './queries'
+
+const validationSchema = yup.object().shape({
+  category_name: yup.string().label('New Category Name').required()
+})
+
+const columns = [
   {
-    id: 0,
-    name: 'Red Cross'
-  },
-  {
-    id: 1,
-    name: 'PHRC Headquarters'
-  },
-  {
-    id: 2,
-    name: 'McDonalds'
-  },
-  {
-    id: 3,
-    name: 'Suds Laundry Services'
+    name: 'Name',
+    width: ''
   }
 ]
 
 function Directory() {
+  const { handleSubmit, control } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      category_name: ''
+    }
+  })
+
+  const { data: companies } = useQuery(GET_COMPANIES)
+  const { data: categories, refetch: refetchCategories } = useQuery(
+    GET_CONTACT_CATEGORY
+  )
+  const [createCategory] = useMutation(CREATE_CATEGORY, {
+    onCompleted: () => {
+      handleClearModal('create')
+      refetchCategories()
+    }
+  })
+  const [editCategory] = useMutation(EDIT_CATEGORY, {
+    onCompleted: () => {
+      handleClearModal('edit')
+      refetchCategories()
+    }
+  })
+  const [deleteCategory] = useMutation(DELETE_CATEGORY, {
+    onCompleted: () => {
+      handleClearModal('delete')
+      refetchCategories()
+    }
+  })
+
   const [newCategory, setNewCategory] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [selectedId, setSelectedId] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
 
-  const router = useRouter()
+  const handleShowModal = (view, id) => {
+    setSelectedId(id)
+    switch (view) {
+      case 'create':
+        setShowModal(old => !old)
+        break
+      case 'edit':
+        setShowEditCategoryModal(old => !old)
+        break
+      case 'delete':
+        setShowDeleteCategoryModal(old => !old)
+        break
+      default:
+        break
+    }
+  }
 
-  const handleShowModal = () => setShowModal(old => !old)
-
-  const handleClearModal = () => {
+  const handleClearModal = type => {
     if (newCategory !== '') {
       setNewCategory('')
     }
 
-    handleShowModal()
+    handleShowModal(type, '')
   }
 
-  const handleOk = () => {
-    directoryCategories.push({
-      id: directoryCategories.length,
-      name: newCategory
-    })
-
-    handleClearModal()
+  const handleOk = values => {
+    createCategory({ variables: { data: { name: values.category_name } } })
   }
 
-  const handleInputChange = e => setNewCategory(e.target.value)
-
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: 'Name',
-        accessor: 'name'
-      },
-      {
-        Header: 'Category',
-        accessor: 'category'
-      },
-      {
-        Header: 'Address',
-        accessor: 'address'
+  const handleEditCategory = values => {
+    setSelectedCategory('')
+    editCategory({
+      variables: {
+        data: { name: values.category_name },
+        categoryId: selectedId
       }
-    ],
-    []
+    })
+  }
+
+  const handleDeleteCategory = () => {
+    deleteCategory({ variables: { categoryId: selectedId } })
+  }
+
+  const directoryData = useMemo(
+    () => ({
+      count: companies?.getCompanies.count || 0,
+      limit: companies?.getCompanies.limit || 0,
+      data:
+        companies?.getCompanies?.data?.map(item => {
+          return {
+            name: (
+              <Link href={`/directory/companies/${item._id}`}>
+                <span className="text-blue-600 cursor-pointer">
+                  {item.name}
+                </span>
+              </Link>
+            )
+          }
+        }) || []
+    }),
+    [companies?.getCompanies]
   )
 
-  const directoryData = React.useMemo(
-    () => ({
-      count: 161,
-      limit: 10,
-      offset: 0,
-      data: [
-        {
-          name: 'Red Cross',
-          category: 'Emergency',
-          address: '96 Novella Knolls'
-        },
-        {
-          name: 'PRHC Headquarters',
-          category: 'Company',
-          address: '0870 Dennis Stream'
-        },
-        {
-          name: 'McDonalds',
-          category: 'Delivery',
-          address: '4182 Bartholome Drive Suite 279'
-        },
-        {
-          name: 'Suds Laundry Services',
-          category: 'Services',
-          address: '65 Letitia Center Apt. 341'
+  const directoryCategories = useMemo(() => {
+    const cats = categories?.getContactCategories?.data
+
+    if (cats?.length > 0) {
+      return cats.map(c => {
+        const dropdownData = [
+          {
+            label: 'Edit Category',
+            icon: <span className="ciergio-edit" />,
+            function: () => {
+              setSelectedCategory(c.name)
+              handleShowModal('edit', c._id)
+            }
+          },
+          {
+            label: 'Delete Category',
+            icon: <span className="ciergio-trash" />,
+            function: () => {
+              setSelectedCategory(c.name)
+              handleShowModal('delete', c._id)
+            }
+          }
+        ]
+
+        return {
+          name: c.name,
+          dropdown: (
+            <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+          )
         }
-      ]
-    }),
-    []
-  )
+      })
+    }
+  }, [categories?.getContactCategories?.data])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
@@ -124,48 +194,96 @@ function Directory() {
                   <span>Companies</span>
                 </div>
               }
-              content={
-                <Table
-                  columns={columns}
-                  payload={directoryData}
-                  onRowClick={item => {
-                    const company = item.name.toLowerCase().replaceAll(' ', '-')
-                    router.push(`/directory/companies/${company}`)
-                  }}
-                />
-              }
+              content={<Table rowNames={columns} items={directoryData} />}
               className="rounded-t-none"
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <div className="w-full flex items-center justify-end pt-4 pr-4">
+            <div className="w-full flex items-center justify-end pt-4">
               <Button
                 default
                 leftIcon={<FaPlusCircle />}
                 label="Add Category"
-                onClick={() => setShowModal(old => !old)}
+                onClick={() => setShowModal('create', null)}
               />
             </div>
             <Card
               noPadding
-              content={<DummyManageDirectoryList data={directoryCategories} />}
+              content={<ManageDirectory data={directoryCategories} />}
             />
             <Modal
               title="Add Category"
               okText="Add"
               visible={showModal}
-              onClose={handleClearModal}
-              onCancel={handleClearModal}
-              onOk={handleOk}
+              onClose={() => handleClearModal('create')}
+              onCancel={() => handleClearModal('create')}
+              onOk={handleSubmit(handleOk)}
             >
               <div className="w-full">
-                <FormInput
-                  label="New Category Name"
-                  placeholder="Enter new category"
-                  onChange={handleInputChange}
-                  name="category-name"
-                  value={newCategory}
-                />
+                <form>
+                  <Controller
+                    name="category_name"
+                    control={control}
+                    render={({ value, onChange, name }) => (
+                      <FormInput
+                        name={name}
+                        label="New Category Name"
+                        placeholder="Enter new category"
+                        onChange={onChange}
+                        value={value}
+                      />
+                    )}
+                  />
+                </form>
+              </div>
+            </Modal>
+            <Modal
+              title="Edit Category"
+              okText="Okay"
+              visible={showEditCategoryModal}
+              onClose={() => handleClearModal('edit')}
+              onCancel={() => handleClearModal('edit')}
+              onOk={handleSubmit(handleEditCategory)}
+            >
+              <div className="w-full">
+                <form>
+                  <Controller
+                    name="category_name"
+                    control={control}
+                    render={({ value, onChange, name }) => (
+                      <FormInput
+                        name={name}
+                        label="New Category Name"
+                        placeholder="Enter new category"
+                        onChange={onChange}
+                        value={value || selectedCategory}
+                      />
+                    )}
+                  />
+                </form>
+              </div>
+            </Modal>
+            <Modal
+              title="Delete Category"
+              okText="Yes, delete"
+              visible={showDeleteCategoryModal}
+              onClose={() => handleClearModal('delete')}
+              onCancel={() => handleClearModal('delete')}
+              onOk={handleDeleteCategory}
+            >
+              <div className="w-full">
+                <div>
+                  <p className="mb-4">
+                    <span className="font-medium">Warning: </span>{' '}
+                    {`You're about to delete `}
+                    <span className="font-medium">{selectedCategory}</span>
+                  </p>
+                  <p className="mb-4">
+                    You will remove this category for everyone together with the
+                    contacts associated with it.
+                  </p>
+                  <p>Are you sure you want to delete?</p>
+                </div>
               </div>
             </Modal>
           </Tabs.TabPanel>
@@ -173,6 +291,24 @@ function Directory() {
       </Tabs>
     </section>
   )
+}
+
+export async function getStaticProps() {
+  const apolloClient = initializeApollo()
+
+  await apolloClient.query({
+    query: GET_COMPANIES
+  })
+
+  await apolloClient.query({
+    query: GET_CONTACT_CATEGORY
+  })
+
+  return {
+    props: {
+      initialApolloState: apolloClient.cache.extract()
+    }
+  }
 }
 
 export default Directory

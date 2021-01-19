@@ -3,10 +3,9 @@ import Contacts from '@app/components/pages/directory/complex'
 
 function ContactList() {
   const router = useRouter()
-  const { contact } = router.query
-  const name = contact.replaceAll('-', ' ')
+  const { id } = router.query
 
-  return <Contacts name={name} />
+  return <Contacts id={id} />
 }
 
 export default ContactList

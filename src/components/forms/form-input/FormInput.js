@@ -55,7 +55,17 @@ function FormInput({
         {...inputProps}
       />
     )
-  }, [type, inputClasses, inputProps, onChange, placeholder, maxLength, value])
+  }, [
+    id,
+    name,
+    type,
+    inputClasses,
+    placeholder,
+    value,
+    maxLength,
+    onChange,
+    inputProps
+  ])
 
   const renderError = useMemo(() => {
     return error ? <span className={errorClasses}>{error}</span> : null

@@ -16,12 +16,12 @@
       @apply p-4 px-6;
 
       & span {
-        @apply text-base text-left;
+        @apply text-base;
       }
 
       &.DragIcon {
-        @apply text-center;
-        width: 90px !important;
+        @apply text-left pl-12;
+        width: 5% !important;
       }
     }
   }

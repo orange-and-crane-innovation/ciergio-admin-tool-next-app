@@ -3,10 +3,9 @@ import Company from '@app/components/pages/directory/company'
 
 function CompanyPage() {
   const router = useRouter()
-  const { company } = router.query
-  const name = company.replaceAll('-', ' ')
+  const { id } = router.query
 
-  return <Company name={name} />
+  return <Company id={id} />
 }
 
 export default CompanyPage

@@ -142,7 +142,8 @@ SelectCategoryComponent.propTypes = {
   type: PropTypes.string,
   userType: PropTypes.string,
   selected: PropTypes.string,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  onClear: PropTypes.func
 }
 
 export default SelectCategoryComponent
