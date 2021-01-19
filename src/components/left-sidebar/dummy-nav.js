@@ -83,6 +83,18 @@ const navigation = [
         items: []
       },
       {
+        url: '/dues',
+        icon: 'ciergio-dues',
+        title: 'My Dues',
+        items: [
+          {
+            url: '/dues/billing',
+            title: 'Billing',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/directory',
         icon: 'ciergio-store',
         title: 'Directory',
