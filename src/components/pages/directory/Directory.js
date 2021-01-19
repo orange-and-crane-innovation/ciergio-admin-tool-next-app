@@ -15,6 +15,8 @@ import Dropdown from '@app/components/dropdown'
 
 import ManageDirectory from './ManageDirectory'
 
+import { initializeApollo } from '@app/lib/apollo/client'
+
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 
@@ -292,6 +294,24 @@ function Directory() {
       </Tabs>
     </section>
   )
+}
+
+export async function getStaticProps() {
+  const apolloClient = initializeApollo()
+
+  await apolloClient.query({
+    query: GET_COMPANIES
+  })
+
+  await apolloClient.query({
+    query: GET_CONTACT_CATEGORY
+  })
+
+  return {
+    props: {
+      initialApolloState: apolloClient.cache.extract()
+    }
+  }
 }
 
 export default Directory

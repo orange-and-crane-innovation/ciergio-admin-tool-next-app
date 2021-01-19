@@ -6,7 +6,8 @@ import P from 'prop-types'
 import { Card } from '@app/components/globals'
 import Table from '@app/components/table'
 
-import { GET_COMPANY, GET_COMPLEXES } from '../queries'
+import { initializeApollo } from '@app/lib/apollo/client'
+import { GET_COMPANY, GET_COMPLEXES, GET_COMPANIES } from '../queries'
 
 const columns = [
   {
@@ -31,7 +32,7 @@ function Company({ id }) {
         complexes?.getComplexes?.data?.map(item => {
           return {
             name: (
-              <Link href={`/directory/companies/${item._id}`}>
+              <Link href={`/directory/complex/${item._id}`}>
                 <span className="text-blue-600 cursor-pointer">
                   {item.name}
                 </span>
@@ -60,6 +61,40 @@ function Company({ id }) {
 
 Company.propTypes = {
   id: P.string
+}
+
+const apolloClient = initializeApollo()
+
+export async function getStaticPaths() {
+  const companies = await apolloClient.query({
+    query: GET_COMPANIES
+  })
+
+  const paths = companies?.getCompanies?.data.map(c => ({
+    params: { id: c._id }
+  }))
+
+  return {
+    paths,
+    fallback: false
+  }
+}
+
+export async function getStaticProps({ params }) {
+  await apolloClient.query({
+    query: GET_COMPANY,
+    variables: { companyId: params.id }
+  })
+
+  await apolloClient.query({
+    query: GET_COMPLEXES
+  })
+
+  return {
+    props: {
+      initialApolloState: apolloClient.cache.extract()
+    }
+  }
 }
 
 export default Company
