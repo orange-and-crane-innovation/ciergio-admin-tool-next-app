@@ -38,11 +38,23 @@ export const GET_COMPLEXES = gql`
   }
 `
 
+export const GET_COMPLEX = gql`
+  query getComplex($id: String) {
+    getComplexes(where: { _id: $id }) {
+      data {
+        _id
+        name
+        company {
+          _id
+        }
+      }
+    }
+  }
+`
+
 export const GET_BUILDINGS = gql`
-  query getBuildings($companyId: String!, $complexId: String!) {
-    getBuildings(where: { companyId: $companyId, complexId: $complexId }) {
-      count
-      limit
+  query getBuildingsByComplexId($complexId: String) {
+    getBuildings(where: { complexId: $complexId }) {
       data {
         _id
         name
@@ -52,8 +64,12 @@ export const GET_BUILDINGS = gql`
 `
 
 export const GET_CONTACT_CATEGORY = gql`
-  {
-    getContactCategories(where: { type: directory }) {
+  query getCategoriesByComplexId($complexId: String) {
+    getContactCategories(
+      where: { complexId: $complexId, type: directory }
+      limit: 10
+      skip: 0
+    ) {
       count
       limit
       data {
@@ -67,14 +83,15 @@ export const GET_CONTACT_CATEGORY = gql`
 `
 
 export const GET_CONTACTS = gql`
-  query getContacts($categoryId: String, $buildingId: String) {
-    getContacts(where: { categoryId: $categoryId, buildingId: $buildingId }) {
+  query getContactsByComplexId($complexId: String) {
+    getContacts(where: { complexId: $complexId, type: directory }) {
       count
       limit
       data {
         _id
         name
         logo
+        contactNumber
         building {
           name
         }
@@ -100,6 +117,32 @@ export const CREATE_CONTACT = gql`
     $data: InputContact!
   ) {
     createContact(data: $data, complexId: $complexId, companyId: $companyId) {
+      _id
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`
+
+export const EDIT_CONTACT = gql`
+  mutation editContact($data: InputContact!, $contactId: String!) {
+    updateContact(data: $data, contactId: $contactId) {
+      _id
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`
+
+export const DELETE_CONTACT = gql`
+  mutation deleteContact($contactId: String!) {
+    deleteContact(contactId: $contactId) {
       _id
       processId
       message

@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import P from 'prop-types'
-import { useQuery } from '@apollo/client'
+import React, { useState, useMemo } from 'react'
+import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
+import P from 'prop-types'
 import * as yup from 'yup'
 
 import Pagination from '@app/components/pagination'
@@ -12,77 +12,151 @@ import FormSelect from '@app/components/forms/form-select'
 import Table from '@app/components/table'
 import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
+import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 
 import { FaPlusCircle } from 'react-icons/fa'
+import { AiOutlineEllipsis } from 'react-icons/ai'
 
-import { GET_COMPANY } from '../queries'
-
-const tableData = {
-  count: 161,
-  limit: 10,
-  offset: 0,
-  data: [
-    {
-      name: 'Red Cross'
-    },
-    {
-      name: 'PRHC Headquarters'
-    },
-    {
-      name: 'McDonalds'
-    },
-    {
-      name: 'Suds Laundry Services'
-    }
-  ]
-}
+import { initializeApollo } from '@app/lib/apollo/client'
+import {
+  GET_COMPLEXES,
+  GET_COMPLEX,
+  GET_CONTACTS,
+  GET_CONTACT_CATEGORY,
+  CREATE_CONTACT,
+  EDIT_CONTACT,
+  DELETE_CONTACT
+} from '../queries'
 
 const validationSchema = yup.object().shape({
-  contact_name: yup.string().label('Contact Name').required(),
-  contact_number: yup.string().label('Contact Number').required(),
-  contact_address: yup.string().label('Contact Address')
+  name: yup.string().label('Contact Name').required(),
+  contactNumber: yup.string().label('Contact Number').required(),
+  address: yup.string().label('Contact Address')
 })
 
 function Contact({ id }) {
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      contact_name: '',
-      contact_number: '',
-      contact_address: ''
+      name: '',
+      contactNumber: '',
+      address: ''
     }
   })
 
-  const { data: companies } = useQuery(GET_COMPANY, {
+  const { data: complexes } = useQuery(GET_COMPLEX, {
     variables: {
-      companyId: id
+      id: id
+    }
+  })
+  const { data: contacts, refetch: refetchContacts } = useQuery(GET_CONTACTS, {
+    variables: {
+      complexId: id
+    }
+  })
+  const { data: categories } = useQuery(GET_CONTACT_CATEGORY, {
+    variables: {
+      complexId: id
+    }
+  })
+
+  const [createContact] = useMutation(CREATE_CONTACT, {
+    onCompleted: () => {
+      handleClearModal('create')
+      refetchContacts()
+    }
+  })
+  const [editContact] = useMutation(EDIT_CONTACT, {
+    onCompleted: () => {
+      handleClearModal('edit')
+      refetchContacts()
+    }
+  })
+  const [deleteContact] = useMutation(DELETE_CONTACT, {
+    onCompleted: () => {
+      handleClearModal('delete')
+      refetchContacts()
     }
   })
 
   const [showModal, setShowModal] = useState(false)
-  const [contacts, setContacts] = useState(tableData)
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageUrl, setImageUrl] = useState([])
   const [loading, setLoading] = useState(false)
+  const [selectedContact, setSelectedContact] = useState(undefined)
+  const [showEditContactModal, setShowEditContactModal] = useState(false)
+  const [showDeleteContactModal, setShowDeleteContactModal] = useState(false)
 
-  const handleShowModal = () => setShowModal(old => !old)
+  const name = complexes?.getComplexes?.data[0]?.name || ''
+  const companyId = complexes?.getComplexes?.data[0]?.company._id || ''
 
-  const handleClearModal = () => {
-    handleShowModal()
+  const handleShowModal = view => {
+    switch (view) {
+      case 'create':
+        setShowModal(old => !old)
+        break
+      case 'edit':
+        setShowEditContactModal(old => !old)
+        break
+      case 'delete':
+        setShowDeleteContactModal(old => !old)
+        break
+      default:
+        break
+    }
   }
 
-  const handleOk = values => {
-    const { contact_name: name } = values
-    setContacts(old => ({
-      ...old,
-      data: [
-        ...old.data,
-        {
-          title: name
-        }
-      ]
-    }))
-    handleShowModal()
+  const handleClearModal = type => {
+    handleShowModal(type)
+  }
+
+  const handleCreateContact = values => {
+    const { category, name, contactNumber, address } = values
+
+    const contactData = {
+      name,
+      logo: null,
+      description: 'Test description',
+      contactNumber,
+      address: address !== '' ? address : null,
+      categoryId: category || categories?.getContactCategories?.data[0]._id
+    }
+
+    createContact({
+      variables: {
+        data: contactData,
+        companyId,
+        complexId: id
+      }
+    })
+  }
+
+  const handleEditContact = values => {
+    const { category, name, contactNumber, address } = values
+
+    const contactData = {
+      name,
+      logo: null,
+      description: 'Test description',
+      contactNumber,
+      address: address !== '' ? address : null,
+      categoryId: category || categories?.getContactCategories?.data[0]._id
+    }
+
+    editContact({
+      variables: {
+        data: contactData,
+        contactId: selectedContact._id
+      }
+    })
+  }
+
+  const handleDeleteContact = () => {
+    deleteContact({
+      variables: {
+        contactId: selectedContact._id
+      }
+    })
   }
 
   const handleUploadImage = e => {
@@ -105,22 +179,99 @@ function Contact({ id }) {
     setImageUrl(null)
   }
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
-        Header: 'Name',
-        accessor: 'name'
+        name: 'Name',
+        width: '35%'
+      },
+      {
+        name: 'Category',
+        width: ''
+      },
+      {
+        name: 'Address',
+        width: ''
+      },
+      {
+        name: '',
+        width: ''
       }
     ],
     []
   )
 
-  const name = companies?.length > 0 ? companies[0].name : ''
+  const contactsData = useMemo(() => {
+    return {
+      count: contacts?.getContacts?.count || 0,
+      limit: contacts?.getContacts?.limit || 0,
+      offset: contacts?.getContacts?.offset || 0,
+      data:
+        contacts?.getContacts?.data?.map(contact => {
+          const dropdownData = [
+            {
+              label: 'Edit Contact',
+              icon: <span className="ciergio-edit" />,
+              function: () => {
+                setSelectedContact(contact)
+                handleShowModal('edit')
+              }
+            },
+            {
+              label: 'Delete Contact',
+              icon: <span className="ciergio-trash" />,
+              function: () => {
+                setSelectedContact(contact)
+                handleShowModal('delete')
+              }
+            }
+          ]
+
+          return {
+            name: (
+              <div className="flex items-center justify-start">
+                <div>
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    src={
+                      contact?.logo ??
+                      `https://ui-avatars.com/api/?name=${contact.name}&rounded=true&size=32`
+                    }
+                    alt="contact-avatar"
+                  />
+                </div>
+                <div className="ml-4">
+                  <p>{contact.name}</p>
+                  <p className="text-gray-600">{contact.contactNumber}</p>
+                </div>
+              </div>
+            ),
+            category: contact?.category.name,
+            address: contact?.address?.formattedAddress,
+            button: (
+              <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+            )
+          }
+        }) || []
+    }
+  }, [contacts?.getContacts])
+
+  const categoryOptions = useMemo(() => {
+    if (categories?.getContactCategories?.data?.length > 0) {
+      return categories.getContactCategories?.data?.map(contact => ({
+        label: contact.name,
+        value: contact._id
+      }))
+    }
+
+    return []
+  }, [categories?.getContactCategories])
+
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title capitalize">{`${name} Directory`}</h1>
       <div className="flex items-center justify-between bg-white border rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Directory(${tableData.data.length})`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`Directory (${contacts?.getContacts?.data?.length})`}</h1>
 
         <div className="flex items-center">
           <Button
@@ -134,11 +285,11 @@ function Contact({ id }) {
       </div>
       <Card
         noPadding
-        content={<Table columns={columns} payload={contacts} />}
+        content={<Table rowNames={columns} items={contactsData} />}
         className="rounded-t-none"
       />
       <Pagination
-        items={contacts}
+        items={contactsData}
         activePage={1}
         onPageClick={e => alert('Page ' + e)}
         onLimitChange={e => alert('Show ' + e.target.value)}
@@ -147,9 +298,9 @@ function Contact({ id }) {
         title="Add a Contact"
         okText="Okay"
         visible={showModal}
-        onClose={handleClearModal}
-        onCancel={handleClearModal}
-        onOk={handleSubmit(handleOk)}
+        onClose={() => handleClearModal('create')}
+        onCancel={() => handleClearModal('create')}
+        onOk={handleSubmit(handleCreateContact)}
         cancelText="Close"
       >
         <div className="w-full">
@@ -162,36 +313,21 @@ function Contact({ id }) {
 
               <div>
                 <UploaderImage
-                  imageUrl={imageUrl}
+                  imageUrls={imageUrl}
                   loading={loading}
                   onUploadImage={handleUploadImage}
                   onRemoveImage={handleRemoveImage}
+                  maxImages={3}
                 />
               </div>
             </div>
             <Controller
-              name="contact_category"
+              name="category"
               control={control}
-              render={({ name, value, onChange, ...props }) => (
+              render={({ name, value, onChange }) => (
                 <FormSelect
-                  options={[
-                    {
-                      label: 'Emergency',
-                      value: 'emergency'
-                    },
-                    {
-                      label: 'Admin Contacts',
-                      value: 'admin-contacts'
-                    },
-                    {
-                      label: 'Sponsored',
-                      value: 'sponsored'
-                    },
-                    {
-                      label: 'Services',
-                      value: 'services'
-                    }
-                  ]}
+                  name={name}
+                  options={categoryOptions}
                   placeholder="Choose a contact category"
                   onChange={onChange}
                   value={value}
@@ -199,24 +335,23 @@ function Contact({ id }) {
               )}
             />
             <Controller
-              name="contact_name"
+              name="name"
               control={control}
-              render={({ name, value, onChange, ...props }) => (
+              render={({ name, value, onChange }) => (
                 <FormInput
                   label="Contact Name"
                   placeholder="Enter contact name"
                   onChange={onChange}
                   name={name}
                   value={value}
-                  inputProps={props}
                   error={errors?.contact_name?.message ?? null}
                 />
               )}
             />
             <Controller
-              name="contact_number"
+              name="contactNumber"
               control={control}
-              render={({ name, value, onChange, ...props }) => (
+              render={({ name, value, onChange }) => (
                 <FormInput
                   label="Contact Number"
                   placeholder="Enter contact number"
@@ -228,9 +363,9 @@ function Contact({ id }) {
               )}
             />
             <Controller
-              name="contact_address"
+              name="address"
               control={control}
-              render={({ name, value, onChange, ...props }) => (
+              render={({ name, value, onChange }) => (
                 <FormInput
                   label="Contact Address"
                   placeholder="(optional) Enter contact address"
@@ -244,12 +379,166 @@ function Contact({ id }) {
           </form>
         </div>
       </Modal>
+      <Modal
+        title="Edit Contact"
+        okText="Okay"
+        visible={showEditContactModal}
+        onClose={() => handleClearModal('edit')}
+        onCancel={() => handleClearModal('edit')}
+        onOk={handleSubmit(handleEditContact)}
+        cancelText="Close"
+      >
+        <div className="w-full">
+          <h1 className="text-base font-bold mb-4">Contact Details</h1>
+          <form>
+            <div className="flex justify-between mb-4">
+              <p>
+                Upload a photo that’s easily recognizable by your residents.
+              </p>
+
+              <div>
+                <UploaderImage
+                  imageUrls={imageUrl}
+                  loading={loading}
+                  onUploadImage={handleUploadImage}
+                  onRemoveImage={handleRemoveImage}
+                  maxImages={3}
+                />
+              </div>
+            </div>
+            <Controller
+              name="category"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <FormSelect
+                  name={name}
+                  options={categoryOptions}
+                  placeholder="Choose a contact category"
+                  onChange={onChange}
+                  value={value || selectedContact?.category?._id}
+                />
+              )}
+            />
+            <Controller
+              name="name"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <FormInput
+                  label="Contact Name"
+                  placeholder="Enter contact name"
+                  onChange={onChange}
+                  name={name}
+                  value={value || selectedContact?.name}
+                  error={errors?.contact_name?.message ?? null}
+                />
+              )}
+            />
+            <Controller
+              name="contactNumber"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <FormInput
+                  label="Contact Number"
+                  placeholder="Enter contact number"
+                  name={name}
+                  onChange={onChange}
+                  value={value || selectedContact?.contactNumber}
+                  error={errors?.contact_number?.message}
+                />
+              )}
+            />
+            <Controller
+              name="address"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <FormInput
+                  label="Contact Address"
+                  placeholder="(optional) Enter contact address"
+                  name={name}
+                  onChange={onChange}
+                  value={value || selectedContact?.address?.formattedAddress}
+                  errors={errors?.contact_address?.message}
+                />
+              )}
+            />
+          </form>
+        </div>
+      </Modal>
+      <Modal
+        title="Delete Category"
+        okText="Yes, delete"
+        visible={showDeleteContactModal}
+        onClose={() => handleClearModal('delete')}
+        onCancel={() => handleClearModal('delete')}
+        onOk={handleDeleteContact}
+      >
+        <div className="w-full">
+          <div>
+            <p className="mb-4">
+              <span className="font-medium">Warning: </span>{' '}
+              {`You're about to delete `}
+              <span className="font-medium">{selectedContact?.name}</span>
+            </p>
+            <p className="mb-4">
+              You will remove this contact for everyone. Are you sure you want
+              to delete?
+            </p>
+          </div>
+        </div>
+      </Modal>
     </section>
   )
 }
 
 Contact.propTypes = {
   id: P.string
+}
+
+const apolloClient = initializeApollo()
+
+export async function getStaticPaths() {
+  const complexes = await apolloClient.query({
+    query: GET_COMPLEXES
+  })
+
+  const paths = complexes?.getComplexes?.data.map(c => ({
+    params: { id: c._id }
+  }))
+
+  return {
+    paths,
+    fallback: false
+  }
+}
+
+export async function getStaticProps({ params }) {
+  const { id } = params
+  await apolloClient.query({
+    query: GET_COMPLEX,
+    variables: {
+      id
+    }
+  })
+
+  await apolloClient.query({
+    query: GET_CONTACTS,
+    variables: {
+      complexId: id
+    }
+  })
+
+  await apolloClient.query({
+    query: GET_CONTACT_CATEGORY,
+    variables: {
+      complexId: id
+    }
+  })
+
+  return {
+    props: {
+      initialApolloState: apolloClient.cache.extract()
+    }
+  }
 }
 
 export default Contact

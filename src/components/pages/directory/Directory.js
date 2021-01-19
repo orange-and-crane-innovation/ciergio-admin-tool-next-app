@@ -32,6 +32,13 @@ const validationSchema = yup.object().shape({
   category_name: yup.string().label('New Category Name').required()
 })
 
+const columns = [
+  {
+    name: 'Name',
+    width: ''
+  }
+]
+
 function Directory() {
   const { handleSubmit, control } = useForm({
     resolver: yupResolver(validationSchema),
@@ -112,16 +119,6 @@ function Directory() {
   const handleDeleteCategory = () => {
     deleteCategory({ variables: { categoryId: selectedId } })
   }
-
-  const columns = useMemo(
-    () => [
-      {
-        name: 'Name',
-        width: ''
-      }
-    ],
-    []
-  )
 
   const directoryData = useMemo(
     () => ({
