@@ -64,7 +64,7 @@ function Contact({ id }) {
     {
       onCompleted: () => {
         handleClearModal('create')
-        showToast('success', `You have successfully added a contact`)
+        showToast('success', `You have successfully added a new contact`)
         refetchContacts()
       }
     }

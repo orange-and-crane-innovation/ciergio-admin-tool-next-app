@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
@@ -14,6 +14,8 @@ import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
+
+import showToast from '@app/utils/toast'
 
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
@@ -32,16 +34,18 @@ import {
 const validationSchema = yup.object().shape({
   name: yup.string().label('Contact Name').required(),
   contactNumber: yup.string().label('Contact Number').required(),
-  address: yup.string().label('Contact Address')
+  address: yup.string().label('Contact Address'),
+  category: yup.string().required
 })
 
 function Contact({ id }) {
-  const { handleSubmit, control, errors } = useForm({
+  const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       name: '',
       contactNumber: '',
-      address: ''
+      address: '',
+      category: ''
     }
   })
 
@@ -61,24 +65,33 @@ function Contact({ id }) {
     }
   })
 
-  const [createContact] = useMutation(CREATE_CONTACT, {
-    onCompleted: () => {
-      handleClearModal('create')
-      refetchContacts()
+  const [createContact, { loading: creatingContact }] = useMutation(
+    CREATE_CONTACT,
+    {
+      onCompleted: () => {
+        handleClearModal('create')
+        showToast('success', `You have successfully added a new contact`)
+        refetchContacts()
+      }
     }
-  })
-  const [editContact] = useMutation(EDIT_CONTACT, {
+  )
+  const [editContact, { loading: editingContact }] = useMutation(EDIT_CONTACT, {
     onCompleted: () => {
       handleClearModal('edit')
+      showToast('success', `You have successfully updated a contact`)
       refetchContacts()
     }
   })
-  const [deleteContact] = useMutation(DELETE_CONTACT, {
-    onCompleted: () => {
-      handleClearModal('delete')
-      refetchContacts()
+  const [deleteContact, { loading: deletingContact }] = useMutation(
+    DELETE_CONTACT,
+    {
+      onCompleted: () => {
+        handleClearModal('delete')
+        showToast('success', `You have successfully deleted a contact`)
+        refetchContacts()
+      }
     }
-  })
+  )
 
   const [showModal, setShowModal] = useState(false)
   const [imageUrl, setImageUrl] = useState([])
@@ -89,6 +102,17 @@ function Contact({ id }) {
 
   const name = complexes?.getComplexes?.data[0]?.name || ''
   const companyId = complexes?.getComplexes?.data[0]?.company._id || ''
+
+  useEffect(() => {
+    if (selectedContact !== undefined) {
+      reset({
+        category: selectedContact?.category?._id,
+        name: selectedContact.name,
+        contactNumber: selectedContact.contactNumber,
+        address: selectedContact?.address?.formattedAddress || ''
+      })
+    }
+  }, [reset, selectedContact])
 
   const handleShowModal = view => {
     switch (view) {
@@ -107,6 +131,13 @@ function Contact({ id }) {
   }
 
   const handleClearModal = type => {
+    setSelectedContact(undefined)
+    reset({
+      category: '',
+      name: '',
+      contactNumber: '',
+      address: ''
+    })
     handleShowModal(type)
   }
 
@@ -133,7 +164,7 @@ function Contact({ id }) {
 
   const handleEditContact = values => {
     const { category, name, contactNumber, address } = values
-
+    console.log('editing contact', values)
     const contactData = {
       name,
       logo: null,
@@ -302,6 +333,9 @@ function Contact({ id }) {
         onCancel={() => handleClearModal('create')}
         onOk={handleSubmit(handleCreateContact)}
         cancelText="Close"
+        okButtonProps={{
+          loading: creatingContact
+        }}
       >
         <div className="w-full">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>
@@ -387,6 +421,9 @@ function Contact({ id }) {
         onCancel={() => handleClearModal('edit')}
         onOk={handleSubmit(handleEditContact)}
         cancelText="Close"
+        okButtonProps={{
+          loading: editingContact
+        }}
       >
         <div className="w-full">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>
@@ -415,7 +452,7 @@ function Contact({ id }) {
                   options={categoryOptions}
                   placeholder="Choose a contact category"
                   onChange={onChange}
-                  value={value || selectedContact?.category?._id}
+                  value={value}
                 />
               )}
             />
@@ -442,7 +479,7 @@ function Contact({ id }) {
                   placeholder="Enter contact number"
                   name={name}
                   onChange={onChange}
-                  value={value || selectedContact?.contactNumber}
+                  value={value}
                   error={errors?.contact_number?.message}
                 />
               )}
@@ -456,7 +493,7 @@ function Contact({ id }) {
                   placeholder="(optional) Enter contact address"
                   name={name}
                   onChange={onChange}
-                  value={value || selectedContact?.address?.formattedAddress}
+                  value={value}
                   errors={errors?.contact_address?.message}
                 />
               )}
@@ -471,6 +508,9 @@ function Contact({ id }) {
         onClose={() => handleClearModal('delete')}
         onCancel={() => handleClearModal('delete')}
         onOk={handleDeleteContact}
+        okButtonProps={{
+          loading: deletingContact
+        }}
       >
         <div className="w-full">
           <div>
