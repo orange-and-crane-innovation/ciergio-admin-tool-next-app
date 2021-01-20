@@ -2,6 +2,7 @@ import { useState } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import SelectCategory from '@app/components/globals/SelectCategory'
+
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'

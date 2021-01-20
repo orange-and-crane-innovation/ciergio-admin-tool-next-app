@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import SelectCategory from '@app/components/globals/SelectCategory'
@@ -10,11 +10,87 @@ import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
 
+import { gql, useQuery } from '@apollo/client'
+import { initializeApollo } from '@app/lib/apollo/client'
+
+const GET_UNSENT_DUES_QUERY = gql`
+  query {
+    getDuesPerUnit(filter: { sent: false }) {
+      data {
+        _id
+        name
+        unitOwner {
+          _id
+          user {
+            firstName
+          }
+        }
+      }
+    }
+  }
+`
+
 function Unsent() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchText, setSearchText] = useState('')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showModal, setShowModal] = useState(false)
+  const [dues, setDues] = useState()
+
+  const { loading, data, error, refetch: refetchPosts } = useQuery(
+    GET_UNSENT_DUES_QUERY
+  )
+
+  useEffect(() => {
+    if (!loading) {
+      console.log(data?.getDuesPerUnit?.data.length)
+      const duesData = {
+        count: data?.getDuesPerUnit?.data.length || 0,
+        limit: 10,
+        offset: 0,
+        data:
+          data?.getDuesPerUnit?.data.map((unit, index) => {
+            let bldgNo = null
+            let unitName = null
+            let unitOwner = null
+            let uploadFile = null
+            let amount = null
+            let dueDate = null
+            let button = null
+
+            unitName = unit?.name || ''
+            bldgNo = index
+            unitOwner = unit?.unitOwner?.user?.firstName || ''
+            uploadFile = (
+              <Button default full label="Choose File" onClick={handleModal} />
+            )
+            amount = <FormInput type="text" placeholder="0.0" />
+            dueDate =
+              (
+                <DatePicker
+                  minDate={new Date()}
+                  date={selectedDate}
+                  handleChange={handleChangeDate}
+                />
+              ) || null
+
+            button = <Button default disabled label="Send" /> || null
+
+            return {
+              unitName,
+              bldgNo,
+              unitOwner,
+              uploadFile,
+              amount,
+              dueDate,
+              button
+            }
+          }) || null
+      }
+
+      setDues(duesData)
+    }
+  }, [loading, data, error])
 
   const handleModal = () => setShowModal(show => !show)
 
@@ -52,7 +128,7 @@ function Unsent() {
             handleChange={handleChangeDate}
           />
         ),
-        button: <Button default disabled label="Upload File" />
+        button: <Button default disabled label="Send" />
       }
     ]
   }
@@ -147,7 +223,7 @@ function Unsent() {
             </div>
           </div>
         }
-        content={<Table rowNames={tableRowData} items={tableData} />}
+        content={<Table rowNames={tableRowData} items={dues} />}
       />
       <Modal
         title="Set Due Date"
