@@ -1,97 +1,90 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
+import { useQuery, useMutation } from '@apollo/client'
 import * as yup from 'yup'
+
+import showToast from '@app/utils/toast'
 
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
 import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
-import { Card, Draggable, Table } from '@app/components/globals'
+import Table from '@app/components/table'
+import Checkbox from '@app/components/forms/form-checkbox'
+import Dropdown from '@app/components/dropdown'
+import SelectBulk from '@app/components/globals/SelectBulk'
+import { Card, Draggable } from '@app/components/globals'
+
 import { FaPlusCircle } from 'react-icons/fa'
+import { AiOutlineEllipsis } from 'react-icons/ai'
 
-const tableRowData = [
-  {
-    Header: 'Title',
-    accessor: 'title'
-  },
-  {
-    Header: 'Name',
-    accessor: 'name'
-  },
-  {
-    Header: 'Email',
-    accessor: 'email'
-  }
-]
-
-let tableData = {
-  count: 161,
-  limit: 10,
-  offset: 0,
-  data: [
-    {
-      title: 'Complex Administrator',
-      name: 'Ashlynn Arias',
-      email: 'ashlynn.arias@ciergio.com'
-    },
-    {
-      title: 'Head Receptionist',
-      name: 'Tori Corleone',
-      email: 'tori.corleone@ciergio.com'
-    },
-    {
-      title: 'Maintenance Officer',
-      name: 'All Saab',
-      email: 'all.saab@ciergio.com'
-    }
-  ]
-}
+import { GET_CONTACTS, BULK_UPDATE_MUTATION } from './queries'
 
 const bulkOptions = [
   {
+    label: '',
+    value: ''
+  },
+  {
     label: 'Unpublished',
-    value: 'unpublish'
+    value: 'unpublished'
   },
   {
     label: 'Move to Trash',
-    value: 'trash'
+    value: 'trashed'
+  }
+]
+
+const draggableRowNames = [
+  {
+    name: 'Title',
+    width: ''
+  },
+  {
+    name: 'Name',
+    width: ''
+  },
+  {
+    name: 'Email',
+    width: ''
   }
 ]
 
 const validationSchema = yup.object().shape({
-  contact_category: yup.string().label('Contact Category').required,
-  contact_name: yup.string().label('Contact Name').required(),
-  contact_number: yup.string().label('Contact Number').required(),
-  contact_address: yup.string().label('Contact Address')
+  category: yup.string().label('Contact Category').required,
+  name: yup.string().label('Contact Name').required(),
+  number: yup.string().label('Contact Number').required(),
+  address: yup.string().label('Contact Address')
 })
 
 function ContactUs() {
-  const [list, setList] = useState(() => {
-    return tableData.data.map((d, index) => ({
-      ...d,
-      id: index
-    }))
-  })
-
+  const { data: contacts, refetch: refetchContacts } = useQuery(GET_CONTACTS)
+  const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
+    BULK_UPDATE_MUTATION
+  )
   const [reorder, setReorder] = useState(false)
   const [searchInput, setSearchInput] = useState('')
 
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      contact_category: '',
-      contact_name: '',
-      contact_number: '',
-      contact_address: ''
+      category: '',
+      name: '',
+      number: '',
+      address: ''
     }
   })
 
   const [showModal, setShowModal] = useState(false)
-  const [contacts, setContacts] = useState(tableData)
   const [imageUrl, setImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
+  const [draggableList, setDraggableList] = useState([])
+  const [isBulkDisabled, setIsBulkDisabled] = useState(false)
+  const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(false)
+  const [selectedBulk, setSelectedBulk] = useState([])
+  const [selectedData, setSelectedData] = useState([])
 
   const handleShowModal = () => setShowModal(old => !old)
 
@@ -100,19 +93,7 @@ function ContactUs() {
   }
 
   const handleOk = values => {
-    console.log({ values })
-    const { contact_name: name } = values
-    setContacts(old => ({
-      ...old,
-      data: [
-        ...old.data,
-        {
-          title: name,
-          name: 'Ashlynn Arias',
-          email: 'ashlynn.arias@ciergio.com'
-        }
-      ]
-    }))
+    // const { name } = values
     handleShowModal()
   }
 
@@ -136,6 +117,193 @@ function ContactUs() {
     setImageUrl(null)
   }
 
+  const onCheck = useCallback(
+    e => {
+      const data = e.target.getAttribute('data-id')
+      const checkboxes = document.querySelectorAll(
+        'input[name="checkbox"]:checked'
+      )
+
+      if (e.target.checked) {
+        if (!selectedData.includes(data)) {
+          setSelectedData(prevState => [...prevState, data])
+        }
+        setIsBulkDisabled(false)
+      } else {
+        setSelectedData(prevState => [
+          ...prevState.filter(item => item !== data)
+        ])
+        if (checkboxes.length === 0) {
+          setSelectedBulk('')
+          setIsBulkDisabled(true)
+          setIsBulkButtonDisabled(true)
+        }
+      }
+    },
+    [selectedData]
+  )
+
+  const onCheckAll = useCallback(
+    e => {
+      const checkboxes = document.getElementsByName('checkbox')
+
+      setSelectedBulk('')
+      setIsBulkDisabled(true)
+      setIsBulkButtonDisabled(true)
+
+      for (let i = 0; i < checkboxes.length; i++) {
+        const data = checkboxes[i].getAttribute('data-id')
+        if (e.target.checked) {
+          if (!selectedData.includes(data)) {
+            setSelectedData(prevState => [...prevState, data])
+          }
+          checkboxes[i].checked = true
+          setIsBulkDisabled(false)
+        } else {
+          setSelectedData(prevState => [
+            ...prevState.filter(item => item !== data)
+          ])
+          checkboxes[i].checked = false
+        }
+      }
+    },
+    [selectedData]
+  )
+
+  const onBulkSubmit = () => {
+    const data = { id: selectedData, status: selectedBulk }
+    bulkUpdate({ variables: data })
+  }
+
+  const onClearBulk = () => {
+    setSelectedBulk('')
+  }
+
+  const onBulkChange = e => {
+    setSelectedBulk(e.target.value)
+    if (e.target.value !== '') {
+      setIsBulkButtonDisabled(false)
+    } else {
+      setIsBulkButtonDisabled(true)
+    }
+  }
+
+  const columns = useMemo(
+    () => [
+      {
+        name: (
+          <Checkbox
+            primary
+            id="checkbox_select_all"
+            name="checkbox_select_all"
+            onChange={e => onCheckAll(e)}
+          />
+        ),
+        width: '5%'
+      },
+      {
+        name: 'Title',
+        width: '20%'
+      },
+      {
+        name: 'Name',
+        width: '30%'
+      },
+      {
+        name: 'Email',
+        width: ''
+      },
+      {
+        name: '',
+        width: ''
+      }
+    ],
+    [onCheckAll]
+  )
+
+  const contactsData = useMemo(
+    () => ({
+      count: contacts?.getContacts.count || 0,
+      limit: contacts?.getContacts.limit || 0,
+      offset: contacts?.getContacts.offset || 0,
+      data:
+        contacts?.getContacts.data.map(item => {
+          const dropdownData = [
+            {
+              label: 'Edit Contact',
+              icon: <span className="ciergio-edit" />,
+              function: () => handleShowModal('details', item._id)
+            },
+            {
+              label: 'Delete Contact',
+              icon: <span className="ciergio-trash" />,
+              function: () => handleShowModal('views', item._id)
+            }
+          ]
+
+          return {
+            checkbox: (
+              <Checkbox
+                primary
+                id={`checkbox-${item._id}`}
+                name="checkbox"
+                data-id={item._id}
+                onChange={onCheck}
+              />
+            ),
+            title: item.description,
+            name: item.name,
+            email: item.email,
+            button: (
+              <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+            )
+          }
+        }) || []
+    }),
+    [contacts?.getContacts, onCheck]
+  )
+
+  useEffect(() => {
+    if (!contactsData?.data?.length) return []
+
+    const draggables = contactsData?.data.map(c => ({
+      title: c.title,
+      name: c.name,
+      email: c.email,
+      button: c.button
+    }))
+
+    setDraggableList(draggables)
+  }, [contactsData?.data])
+
+  useEffect(() => {
+    if (calledBulk && dataBulk) {
+      if (dataBulk?.bulkUpdatePost?.message === 'success') {
+        const allCheck = document.getElementsByName('checkbox_select_all')[0]
+        const itemsCheck = document.getElementsByName('checkbox')
+
+        if (allCheck.checked) {
+          allCheck.click()
+        }
+
+        for (let i = 0; i < itemsCheck.length; i++) {
+          if (itemsCheck[i].checked) {
+            itemsCheck[i].click()
+          }
+        }
+
+        setIsBulkDisabled(true)
+        setIsBulkButtonDisabled(true)
+        setSelectedBulk('')
+
+        showToast('success', `You have successfully updated a contact`)
+        refetchContacts()
+      } else {
+        showToast('danger', `Bulk update failed`)
+      }
+    }
+  }, [calledBulk, dataBulk, refetchContacts])
+
   return (
     <section className={`content-wrap`}>
       <h1 className="content-title">Contact Page</h1>
@@ -144,9 +312,17 @@ function ContactUs() {
       </span>
 
       <div className="flex items-center justify-between mt-12 flex-col md:flex-row">
-        <div className="flex items-center justify-between w-full md:w-1/4">
-          <FormSelect options={bulkOptions} />
-          <Button type="button" label="Apply" className="ml-2" />
+        <div className="flex items-center justify-between w-full">
+          <SelectBulk
+            placeholder="Select"
+            options={bulkOptions}
+            disabled={isBulkDisabled}
+            isButtonDisabled={isBulkButtonDisabled}
+            onBulkChange={onBulkChange}
+            onBulkSubmit={onBulkSubmit}
+            onBulkClear={onClearBulk}
+            selected={selectedBulk}
+          />
         </div>
         <div>
           <FormInput
@@ -161,7 +337,11 @@ function ContactUs() {
       </div>
       <div className="w-full flex items-center justify-between pt-4 pr-4 bg-white border rounded">
         <div className="flex items-center pl-8 font-bold text-base leading-relaxed">
-          <h3>{reorder ? 'Reorder Contacts' : `Directory (${list.length})`}</h3>
+          <h3>
+            {reorder
+              ? 'Reorder Contacts'
+              : `Directory (${contacts?.getContacts?.data?.length})`}
+          </h3>
         </div>
         <div className="flex items-center">
           {reorder ? (
@@ -176,10 +356,6 @@ function ContactUs() {
                 primary
                 label="Save"
                 onClick={() => {
-                  tableData = {
-                    ...tableData,
-                    data: list
-                  }
                   setReorder(old => !old)
                 }}
               />
@@ -206,12 +382,12 @@ function ContactUs() {
         content={
           reorder ? (
             <Draggable
-              list={list}
-              onListChange={setList}
-              rowNames={tableRowData}
+              list={draggableList}
+              onListChange={setDraggableList}
+              rowNames={draggableRowNames}
             />
           ) : (
-            <Table columns={tableRowData} payload={contacts} />
+            <Table rowNames={columns} items={contactsData} />
           )
         }
       />
