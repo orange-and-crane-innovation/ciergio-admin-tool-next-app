@@ -25,6 +25,8 @@ function Component({
     leave: { opacity: 0, y: 10 }
   })
 
+  if (!visible) return null
+
   return (
     <>
       {transitions.map(
