@@ -82,7 +82,7 @@ export const GET_BUILDINGS = gql`
 export const GET_CONTACT_CATEGORY = gql`
   query getCategoriesByComplexId($complexId: String) {
     getContactCategories(
-      where: { complexId: $complexId, type: directory }
+      where: { complexId: $complexId, type: contactus }
       limit: 10
       skip: 0
     ) {

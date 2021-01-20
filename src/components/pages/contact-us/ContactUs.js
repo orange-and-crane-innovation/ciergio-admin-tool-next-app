@@ -28,7 +28,7 @@ function ContactUs() {
         companies?.getCompanies?.data?.map(item => {
           return {
             name: (
-              <Link href={`/directory/companies/${item._id}`}>
+              <Link href={`/contact-us/companies/${item._id}`}>
                 <span className="text-blue-600 cursor-pointer">
                   {item.name}
                 </span>

@@ -24,7 +24,7 @@ function Company({ id }) {
     variables: { companyId: id }
   })
 
-  const directoryData = useMemo(
+  const contactsData = useMemo(
     () => ({
       count: complexes?.getComplexes.count || 0,
       limit: complexes?.getComplexes.limit || 0,
@@ -32,7 +32,7 @@ function Company({ id }) {
         complexes?.getComplexes?.data?.map(item => {
           return {
             name: (
-              <Link href={`/directory/complex/${item._id}`}>
+              <Link href={`/contact-us/complex/${item._id}`}>
                 <span className="text-blue-600 cursor-pointer">
                   {item.name}
                 </span>
@@ -46,13 +46,13 @@ function Company({ id }) {
   const name = companies?.getCompanies?.data[0]?.name
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
-      <h1 className="content-title capitalize">{`${name} Directory`}</h1>
+      <h1 className="content-title capitalize">{`${name} Contact Page`}</h1>
       <div className="flex items-center justify-between bg-white border rounded-t">
         <h1 className="font-bold text-base px-8 py-4">Complexes</h1>
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={directoryData} />}
+        content={<Table rowNames={columns} items={contactsData} />}
         className="rounded-t-none"
       />
     </section>

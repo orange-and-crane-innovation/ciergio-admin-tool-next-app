@@ -89,7 +89,7 @@ FormInput.defaultProps = {
 }
 
 FormInput.propTypes = {
-  type: P.oneOf(['text', 'password']),
+  type: P.oneOf(['text', 'password', 'email']),
   name: P.string.isRequired,
   id: P.string,
   label: P.string,
