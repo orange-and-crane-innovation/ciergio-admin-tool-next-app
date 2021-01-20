@@ -15,7 +15,8 @@ function Component({
   onOk,
   onCancel,
   footer,
-  children
+  children,
+  okButtonProps
 }) {
   const AnimatedDialogOverlay = animated(DialogOverlay)
   const AnimatedDialogContent = animated(DialogContent)
@@ -73,6 +74,7 @@ function Component({
                         label={okText}
                         onClick={onOk}
                         className=" w-full"
+                        {...okButtonProps}
                       />
                     </div>
                   ) : null}
@@ -99,7 +101,8 @@ Component.propTypes = {
   cancelText: P.string,
   onOk: P.func,
   onCancel: P.func,
-  footer: P.bool
+  footer: P.bool,
+  okButtonProps: P.object
 }
 
 export default Component
