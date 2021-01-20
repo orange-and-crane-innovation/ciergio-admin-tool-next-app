@@ -1,13 +1,19 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Tabs from '@app/components/tabs'
-import FormInput from '@app/components/forms/form-input'
 import styles from './Billing.module.css'
+
+import DatePicker from '@app/components/forms/form-datepicker/'
 
 import Unsent from './Unsent'
 import Sent from './Sent'
 
 function Billing() {
-  const [searchInput, setSearchInput] = useState('')
+  const [selectedDate, setSelectedDate] = useState(new Date())
+
+  const handleDateChange = date => {
+    setSelectedDate(date)
+  }
+
   return (
     <div className={styles.BillingContainer}>
       <h1 className={styles.BillingHeader}>Sample Building Unit</h1>
@@ -18,14 +24,11 @@ function Billing() {
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
             <div className={styles.BillingPeriodContainer}>
-              <h1 className={styles.HeaderSmall}>Billing Periods</h1>
-              <FormInput
-                type="text"
-                placeholder={new Date()}
-                name="search-contact-input"
-                leftIcon="ciergio-search"
-                onChange={e => setSearchInput(e.target.value)}
-                value={searchInput}
+              <DatePicker
+                date={selectedDate}
+                handleChange={handleDateChange}
+                label={'Billing'}
+                showMonthYearPicker
               />
             </div>
 

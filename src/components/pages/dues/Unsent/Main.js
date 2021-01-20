@@ -7,10 +7,27 @@ import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'
+import DatePicker from '@app/components/forms/form-datepicker/'
+import Modal from '@app/components/modal'
 
 function Unsent() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchText, setSearchText] = useState('')
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [showModal, setShowModal] = useState(false)
+
+  const handleModal = () => setShowModal(show => !show)
+
+  const handleCloseModal = () => {
+    handleModal()
+  }
+  const handleOkModal = () => {
+    handleCloseModal()
+  }
+
+  const handleChangeDate = date => {
+    setSelectedDate(date)
+  }
 
   const tableData = {
     count: 161,
@@ -24,9 +41,17 @@ function Unsent() {
         bldgNo: '',
         unit: '101',
         unitOwner: 'Cruz Santa',
-        uploadFile: <Button default full label="Choose File" />,
+        uploadFile: (
+          <Button default full label="Choose File" onClick={handleModal} />
+        ),
         amount: <FormInput type="text" placeholder="0.0" />,
-        duedate: <FormInput type="text" placeholder="Due Date" />,
+        duedate: (
+          <DatePicker
+            minDate={new Date()}
+            date={selectedDate}
+            handleChange={handleChangeDate}
+          />
+        ),
         button: <Button default disabled label="Upload File" />
       }
     ]
@@ -88,6 +113,7 @@ function Unsent() {
             primary
             label="Apply Due Dates to All Units"
             leftIcon={calendarIcon()}
+            onClick={handleModal}
           />
         </div>
         <div className={styles.FloorControl}>
@@ -123,6 +149,23 @@ function Unsent() {
         }
         content={<Table rowNames={tableRowData} items={tableData} />}
       />
+      <Modal
+        title="Set Due Date"
+        okText="Apply"
+        visible={showModal}
+        onClose={handleCloseModal}
+        onCancel={handleCloseModal}
+        onOk={handleOkModal}
+      >
+        <div className="w-full flex flex-col">
+          <DatePicker
+            minDate={new Date()}
+            date={selectedDate}
+            handleChange={handleChangeDate}
+            containerClassname={'flex md:w-1/6 justify-center '}
+          />
+        </div>
+      </Modal>
 
       <Pagination
         items={tableData}

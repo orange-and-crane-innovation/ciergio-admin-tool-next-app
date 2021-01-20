@@ -2,13 +2,28 @@ import { useState } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import SelectCategory from '@app/components/globals/SelectCategory'
-import SelectStatus from '@app/components/globals/SelectStatus'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'
+import FormSelect from '@app/components/forms/form-select'
 import { FaEye } from 'react-icons/fa'
+
+const statusOptions = [
+  {
+    label: 'All Status',
+    value: 'all'
+  },
+  {
+    label: 'Paid',
+    value: 'paid'
+  },
+  {
+    label: 'Unpaid',
+    value: 'unpaid'
+  }
+]
 
 function Sent() {
   const [selectedFloor, setSelectedFloor] = useState('')
@@ -85,13 +100,7 @@ function Sent() {
     <>
       <div className={styles.FormContainer}>
         <div className={styles.StatusFloorControl}>
-          <SelectStatus
-            type="post"
-            userType="administrators"
-            onChange={onFloorSelect}
-            onClear={onClearFloor}
-            selected={selectedFloor}
-          />
+          <FormSelect options={statusOptions} />
           <SelectCategory
             type="post"
             userType="administrators"

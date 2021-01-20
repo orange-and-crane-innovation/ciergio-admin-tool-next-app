@@ -8,6 +8,10 @@
     @apply border-neutral-500;
   }
 
+  .customCalender {
+    @apply text-xl
+  }
+
   &:active {
     @apply outline-none;
     @apply border-secondary-500;
