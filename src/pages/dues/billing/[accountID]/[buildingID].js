@@ -1,5 +1,5 @@
 import Billing from '@app/components/pages/dues/Billing'
 
-export default function DuesBillingPage() {
+export default function DynamicUnsentPage() {
   return <Billing />
 }

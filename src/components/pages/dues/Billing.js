@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Tabs from '@app/components/tabs'
 import styles from './Billing.module.css'
+import { useRouter } from 'next/router'
 
 import DatePicker from '@app/components/forms/form-datepicker/'
 
@@ -8,10 +9,27 @@ import Unsent from './Unsent'
 import Sent from './Sent'
 
 function Billing() {
+  const router = useRouter()
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [activeTab, setActiveTab] = useState(1)
+  const [month, setMonth] = useState(new Date().getMonth() + 1)
+  const [year, setYear] = useState(new Date().getFullYear())
+
+  const handlingMonthOrYear = (date, type = 'year') => {
+    if (date instanceof Date) {
+      if (type === 'month') {
+        return new Date(date).getMonth() + 1
+      } else {
+        return new Date(date).getFullYear()
+      }
+    }
+    return new Date()
+  }
 
   const handleDateChange = date => {
     setSelectedDate(date)
+    setMonth(handlingMonthOrYear(date, 'month'))
+    setYear(handlingMonthOrYear(date))
   }
 
   return (
@@ -39,10 +57,10 @@ function Billing() {
               </Tabs.TabLabels>
               <Tabs.TabPanels>
                 <Tabs.TabPanel id="1">
-                  <Unsent />
+                  <Unsent month={parseInt(month)} year={parseInt(year)} />
                 </Tabs.TabPanel>
                 <Tabs.TabPanel id="2">
-                  <Sent />
+                  <Sent month={parseInt(month)} year={parseInt(year)} />
                 </Tabs.TabPanel>
               </Tabs.TabPanels>
             </Tabs>

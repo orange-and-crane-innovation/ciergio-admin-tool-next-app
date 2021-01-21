@@ -9,20 +9,38 @@ import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
-
 import { gql, useQuery } from '@apollo/client'
-import { initializeApollo } from '@app/lib/apollo/client'
+import { useRouter } from 'next/router'
+import P from 'prop-types'
 
 const GET_UNSENT_DUES_QUERY = gql`
-  query {
-    getDuesPerUnit(filter: { sent: false }) {
+  query getDuesPerUnit(
+    $unit: DuesPerUnitInput2
+    $filter: DuesPerUnitInput3
+    $dues: DuesPerUnitInput1
+    $offset: Int
+    $limit: Int
+  ) {
+    getDuesPerUnit(
+      unit: $unit
+      filter: $filter
+      limit: $limit
+      offset: $offset
+      dues: $dues
+    ) {
+      count
+      limit
+      offset
       data {
-        _id
+        floorNumber
         name
+        unitType {
+          name
+        }
         unitOwner {
-          _id
           user {
             firstName
+            lastName
           }
         }
       }
@@ -30,60 +48,114 @@ const GET_UNSENT_DUES_QUERY = gql`
   }
 `
 
-function Unsent() {
+function Unsent({ month, year }) {
+  // router
+  const router = useRouter()
+
+  // components state
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchText, setSearchText] = useState('')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showModal, setShowModal] = useState(false)
   const [dues, setDues] = useState()
 
+  // Pagination states
+  const [activePage, setActivePage] = useState(1)
+  const [limitPage, setLimitPage] = useState(10)
+  const [offsetPage, setOffsetPage] = useState(0)
+
+  // graphQLFetching
   const { loading, data, error, refetch: refetchPosts } = useQuery(
-    GET_UNSENT_DUES_QUERY
+    GET_UNSENT_DUES_QUERY,
+    {
+      variables: {
+        unit: {
+          buildingId: '5d804d6543df5f4239e72911'
+        },
+        filter: {
+          sent: true
+        },
+        dues: {
+          period: {
+            month,
+            year
+          }
+        },
+        limit: limitPage,
+        offset: offsetPage
+      }
+    }
   )
 
   useEffect(() => {
-    if (!loading) {
-      console.log(data?.getDuesPerUnit?.data.length)
-      const duesData = {
-        count: data?.getDuesPerUnit?.data.length || 0,
-        limit: 10,
-        offset: 0,
-        data:
-          data?.getDuesPerUnit?.data.map((unit, index) => {
-            let bldgNo = null
-            let unitName = null
-            let unitOwner = null
-            let uploadFile = null
-            let amount = null
-            let dueDate = null
-            let button = null
+    console.log(month, year)
+  }, [])
 
-            unitName = unit?.name || ''
-            bldgNo = index
-            unitOwner = unit?.unitOwner?.user?.firstName || ''
-            uploadFile = (
+  // Component did mount for generating table data
+  useEffect(() => {
+    let copyOfFloorNumber = null
+
+    if (!loading && data) {
+      const duesData = {
+        count: data?.getDuesPerUnit.count || 0,
+        limit: data?.getDuesPerUnit.limit || 0,
+        offset: data?.getDuesPerUnit.offset || 0,
+        data:
+          data?.getDuesPerUnit?.data.map((floor, index) => {
+            const floorNumber = floor?.floorNumber
+            const unitName = floor?.name
+            const name = `${floor?.unitOwner?.user?.lastName},
+              ${
+                floor?.unitOwner?.user?.lastName &&
+                floor?.unitOwner?.user?.lastName.charAt(0)
+              }`
+            const unitOwnerName = name
+            const uploadFile = (
               <Button default full label="Choose File" onClick={handleModal} />
             )
-            amount = <FormInput type="text" placeholder="0.0" />
-            dueDate =
-              (
-                <DatePicker
-                  minDate={new Date()}
-                  date={selectedDate}
-                  handleChange={handleChangeDate}
-                />
-              ) || null
+            const amount = (
+              <FormInput name={'amount'} type="text" placeholder="0.0" />
+            )
+            const dueDate = (
+              <DatePicker
+                minDate={new Date()}
+                date={selectedDate}
+                handleChange={handleChangeDate}
+              />
+            )
 
-            button = <Button default disabled label="Send" /> || null
+            const sendButton = <Button default disabled label="Send" />
+            const rowData = []
+            let copyOfOtherData = []
+            if (copyOfFloorNumber !== floorNumber) {
+              rowData.push(floorNumber, '', '', '', '', '', '')
+              copyOfOtherData.push(
+                '',
+                unitName,
+                unitOwnerName,
+                uploadFile,
+                amount,
+                dueDate,
+                sendButton
+              )
+            } else {
+              copyOfOtherData = []
+              rowData.push(
+                '',
+                unitName,
+                unitOwnerName,
+                uploadFile,
+                amount,
+                dueDate,
+                sendButton
+              )
+            }
+            copyOfFloorNumber = floorNumber
 
-            return {
-              unitName,
-              bldgNo,
-              unitOwner,
-              uploadFile,
-              amount,
-              dueDate,
-              button
+            if (copyOfOtherData.length <= 0) {
+              return { ...rowData, ...copyOfOtherData }
+            } else {
+              return { ...rowData }
             }
           }) || null
       }
@@ -103,34 +175,6 @@ function Unsent() {
 
   const handleChangeDate = date => {
     setSelectedDate(date)
-  }
-
-  const tableData = {
-    count: 161,
-    limit: 10,
-    offset: 0,
-    data: [
-      {
-        bldgNo: '1'
-      },
-      {
-        bldgNo: '',
-        unit: '101',
-        unitOwner: 'Cruz Santa',
-        uploadFile: (
-          <Button default full label="Choose File" onClick={handleModal} />
-        ),
-        amount: <FormInput type="text" placeholder="0.0" />,
-        duedate: (
-          <DatePicker
-            minDate={new Date()}
-            date={selectedDate}
-            handleChange={handleChangeDate}
-          />
-        ),
-        button: <Button default disabled label="Send" />
-      }
-    ]
   }
 
   const tableRowData = [
@@ -180,6 +224,16 @@ function Unsent() {
   const onClearSearch = e => {}
   // ==============
 
+  // Click pagination
+  const onPageClick = e => {
+    setActivePage(e)
+    setOffsetPage(limitPage * (e - 1))
+  }
+
+  // setting limit in pagination
+  const onLimitChange = e => {
+    setLimitPage(Number(e.target.value))
+  }
   const calendarIcon = () => <span className="ciergio-calendar"></span>
   return (
     <>
@@ -242,15 +296,21 @@ function Unsent() {
           />
         </div>
       </Modal>
-
-      <Pagination
-        items={tableData}
-        activePage={1}
-        onPageClick={e => alert('Page ' + e)}
-        onLimitChange={e => alert('Show ' + e.target.value)}
-      />
+      {!loading && dues && (
+        <Pagination
+          items={dues}
+          activePage={activePage}
+          onPageClick={onPageClick}
+          onLimitChange={onLimitChange}
+        />
+      )}
     </>
   )
+}
+
+Unsent.propTypes = {
+  month: P.number.isRequired,
+  year: P.number.isRequired
 }
 
 export default Unsent
