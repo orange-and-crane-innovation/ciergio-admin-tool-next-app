@@ -18,6 +18,7 @@ function FormInput({
   labelClassName,
   inputClassName,
   errorClassName,
+  description,
   inputProps
 }) {
   const containerClasses = useMemo(
@@ -75,6 +76,7 @@ function FormInput({
     <div className={containerClasses}>
       <label htmlFor={id || name}>
         {renderLabel}
+        {description || null}
         {renderInput}
         {renderError}
       </label>
@@ -102,7 +104,8 @@ FormInput.propTypes = {
   labelClassName: P.string,
   inputClassName: P.string,
   errorClassName: P.string,
-  inputProps: P.object
+  inputProps: P.object,
+  description: P.node || P.string
 }
 
 export default FormInput

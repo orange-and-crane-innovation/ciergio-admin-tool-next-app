@@ -1,5 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@apollo/client'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { Controller, useForm } from 'react-hook-form'
+import * as yup from 'yup'
 
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
@@ -43,10 +46,6 @@ const columns = [
 
 const roles = [
   {
-    label: 'All',
-    value: 'all'
-  },
-  {
     label: 'Administrator',
     value: 'administrator'
   },
@@ -62,10 +61,26 @@ const roles = [
 
 const ALL_ROLES = ['administrator', 'complex_admin', 'company_admin']
 
+const validationSchema = yup.object().shape({
+  staffType: yup.string().label('Staff Type'),
+  email: yup.string().label('Email Address'),
+  jobTitle: yup.string().label('Job Title of Point of Contact'),
+  company: yup.string().label('Assign To')
+})
+
 function AllStaff() {
+  const { handleSubmit, control, errors } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      staffType: '',
+      email: '',
+      jobTitle: '',
+      company: ''
+    }
+  })
+
   const [searchText, setSearchText] = useState('')
-  const [showModal, setShowModal] = useState('')
-  const [staffEmail, setStaffEmail] = useState('')
+  const [showModal, setShowModal] = useState(false)
   const [selectedRoles, setSelectedRoles] = useState('all')
   const [selectedAssignment, setSelectedAssignment] = useState('')
 
@@ -176,11 +191,17 @@ function AllStaff() {
   return (
     <section className="content-wrap">
       <h1 className="content-title">Staff List</h1>
-      <div className="flex items-center justify-end mt-12 mx-4 w-full">
+      <div className="flex items-center justify-end mt-12 mx-4 mb-4 w-full">
         <div className="flex items-center justify-between w-7/12 flex-row">
           <div className="max-w-sm mr-2">
             <FormSelect
-              options={roles}
+              options={[
+                {
+                  label: 'All',
+                  value: ''
+                },
+                ...roles
+              ]}
               onChange={e => setSelectedRoles(e.target.value)}
             />
           </div>
@@ -244,20 +265,44 @@ function AllStaff() {
         visible={showModal}
         onClose={handleClearModal}
         onCancel={handleClearModal}
-        onOk={handleOk}
+        onOk={handleSubmit(handleOk)}
       >
         <div className="w-full">
           <h1 className="font-bold text-sm mb-4">Staff Type</h1>
-          <FormSelect options={roles} />
-          <FormInput
-            label="Email Address"
-            placeholder="Enter staff email address"
-            type="email"
-            onChange={e => setStaffEmail(e.target.value)}
-            name="staff-email"
-            value={staffEmail}
-            inputClassName="w-full rounded border-gray-300"
-          />
+          <form>
+            <Controller
+              name="staffType"
+              control={control}
+              render={({ value, onChange, name }) => (
+                <FormSelect
+                  label="Staff Type"
+                  name={name}
+                  options={roles}
+                  onChange={onChange}
+                  value={value}
+                  error={errors?.staffType?.message || undefined}
+                  labelClassName="text-base text-gray-400 font-bold"
+                />
+              )}
+            />
+            <Controller
+              name="email"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <FormInput
+                  label="Email Address"
+                  labelClassName="text-base font-bold"
+                  placeholder="Enter email of contact"
+                  type="email"
+                  name={name}
+                  onChange={onChange}
+                  value={value}
+                  error={errors?.contact_number?.message}
+                  inputClassName="w-full rounded border-gray-300"
+                />
+              )}
+            />
+          </form>
         </div>
       </Modal>
     </section>
