@@ -15,7 +15,8 @@ const InputSelect = ({
   onClear,
   disabled,
   noCloseIcon,
-  className
+  className,
+  description
 }) => {
   const inputClasses = useMemo(
     () =>
@@ -28,6 +29,7 @@ const InputSelect = ({
 
   return (
     <div className={styles.FormSelectContainer}>
+      {description || null}
       <select
         className={inputClasses}
         id={id}
@@ -62,7 +64,8 @@ InputSelect.propTypes = {
   onClear: PropTypes.func,
   disabled: PropTypes.bool,
   noCloseIcon: PropTypes.bool,
-  className: PropTypes.string
+  className: PropTypes.string,
+  description: PropTypes.node || PropTypes.string
 }
 
 export default InputSelect
