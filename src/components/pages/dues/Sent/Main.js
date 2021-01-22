@@ -7,7 +7,7 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import Card from '@app/components/card'
-import FormSelect from '@app/components/forms/form-select'
+import FormSelect from '@app/components/globals/FormSelect'
 import { FaEye } from 'react-icons/fa'
 import { gql, useQuery } from '@apollo/client'
 import P from 'prop-types'
@@ -28,22 +28,19 @@ const statusOptions = [
   }
 ]
 
+const GET_ALL_FLOORS = gql`
+  query getFloorNUmbers($buildingId: String!) {
+    getFloorNumbers(buildingId: $buildingId)
+  }
+`
+
 const GETDEUS_QUERY = gql`
-  query ($where: {
-    getDues(
-      where: {
-        buildingId: "5d804d6543df5f4239e72911"
-        period: { month: 1, year: 2020 }
-      }
-    ) {
+  query getDues($where: DuesQueryInput) {
+    getDues(where: $where) {
       count {
         all
         seen
         sent
-        units {
-          all
-          withResidents
-        }
       }
     }
   }
@@ -93,43 +90,105 @@ const GET_DUES_PER_UNIT_SENT = gql`
   }
 `
 
+function useKeyPress(targetKey) {
+  // State for keeping track of whether key is pressed
+  const [keyPressed, setKeyPressed] = useState(false)
+
+  // If pressed key is our target key then set to true
+  function downHandler({ key }) {
+    if (key === targetKey) {
+      setKeyPressed(true)
+    }
+  }
+
+  // If released key is our target key then set to false
+  const upHandler = ({ key }) => {
+    if (key === targetKey) {
+      setKeyPressed(false)
+    }
+  }
+
+  // Add event listeners
+  useEffect(() => {
+    window.addEventListener('keydown', downHandler)
+    window.addEventListener('keyup', upHandler)
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener('keydown', downHandler)
+      window.removeEventListener('keyup', upHandler)
+    }
+  }, []) // Empty array ensures that effect is only run on mount and unmount
+
+  return keyPressed
+}
+
 function Sent({ month, year }) {
-  const [selectedFloor, setSelectedFloor] = useState('')
-  const [searchText, setSearchText] = useState('')
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
   const [dues, setDues] = useState()
+  const [floors, setFloors] = useState([])
+  const [count, setCount] = useState({
+    all: 0,
+    seen: 0
+  })
+
+  const keyPress = useKeyPress('')
+
+  const [searchText, setSearchText] = useState(null)
 
   // graphQLFetching
-  const { loading, data, error, refetch: refetchPosts } = useQuery(
-    GET_DUES_PER_UNIT_SENT,
-    {
-      variables: {
-        unit: {
-          buildingId: '5d804d6543df5f4239e72911'
-        },
-        filter: {
-          sent: true
-        },
-        dues: {
-          period: {
-            month,
-            year
-          }
-        },
-        limit: limitPage,
-        offset: offsetPage
-      }
+  const { loading, data, error, refetch } = useQuery(GET_DUES_PER_UNIT_SENT, {
+    variables: {
+      unit: {
+        buildingId: '5d804d6543df5f4239e72911',
+        search: searchText
+      },
+      filter: {
+        sent: true
+      },
+      dues: {
+        period: {
+          month,
+          year
+        }
+      },
+      limit: limitPage,
+      offset: offsetPage
     }
-  )
+  })
 
   const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
     GETDEUS_QUERY,
     {
-      variables: {}
+      variables: {
+        where: {
+          sent: true,
+          buildingId: '5d804d6543df5f4239e72911',
+          period: {
+            month,
+            year
+          }
+        }
+      }
     }
   )
+
+  useEffect(() => {
+    if (!duesLoading) {
+      setCount({ ...count, ...duesData?.getDues?.count })
+    }
+  }, [duesLoading, duesData, duesError])
+
+  const {
+    loading: loadingFloorNumbers,
+    error: errorGetAllFloors,
+    data: dataAllFloors
+  } = useQuery(GET_ALL_FLOORS, {
+    variables: {
+      buildingId: '5d804d6543df5f4239e72911'
+    }
+  })
 
   const tableRowData = [
     {
@@ -167,7 +226,6 @@ function Sent({ month, year }) {
     let copyOfFloorNumber = null
 
     if (!loading && data) {
-      console.log(data)
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
@@ -212,20 +270,44 @@ function Sent({ month, year }) {
     }
   }, [loading, data, error])
 
+  useEffect(() => {
+    let optionsData = [
+      {
+        label: '',
+        value: ''
+      }
+    ]
+    if (!loading && dataAllFloors) {
+      optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
+        return { label: floor, value: floor }
+      })
+    }
+
+    setFloors(optionsData)
+  }, [loadingFloorNumbers, errorGetAllFloors, dataAllFloors])
+
   //   Select Floors onchange
   const onFloorSelect = e => {}
   // =============
 
-  //  Select Floors On Clear Category
-  const onClearFloor = e => {}
-  // ============
-
   // Handle Searches
-  const onSearch = e => {}
+  const onSearch = e => {
+    if (keyPress) {
+      alert(e.target.value)
+    }
+    if (e.target.value === '') {
+      setSearchText(null)
+    } else {
+      setSearchText(e.target.value)
+    }
+  }
+
   // ==========
 
   // Clear searches
-  const onClearSearch = e => {}
+  const onClearSearch = e => {
+    setSearchText(null)
+  }
   // ==============
 
   // Click pagination
@@ -239,24 +321,33 @@ function Sent({ month, year }) {
     setLimitPage(Number(e.target.value))
   }
 
+  // We will refetch the post one time
+  const handleKeyDown = e => {
+    alert('asdasd')
+  }
+
   return (
     <>
       <div className={styles.FormContainer}>
         <div className={styles.StatusFloorControl}>
-          <FormSelect options={statusOptions} />
-          <SelectCategory
-            type="post"
-            userType="administrators"
+          <FormSelect
             onChange={onFloorSelect}
-            onClear={onClearFloor}
-            selected={selectedFloor}
+            options={statusOptions}
+            classNames="mb-4"
+          />
+          <FormSelect
+            placeholder="All Floors"
+            onChange={onFloorSelect}
+            options={floors}
+            classNames="mb-4"
           />
           <SearchControl
-            placeholder="Search by title"
+            placeholder="Search by unit"
             searchText={searchText}
             onSearch={onSearch}
             onClearSearch={onClearSearch}
             className={styles.SearchControl}
+            onKeyDown={handleKeyDown}
           />
         </div>
       </div>
@@ -269,7 +360,9 @@ function Sent({ month, year }) {
             <div className={styles.InfoViewText}>
               <FaEye />
               <div>
-                Bill viewed <span className={styles.BoldText}>0</span>/0 units
+                Bills viewed{' '}
+                <span className={styles.BoldText}>{count?.seen}</span>/
+                {count?.all}
                 bills
               </div>
             </div>

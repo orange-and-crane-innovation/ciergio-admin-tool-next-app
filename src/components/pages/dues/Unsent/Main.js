@@ -55,6 +55,18 @@ const GET_ALL_FLOORS = gql`
   }
 `
 
+const GETDEUS_QUERY = gql`
+  query getDues($where: DuesQueryInput) {
+    getDues(where: $where) {
+      count {
+        all
+        seen
+        sent
+      }
+    }
+  }
+`
+
 function Unsent({ month, year }) {
   // router
   const router = useRouter()
@@ -71,29 +83,28 @@ function Unsent({ month, year }) {
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
+  const [count, setCount] = useState({})
 
   // graphQLFetching
-  const { loading, data, error, refetch: refetchPosts } = useQuery(
-    GET_UNSENT_DUES_QUERY,
-    {
-      variables: {
-        unit: {
-          buildingId: '5d804d6543df5f4239e72911'
-        },
-        filter: {
-          sent: false
-        },
-        dues: {
-          period: {
-            month,
-            year
-          }
-        },
-        limit: limitPage,
-        offset: offsetPage
-      }
+  const { loading, data, error, refetch } = useQuery(GET_UNSENT_DUES_QUERY, {
+    variables: {
+      unit: {
+        buildingId: '5d804d6543df5f4239e72911',
+        search: searchText
+      },
+      filter: {
+        sent: false
+      },
+      dues: {
+        period: {
+          month,
+          year
+        }
+      },
+      limit: limitPage,
+      offset: offsetPage
     }
-  )
+  })
 
   const {
     loading: loadingFloorNumbers,
@@ -104,6 +115,28 @@ function Unsent({ month, year }) {
       buildingId: '5d804d6543df5f4239e72911'
     }
   })
+
+  const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
+    GETDEUS_QUERY,
+    {
+      variables: {
+        where: {
+          sent: true,
+          buildingId: '5d804d6543df5f4239e72911',
+          period: {
+            month,
+            year
+          }
+        }
+      }
+    }
+  )
+
+  useEffect(() => {
+    if (!duesLoading) {
+      setCount({ ...count, ...duesData?.getDues?.count })
+    }
+  }, [duesLoading, duesData, duesError])
 
   // Component did mount for generating table data
   useEffect(() => {
@@ -239,19 +272,25 @@ function Unsent({ month, year }) {
   ]
 
   //   Select Floors onchange
-  const onCategorySelect = e => {}
+  const onFloorSelect = e => {}
   // =============
 
-  //  Select Floors On Clear Category
-  const onClearCategory = e => {}
   // ============
 
   // Handle Searches
-  const onSearch = e => {}
+  const onSearch = e => {
+    if (e.target.value === '') {
+      setSearchText(null)
+    } else {
+      setSearchText(e.target.value)
+    }
+  }
   // ==========
 
   // Clear searches
-  const onClearSearch = e => {}
+  const onClearSearch = e => {
+    setSearchText(null)
+  }
   // ==============
 
   // Click pagination
@@ -280,14 +319,10 @@ function Unsent({ month, year }) {
         </div>
         <div className={styles.FloorControl}>
           <FormSelect
-            onChange={onCategorySelect}
-            options={[
-              {
-                labe: 'asd',
-                value: 'asdasd'
-              }
-            ]}
+            onChange={onFloorSelect}
+            options={floors}
             classNames="mb-4"
+            placeholder="All Floors"
           />
           <SearchControl
             placeholder="Search by title"
@@ -307,7 +342,9 @@ function Unsent({ month, year }) {
             <div className={styles.InfoViewText}>
               <span className="ciergio-dues"></span>
               <div>
-                Bill sent <span className={styles.BoldText}>0</span>/17 units
+                Bills sent{' '}
+                <span className={styles.BoldText}>{count?.sent}</span>/
+                {count?.all} bills
               </div>
             </div>
           </div>
