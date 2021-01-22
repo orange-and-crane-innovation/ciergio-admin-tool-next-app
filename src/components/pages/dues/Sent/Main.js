@@ -29,7 +29,7 @@ const statusOptions = [
 ]
 
 const GETDEUS_QUERY = gql`
-  query {
+  query ($where: {
     getDues(
       where: {
         buildingId: "5d804d6543df5f4239e72911"
@@ -121,6 +121,13 @@ function Sent({ month, year }) {
         limit: limitPage,
         offset: offsetPage
       }
+    }
+  )
+
+  const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
+    GETDEUS_QUERY,
+    {
+      variables: {}
     }
   )
 

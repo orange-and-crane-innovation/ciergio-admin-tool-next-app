@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import SelectCategory from '@app/components/globals/SelectCategory'
+import FormSelect from '@app/components/globals/FormSelect'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
@@ -48,16 +49,23 @@ const GET_UNSENT_DUES_QUERY = gql`
   }
 `
 
+const GET_ALL_FLOORS = gql`
+  query getFloorNUmbers($buildingId: String!) {
+    getFloorNumbers(buildingId: $buildingId)
+  }
+`
+
 function Unsent({ month, year }) {
   // router
   const router = useRouter()
 
   // components state
-  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedFloor, setSelectedFloor] = useState('')
   const [searchText, setSearchText] = useState('')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showModal, setShowModal] = useState(false)
   const [dues, setDues] = useState()
+  const [floors, setFloors] = useState([])
 
   // Pagination states
   const [activePage, setActivePage] = useState(1)
@@ -73,7 +81,7 @@ function Unsent({ month, year }) {
           buildingId: '5d804d6543df5f4239e72911'
         },
         filter: {
-          sent: true
+          sent: false
         },
         dues: {
           period: {
@@ -87,9 +95,15 @@ function Unsent({ month, year }) {
     }
   )
 
-  useEffect(() => {
-    console.log(month, year)
-  }, [])
+  const {
+    loading: loadingFloorNumbers,
+    error: errorGetAllFloors,
+    data: dataAllFloors
+  } = useQuery(GET_ALL_FLOORS, {
+    variables: {
+      buildingId: '5d804d6543df5f4239e72911'
+    }
+  })
 
   // Component did mount for generating table data
   useEffect(() => {
@@ -164,6 +178,22 @@ function Unsent({ month, year }) {
     }
   }, [loading, data, error])
 
+  useEffect(() => {
+    let optionsData = [
+      {
+        label: '',
+        value: ''
+      }
+    ]
+    if (!loading && dataAllFloors) {
+      optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
+        return { label: floor, value: floor }
+      })
+    }
+
+    setFloors(optionsData)
+  }, [loadingFloorNumbers, errorGetAllFloors, dataAllFloors])
+
   const handleModal = () => setShowModal(show => !show)
 
   const handleCloseModal = () => {
@@ -234,7 +264,9 @@ function Unsent({ month, year }) {
   const onLimitChange = e => {
     setLimitPage(Number(e.target.value))
   }
+
   const calendarIcon = () => <span className="ciergio-calendar"></span>
+
   return (
     <>
       <div className={styles.FormContainer}>
@@ -247,12 +279,15 @@ function Unsent({ month, year }) {
           />
         </div>
         <div className={styles.FloorControl}>
-          <SelectCategory
-            type="post"
-            userType="administrators"
+          <FormSelect
             onChange={onCategorySelect}
-            onClear={onClearCategory}
-            selected={selectedCategory}
+            options={[
+              {
+                labe: 'asd',
+                value: 'asdasd'
+              }
+            ]}
+            classNames="mb-4"
           />
           <SearchControl
             placeholder="Search by title"

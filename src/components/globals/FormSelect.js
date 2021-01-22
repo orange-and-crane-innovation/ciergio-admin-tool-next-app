@@ -16,8 +16,8 @@ function Component({
       <div className="main">
         <select
           type={type || 'text'}
+          placeholder={placeholder || ''}
           className="input"
-          placeholder={placeholder || ``}
           onChange={onChange}
         >
           {options.map(({ label, value }) => (
