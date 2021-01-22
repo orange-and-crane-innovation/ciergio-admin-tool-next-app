@@ -6,7 +6,6 @@ import * as yup from 'yup'
 
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
-import FormSelect from '@app/components/forms/form-select'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
@@ -144,15 +143,16 @@ function AllStaff() {
 
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [selectedRoles, setSelectedRoles] = useState('all')
-  const [selectedAssignment, setSelectedAssignment] = useState('')
+  const [selectedRoles, setSelectedRoles] = useState(undefined)
+  const [selectedAssignment, setSelectedAssignment] = useState(undefined)
 
   const debouncedSearchText = useDebounce(searchText, 700)
 
   const { data: accounts, refetch: refetchAccounts } = useQuery(GET_ACCOUNTS, {
     variables: {
-      accountTypes: selectedRoles === 'all' ? ALL_ROLES : selectedRoles,
-      companyId: selectedAssignment,
+      accountTypes:
+        selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
+      companyId: selectedAssignment?.value,
       search: debouncedSearchText
     }
   })
@@ -400,31 +400,21 @@ function AllStaff() {
       <h1 className="content-title">Staff List</h1>
       <div className="flex items-center justify-end mt-12 mx-4 mb-4 w-full">
         <div className="flex items-center justify-between w-7/12 flex-row">
-          <div className="max-w-sm mr-2">
-            <FormSelect
-              options={[
-                {
-                  label: 'All',
-                  value: ''
-                },
-                ...roles
-              ]}
-              onChange={e => setSelectedRoles(e.target.value)}
+          <div className="w-full max-w-xs mr-2">
+            <SelectDropdown
+              placeholder="Filter Role"
+              options={roles}
+              onChange={selectedValue => setSelectedRoles(selectedValue)}
             />
           </div>
-          <div className="max-w-sm mr-2">
-            <FormSelect
-              options={[
-                {
-                  label: 'All',
-                  value: ''
-                },
-                ...assignments
-              ]}
-              onChange={e => setSelectedAssignment(e.target.value)}
+          <div className="w-full max-w-xs mr-2">
+            <SelectDropdown
+              placeholder="Filter Assignment"
+              options={assignments}
+              onChange={selectedValue => setSelectedAssignment(selectedValue)}
             />
           </div>
-          <div className="w-full relative max-w-xs mr-4">
+          <div className="w-full relative max-w-xs mr-4 top-2">
             <FormInput
               name="search"
               placeholder="Search"
@@ -494,11 +484,9 @@ function AllStaff() {
                 control={control}
                 render={({ name, value, onChange }) => (
                   <SelectDropdown
-                    inputProps={{
-                      name,
-                      value,
-                      onChange
-                    }}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
                     options={roles}
                     placeholder="Enter staff type"
                     error={errors?.staffType?.message}
@@ -560,11 +548,9 @@ function AllStaff() {
                       control={control}
                       render={({ value, onChange, name }) => (
                         <SelectDropdown
-                          inputProps={{
-                            name,
-                            value: value,
-                            onChange
-                          }}
+                          name={name}
+                          value={value}
+                          onChange={onChange}
                           options={assignments}
                           placeholder="Select a company"
                           error={errors?.company?.message}
@@ -582,11 +568,9 @@ function AllStaff() {
                         control={control}
                         render={({ value, onChange, name }) => (
                           <SelectDropdown
-                            inputProps={{
-                              name,
-                              value: value,
-                              onChange
-                            }}
+                            name={name}
+                            value={value}
+                            onChange={onChange}
                             options={complexAssignments}
                             error={errors?.complex?.message}
                             description={<p className="mb-2">Complex</p>}
@@ -603,11 +587,9 @@ function AllStaff() {
                       control={control}
                       render={({ value, onChange, name }) => (
                         <SelectDropdown
-                          inputProps={{
-                            name,
-                            value: value,
-                            onChange
-                          }}
+                          name={name}
+                          value={value}
+                          onChange={onChange}
                           options={buildingAssignments}
                           error={errors?.building?.message || undefined}
                           description={<p className="mb-2">Building</p>}

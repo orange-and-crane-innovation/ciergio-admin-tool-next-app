@@ -22,7 +22,11 @@ function Component({
   rtl,
   disabled,
   loading,
-  allowMultiple
+  allowMultiple,
+  value,
+  inputValue,
+  onChange,
+  name
 }) {
   const renderError = useMemo(() => {
     return error ? <span className={errorClasses}>{error}</span> : null
@@ -47,6 +51,10 @@ function Component({
         rtl={rtl}
         isMulti={allowMultiple}
         styles={customStyles}
+        inputValue={inputValue}
+        value={value}
+        onChange={onChange}
+        name={name}
         {...inputProps}
       />
       {renderError}
@@ -76,7 +84,11 @@ Component.propTypes = {
   error: P.string,
   errorClasses: P.string,
   description: P.node || P.string,
-  containerClasses: P.string
+  containerClasses: P.string,
+  name: P.string,
+  value: P.any,
+  onChange: P.func,
+  inputValue: P.string
 }
 
 export default Component
