@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react'
-import { useQuery } from '@apollo/client'
+import React, { useState, useMemo, useEffect } from 'react'
+import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -10,6 +10,7 @@ import FormSelect from '@app/components/forms/form-select'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
+import SelectDropdown from '@app/components/select'
 import { Card } from '@app/components/globals'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
@@ -19,7 +20,25 @@ import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import useDebounce from '@app/utils/useDebounce'
 
-import { GET_ACCOUNTS, GET_COMPANIES } from '../queries'
+import {
+  ADD_BUILDING_ADMIN,
+  ADD_COMPANY_ADMIN,
+  ADD_COMPLEX_ADMIN,
+  ADD_RECEPTIONIST,
+  ADD_UNIT_OWNER,
+  GET_ACCOUNTS,
+  GET_BUILDINGS,
+  GET_COMPANIES,
+  GET_COMPLEXES
+} from '../queries'
+import {
+  BUILDING_ADMIN,
+  COMPANY_ADMIN,
+  COMPLEX_ADMIN,
+  RECEPTIONIST,
+  UNIT_OWNER
+} from '../constants'
+import showToast from '@app/utils/toast'
 
 const columns = [
   {
@@ -46,30 +65,64 @@ const columns = [
 
 const roles = [
   {
-    label: 'Administrator',
-    value: 'administrator'
-  },
-  {
     label: 'Company Admin',
-    value: 'company_admin'
+    value: COMPANY_ADMIN
   },
   {
     label: 'Complex Admin',
-    value: 'complex_admin'
+    value: COMPLEX_ADMIN
+  },
+  {
+    label: 'Building Administrator',
+    value: BUILDING_ADMIN
+  },
+  {
+    label: 'Unit Owner',
+    value: UNIT_OWNER
+  },
+  {
+    label: 'Receptionist',
+    value: RECEPTIONIST
   }
 ]
 
-const ALL_ROLES = ['administrator', 'complex_admin', 'company_admin']
+const ALL_ROLES = [
+  BUILDING_ADMIN,
+  COMPANY_ADMIN,
+  COMPLEX_ADMIN,
+  RECEPTIONIST,
+  UNIT_OWNER
+]
 
 const validationSchema = yup.object().shape({
-  staffType: yup.string().label('Staff Type'),
-  email: yup.string().label('Email Address'),
-  jobTitle: yup.string().label('Job Title of Point of Contact'),
-  company: yup.string().label('Assign To')
+  staffType: yup
+    .object()
+    .shape({
+      label: yup.string(),
+      value: yup.string()
+    })
+    .required(),
+  email: yup.string().email().required(),
+  jobTitle: yup.string().required(),
+  company: yup
+    .object()
+    .shape({
+      label: yup.string(),
+      value: yup.string()
+    })
+    .required(),
+  complex: yup.object().shape({
+    label: yup.string(),
+    value: yup.string()
+  }),
+  building: yup.object().shape({
+    label: yup.string(),
+    value: yup.string()
+  })
 })
 
 function AllStaff() {
-  const { handleSubmit, control, errors } = useForm({
+  const { handleSubmit, control, errors, watch, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       staffType: '',
@@ -79,6 +132,16 @@ function AllStaff() {
     }
   })
 
+  const staffType = watch('staffType')?.value
+  const companyId = watch('company')?.value
+  const complexId = watch('complex')?.value
+
+  const isComplexAccount = staffType === COMPLEX_ADMIN
+  const isBuildingAccount =
+    staffType === UNIT_OWNER ||
+    staffType === BUILDING_ADMIN ||
+    staffType === RECEPTIONIST
+
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [selectedRoles, setSelectedRoles] = useState('all')
@@ -86,7 +149,7 @@ function AllStaff() {
 
   const debouncedSearchText = useDebounce(searchText, 700)
 
-  const { data: accounts } = useQuery(GET_ACCOUNTS, {
+  const { data: accounts, refetch: refetchAccounts } = useQuery(GET_ACCOUNTS, {
     variables: {
       accountTypes: selectedRoles === 'all' ? ALL_ROLES : selectedRoles,
       companyId: selectedAssignment,
@@ -94,15 +157,136 @@ function AllStaff() {
     }
   })
   const { data: companies } = useQuery(GET_COMPANIES)
+  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES, {
+    variables: {
+      id: companyId
+    }
+  })
+
+  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS, {
+    variables: {
+      id: complexId
+    }
+  })
+
+  const handleOnCompleted = () => {
+    handleClearModal()
+    showToast('success', `You have successfully sent a new invite`)
+    refetchAccounts()
+  }
+
+  const [addBuildingAdmin, { loading: addingBuildingAdmin }] = useMutation(
+    ADD_BUILDING_ADMIN,
+    {
+      onCompleted: handleOnCompleted
+    }
+  )
+  const [addCompanyAdmin, { loading: addingCompanyAdmin }] = useMutation(
+    ADD_COMPANY_ADMIN,
+    {
+      onCompleted: handleOnCompleted
+    }
+  )
+  const [addComplexAdmin, { loading: addingComplexAdmin }] = useMutation(
+    ADD_COMPLEX_ADMIN,
+    {
+      onCompleted: handleOnCompleted
+    }
+  )
+  const [addReceptionist, { loading: addingReceptionist }] = useMutation(
+    ADD_RECEPTIONIST,
+    {
+      onCompleted: handleOnCompleted
+    }
+  )
+  const [addUnitOwner, { loading: addingUnitOwner }] = useMutation(
+    ADD_UNIT_OWNER,
+    {
+      onCompleted: handleOnCompleted
+    }
+  )
+
+  useEffect(() => {
+    if (companyId !== undefined && (isComplexAccount || isBuildingAccount)) {
+      getComplexes()
+    }
+    if (complexId !== undefined && isBuildingAccount) {
+      getBuildings()
+    }
+  }, [
+    companyId,
+    complexId,
+    getBuildings,
+    getComplexes,
+    isBuildingAccount,
+    isComplexAccount
+  ])
 
   const handleShowModal = () => setShowModal(old => !old)
 
   const handleClearModal = () => {
+    reset({
+      staffType: '',
+      email: '',
+      company: '',
+      jobTitle: '',
+      complex: '',
+      building: ''
+    })
     handleShowModal()
   }
 
-  const handleOk = () => {
-    handleClearModal()
+  const handleOk = (values, event) => {
+    const { staffType, email, jobTitle, company, complex, building } = values
+
+    const data = {
+      email,
+      jobTitle
+    }
+    switch (staffType.value) {
+      case BUILDING_ADMIN:
+        addBuildingAdmin({
+          variables: {
+            data,
+            id: building.value
+          }
+        })
+        break
+      case COMPANY_ADMIN:
+        addCompanyAdmin({
+          variables: {
+            data,
+            id: company.value
+          }
+        })
+        break
+      case COMPLEX_ADMIN:
+        addComplexAdmin({
+          variables: {
+            data,
+            id: complex.value
+          }
+        })
+        break
+      case RECEPTIONIST:
+        addReceptionist({
+          variables: {
+            data,
+            id: building.value
+          }
+        })
+        break
+      case UNIT_OWNER:
+        addUnitOwner({
+          variables: {
+            data,
+            id: building.value
+          }
+        })
+        break
+      default:
+        console.log(new Error('wrong staff type'))
+    }
   }
 
   const assignments = useMemo(() => {
@@ -112,17 +296,33 @@ function AllStaff() {
         value: company._id
       }))
 
-      return [
-        {
-          label: 'All',
-          value: ''
-        },
-        ...options
-      ]
+      return options
     }
 
     return []
   }, [companies?.getCompanies])
+
+  const complexAssignments = useMemo(() => {
+    if (complexes?.getComplexes?.data?.length > 0) {
+      return complexes.getComplexes.data.map(complex => ({
+        label: complex.name,
+        value: complex._id
+      }))
+    }
+
+    return []
+  }, [complexes?.getComplexes])
+
+  const buildingAssignments = useMemo(() => {
+    if (buildings?.getBuildings?.data?.length > 0) {
+      return buildings.getBuildings.data.map(building => ({
+        label: building.name,
+        value: building._id
+      }))
+    }
+
+    return []
+  }, [buildings?.getBuildings])
 
   const staffData = useMemo(
     () => ({
@@ -188,6 +388,13 @@ function AllStaff() {
     [accounts?.getAccounts]
   )
 
+  const sendingInvite =
+    addingBuildingAdmin ||
+    addingCompanyAdmin ||
+    addingComplexAdmin ||
+    addingReceptionist ||
+    addingUnitOwner
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">Staff List</h1>
@@ -207,7 +414,13 @@ function AllStaff() {
           </div>
           <div className="max-w-sm mr-2">
             <FormSelect
-              options={assignments}
+              options={[
+                {
+                  label: 'All',
+                  value: ''
+                },
+                ...assignments
+              ]}
               onChange={e => setSelectedAssignment(e.target.value)}
             />
           </div>
@@ -265,43 +478,147 @@ function AllStaff() {
         visible={showModal}
         onClose={handleClearModal}
         onCancel={handleClearModal}
+        okButtonProps={{
+          loading: sendingInvite
+        }}
         onOk={handleSubmit(handleOk)}
       >
         <div className="w-full">
-          <h1 className="font-bold text-sm mb-4">Staff Type</h1>
           <form>
-            <Controller
-              name="staffType"
-              control={control}
-              render={({ value, onChange, name }) => (
-                <FormSelect
-                  label="Staff Type"
-                  name={name}
-                  options={roles}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.staffType?.message || undefined}
-                  labelClassName="text-base text-gray-400 font-bold"
-                />
-              )}
-            />
-            <Controller
-              name="email"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Email Address"
-                  labelClassName="text-base font-bold"
-                  placeholder="Enter email of contact"
-                  type="email"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_number?.message}
-                  inputClassName="w-full rounded border-gray-300"
-                />
-              )}
-            />
+            <div>
+              <p className="font-bold text-base text-gray-500 mb-2">
+                Staff Type
+              </p>
+              <Controller
+                name="staffType"
+                control={control}
+                render={({ name, value, onChange }) => (
+                  <SelectDropdown
+                    inputProps={{
+                      name,
+                      value,
+                      onChange
+                    }}
+                    options={roles}
+                    placeholder="Enter staff type"
+                    error={errors?.staffType?.message}
+                    isClearable
+                    isSearchable
+                  />
+                )}
+              />
+            </div>
+            <div className="mb-4">
+              <p className="font-bold text-base text-gray-500 mb-2">Email</p>
+              <Controller
+                name="email"
+                control={control}
+                render={({ name, value, onChange }) => (
+                  <FormInput
+                    placeholder="Enter email of contact"
+                    type="email"
+                    name={name}
+                    onChange={onChange}
+                    value={value}
+                    error={errors?.email?.message}
+                    inputClassName="w-full rounded border-gray-300"
+                    description={
+                      <p className="mb-2">
+                        An invite will be sent to this email.
+                      </p>
+                    }
+                  />
+                )}
+              />
+            </div>
+            {staffType !== undefined ? (
+              <>
+                <div>
+                  <p className="font-bold text-base text-gray-500 mb-2">
+                    Job Title of Point of Contact
+                  </p>
+                  <Controller
+                    name="jobTitle"
+                    control={control}
+                    render={({ name, value, onChange }) => (
+                      <FormInput
+                        placeholder="Enter Job Title"
+                        name={name}
+                        onChange={onChange}
+                        value={value}
+                        error={errors?.jobTitle?.message}
+                        inputClassName="w-full rounded border-gray-300"
+                      />
+                    )}
+                  />
+                  <div>
+                    <p className="font-bold text-base text-gray-500 mb-2">
+                      Assign To
+                    </p>
+                    <Controller
+                      name="company"
+                      control={control}
+                      render={({ value, onChange, name }) => (
+                        <SelectDropdown
+                          inputProps={{
+                            name,
+                            value: value,
+                            onChange
+                          }}
+                          options={assignments}
+                          placeholder="Select a company"
+                          error={errors?.company?.message}
+                          description={<p className="mb-2">Company</p>}
+                          containerClasses="mb-4"
+                        />
+                      )}
+                    />
+                  </div>
+                  {(isComplexAccount || isBuildingAccount) &&
+                  complexAssignments?.length > 0 ? (
+                    <div>
+                      <Controller
+                        name="complex"
+                        control={control}
+                        render={({ value, onChange, name }) => (
+                          <SelectDropdown
+                            inputProps={{
+                              name,
+                              value: value,
+                              onChange
+                            }}
+                            options={complexAssignments}
+                            error={errors?.complex?.message}
+                            description={<p className="mb-2">Complex</p>}
+                            placeholder="Select a complex"
+                            containerClasses="mb-4"
+                          />
+                        )}
+                      />
+                    </div>
+                  ) : null}
+                  {isBuildingAccount && buildingAssignments?.length > 0 ? (
+                    <Controller
+                      name="building"
+                      control={control}
+                      render={({ value, onChange, name }) => (
+                        <SelectDropdown
+                          inputProps={{
+                            name,
+                            value: value,
+                            onChange
+                          }}
+                          options={buildingAssignments}
+                          error={errors?.building?.message || undefined}
+                          description={<p className="mb-2">Building</p>}
+                          placeholder="Select a building"
+                        />
+                      )}
+                    />
+                  ) : null}
+                </div>
+              </>
+            ) : null}
           </form>
         </div>
       </Modal>

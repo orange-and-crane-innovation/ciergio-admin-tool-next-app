@@ -1,0 +1,5 @@
+export const BUILDING_ADMIN = 'building_admin'
+export const COMPANY_ADMIN = 'company_admin'
+export const COMPLEX_ADMIN = 'complex_admin'
+export const RECEPTIONIST = 'receptionist'
+export const UNIT_OWNER = 'unit_owner'
