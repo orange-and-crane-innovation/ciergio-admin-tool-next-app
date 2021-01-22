@@ -1,13 +1,37 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Tabs from '@app/components/tabs'
-import FormInput from '@app/components/forms/form-input'
 import styles from './Billing.module.css'
+import { useRouter } from 'next/router'
+
+import DatePicker from '@app/components/forms/form-datepicker/'
 
 import Unsent from './Unsent'
 import Sent from './Sent'
 
 function Billing() {
-  const [searchInput, setSearchInput] = useState('')
+  const router = useRouter()
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [activeTab, setActiveTab] = useState(1)
+  const [month, setMonth] = useState(new Date().getMonth() + 1)
+  const [year, setYear] = useState(new Date().getFullYear())
+
+  const handlingMonthOrYear = (date, type = 'year') => {
+    if (date instanceof Date) {
+      if (type === 'month') {
+        return new Date(date).getMonth() + 1
+      } else {
+        return new Date(date).getFullYear()
+      }
+    }
+    return new Date()
+  }
+
+  const handleDateChange = date => {
+    setSelectedDate(date)
+    setMonth(handlingMonthOrYear(date, 'month'))
+    setYear(handlingMonthOrYear(date))
+  }
+
   return (
     <div className={styles.BillingContainer}>
       <h1 className={styles.BillingHeader}>Sample Building Unit</h1>
@@ -18,14 +42,11 @@ function Billing() {
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
             <div className={styles.BillingPeriodContainer}>
-              <h1 className={styles.HeaderSmall}>Billing Periods</h1>
-              <FormInput
-                type="text"
-                placeholder={new Date()}
-                name="search-contact-input"
-                leftIcon="ciergio-search"
-                onChange={e => setSearchInput(e.target.value)}
-                value={searchInput}
+              <DatePicker
+                date={selectedDate}
+                handleChange={handleDateChange}
+                label={'Billing'}
+                showMonthYearPicker
               />
             </div>
 
@@ -36,10 +57,10 @@ function Billing() {
               </Tabs.TabLabels>
               <Tabs.TabPanels>
                 <Tabs.TabPanel id="1">
-                  <Unsent />
+                  <Unsent month={parseInt(month)} year={parseInt(year)} />
                 </Tabs.TabPanel>
                 <Tabs.TabPanel id="2">
-                  <Sent />
+                  <Sent month={parseInt(month)} year={parseInt(year)} />
                 </Tabs.TabPanel>
               </Tabs.TabPanels>
             </Tabs>
