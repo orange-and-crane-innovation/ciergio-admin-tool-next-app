@@ -67,12 +67,43 @@ const GETDEUS_QUERY = gql`
   }
 `
 
+const tableRowData = [
+  {
+    name: '',
+    width: '10%'
+  },
+  {
+    name: 'Unit',
+    width: '10%'
+  },
+  {
+    name: 'Unit Owner',
+    width: '15%'
+  },
+  {
+    name: 'Upload File',
+    width: '15%'
+  },
+  {
+    name: 'Amount (Optional)',
+    width: '20%'
+  },
+  {
+    name: 'Due Date',
+    width: '15%'
+  },
+  {
+    name: '',
+    width: '15%'
+  }
+]
+
 function Unsent({ month, year }) {
   // router
   const router = useRouter()
 
   // components state
-  const [selectedFloor, setSelectedFloor] = useState('')
+  const [selectedFloor, setSelectedFloor] = useState(null)
   const [searchText, setSearchText] = useState('')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showModal, setShowModal] = useState(false)
@@ -90,19 +121,16 @@ function Unsent({ month, year }) {
     variables: {
       unit: {
         buildingId: '5d804d6543df5f4239e72911',
-        search: searchText
+        search: searchText,
+        floorNumber: selectedFloor
       },
-      filter: {
-        sent: false
-      },
+      filter: { sent: false },
       dues: {
         period: {
-          month,
-          year
+          month: month,
+          year: year
         }
-      },
-      limit: limitPage,
-      offset: offsetPage
+      }
     }
   })
 
@@ -143,6 +171,7 @@ function Unsent({ month, year }) {
     let copyOfFloorNumber = null
 
     if (!loading && data) {
+      console.log(data)
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
@@ -240,39 +269,11 @@ function Unsent({ month, year }) {
     setSelectedDate(date)
   }
 
-  const tableRowData = [
-    {
-      name: '',
-      width: '10%'
-    },
-    {
-      name: 'Unit',
-      width: '10%'
-    },
-    {
-      name: 'Unit Owner',
-      width: '15%'
-    },
-    {
-      name: 'Upload File',
-      width: '15%'
-    },
-    {
-      name: 'Amount (Optional)',
-      width: '20%'
-    },
-    {
-      name: 'Due Date',
-      width: '15%'
-    },
-    {
-      name: '',
-      width: '15%'
-    }
-  ]
-
   //   Select Floors onchange
-  const onFloorSelect = e => {}
+  const onFloorSelect = e => {
+    setSelectedFloor(e.target.value.toString())
+    refetch()
+  }
   // =============
 
   // ============

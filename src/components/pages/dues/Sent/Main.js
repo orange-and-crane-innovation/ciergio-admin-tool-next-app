@@ -1,32 +1,15 @@
 import { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
-import SelectCategory from '@app/components/globals/SelectCategory'
 
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
-import Button from '@app/components/button'
 import Card from '@app/components/card'
 import FormSelect from '@app/components/globals/FormSelect'
 import { FaEye } from 'react-icons/fa'
 import { gql, useQuery } from '@apollo/client'
 import P from 'prop-types'
-import Link from 'next/link'
-
-const statusOptions = [
-  {
-    label: 'All Status',
-    value: 'all'
-  },
-  {
-    label: 'Paid',
-    value: 'paid'
-  },
-  {
-    label: 'Unpaid',
-    value: 'unpaid'
-  }
-]
+import { toFriendlyDate } from '@app/utils/date'
 
 const GET_ALL_FLOORS = gql`
   query getFloorNUmbers($buildingId: String!) {
@@ -68,8 +51,8 @@ const GET_DUES_PER_UNIT_SENT = gql`
         dues {
           attachment {
             fileUrl
-            fileUrl
           }
+          amount
           dueDate
           status
           views {
@@ -89,6 +72,56 @@ const GET_DUES_PER_UNIT_SENT = gql`
     }
   }
 `
+
+const statusOptions = [
+  {
+    label: 'All Status',
+    value: 'null'
+  },
+  {
+    label: 'Paid',
+    value: 'settled'
+  },
+  {
+    label: 'Unpaid',
+    value: 'unpaid'
+  }
+]
+
+const tableRowData = [
+  {
+    name: 'Floor',
+    width: '10%'
+  },
+  {
+    name: 'Seen',
+    width: '10%'
+  },
+  {
+    name: 'Unit',
+    width: '10%'
+  },
+  {
+    name: 'Unit Owner',
+    width: '15%'
+  },
+  {
+    name: 'Upload File',
+    width: '15%'
+  },
+  {
+    name: 'Amount ',
+    width: '15%'
+  },
+  {
+    name: 'Due Date',
+    width: '15%'
+  },
+  {
+    name: 'Paid',
+    width: '10%'
+  }
+]
 
 function useKeyPress(targetKey) {
   // State for keeping track of whether key is pressed
@@ -128,6 +161,7 @@ function Sent({ month, year }) {
   const [offsetPage, setOffsetPage] = useState(0)
   const [dues, setDues] = useState()
   const [floors, setFloors] = useState([])
+  const [floorNumber, setFloorNumber] = useState('all')
   const [count, setCount] = useState({
     all: 0,
     seen: 0
@@ -136,13 +170,20 @@ function Sent({ month, year }) {
   const keyPress = useKeyPress('')
 
   const [searchText, setSearchText] = useState(null)
+  const enumType = {
+    0: 'unpaid',
+    1: 'paid',
+    2: 'settled'
+  }
+  const [status, setStatus] = useState(['paid'])
 
   // graphQLFetching
-  const { loading, data, error, refetch } = useQuery(GET_DUES_PER_UNIT_SENT, {
+  const { loading, data, error } = useQuery(GET_DUES_PER_UNIT_SENT, {
     variables: {
       unit: {
         buildingId: '5d804d6543df5f4239e72911',
-        search: searchText
+        search: searchText,
+        floorNumber: floorNumber
       },
       filter: {
         sent: true
@@ -174,12 +215,6 @@ function Sent({ month, year }) {
     }
   )
 
-  useEffect(() => {
-    if (!duesLoading) {
-      setCount({ ...count, ...duesData?.getDues?.count })
-    }
-  }, [duesLoading, duesData, duesError])
-
   const {
     loading: loadingFloorNumbers,
     error: errorGetAllFloors,
@@ -190,40 +225,15 @@ function Sent({ month, year }) {
     }
   })
 
-  const tableRowData = [
-    {
-      name: 'Seen',
-      width: '10%'
-    },
-    {
-      name: 'Unit',
-      width: '10%'
-    },
-    {
-      name: 'Unit Owner',
-      width: '15%'
-    },
-    {
-      name: 'Upload File',
-      width: '15%'
-    },
-    {
-      name: 'Amount (Optional)',
-      width: '20%'
-    },
-    {
-      name: 'Due Date',
-      width: '15%'
-    },
-    {
-      name: 'Paid',
-      width: '15%'
+  useEffect(() => {
+    if (!duesLoading) {
+      setCount({ ...count, ...duesData?.getDues?.count })
     }
-  ]
+  }, [duesLoading, duesData, duesError])
 
   // Component did mount for generating table data
   useEffect(() => {
-    let copyOfFloorNumber = null
+    const copyOfFloorNumber = null
 
     if (!loading && data) {
       const duesData = {
@@ -232,37 +242,36 @@ function Sent({ month, year }) {
         offset: data?.getDuesPerUnit.offset || 0,
         data:
           data?.getDuesPerUnit?.data.map((floor, index) => {
-            const floorNumber = floor?.floorNumber
+            console.log(floor)
             const unitName = floor?.name
-            const name = `${floor?.unitOwner?.user?.lastName}
-              ${floor?.unitOwner?.user?.lastName}`
-            const unitOwnerName = name
-            const uploadedFile = (
-              <a href={floor?.dues?.attachment?.fileUrl}>View File</a>
-            )
-            const amount = floor?.dues?.amount
-            const dueDate = floor?.dues?.dueDate
+            const unitOwner = `${floor?.unitOwner.user.firstName} ${floor?.unitOwner.user.lastName}`
+            const floorNumber = floor?.floorNumber
 
-            const status = floor?.dues?.status
-            const seen = floor?.dues?.views?.count > 0 ? <FaEye /> : null
-            const rowData = []
-
-            if (copyOfFloorNumber !== floorNumber) {
-              rowData.push(floorNumber, '', '', '', '', '', '')
-            } else {
-              rowData.push(
+            // eslint-disable-next-line no-unreachable-loop
+            for (let i = 0; i < floor?.dues.length; i++) {
+              const attachment = (
+                <a
+                  href={floor?.dues[i]?.attachment.fileUrl}
+                  className={styles.fileLink}
+                >
+                  View File
+                </a>
+              )
+              const amount = `₱${floor?.dues[i].amount.toFixed(2)}`
+              const status = floor?.dues[i].status
+              const seen = floor?.dues[i].views.count ? <FaEye /> : null
+              const dueDate = toFriendlyDate(floor?.dues[i].dueDate)
+              return {
+                floorNumber,
                 seen,
                 unitName,
-                unitOwnerName,
-                uploadedFile,
+                unitOwner,
+                attachment,
                 amount,
                 dueDate,
                 status
-              )
+              }
             }
-            copyOfFloorNumber = floorNumber
-
-            return { ...rowData }
           }) || null
       }
 
@@ -277,18 +286,24 @@ function Sent({ month, year }) {
         value: ''
       }
     ]
-    if (!loading && dataAllFloors) {
+    if (!loadingFloorNumbers) {
       optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
         return { label: floor, value: floor }
       })
     }
-
+    console.log(optionsData)
     setFloors(optionsData)
   }, [loadingFloorNumbers, errorGetAllFloors, dataAllFloors])
 
   //   Select Floors onchange
-  const onFloorSelect = e => {}
+  const onFloorSelect = e => {
+    setFloorNumber(e.target.value.toString())
+  }
   // =============
+
+  const onStatusSelect = e => {
+    setFloorNumber(e.target.value)
+  }
 
   // Handle Searches
   const onSearch = e => {
@@ -301,8 +316,6 @@ function Sent({ month, year }) {
       setSearchText(e.target.value)
     }
   }
-
-  // ==========
 
   // Clear searches
   const onClearSearch = e => {
@@ -331,7 +344,7 @@ function Sent({ month, year }) {
       <div className={styles.FormContainer}>
         <div className={styles.StatusFloorControl}>
           <FormSelect
-            onChange={onFloorSelect}
+            onChange={onStatusSelect}
             options={statusOptions}
             classNames="mb-4"
           />
