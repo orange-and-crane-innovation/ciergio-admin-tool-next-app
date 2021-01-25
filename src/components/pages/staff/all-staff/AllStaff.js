@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
@@ -21,6 +22,7 @@ import { FiDownload, FiSearch } from 'react-icons/fi'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import useDebounce from '@app/utils/useDebounce'
+import { initializeApollo } from '@app/lib/apollo/client'
 
 import {
   ADD_BUILDING_ADMIN,
@@ -106,6 +108,7 @@ const ALL_ROLES = [
 ]
 
 function AllStaff() {
+  const router = useRouter()
   const {
     handleSubmit: handleInviteStaffSubmit,
     control: inviteStaffControl,
@@ -405,7 +408,7 @@ function AllStaff() {
                   {
                     label: 'View Staff',
                     icon: <span className="ciergio-employees" />,
-                    function: () => console.log(_id)
+                    function: () => router.push(`/staff/view/${user?._id}`)
                   },
                   {
                     label: 'Edit Staff',
@@ -470,7 +473,7 @@ function AllStaff() {
             )
           : []
     }),
-    [resetEditStaffForm, accounts?.getAccounts]
+    [accounts.getAccounts, router, resetEditStaffForm]
   )
 
   const sendingInvite =
@@ -612,6 +615,20 @@ function AllStaff() {
       </Modal>
     </section>
   )
+}
+
+export async function getStaticProps() {
+  const apolloClient = initializeApollo()
+
+  await apolloClient.query({
+    query: GET_ACCOUNTS
+  })
+
+  return {
+    props: {
+      initialApolloState: apolloClient.cache.extract()
+    }
+  }
 }
 
 export default AllStaff

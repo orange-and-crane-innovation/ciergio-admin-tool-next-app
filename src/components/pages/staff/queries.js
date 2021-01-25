@@ -35,6 +35,43 @@ export const GET_ACCOUNTS = gql`
   }
 `
 
+export const GET_ACCOUNT = gql`
+  query getAccount($id: String!) {
+    getAccounts(where: { userId: $id }) {
+      data {
+        _id
+        accountType
+        user {
+          _id
+          firstName
+          lastName
+          avatar
+          jobTitle
+          email
+        }
+        company {
+          name
+        }
+        complex {
+          name
+        }
+        building {
+          name
+        }
+        history(where: { accountId: $id }) {
+          limit
+          count
+          data {
+            date
+            action
+            data
+          }
+        }
+      }
+    }
+  }
+`
+
 export const GET_COMPANIES = gql`
   {
     getCompanies(where: { status: "active" }) {
