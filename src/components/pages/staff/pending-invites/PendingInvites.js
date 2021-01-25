@@ -9,6 +9,7 @@ import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import SelectDropdown from '@app/components/select'
+import Modal from '@app/components/modal'
 import { Card } from '@app/components/globals'
 
 import { FaTimes, FaSearch } from 'react-icons/fa'
@@ -20,7 +21,9 @@ import showToast from '@app/utils/toast'
 import {
   GET_PENDING_INVITES,
   GET_COMPANIES,
-  BULK_UPDATE_MUTATION
+  BULK_UPDATE_MUTATION,
+  CANCEL_INVITE,
+  RESEND_INVITE
 } from '../queries'
 
 import {
@@ -99,6 +102,8 @@ function PendingInvites() {
   const [isBulkDisabled, setIsBulkDisabled] = useState(false)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(false)
   const [selectedBulk, setSelectedBulk] = useState([])
+  const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
+  const [showResendInviteModal, setShowResendInviteModal] = useState(false)
 
   const debouncedSearchText = useDebounce(searchText, 700)
 
@@ -117,6 +122,27 @@ function PendingInvites() {
 
   const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
     BULK_UPDATE_MUTATION
+  )
+
+  const [resendInvite, { loading: resendingInvite }] = useMutation(
+    RESEND_INVITE,
+    {
+      onCompleted: () => {
+        showToast('success', 'Invitation has been resent succesfully.')
+        handleClearModal('resend')
+        refetchInvites()
+      }
+    }
+  )
+  const [cancelInvite, { loading: cancellingInvite }] = useMutation(
+    CANCEL_INVITE,
+    {
+      onCompleted: () => {
+        showToast('success', 'Invitation has been cancelled.')
+        handleClearModal('cancel')
+        refetchInvites()
+      }
+    }
   )
 
   useEffect(() => {
@@ -218,6 +244,38 @@ function PendingInvites() {
     }
   }
 
+  const handleCancelInvite = () => {
+    cancelInvite({
+      variables: {
+        data: {
+          ids: [selectedData?._id]
+        }
+      }
+    })
+  }
+  const handleResendInvite = () => {
+    resendInvite({
+      variables: {
+        data: {
+          ids: [selectedData?._id]
+        }
+      }
+    })
+  }
+
+  const handleClearModal = type => {
+    switch (type) {
+      case 'resend':
+        setShowResendInviteModal(old => !old)
+        break
+      case 'cancel':
+        setShowCancelInviteModal(old => !old)
+        break
+      default:
+        console.log('Error: wrong type!')
+    }
+  }
+
   const columns = useMemo(
     () => [
       {
@@ -266,12 +324,18 @@ function PendingInvites() {
                 {
                   label: 'Resend Invite',
                   icon: <span className="ciergio-edit" />,
-                  function: () => {}
+                  function: () => {
+                    setSelectedData(invite)
+                    setShowResendInviteModal(old => !old)
+                  }
                 },
                 {
                   label: 'Delete Invite',
                   icon: <span className="ciergio-trash" />,
-                  function: () => {}
+                  function: () => {
+                    setSelectedData(invite)
+                    setShowCancelInviteModal(old => !old)
+                  }
                 }
               ]
 
@@ -374,6 +438,50 @@ function PendingInvites() {
         noPadding
         content={<Table rowNames={columns} items={staffData} />}
       />
+      <Modal
+        title="Resend Invite"
+        okText="Resend Invite"
+        visible={showResendInviteModal}
+        onClose={() => handleClearModal('resend')}
+        onCancel={() => handleClearModal('resend')}
+        okButtonProps={{
+          loading: resendingInvite
+        }}
+        onOk={handleResendInvite}
+      >
+        <div className="p-4">
+          <p>
+            Are you sure you want to resend invite for{' '}
+            <span className="font-bold">{selectedData?.email}</span> as
+            <span className="capitalize">
+              {selectedData?.accountType?.replace('_', ' ')}
+            </span>
+            ?
+          </p>
+        </div>
+      </Modal>
+      <Modal
+        title="Cancel Invite"
+        okText="Cancel Invite"
+        visible={showCancelInviteModal}
+        onClose={() => handleClearModal('cancel')}
+        onCancel={() => handleClearModal('cancel')}
+        okButtonProps={{
+          loading: cancellingInvite
+        }}
+        onOk={handleCancelInvite}
+      >
+        <div className="p-4">
+          <p>
+            Are you sure you want to cancel invite for{' '}
+            <span className="font-bold">{selectedData?.email}</span> as
+            <span className="capitalize">
+              {selectedData?.accountType?.replace('_', ' ')}
+            </span>
+            ?
+          </p>
+        </div>
+      </Modal>
     </section>
   )
 }

@@ -22,6 +22,7 @@ import { FiDownload, FiSearch } from 'react-icons/fi'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import useDebounce from '@app/utils/useDebounce'
+import showToast from '@app/utils/toast'
 import { initializeApollo } from '@app/lib/apollo/client'
 
 import {
@@ -45,8 +46,6 @@ import {
   RECEPTIONIST,
   UNIT_OWNER
 } from '../constants'
-
-import showToast from '@app/utils/toast'
 
 import {
   editStaffValidationSchema,

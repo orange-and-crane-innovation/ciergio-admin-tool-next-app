@@ -244,3 +244,27 @@ export const BULK_UPDATE_MUTATION = gql`
     }
   }
 `
+
+export const RESEND_INVITE = gql`
+  mutation resendInvite($data: InputResendInvite) {
+    resendInvite(where: { data: $data }) {
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`
+
+export const CANCEL_INVITE = gql`
+  mutation cancelInvite($data: InputCancelRegistrationInvite) {
+    cancelRegistrationInvite(where: { data: $data }) {
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`
