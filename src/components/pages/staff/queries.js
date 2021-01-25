@@ -5,6 +5,8 @@ export const GET_ACCOUNTS = gql`
     $companyId: String
     $accountTypes: [String]
     $search: String
+    $skip: Int
+    $limit: Int
   ) {
     getAccounts(
       where: {
@@ -13,6 +15,8 @@ export const GET_ACCOUNTS = gql`
         search: $search
         status: "active"
       }
+      skip: $skip
+      limit: $limit
     ) {
       count
       skip

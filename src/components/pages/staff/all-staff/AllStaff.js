@@ -10,6 +10,7 @@ import Modal from '@app/components/modal'
 import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
 import SelectDropdown from '@app/components/select'
+import Pagination from '@app/components/pagination'
 import { Card } from '@app/components/globals'
 
 import InviteStaffContent from './InviteStaffContent'
@@ -51,6 +52,7 @@ import {
   editStaffValidationSchema,
   inviteStaffValidationSchema
 } from './schema'
+import Empty from '../Empty'
 
 const columns = [
   {
@@ -150,15 +152,24 @@ function AllStaff() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState(null)
+  const [activePage, setActivePage] = useState(1)
+  const [limitPage, setLimitPage] = useState(10)
+  const [skipCount, setSkipCount] = useState(0)
 
   const debouncedSearchText = useDebounce(searchText, 700)
 
-  const { data: accounts, refetch: refetchAccounts } = useQuery(GET_ACCOUNTS, {
+  const {
+    data: accounts,
+    refetch: refetchAccounts,
+    loading: loadingAccounts
+  } = useQuery(GET_ACCOUNTS, {
     variables: {
       accountTypes:
         selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
       companyId: selectedAssignment?.value,
-      search: debouncedSearchText
+      search: debouncedSearchText,
+      limit: limitPage,
+      skip: skipCount
     }
   })
   const { data: companies } = useQuery(GET_COMPANIES)
@@ -360,6 +371,15 @@ function AllStaff() {
     })
   }
 
+  const onPageClick = e => {
+    setActivePage(e)
+    setSkipCount(e * limitPage)
+  }
+
+  const onLimitChange = e => {
+    setLimitPage(Number(e.target.value))
+  }
+
   const assignments = useMemo(() => {
     if (companies?.getCompanies?.data?.length > 0) {
       const options = companies.getCompanies.data.map(company => ({
@@ -491,14 +511,24 @@ function AllStaff() {
             <SelectDropdown
               placeholder="Filter Role"
               options={roles}
-              onChange={selectedValue => setSelectedRoles(selectedValue)}
+              onChange={selectedValue => {
+                setSelectedRoles(selectedValue)
+                setActivePage(1)
+                setLimitPage(10)
+                setSkipCount(0)
+              }}
             />
           </div>
           <div className="w-full max-w-xs mr-2">
             <SelectDropdown
               placeholder="Filter Assignment"
               options={assignments}
-              onChange={selectedValue => setSelectedAssignment(selectedValue)}
+              onChange={selectedValue => {
+                setSelectedAssignment(selectedValue)
+                setActivePage(1)
+                setLimitPage(10)
+                setSkipCount(0)
+              }}
             />
           </div>
           <div className="w-full relative max-w-xs mr-4 top-2">
@@ -520,7 +550,9 @@ function AllStaff() {
         </div>
       </div>
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`All Staff (${accounts?.getAccounts?.data?.length})`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`All Staff (${
+          accounts?.getAccounts?.count || 0
+        })`}</h1>
         <div className="flex items-center">
           <Button
             default
@@ -547,7 +579,26 @@ function AllStaff() {
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={staffData} />}
+        content={
+          <>
+            <Table
+              rowNames={columns}
+              items={staffData}
+              loading={loadingAccounts}
+              emptyText={<Empty />}
+            />
+            {!loadingAccounts && staffData && (
+              <div className="px-8">
+                <Pagination
+                  items={staffData}
+                  activePage={activePage}
+                  onPageClick={onPageClick}
+                  onLimitChange={onLimitChange}
+                />
+              </div>
+            )}
+          </>
+        }
       />
       <Modal
         title="Invite Staff"
