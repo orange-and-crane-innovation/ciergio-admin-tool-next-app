@@ -248,7 +248,7 @@ function PendingInvites() {
     cancelInvite({
       variables: {
         data: {
-          ids: [selectedData?._id]
+          invitationId: selectedData?._id
         }
       }
     })
@@ -257,7 +257,7 @@ function PendingInvites() {
     resendInvite({
       variables: {
         data: {
-          ids: [selectedData?._id]
+          inviteIds: [selectedData?._id]
         }
       }
     })

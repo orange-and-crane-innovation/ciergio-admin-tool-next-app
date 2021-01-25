@@ -247,7 +247,7 @@ export const BULK_UPDATE_MUTATION = gql`
 
 export const RESEND_INVITE = gql`
   mutation resendInvite($data: InputResendInvite) {
-    resendInvite(where: { data: $data }) {
+    resendInvite(data: $data) {
       processId
       message
       slave
@@ -259,7 +259,7 @@ export const RESEND_INVITE = gql`
 
 export const CANCEL_INVITE = gql`
   mutation cancelInvite($data: InputCancelRegistrationInvite) {
-    cancelRegistrationInvite(where: { data: $data }) {
+    cancelRegistrationInvite(data: $data) {
       processId
       message
       slave
