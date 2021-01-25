@@ -110,6 +110,8 @@ export const GET_PENDING_INVITES = gql`
     $search: String
     $companyId: String
     $accountTypes: [String]
+    $limit: Int
+    $offset: Int
   ) {
     getPendingRegistration(
       where: {
@@ -117,6 +119,8 @@ export const GET_PENDING_INVITES = gql`
         companyId: $companyId
         search: $search
       }
+      limit: $limit
+      skip: $offset
     ) {
       limit
       count

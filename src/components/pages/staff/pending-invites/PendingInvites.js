@@ -10,13 +10,17 @@ import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import SelectDropdown from '@app/components/select'
 import Modal from '@app/components/modal'
+import Pagination from '@app/components/pagination'
 import { Card } from '@app/components/globals'
+
+import Empty from '../Empty'
 
 import { FaTimes, FaSearch } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
+import useDebounce from '@app/utils/useDebounce'
 
 import {
   GET_PENDING_INVITES,
@@ -33,7 +37,6 @@ import {
   RECEPTIONIST,
   UNIT_OWNER
 } from '../constants'
-import useDebounce from '@app/utils/useDebounce'
 
 const roles = [
   {
@@ -104,20 +107,26 @@ function PendingInvites() {
   const [selectedBulk, setSelectedBulk] = useState([])
   const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const [showResendInviteModal, setShowResendInviteModal] = useState(false)
+  const [activePage, setActivePage] = useState(1)
+  const [limitPage, setLimitPage] = useState(10)
+  const [offsetPage, setOffsetPage] = useState(0)
 
   const debouncedSearchText = useDebounce(searchText, 700)
 
-  const { data: invites, refetch: refetchInvites } = useQuery(
-    GET_PENDING_INVITES,
-    {
-      variables: {
-        accountTypes:
-          selectedRole?.value === 'all' ? ALL_ROLES : selectedRole?.value,
-        companyId: selectedAssignment?.value,
-        search: debouncedSearchText
-      }
+  const {
+    data: invites,
+    loading: loadingInvites,
+    refetch: refetchInvites
+  } = useQuery(GET_PENDING_INVITES, {
+    variables: {
+      accountTypes:
+        selectedRole?.value === 'all' ? ALL_ROLES : selectedRole?.value,
+      companyId: selectedAssignment?.value,
+      search: debouncedSearchText,
+      limit: limitPage,
+      offset: offsetPage
     }
-  )
+  })
   const { data: companies } = useQuery(GET_COMPANIES)
 
   const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
@@ -276,6 +285,15 @@ function PendingInvites() {
     }
   }
 
+  const onPageClick = e => {
+    setActivePage(e)
+    setOffsetPage(e * limitPage)
+  }
+
+  const onLimitChange = e => {
+    setLimitPage(Number(e.target.value))
+  }
+
   const columns = useMemo(
     () => [
       {
@@ -401,14 +419,24 @@ function PendingInvites() {
             <SelectDropdown
               placeholder="Filter Role"
               options={roles}
-              onChange={selectedValue => setSelectedRole(selectedValue)}
+              onChange={selectedValue => {
+                setSelectedRole(selectedValue)
+                setActivePage(1)
+                setLimitPage(10)
+                setOffsetPage(0)
+              }}
             />
           </div>
           <div className="w-full mr-2 relative -top-2">
             <SelectDropdown
               placeholder="Filter Assignment"
               options={filterOptions}
-              onChange={selectedValue => setSelectedAssignment(selectedValue)}
+              onChange={selectedValue => {
+                setSelectedAssignment(selectedValue)
+                setActivePage(1)
+                setLimitPage(10)
+                setOffsetPage(0)
+              }}
             />
           </div>
           <div className="w-full relative">
@@ -431,12 +459,31 @@ function PendingInvites() {
       </div>
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
         <h1 className="font-bold text-base px-8 py-4">{`Pending Invites (${
-          invites?.getPendingRegistration?.data.length || 0
+          invites?.getPendingRegistration?.count || 0
         })`}</h1>
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={staffData} />}
+        content={
+          <>
+            <Table
+              rowNames={columns}
+              items={staffData}
+              loading={loadingInvites}
+              emptyText={<Empty />}
+            />
+            {!loadingInvites && staffData && (
+              <div className="px-8">
+                <Pagination
+                  items={staffData}
+                  activePage={activePage}
+                  onPageClick={onPageClick}
+                  onLimitChange={onLimitChange}
+                />
+              </div>
+            )}
+          </>
+        }
       />
       <Modal
         title="Resend Invite"

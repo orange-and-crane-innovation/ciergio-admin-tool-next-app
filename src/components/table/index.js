@@ -2,14 +2,25 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styles from './table.module.css'
 
+import { BiLoaderAlt } from 'react-icons/bi'
+
 const Table = ({
   custom,
   customHeader,
   customBody,
   rowNames,
   items,
-  onRowClick
+  onRowClick,
+  loading,
+  emptyText
 }) => {
+  if (loading) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+      </div>
+    )
+  }
   let listItem = []
   return (
     <div className={styles.tableContainer}>
@@ -67,7 +78,7 @@ const Table = ({
                 className="border px-8 py-4 text-center"
                 colSpan={rowNames.length}
               >
-                No data
+                {emptyText || 'No data'}
               </td>
             </tr>
           )}
@@ -83,7 +94,9 @@ Table.propTypes = {
   customBody: PropTypes.any,
   rowNames: PropTypes.array,
   items: PropTypes.object,
-  onRowClick: PropTypes.func
+  onRowClick: PropTypes.func,
+  loading: PropTypes.bool,
+  emptyText: PropTypes.node || PropTypes.string
 }
 
 export default Table
