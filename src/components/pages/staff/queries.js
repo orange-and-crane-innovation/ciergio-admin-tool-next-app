@@ -105,6 +105,43 @@ export const GET_BUILDINGS = gql`
   }
 `
 
+export const GET_PENDING_INVITES = gql`
+  query getInvites(
+    $search: String
+    $companyId: String
+    $accountTypes: [String]
+  ) {
+    getPendingRegistration(
+      where: {
+        accountTypes: $accountTypes
+        companyId: $companyId
+        search: $search
+      }
+    ) {
+      limit
+      count
+      data {
+        _id
+        email
+        createdAt
+        accountType
+        company {
+          _id
+          name
+        }
+        complex {
+          _id
+          name
+        }
+        building {
+          _id
+          name
+        }
+      }
+    }
+  }
+`
+
 export const ADD_BUILDING_ADMIN = gql`
   mutation inviteBuildingAdmin(
     $data: InputAddBuildingAdministrator
@@ -195,6 +232,15 @@ export const DELETE_USER = gql`
       slave
       vpc
       registrationCode
+    }
+  }
+`
+
+export const BULK_UPDATE_MUTATION = gql`
+  mutation bulkUpdatePost($id: [String], $status: postStatus) {
+    bulkUpdatePost(id: $id, status: $status) {
+      processId
+      message
     }
   }
 `

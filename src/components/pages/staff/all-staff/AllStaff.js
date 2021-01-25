@@ -473,7 +473,7 @@ function AllStaff() {
             )
           : []
     }),
-    [accounts.getAccounts, router, resetEditStaffForm]
+    [accounts?.getAccounts, router, resetEditStaffForm]
   )
 
   const sendingInvite =
