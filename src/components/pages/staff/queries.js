@@ -136,3 +136,15 @@ export const ADD_UNIT_OWNER = gql`
     }
   }
 `
+
+export const UPDATE_USER = gql`
+  mutation updateUser($data: InputUpdateUser, $id: String) {
+    updateUser(data: $data, userId: $id) {
+      processId
+      message
+      slave
+      vpc
+      registrationCode
+    }
+  }
+`

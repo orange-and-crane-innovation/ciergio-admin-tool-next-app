@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
-import * as yup from 'yup'
 
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
@@ -13,6 +12,7 @@ import SelectDropdown from '@app/components/select'
 import { Card } from '@app/components/globals'
 
 import InviteStaffContent from './InviteStaffContent'
+import EditStaffContent from './EditStaffContent'
 
 import { FaTimes, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
@@ -30,8 +30,10 @@ import {
   GET_ACCOUNTS,
   GET_BUILDINGS,
   GET_COMPANIES,
-  GET_COMPLEXES
+  GET_COMPLEXES,
+  UPDATE_USER
 } from '../queries'
+
 import {
   BUILDING_ADMIN,
   COMPANY_ADMIN,
@@ -39,7 +41,13 @@ import {
   RECEPTIONIST,
   UNIT_OWNER
 } from '../constants'
+
 import showToast from '@app/utils/toast'
+
+import {
+  editStaffValidationSchema,
+  inviteStaffValidationSchema
+} from './schema'
 
 const columns = [
   {
@@ -95,36 +103,15 @@ const ALL_ROLES = [
   UNIT_OWNER
 ]
 
-const validationSchema = yup.object().shape({
-  staffType: yup
-    .object()
-    .shape({
-      label: yup.string(),
-      value: yup.string()
-    })
-    .required(),
-  email: yup.string().email().required(),
-  jobTitle: yup.string().required(),
-  company: yup
-    .object()
-    .shape({
-      label: yup.string(),
-      value: yup.string()
-    })
-    .required(),
-  complex: yup.object().shape({
-    label: yup.string(),
-    value: yup.string()
-  }),
-  building: yup.object().shape({
-    label: yup.string(),
-    value: yup.string()
-  })
-})
-
 function AllStaff() {
-  const { handleSubmit, control, errors, watch, reset } = useForm({
-    resolver: yupResolver(validationSchema),
+  const {
+    handleSubmit: handleInviteStaffSubmit,
+    control: inviteStaffControl,
+    errors: inviteStaffErrors,
+    watch: watchInviteStaffForm,
+    reset: resetInviteStaffForm
+  } = useForm({
+    resolver: yupResolver(inviteStaffValidationSchema),
     defaultValues: {
       staffType: '',
       email: '',
@@ -133,11 +120,18 @@ function AllStaff() {
     }
   })
 
-  const staffType = watch('staffType')?.value
-  const companyId = watch('company')?.value
-  const complexId = watch('complex')?.value
+  const {
+    handleSubmit: handleEditStaffSubmit,
+    control: editStaffControl,
+    errors: editStaffErrors,
+    reset: resetEditStaffForm
+  } = useForm({
+    resolver: yupResolver(editStaffValidationSchema)
+  })
 
-  console.log({ companyId, complexId })
+  const staffType = watchInviteStaffForm('staffType')?.value
+  const companyId = watchInviteStaffForm('company')?.value
+  const complexId = watchInviteStaffForm('complex')?.value
 
   const isComplexAccount = staffType === COMPLEX_ADMIN
   const isBuildingAccount =
@@ -149,6 +143,9 @@ function AllStaff() {
   const [showModal, setShowModal] = useState(false)
   const [selectedRoles, setSelectedRoles] = useState(undefined)
   const [selectedAssignment, setSelectedAssignment] = useState(undefined)
+  const [selectedStaffId, setSelectedStaffId] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  // const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const debouncedSearchText = useDebounce(searchText, 700)
 
@@ -210,6 +207,12 @@ function AllStaff() {
     }
   )
 
+  const [updateUser, { loading: updatingUser }] = useMutation(UPDATE_USER, {
+    onCompleted: () => {
+      handleClearModal('edit')
+    }
+  })
+
   useEffect(() => {
     if (companyId !== undefined && (isComplexAccount || isBuildingAccount)) {
       getComplexes()
@@ -226,21 +229,44 @@ function AllStaff() {
     isComplexAccount
   ])
 
-  const handleShowModal = () => setShowModal(old => !old)
-
-  const handleClearModal = () => {
-    reset({
-      staffType: '',
-      email: '',
-      company: '',
-      jobTitle: '',
-      complex: '',
-      building: ''
-    })
-    handleShowModal()
+  const handleShowModal = type => {
+    switch (type) {
+      case 'create':
+        setShowModal(old => !old)
+        break
+      case 'edit':
+        setShowEditModal(old => !old)
+        break
+      case 'delete':
+        // setShowDeleteModal(old => !old)
+        break
+      default:
+        console.log(new Error('wrong type!'))
+    }
   }
 
-  const handleOk = (values, event) => {
+  const handleClearModal = type => {
+    if (type === 'edit') {
+      resetEditStaffForm({
+        staffFirstName: '',
+        staffLastName: ''
+      })
+    }
+    if (type === 'create') {
+      resetInviteStaffForm({
+        staffType: '',
+        email: '',
+        company: '',
+        jobTitle: '',
+        complex: '',
+        building: ''
+      })
+    }
+
+    handleShowModal(type)
+  }
+
+  const handleOk = values => {
     const { staffType, email, jobTitle, company, complex, building } = values
 
     const data = {
@@ -291,6 +317,21 @@ function AllStaff() {
       default:
         console.log(new Error('wrong staff type'))
     }
+  }
+
+  const handleEditOk = values => {
+    const { staffFirstName, staffLastName } = values
+    const data = {
+      firstName: staffFirstName,
+      lastName: staffLastName
+    }
+
+    updateUser({
+      variables: {
+        data,
+        id: selectedStaffId
+      }
+    })
   }
 
   const assignments = useMemo(() => {
@@ -345,12 +386,19 @@ function AllStaff() {
                   {
                     label: 'Edit Staff',
                     icon: <span className="ciergio-edit" />,
-                    function: () => console.log(_id)
+                    function: () => {
+                      setSelectedStaffId(_id)
+                      resetEditStaffForm({
+                        staffFirstName: user?.firstName,
+                        staffLastName: user.lastName
+                      })
+                      handleShowModal('edit')
+                    }
                   },
                   {
                     label: 'Remove Staff',
                     icon: <span className="ciergio-trash" />,
-                    function: () => console.log(_id)
+                    function: () => handleShowModal('delete', _id)
                   }
                 ]
 
@@ -389,7 +437,7 @@ function AllStaff() {
             )
           : []
     }),
-    [accounts?.getAccounts]
+    [resetEditStaffForm, accounts?.getAccounts]
   )
 
   const sendingInvite =
@@ -457,7 +505,7 @@ function AllStaff() {
             default
             leftIcon={<FaPlusCircle />}
             label="Invite Staff"
-            onClick={handleShowModal}
+            onClick={() => handleShowModal('create')}
             className="mr-4 mt-4"
           />
         </div>
@@ -470,17 +518,17 @@ function AllStaff() {
         title="Invite Staff"
         okText="Invite Staff"
         visible={showModal}
-        onClose={handleClearModal}
-        onCancel={handleClearModal}
+        onClose={() => handleClearModal('create')}
+        onCancel={() => handleClearModal('create')}
         okButtonProps={{
           loading: sendingInvite
         }}
-        onOk={handleSubmit(handleOk)}
+        onOk={handleInviteStaffSubmit(handleOk)}
       >
         <InviteStaffContent
           form={{
-            control,
-            errors
+            control: inviteStaffControl,
+            errors: inviteStaffErrors
           }}
           isComplex={isComplexAccount}
           isBuilding={isBuildingAccount}
@@ -489,6 +537,24 @@ function AllStaff() {
           companyOptions={assignments}
           staffRoles={roles}
           staffType={staffType}
+        />
+      </Modal>
+      <Modal
+        title="Edit Staff"
+        okText="Edit Staff"
+        visible={showEditModal}
+        onClose={() => handleClearModal('edit')}
+        onCancel={() => handleClearModal('edit')}
+        okButtonProps={{
+          loading: updatingUser
+        }}
+        onOk={handleEditStaffSubmit(handleEditOk)}
+      >
+        <EditStaffContent
+          form={{
+            control: editStaffControl,
+            errors: editStaffErrors
+          }}
         />
       </Modal>
     </section>
