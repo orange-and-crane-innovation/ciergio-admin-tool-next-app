@@ -13,6 +13,7 @@ import { Card } from '@app/components/globals'
 
 import InviteStaffContent from './InviteStaffContent'
 import EditStaffContent from './EditStaffContent'
+import RemoveStaffContent from './RemoveStaffContent'
 
 import { FaTimes, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
@@ -31,7 +32,8 @@ import {
   GET_BUILDINGS,
   GET_COMPANIES,
   GET_COMPLEXES,
-  UPDATE_USER
+  UPDATE_USER,
+  DELETE_USER
 } from '../queries'
 
 import {
@@ -143,9 +145,9 @@ function AllStaff() {
   const [showModal, setShowModal] = useState(false)
   const [selectedRoles, setSelectedRoles] = useState(undefined)
   const [selectedAssignment, setSelectedAssignment] = useState(undefined)
-  const [selectedStaffId, setSelectedStaffId] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
-  // const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedStaff, setSelectedStaff] = useState(null)
 
   const debouncedSearchText = useDebounce(searchText, 700)
 
@@ -209,7 +211,19 @@ function AllStaff() {
 
   const [updateUser, { loading: updatingUser }] = useMutation(UPDATE_USER, {
     onCompleted: () => {
+      showToast('success', `Update success!`)
       handleClearModal('edit')
+    }
+  })
+
+  const [deleteUser, { loading: deletingUser }] = useMutation(DELETE_USER, {
+    onCompleted: () => {
+      const staff = selectedStaff?.user
+      showToast(
+        'success',
+        `You have successfully deleted ${staff.firstname} ${staff.lastName}.`
+      )
+      handleClearModal('delete')
     }
   })
 
@@ -238,7 +252,7 @@ function AllStaff() {
         setShowEditModal(old => !old)
         break
       case 'delete':
-        // setShowDeleteModal(old => !old)
+        setShowDeleteModal(old => !old)
         break
       default:
         console.log(new Error('wrong type!'))
@@ -329,7 +343,17 @@ function AllStaff() {
     updateUser({
       variables: {
         data,
-        id: selectedStaffId
+        id: selectedStaff?.user?._id
+      }
+    })
+  }
+
+  const handleDeleteStaff = () => {
+    deleteUser({
+      variables: {
+        data: {
+          accountId: selectedStaff?.user._id
+        }
       }
     })
   }
@@ -387,7 +411,10 @@ function AllStaff() {
                     label: 'Edit Staff',
                     icon: <span className="ciergio-edit" />,
                     function: () => {
-                      setSelectedStaffId(_id)
+                      setSelectedStaff({
+                        user,
+                        company
+                      })
                       resetEditStaffForm({
                         staffFirstName: user?.firstName,
                         staffLastName: user.lastName
@@ -398,7 +425,13 @@ function AllStaff() {
                   {
                     label: 'Remove Staff',
                     icon: <span className="ciergio-trash" />,
-                    function: () => handleShowModal('delete', _id)
+                    function: () => {
+                      setSelectedStaff({
+                        user,
+                        company
+                      })
+                      handleShowModal('delete', _id)
+                    }
                   }
                 ]
 
@@ -554,6 +587,26 @@ function AllStaff() {
           form={{
             control: editStaffControl,
             errors: editStaffErrors
+          }}
+        />
+      </Modal>
+      <Modal
+        title="Remove Staff"
+        okText="Remove Staff"
+        visible={showDeleteModal}
+        onClose={() => handleClearModal('delete')}
+        onCancel={() => handleClearModal('delete')}
+        okButtonProps={{
+          loading: deletingUser
+        }}
+        onOk={handleDeleteStaff}
+      >
+        <RemoveStaffContent
+          user={{
+            firstName: selectedStaff?.user.firstName,
+            lastName: selectedStaff?.user.lastName,
+            jobTitle: selectedStaff?.user.jobTitle,
+            companyName: selectedStaff?.company.name
           }}
         />
       </Modal>
