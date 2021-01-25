@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 
 import Button from '@app/components/button'
@@ -12,9 +12,11 @@ import Dropdown from '@app/components/dropdown'
 import SelectDropdown from '@app/components/select'
 import { Card } from '@app/components/globals'
 
-import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
+import InviteStaffContent from './InviteStaffContent'
+
+import { FaTimes, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
-import { FiDownload } from 'react-icons/fi'
+import { FiDownload, FiSearch } from 'react-icons/fi'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import useDebounce from '@app/utils/useDebounce'
@@ -134,6 +136,8 @@ function AllStaff() {
   const staffType = watch('staffType')?.value
   const companyId = watch('company')?.value
   const complexId = watch('complex')?.value
+
+  console.log({ companyId, complexId })
 
   const isComplexAccount = staffType === COMPLEX_ADMIN
   const isBuildingAccount =
@@ -422,11 +426,11 @@ function AllStaff() {
               onChange={e => setSearchText(e.target.value)}
               value={searchText}
             />
-            <span className="absolute top-4 right-4">
+            <span className="absolute top-3 right-4">
               {searchText ? (
                 <FaTimes className="cursor-pointer" onClick={() => {}} />
               ) : (
-                <FaSearch />
+                <FiSearch className="text-xl text-gray-600" />
               )}
             </span>
           </div>
@@ -473,136 +477,19 @@ function AllStaff() {
         }}
         onOk={handleSubmit(handleOk)}
       >
-        <div className="w-full">
-          <form>
-            <div>
-              <p className="font-bold text-base text-gray-500 mb-2">
-                Staff Type
-              </p>
-              <Controller
-                name="staffType"
-                control={control}
-                render={({ name, value, onChange }) => (
-                  <SelectDropdown
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    options={roles}
-                    placeholder="Enter staff type"
-                    error={errors?.staffType?.message}
-                    isClearable
-                    isSearchable
-                  />
-                )}
-              />
-            </div>
-            <div className="mb-4">
-              <p className="font-bold text-base text-gray-500 mb-2">Email</p>
-              <Controller
-                name="email"
-                control={control}
-                render={({ name, value, onChange }) => (
-                  <FormInput
-                    placeholder="Enter email of contact"
-                    type="email"
-                    name={name}
-                    onChange={onChange}
-                    value={value}
-                    error={errors?.email?.message}
-                    inputClassName="w-full rounded border-gray-300"
-                    description={
-                      <p className="mb-2">
-                        An invite will be sent to this email.
-                      </p>
-                    }
-                  />
-                )}
-              />
-            </div>
-            {staffType !== undefined ? (
-              <>
-                <div>
-                  <p className="font-bold text-base text-gray-500 mb-2">
-                    Job Title of Point of Contact
-                  </p>
-                  <Controller
-                    name="jobTitle"
-                    control={control}
-                    render={({ name, value, onChange }) => (
-                      <FormInput
-                        placeholder="Enter Job Title"
-                        name={name}
-                        onChange={onChange}
-                        value={value}
-                        error={errors?.jobTitle?.message}
-                        inputClassName="w-full rounded border-gray-300"
-                      />
-                    )}
-                  />
-                  <div>
-                    <p className="font-bold text-base text-gray-500 mb-2">
-                      Assign To
-                    </p>
-                    <Controller
-                      name="company"
-                      control={control}
-                      render={({ value, onChange, name }) => (
-                        <SelectDropdown
-                          name={name}
-                          value={value}
-                          onChange={onChange}
-                          options={assignments}
-                          placeholder="Select a company"
-                          error={errors?.company?.message}
-                          description={<p className="mb-2">Company</p>}
-                          containerClasses="mb-4"
-                        />
-                      )}
-                    />
-                  </div>
-                  {(isComplexAccount || isBuildingAccount) &&
-                  complexAssignments?.length > 0 ? (
-                    <div>
-                      <Controller
-                        name="complex"
-                        control={control}
-                        render={({ value, onChange, name }) => (
-                          <SelectDropdown
-                            name={name}
-                            value={value}
-                            onChange={onChange}
-                            options={complexAssignments}
-                            error={errors?.complex?.message}
-                            description={<p className="mb-2">Complex</p>}
-                            placeholder="Select a complex"
-                            containerClasses="mb-4"
-                          />
-                        )}
-                      />
-                    </div>
-                  ) : null}
-                  {isBuildingAccount && buildingAssignments?.length > 0 ? (
-                    <Controller
-                      name="building"
-                      control={control}
-                      render={({ value, onChange, name }) => (
-                        <SelectDropdown
-                          name={name}
-                          value={value}
-                          onChange={onChange}
-                          options={buildingAssignments}
-                          error={errors?.building?.message || undefined}
-                          description={<p className="mb-2">Building</p>}
-                          placeholder="Select a building"
-                        />
-                      )}
-                    />
-                  ) : null}
-                </div>
-              </>
-            ) : null}
-          </form>
-        </div>
+        <InviteStaffContent
+          form={{
+            control,
+            errors
+          }}
+          isComplex={isComplexAccount}
+          isBuilding={isBuildingAccount}
+          complexOptions={complexAssignments}
+          buildingOptions={buildingAssignments}
+          companyOptions={assignments}
+          staffRoles={roles}
+          staffType={staffType}
+        />
       </Modal>
     </section>
   )

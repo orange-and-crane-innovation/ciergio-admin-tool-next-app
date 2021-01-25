@@ -50,11 +50,18 @@ function Component({
         disabled={disabled}
         rtl={rtl}
         isMulti={allowMultiple}
-        styles={customStyles}
         inputValue={inputValue}
         value={value}
         onChange={onChange}
         name={name}
+        styles={customStyles}
+        theme={theme => ({
+          ...theme,
+          colors: {
+            ...theme.colors,
+            primary: '#f56222'
+          }
+        })}
         {...inputProps}
       />
       {renderError}
