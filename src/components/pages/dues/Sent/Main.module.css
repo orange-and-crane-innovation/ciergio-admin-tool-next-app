@@ -49,7 +49,7 @@
     }
 
     .BoldText {
-        @apply font-bold;
+        @apply font-bold text-lg;
     }
   }
   .CardHeader {
@@ -60,7 +60,11 @@
   
   
   .fileLink {
-    color: blue;
+    @apply text-blue-500 font-bold;
+
+    &:hover{
+      @apply underline;
+    }
    
   }
   

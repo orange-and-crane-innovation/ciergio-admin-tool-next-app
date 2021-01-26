@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
-
+import Button from '@app/components/button'
+import Dropdown from '@app/components/dropdown'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Card from '@app/components/card'
 import FormSelect from '@app/components/globals/FormSelect'
-import { FaEye } from 'react-icons/fa'
+import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
 import { gql, useQuery } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
+import Modal from '@app/components/modal'
+import useKeyPress from '@app/utils/useKeyPress'
+import HistoryBills from './Cards/HistoryBills'
 
 const GET_ALL_FLOORS = gql`
   query getFloorNUmbers($buildingId: String!) {
@@ -95,7 +99,7 @@ const tableRowData = [
   },
   {
     name: 'Seen',
-    width: '10%'
+    width: '5%'
   },
   {
     name: 'Unit',
@@ -111,49 +115,21 @@ const tableRowData = [
   },
   {
     name: 'Amount ',
-    width: '15%'
+    width: '10%'
   },
   {
     name: 'Due Date',
-    width: '15%'
+    width: '20%'
   },
   {
     name: 'Paid',
     width: '10%'
+  },
+  {
+    name: '',
+    width: '10%'
   }
 ]
-
-function useKeyPress(targetKey) {
-  // State for keeping track of whether key is pressed
-  const [keyPressed, setKeyPressed] = useState(false)
-
-  // If pressed key is our target key then set to true
-  function downHandler({ key }) {
-    if (key === targetKey) {
-      setKeyPressed(true)
-    }
-  }
-
-  // If released key is our target key then set to false
-  const upHandler = ({ key }) => {
-    if (key === targetKey) {
-      setKeyPressed(false)
-    }
-  }
-
-  // Add event listeners
-  useEffect(() => {
-    window.addEventListener('keydown', downHandler)
-    window.addEventListener('keyup', upHandler)
-    // Remove event listeners on cleanup
-    return () => {
-      window.removeEventListener('keydown', downHandler)
-      window.removeEventListener('keyup', upHandler)
-    }
-  }, []) // Empty array ensures that effect is only run on mount and unmount
-
-  return keyPressed
-}
 
 function Sent({ month, year }) {
   const [limitPage, setLimitPage] = useState(10)
@@ -166,23 +142,19 @@ function Sent({ month, year }) {
     all: 0,
     seen: 0
   })
-
-  const keyPress = useKeyPress('')
-
+  const [modalTitle, setModalTitle] = useState('')
+  const [modalContent, setModalContent] = useState()
+  const [showModal, setShowModal] = useState(false)
   const [searchText, setSearchText] = useState(null)
-  const enumType = {
-    0: 'unpaid',
-    1: 'paid',
-    2: 'settled'
-  }
-  const [status, setStatus] = useState(['paid'])
+  const [search, setSearch] = useState(null)
 
+  const keyPressed = useKeyPress('Enter')
   // graphQLFetching
   const { loading, data, error } = useQuery(GET_DUES_PER_UNIT_SENT, {
     variables: {
       unit: {
         buildingId: '5d804d6543df5f4239e72911',
-        search: searchText,
+        search: search,
         floorNumber: floorNumber
       },
       filter: {
@@ -190,11 +162,11 @@ function Sent({ month, year }) {
       },
       dues: {
         period: {
-          month,
-          year
+          month: month,
+          year: year
         }
       },
-      limit: limitPage,
+      limit: 10,
       offset: offsetPage
     }
   })
@@ -227,57 +199,107 @@ function Sent({ month, year }) {
 
   useEffect(() => {
     if (!duesLoading) {
-      setCount({ ...count, ...duesData?.getDues?.count })
+      setCount(preState => ({ ...preState, ...duesData?.getDues?.count }))
     }
   }, [duesLoading, duesData, duesError])
 
+  const handleShowModal = (type, id) => {
+    if (id === 1) {
+      setShowModal(old => !old)
+    }
+  }
+
+  const handleClearModal = () => {
+    handleShowModal()
+  }
+  // Hooks for formatting table row
+  const useTableRows = rows => {
+    const rowData = []
+    let num = 0
+    const dropdownData = [
+      {
+        label: 'Update Bills',
+        icon: <FaPencilAlt />,
+        function: () => handleShowModal('update', 1)
+      },
+      {
+        label: 'Bills Details',
+        icon: <FaRegFileAlt />,
+        function: () => handleShowModal('details', 1)
+      }
+    ]
+    if (rows.length > 0 && rows) {
+      rows.forEach(row => {
+        if (num !== row.floorNumber) {
+          rowData.push({
+            floorNumber: row.floorNumber,
+            b: '',
+            bl: '',
+            bla: '',
+            blan: '',
+            blank: '',
+            blankrow: '',
+            blankrowspa: '',
+            blankrowspan: ''
+          })
+        }
+
+        const attachment = (
+          <a
+            href={row?.dues[0]?.attachment.fileUrl}
+            className={styles.fileLink}
+          >
+            View File
+          </a>
+        )
+
+        for (let i = 0; i <= row?.dues.length; i++) {
+          const amount = `₱${row?.dues[i]?.amount.toFixed(2)}`
+          const status =
+            row?.dues[i]?.status === 'overdue' || row?.dues[i]?.status === 'due'
+              ? 'unpaid'
+              : 'paid'
+          const seen = row?.dues[i]?.views.count ? <FaEye /> : null
+          const dueDate = toFriendlyDate(row?.dues[i]?.dueDate)
+          const unitName = row?.name
+          const unitOwner = `${row?.unitOwner?.user?.lastName},
+          ${row?.unitOwner?.user?.lastName.charAt(0)}`
+          const dropDown = (
+            <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          )
+          rowData.push({
+            floor: '',
+            seen,
+            unitName,
+            unitOwner,
+            attachment,
+            amount,
+            dueDate,
+            status,
+            dropDown
+          })
+        }
+
+        num = row.floorNumber
+      })
+    }
+    return rowData
+  }
+
+  const table = useTableRows(!loading && data && data?.getDuesPerUnit?.data)
   // Component did mount for generating table data
   useEffect(() => {
-    const copyOfFloorNumber = null
-
     if (!loading && data) {
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
         offset: data?.getDuesPerUnit.offset || 0,
-        data:
-          data?.getDuesPerUnit?.data.map((floor, index) => {
-            console.log(floor)
-            const unitName = floor?.name
-            const unitOwner = `${floor?.unitOwner.user.firstName} ${floor?.unitOwner.user.lastName}`
-            const floorNumber = floor?.floorNumber
-
-            // eslint-disable-next-line no-unreachable-loop
-            for (let i = 0; i < floor?.dues.length; i++) {
-              const attachment = (
-                <a
-                  href={floor?.dues[i]?.attachment.fileUrl}
-                  className={styles.fileLink}
-                >
-                  View File
-                </a>
-              )
-              const amount = `₱${floor?.dues[i].amount.toFixed(2)}`
-              const status = floor?.dues[i].status
-              const seen = floor?.dues[i].views.count ? <FaEye /> : null
-              const dueDate = toFriendlyDate(floor?.dues[i].dueDate)
-              return {
-                floorNumber,
-                seen,
-                unitName,
-                unitOwner,
-                attachment,
-                amount,
-                dueDate,
-                status
-              }
-            }
-          }) || null
+        data: table
       }
 
       setDues(duesData)
     }
-  }, [loading, data, error])
+  }, [loading, data, error, table])
 
   useEffect(() => {
     let optionsData = [
@@ -291,7 +313,7 @@ function Sent({ month, year }) {
         return { label: floor, value: floor }
       })
     }
-    console.log(optionsData)
+
     setFloors(optionsData)
   }, [loadingFloorNumbers, errorGetAllFloors, dataAllFloors])
 
@@ -305,13 +327,18 @@ function Sent({ month, year }) {
     setFloorNumber(e.target.value)
   }
 
+  // useEffect for useKeyPress
+  useEffect(() => {
+    if (keyPressed) {
+      setSearch(searchText)
+    }
+  }, [keyPressed, searchText])
+  // ============
+
   // Handle Searches
   const onSearch = e => {
-    if (keyPress) {
-      alert(e.target.value)
-    }
     if (e.target.value === '') {
-      setSearchText(null)
+      setSearch(null)
     } else {
       setSearchText(e.target.value)
     }
@@ -373,10 +400,10 @@ function Sent({ month, year }) {
             <div className={styles.InfoViewText}>
               <FaEye />
               <div>
-                Bills viewed{' '}
+                Bills viewed &nbsp;
                 <span className={styles.BoldText}>{count?.seen}</span>/
                 {count?.all}
-                bills
+                &nbsp;bills
               </div>
             </div>
           </div>
@@ -391,6 +418,17 @@ function Sent({ month, year }) {
           onLimitChange={onLimitChange}
         />
       )}
+
+      <Modal
+        title={'sample title'}
+        visible={showModal}
+        onClose={handleClearModal}
+        footer={null}
+      >
+        <div className="w-full">
+          <h1>Hello</h1>
+        </div>
+      </Modal>
     </>
   )
 }

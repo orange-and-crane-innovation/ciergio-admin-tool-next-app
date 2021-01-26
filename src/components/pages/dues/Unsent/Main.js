@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
-import SelectCategory from '@app/components/globals/SelectCategory'
 import FormSelect from '@app/components/globals/FormSelect'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
@@ -13,6 +12,7 @@ import Modal from '@app/components/modal'
 import { gql, useQuery } from '@apollo/client'
 import { useRouter } from 'next/router'
 import P from 'prop-types'
+import useKeyPress from '@app/utils/useKeyPress'
 
 const GET_UNSENT_DUES_QUERY = gql`
   query getDuesPerUnit(
@@ -62,6 +62,10 @@ const GETDEUS_QUERY = gql`
         all
         seen
         sent
+        units {
+          all
+          withResidents
+        }
       }
     }
   }
@@ -103,8 +107,9 @@ function Unsent({ month, year }) {
   const router = useRouter()
 
   // components state
-  const [selectedFloor, setSelectedFloor] = useState(null)
-  const [searchText, setSearchText] = useState('')
+  const [selectedFloor, setSelectedFloor] = useState('all')
+  const [searchText, setSearchText] = useState(null)
+  const [search, setSearch] = useState(null)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showModal, setShowModal] = useState(false)
   const [dues, setDues] = useState()
@@ -115,13 +120,16 @@ function Unsent({ month, year }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [count, setCount] = useState({})
+  const keyPressed = useKeyPress('Enter')
+
+  const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
   // graphQLFetching
-  const { loading, data, error, refetch } = useQuery(GET_UNSENT_DUES_QUERY, {
+  const { loading, data, error } = useQuery(GET_UNSENT_DUES_QUERY, {
     variables: {
       unit: {
-        buildingId: '5d804d6543df5f4239e72911',
-        search: searchText,
+        buildingId: temporaryBuildingID,
+        search,
         floorNumber: selectedFloor
       },
       filter: { sent: false },
@@ -130,7 +138,9 @@ function Unsent({ month, year }) {
           month: month,
           year: year
         }
-      }
+      },
+      offset: offsetPage,
+      limit: limitPage
     }
   })
 
@@ -140,7 +150,7 @@ function Unsent({ month, year }) {
     data: dataAllFloors
   } = useQuery(GET_ALL_FLOORS, {
     variables: {
-      buildingId: '5d804d6543df5f4239e72911'
+      buildingId: temporaryBuildingID
     }
   })
 
@@ -149,96 +159,88 @@ function Unsent({ month, year }) {
     {
       variables: {
         where: {
-          sent: true,
-          buildingId: '5d804d6543df5f4239e72911',
-          period: {
-            month,
-            year
-          }
+          buildingId: temporaryBuildingID,
+          sent: false
         }
       }
     }
   )
 
   useEffect(() => {
-    if (!duesLoading) {
-      setCount({ ...count, ...duesData?.getDues?.count })
+    if (!duesLoading && duesData) {
+      setCount(prevState => ({ ...prevState, ...duesData?.getDues?.count }))
     }
   }, [duesLoading, duesData, duesError])
 
-  // Component did mount for generating table data
-  useEffect(() => {
-    let copyOfFloorNumber = null
+  // Hooks for formatting table row
+  const useTableRows = rows => {
+    const rowData = []
+    let num = 0
+    if (rows.length > 0 && rows) {
+      rows.forEach(row => {
+        if (num !== row.floorNumber) {
+          rowData.push({
+            floorNumber: row.floorNumber,
+            b: '',
+            bl: '',
+            bla: '',
+            blan: '',
+            blank: '',
+            blankrow: ''
+          })
+        }
+        const unitName = row.name
+        const unitOwner = `${row?.unitOwner?.user?.lastName},
+        ${row?.unitOwner?.user?.lastName.charAt(0)}`
+        const uploadFile = (
+          <Button default full label="Choose File" onClick={handleModal} />
+        )
+        const amount = (
+          <FormInput
+            onChange={e => alert(e.target.value)}
+            name={'amount'}
+            type="text"
+            placeholder="0.0"
+          />
+        )
+        const sendButton = <Button default disabled label="Send" />
+        const dueDate = (
+          <DatePicker
+            minDate={new Date()}
+            date={selectedDate}
+            handleChange={handleChangeDate}
+          />
+        )
 
-    if (!loading && data) {
-      console.log(data)
+        rowData.push({
+          blank: '',
+          unitName,
+          unitOwner,
+          uploadFile,
+          amount,
+          dueDate,
+          sendButton
+        })
+        num = row.floorNumber
+      })
+    }
+    return rowData
+  }
+
+  const table = useTableRows(!loading && data && data?.getDuesPerUnit?.data)
+
+  useEffect(() => {
+    if (!loading && data && table) {
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
         offset: data?.getDuesPerUnit.offset || 0,
-        data:
-          data?.getDuesPerUnit?.data.map((floor, index) => {
-            const floorNumber = floor?.floorNumber
-            const unitName = floor?.name
-            const name = `${floor?.unitOwner?.user?.lastName},
-              ${
-                floor?.unitOwner?.user?.lastName &&
-                floor?.unitOwner?.user?.lastName.charAt(0)
-              }`
-            const unitOwnerName = name
-            const uploadFile = (
-              <Button default full label="Choose File" onClick={handleModal} />
-            )
-            const amount = (
-              <FormInput name={'amount'} type="text" placeholder="0.0" />
-            )
-            const dueDate = (
-              <DatePicker
-                minDate={new Date()}
-                date={selectedDate}
-                handleChange={handleChangeDate}
-              />
-            )
-
-            const sendButton = <Button default disabled label="Send" />
-            const rowData = []
-            let copyOfOtherData = []
-            if (copyOfFloorNumber !== floorNumber) {
-              rowData.push(floorNumber, '', '', '', '', '', '')
-              copyOfOtherData.push(
-                '',
-                unitName,
-                unitOwnerName,
-                uploadFile,
-                amount,
-                dueDate,
-                sendButton
-              )
-            } else {
-              copyOfOtherData = []
-              rowData.push(
-                '',
-                unitName,
-                unitOwnerName,
-                uploadFile,
-                amount,
-                dueDate,
-                sendButton
-              )
-            }
-            copyOfFloorNumber = floorNumber
-
-            if (copyOfOtherData.length <= 0) {
-              return { ...rowData, ...copyOfOtherData }
-            } else {
-              return { ...rowData }
-            }
-          }) || null
+        data: table
       }
 
       setDues(duesData)
     }
-  }, [loading, data, error])
+  }, [loading, data, error, table])
 
   useEffect(() => {
     let optionsData = [
@@ -247,9 +249,9 @@ function Unsent({ month, year }) {
         value: ''
       }
     ]
-    if (!loading && dataAllFloors) {
+    if (!loadingFloorNumbers && dataAllFloors) {
       optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
-        return { label: floor, value: floor }
+        return { lbael: floor, value: floor }
       })
     }
 
@@ -271,17 +273,22 @@ function Unsent({ month, year }) {
 
   //   Select Floors onchange
   const onFloorSelect = e => {
-    setSelectedFloor(e.target.value.toString())
-    refetch()
+    setSelectedFloor(e.target.value)
   }
   // =============
 
+  // useEffect for useKeyPress
+  useEffect(() => {
+    if (keyPressed) {
+      setSearch(searchText)
+    }
+  }, [keyPressed, searchText])
   // ============
 
   // Handle Searches
   const onSearch = e => {
     if (e.target.value === '') {
-      setSearchText(null)
+      setSearch(null)
     } else {
       setSearchText(e.target.value)
     }
@@ -343,9 +350,9 @@ function Unsent({ month, year }) {
             <div className={styles.InfoViewText}>
               <span className="ciergio-dues"></span>
               <div>
-                Bills sent{' '}
-                <span className={styles.BoldText}>{count?.sent}</span>/
-                {count?.all} bills
+                Bills Sent &nbsp;
+                <span className={styles.BoldText}> {count?.sent}</span>/
+                {count?.units?.withResidents} bills
               </div>
             </div>
           </div>
