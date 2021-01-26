@@ -1,22 +1,5 @@
 import gql from 'graphql-tag'
-
-const NOTIFICATION_RESPONSE = `
-  offset
-  limit
-  count
-  post {
-    _id
-    title
-    publishedAt
-    publishedNextAt
-    createdAt
-    updatedAt
-    category {
-      _id
-      name
-    }
-  }
-`
+import { Pagev2, NOTIFICATION_RESPONSE } from '@app/utils/schema-varibles'
 
 export const GET_ALL_UPCOMING_NOTIFICATIONS = gql`
   query getUpcomingNotifications(
@@ -89,9 +72,7 @@ export const GET_ALL_TRASHED_NOTIFICATIONS = gql`
 export const GET_FLASH_NOTIFICATION = gql`
   query getFlashNotif($id: String) {
     getAllFlashNotifications(where: { _id: $id, limit: 1 }) {
-      count
-      limit
-      offset
+      ${Pagev2}
       post {
         _id
         status

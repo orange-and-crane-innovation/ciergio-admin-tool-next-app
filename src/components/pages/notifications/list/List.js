@@ -9,7 +9,7 @@ import Notification from '../components/Notification'
 
 import { FaSearch, FaTimes } from 'react-icons/fa'
 
-import { bulkOptions, categoryOptions } from './options'
+import { bulkOptions, categoryOptions } from '../constants'
 
 import {
   GET_ALL_UPCOMING_NOTIFICATIONS,
