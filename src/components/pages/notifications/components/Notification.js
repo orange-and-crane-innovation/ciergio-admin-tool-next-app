@@ -3,26 +3,26 @@ import { useQuery } from '@apollo/client'
 import { useRouter } from 'next/router'
 import P from 'prop-types'
 
-import Table from '@app/components/table'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
-import Pagination from '@app/components/pagination'
 import Checkbox from '@app/components/forms/form-checkbox'
 import Button from '@app/components/button'
 import { Card } from '@app/components/globals'
 
-import { FaPlusCircle, FaEye } from 'react-icons/fa'
-
-import { AiOutlineEllipsis } from 'react-icons/ai'
-
 import { toFriendlyDate } from '@app/utils/date'
 
+import { FaPlusCircle, FaEye } from 'react-icons/fa'
+import { AiOutlineEllipsis } from 'react-icons/ai'
+
 import {
+  UPCOMING,
+  PUBLISHED,
+  DRAFT,
+  TRASHED,
   upcomingTableRows,
   publishedTableRows,
   otherTableRows
-} from '../list/options'
-
-import { UPCOMING, PUBLISHED, DRAFT, TRASHED } from '../constants'
+} from '../constants'
 
 const getNotifDate = (type, notif) => {
   switch (type) {
@@ -40,6 +40,7 @@ const getNotifDate = (type, notif) => {
 
 function Notifications({ type, query }) {
   const router = useRouter()
+
   const [currentLimit, setCurrentLimit] = useState(10)
   const [currentOffset, setCurrentOffset] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -54,6 +55,9 @@ function Notifications({ type, query }) {
     }
   )
 
+  const ITEM_COUNT = notifications?.getAllFlashNotifications?.count
+  const NOTIFICATIONS = notifications?.getAllFlashNotifications
+
   const goToCreate = () => router.push('/notifications/create')
 
   const onPageClick = e => {
@@ -61,20 +65,16 @@ function Notifications({ type, query }) {
     setCurrentOffset(e * currentLimit)
   }
 
-  const onLimitChange = e => {
-    setCurrentLimit(Number(e.target.value))
-  }
+  const onLimitChange = e => setCurrentLimit(Number(e.target.value))
 
   const notificationsData = useMemo(() => {
-    const notifData = notifications?.getAllFlashNotifications
-
     return {
-      limit: notifData?.limit || 0,
-      offset: notifData?.offset || 0,
-      count: notifData?.count || 0,
+      limit: NOTIFICATIONS?.limit || 0,
+      offset: NOTIFICATIONS?.offset || 0,
+      count: NOTIFICATIONS?.count || 0,
       data:
-        notifData?.post?.length > 0
-          ? notifData?.post?.map(notif => {
+        NOTIFICATIONS?.post?.length > 0
+          ? NOTIFICATIONS?.post?.map(notif => {
               const dropdownData = [
                 {
                   label: 'Edit History',
@@ -126,102 +126,91 @@ function Notifications({ type, query }) {
             })
           : []
     }
-  }, [notifications?.getAllFlashNotifications, type])
+  }, [NOTIFICATIONS, type])
 
   const columnsWithCheckbox = useMemo(() => {
-    if (type === UPCOMING) {
-      return [
-        {
-          name: (
-            <Checkbox
-              primary
-              id="checkbox_select_all"
-              name="checkbox_select_all"
-              // onChange={e => onCheckAll(e)}
-            />
-          ),
-          width: '5%'
-        },
-        ...upcomingTableRows
-      ]
+    switch (type) {
+      case UPCOMING:
+        return [
+          {
+            name: (
+              <Checkbox
+                primary
+                id="checkbox_select_all"
+                name="checkbox_select_all"
+                // onChange={e => onCheckAll(e)}
+              />
+            ),
+            width: '5%'
+          },
+          ...upcomingTableRows
+        ]
+      case PUBLISHED:
+        return [
+          {
+            name: (
+              <Checkbox
+                primary
+                id="checkbox_select_all"
+                name="checkbox_select_all"
+                // onChange={e => onCheckAll(e)}
+              />
+            ),
+            width: '5%'
+          },
+          ...publishedTableRows
+        ]
+      case DRAFT:
+      case TRASHED:
+        return [
+          {
+            name: (
+              <Checkbox
+                primary
+                id="checkbox_select_all"
+                name="checkbox_select_all"
+                // onChange={e => onCheckAll(e)}
+              />
+            ),
+            width: '5%'
+          },
+          ...otherTableRows
+        ]
+      default:
+        return []
     }
-    if (type === PUBLISHED) {
-      return [
-        {
-          name: (
-            <Checkbox
-              primary
-              id="checkbox_select_all"
-              name="checkbox_select_all"
-              // onChange={e => onCheckAll(e)}
-            />
-          ),
-          width: '5%'
-        },
-        ...publishedTableRows
-      ]
-    }
-    if (type === DRAFT || type === TRASHED) {
-      return [
-        {
-          name: (
-            <Checkbox
-              primary
-              id="checkbox_select_all"
-              name="checkbox_select_all"
-              // onChange={e => onCheckAll(e)}
-            />
-          ),
-          width: '5%'
-        },
-        ...otherTableRows
-      ]
-    }
-
-    return []
   }, [type])
 
   return (
-    <>
-      <Card
-        title={
-          <div className="flex items-center justify-between bg-white">
-            <h1 className="font-bold text-base px-8 py-4 capitalize">{`${type} Notifications (${notifications?.getAllFlashNotifications?.count})`}</h1>
-          </div>
-        }
-        actions={[
-          <Button
-            primary
-            leftIcon={<FaPlusCircle />}
-            label="Create Notifications"
-            onClick={goToCreate}
-            className="mr-4 mt-4"
-            key={`${type}-btn`}
-          />
-        ]}
-        noPadding
-        content={
-          <>
-            <Table
-              rowNames={columnsWithCheckbox}
-              items={notificationsData}
-              loading={loadingNotifications}
-            />
-            {!loadingNotifications && notificationsData && (
-              <div className="px-8">
-                <Pagination
-                  items={notificationsData}
-                  activePage={activePage}
-                  onPageClick={onPageClick}
-                  onLimitChange={onLimitChange}
-                />
-              </div>
-            )}
-          </>
-        }
-        className="rounded-t-none"
-      />
-    </>
+    <Card
+      title={
+        <div className="flex items-center justify-between bg-white">
+          <h1 className="font-bold text-base px-8 py-4 capitalize">{`${type} Notifications (${ITEM_COUNT})`}</h1>
+        </div>
+      }
+      actions={[
+        <Button
+          primary
+          leftIcon={<FaPlusCircle />}
+          label="Create Notifications"
+          onClick={goToCreate}
+          className="mr-4 mt-4"
+          key={`${type}-btn`}
+        />
+      ]}
+      noPadding
+      content={
+        <PrimaryDataTable
+          columns={columnsWithCheckbox}
+          data={notificationsData}
+          loading={loadingNotifications}
+          currentPage={activePage}
+          onPageChange={onPageClick}
+          onPageLimitChange={onLimitChange}
+        />
+      }
+      className="rounded-t-none"
+    />
   )
 }
 
