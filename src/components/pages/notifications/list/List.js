@@ -1,45 +1,15 @@
 import React, { useState } from 'react'
-import P from 'prop-types'
-import { useRouter } from 'next/router'
+
 import Tabs from '@app/components/tabs'
 import Button from '@app/components/button'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
-import { Card, Table } from '@app/components/globals'
 
-import { FaPlusCircle, FaSearch, FaTimes } from 'react-icons/fa'
+import Notification from '../components/Notification'
 
-import {
-  upcomingTableRows,
-  publishedTableRows,
-  otherTableRows,
-  upcomingData,
-  publishedData,
-  draftsData,
-  trashData
-} from './mockData'
+import { FaSearch, FaTimes } from 'react-icons/fa'
 
-const bulkOptions = [
-  {
-    label: 'Unpublished',
-    value: 'unpublish'
-  },
-  {
-    label: 'Move to Trash',
-    value: 'trash'
-  }
-]
-
-const categoryOptions = [
-  {
-    label: 'Announcements',
-    value: 'announcements'
-  },
-  {
-    label: 'Emergency',
-    value: 'emergency'
-  }
-]
+import { bulkOptions, categoryOptions } from './options'
 
 function NotificationsList() {
   const [searchText, setSearchtext] = useState('')
@@ -50,12 +20,12 @@ function NotificationsList() {
         Orange and Crane Innovations Inc. Notifications
       </h1>
 
-      <Tabs defaultTab="1">
+      <Tabs defaultTab="upcoming" onClick={e => console.log('e', e)}>
         <Tabs.TabLabels>
-          <Tabs.TabLabel id="1">Upcoming</Tabs.TabLabel>
-          <Tabs.TabLabel id="2">Published</Tabs.TabLabel>
-          <Tabs.TabLabel id="3">Draft</Tabs.TabLabel>
-          <Tabs.TabLabel id="4">Trash</Tabs.TabLabel>
+          <Tabs.TabLabel id="upcoming">Upcoming</Tabs.TabLabel>
+          <Tabs.TabLabel id="published">Published</Tabs.TabLabel>
+          <Tabs.TabLabel id="draft">Draft</Tabs.TabLabel>
+          <Tabs.TabLabel id="trash">Trash</Tabs.TabLabel>
         </Tabs.TabLabels>
 
         <div className="flex items-center justify-between mt-12 mx-4 flex-col md:flex-row">
@@ -84,72 +54,22 @@ function NotificationsList() {
           </div>
         </div>
         <Tabs.TabPanels>
-          <Tabs.TabPanel id="1">
-            <Header
-              title={`Upcoming Notifications (${upcomingData.data.length})`}
-            />
-            <Card
-              noPadding
-              content={
-                <Table columns={upcomingTableRows} payload={upcomingData} />
-              }
-              className="rounded-t-none"
-            />
+          <Tabs.TabPanel id="upcoming">
+            <Notification type="upcoming" />
           </Tabs.TabPanel>
-          <Tabs.TabPanel id="2">
-            <Header
-              title={`Published Notifications (${publishedData.data.length})`}
-            />
-            <Card
-              noPadding
-              content={
-                <Table columns={publishedTableRows} payload={publishedData} />
-              }
-            />
+          <Tabs.TabPanel id="published">
+            <Notification type="published" />
           </Tabs.TabPanel>
-          <Tabs.TabPanel id="3">
-            <Header title={`Drafts (${draftsData.data.length})`} />
-            <Card
-              noPadding
-              content={<Table columns={otherTableRows} payload={draftsData} />}
-            />
+          <Tabs.TabPanel id="draft">
+            <Notification type="draft" />
           </Tabs.TabPanel>
-          <Tabs.TabPanel id="4">
-            <Header title={`Trash (${trashData.data.length})`} />
-            <Card
-              noPadding
-              content={<Table columns={otherTableRows} payload={trashData} />}
-            />
+          <Tabs.TabPanel id="trash">
+            <Notification type="trash" />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
     </section>
   )
-}
-
-const Header = ({ title }) => {
-  const router = useRouter()
-
-  const goToCreate = () => router.push('/notifications/create')
-
-  return (
-    <>
-      <div className="flex items-center justify-between">
-        <h1 className="font-bold text-base px-8 py-4">{title}</h1>
-        <Button
-          primary
-          leftIcon={<FaPlusCircle />}
-          label="Create Notifications"
-          onClick={goToCreate}
-          className="mr-4 mt-4"
-        />
-      </div>
-    </>
-  )
-}
-
-Header.propTypes = {
-  title: P.string.required
 }
 
 export default NotificationsList
