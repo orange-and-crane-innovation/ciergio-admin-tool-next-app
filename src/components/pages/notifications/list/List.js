@@ -1,30 +1,26 @@
-import React, { useState } from 'react'
-import { useMutation } from '@apollo/client'
+import React, { useState, useMemo } from 'react'
+import { useQuery, useMutation } from '@apollo/client'
 
 import Tabs from '@app/components/tabs'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import SelectBulk from '@app/components/globals/SelectBulk'
 
+import useDebounce from '@app/utils/useDebounce'
+
 import Notification from '../components/Notification'
 
 import { FaSearch, FaTimes } from 'react-icons/fa'
 
-import {
-  bulkOptions,
-  categoryOptions,
-  UPCOMING,
-  PUBLISHED,
-  DRAFT,
-  TRASHED
-} from '../constants'
+import { bulkOptions, UPCOMING, PUBLISHED, DRAFT, TRASHED } from '../constants'
 
 import {
   GET_ALL_UPCOMING_NOTIFICATIONS,
   GET_ALL_PUBLISHED_NOTIFICATIONS,
   GET_ALL_DRAFT_NOTIFICATIONS,
   GET_ALL_TRASHED_NOTIFICATIONS,
-  BULK_UPDATE_MUTATION
+  BULK_UPDATE_MUTATION,
+  GET_POST_CATEGORIES
 } from '../queries'
 
 const tabs = [
@@ -49,16 +45,22 @@ const tabs = [
 const { TabPanels, TabPanel, TabLabel, TabLabels } = Tabs
 
 function NotificationsList() {
-  const [searchText, setSearchtext] = useState('')
+  const [searchText, setSearchtext] = useState(null)
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [selectedBulk, setSelectedBulk] = useState()
-
+  const [category, setCategory] = useState(null)
   const [selectedData, setSelectedData] = useState([])
+
+  const debouncedSearchText = useDebounce(searchText, 700)
+
+  const { data: categories } = useQuery(GET_POST_CATEGORIES)
 
   const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
     BULK_UPDATE_MUTATION
   )
+
+  const CATEGORIES = categories?.getPostCategory
 
   const onClearBulk = () => {
     setSelectedBulk('')
@@ -78,6 +80,24 @@ function NotificationsList() {
     }
   }
 
+  const categoryOptions = useMemo(() => {
+    if (CATEGORIES !== undefined) {
+      const cats = CATEGORIES?.category?.map(category => ({
+        label: category.name,
+        value: category._id
+      }))
+      return [
+        {
+          label: 'All',
+          value: null
+        },
+        ...cats
+      ]
+    }
+
+    return []
+  }, [CATEGORIES])
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">
@@ -93,7 +113,7 @@ function NotificationsList() {
           ))}
         </TabLabels>
 
-        <div className="flex items-center justify-between mt-12 mx-4 flex-col md:flex-row">
+        <div className="flex items-center justify-between mt-12 flex-col md:flex-row">
           <SelectBulk
             placeholder="Select"
             options={bulkOptions}
@@ -104,14 +124,25 @@ function NotificationsList() {
             onBulkClear={onClearBulk}
             selected={selectedBulk}
           />
-          <div className="flex items-center justify-between w-full flex-col md:w-1/3 md:flex-row">
-            <FormSelect options={categoryOptions} />
-            <div className="w-full md:w-80 md:ml-2 relative">
+          <div className="flex items-center justify-between w-full flex-col md:w-6/12 md:flex-row">
+            <FormSelect
+              options={categoryOptions}
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              onClear={() => setCategory(null)}
+            />
+            <div className="w-full md:w-120 md:ml-2 relative">
               <FormInput
                 name="search"
                 placeholder="Search by title"
                 inputClassName="pr-8"
-                onChange={e => setSearchtext(e.target.value)}
+                onChange={e => {
+                  if (e.target.value !== '') {
+                    setSearchtext(e.target.value)
+                  } else {
+                    setSearchtext(null)
+                  }
+                }}
                 value={searchText}
               />
               <span className="absolute top-4 right-4">
@@ -137,6 +168,8 @@ function NotificationsList() {
                 setIsBulkButtonDisabled={setIsBulkButtonDisabled}
                 setIsBulkDisabled={setIsBulkDisabled}
                 setSelectedBulk={setSelectedBulk}
+                categoryId={category}
+                searchText={debouncedSearchText}
               />
             </TabPanel>
           ))}

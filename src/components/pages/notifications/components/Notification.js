@@ -41,6 +41,8 @@ const getNotifDate = (type, notif) => {
 
 function Notifications({
   type,
+  categoryId,
+  searchText,
   query,
   dataBulk,
   calledBulk,
@@ -63,7 +65,9 @@ function Notifications({
   } = useQuery(query, {
     variables: {
       limit: currentLimit,
-      offset: currentOffset
+      offset: currentOffset,
+      categoryId,
+      search: searchText
     }
   })
 
@@ -336,6 +340,8 @@ function Notifications({
 
 Notifications.propTypes = {
   type: P.string,
+  searchText: P.string,
+  categoryId: P.string,
   query: P.object,
   selectedData: P.array,
   calledBulk: P.bool,
