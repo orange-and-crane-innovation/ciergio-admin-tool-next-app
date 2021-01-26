@@ -26,6 +26,10 @@ body,
   @apply bg-neutral-100 h-full;
 }
 
+body.openModal {
+  @apply overflow-y-hidden relative;
+}
+
 [data-background='light'] {
   @apply text-gray-900;
   code,
