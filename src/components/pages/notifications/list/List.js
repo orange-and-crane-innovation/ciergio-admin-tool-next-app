@@ -11,6 +11,13 @@ import { FaSearch, FaTimes } from 'react-icons/fa'
 
 import { bulkOptions, categoryOptions } from './options'
 
+import {
+  GET_ALL_UPCOMING_NOTIFICATIONS,
+  GET_ALL_PUBLISHED_NOTIFICATIONS,
+  GET_ALL_DRAFT_NOTIFICATIONS,
+  GET_ALL_TRASHED_NOTIFICATIONS
+} from '../queries'
+
 function NotificationsList() {
   const [searchText, setSearchtext] = useState('')
 
@@ -25,7 +32,7 @@ function NotificationsList() {
           <Tabs.TabLabel id="upcoming">Upcoming</Tabs.TabLabel>
           <Tabs.TabLabel id="published">Published</Tabs.TabLabel>
           <Tabs.TabLabel id="draft">Draft</Tabs.TabLabel>
-          <Tabs.TabLabel id="trash">Trash</Tabs.TabLabel>
+          <Tabs.TabLabel id="trashed">Trash</Tabs.TabLabel>
         </Tabs.TabLabels>
 
         <div className="flex items-center justify-between mt-12 mx-4 flex-col md:flex-row">
@@ -55,16 +62,25 @@ function NotificationsList() {
         </div>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="upcoming">
-            <Notification type="upcoming" />
+            <Notification
+              type="upcoming"
+              query={GET_ALL_UPCOMING_NOTIFICATIONS}
+            />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="published">
-            <Notification type="published" />
+            <Notification
+              type="published"
+              query={GET_ALL_PUBLISHED_NOTIFICATIONS}
+            />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="draft">
-            <Notification type="draft" />
+            <Notification type="draft" query={GET_ALL_DRAFT_NOTIFICATIONS} />
           </Tabs.TabPanel>
-          <Tabs.TabPanel id="trash">
-            <Notification type="trash" />
+          <Tabs.TabPanel id="trashed">
+            <Notification
+              type="trashed"
+              query={GET_ALL_TRASHED_NOTIFICATIONS}
+            />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

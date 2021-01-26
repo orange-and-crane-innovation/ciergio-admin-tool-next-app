@@ -1,5 +1,23 @@
 import gql from 'graphql-tag'
 
+const NOTIFICATION_RESPONSE = `
+  offset
+  limit
+  count
+  post {
+    _id
+    title
+    publishedAt
+    publishedNextAt
+    createdAt
+    updatedAt
+    category {
+      _id
+      name
+    }
+  }
+`
+
 export const GET_ALL_UPCOMING_NOTIFICATIONS = gql`
   query getUpcomingNotifications(
     $limit: Int
@@ -12,21 +30,12 @@ export const GET_ALL_UPCOMING_NOTIFICATIONS = gql`
       limit: $limit
       offset: $offset
     ) {
-      post {
-        _id
-        title
-        category {
-          _id
-          name
-          updatedAt
-          createdAt
-        }
-      }
+      ${NOTIFICATION_RESPONSE}
     }
   }
 `
 
-export const GET_ALL_NOTIFICATIONS = gql`
+export const GET_ALL_PUBLISHED_NOTIFICATIONS = gql`
   query getPublishedNotifications(
     $limit: Int
     $offset: Int
@@ -34,20 +43,11 @@ export const GET_ALL_NOTIFICATIONS = gql`
     $categoryId: String
   ) {
     getAllFlashNotifications(
-      where: { status: [upcoming], search: $search, categoryId: $categoryId }
+      where: { status: [published], search: $search, categoryId: $categoryId }
       limit: $limit
       offset: $offset
     ) {
-      post {
-        _id
-        title
-        category {
-          _id
-          name
-          updatedAt
-          createdAt
-        }
-      }
+      ${NOTIFICATION_RESPONSE}
     }
   }
 `
@@ -64,21 +64,12 @@ export const GET_ALL_DRAFT_NOTIFICATIONS = gql`
       limit: $limit
       offset: $offset
     ) {
-      post {
-        _id
-        title
-        category {
-          _id
-          name
-          updatedAt
-          createdAt
-        }
-      }
+      ${NOTIFICATION_RESPONSE}
     }
   }
 `
 
-export const GET_ALL_TRASH_NOTIFICATIONS = gql`
+export const GET_ALL_TRASHED_NOTIFICATIONS = gql`
   query getTrashedNotifications(
     $limit: Int
     $offset: Int
@@ -90,16 +81,7 @@ export const GET_ALL_TRASH_NOTIFICATIONS = gql`
       limit: $limit
       offset: $offset
     ) {
-      post {
-        _id
-        title
-        category {
-          _id
-          name
-          updatedAt
-          createdAt
-        }
-      }
+      ${NOTIFICATION_RESPONSE}
     }
   }
 `
