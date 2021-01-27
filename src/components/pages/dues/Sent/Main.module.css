@@ -57,7 +57,11 @@
     @apply text-base leading-7;
   }
 
-  
+  .paid {
+    &:hover {
+      @apply cursor-not-allowed;
+    }
+  }
   
   .fileLink {
     @apply text-blue-500 font-bold;

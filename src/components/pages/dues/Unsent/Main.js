@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import FormSelect from '@app/components/globals/FormSelect'
@@ -122,6 +122,8 @@ function Unsent({ month, year }) {
   const [count, setCount] = useState({})
   const keyPressed = useKeyPress('Enter')
 
+  const [amountValue, setAmountValue] = useState()
+
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
   // graphQLFetching
@@ -172,12 +174,20 @@ function Unsent({ month, year }) {
     }
   }, [duesLoading, duesData, duesError])
 
+  const onChangeOfAmount = e => {
+    setAmountValue(e.target.value)
+  }
+
+  const handleChangeDate = date => {
+    setSelectedDate(date)
+  }
+
   // Hooks for formatting table row
   const useTableRows = rows => {
     const rowData = []
     let num = 0
-    if (rows.length > 0 && rows) {
-      rows.forEach(row => {
+    if (rows) {
+      rows.forEach((row, index) => {
         if (num !== row.floorNumber) {
           rowData.push({
             floorNumber: row.floorNumber,
@@ -193,22 +203,29 @@ function Unsent({ month, year }) {
         const unitOwner = `${row?.unitOwner?.user?.lastName},
         ${row?.unitOwner?.user?.lastName.charAt(0)}`
         const uploadFile = (
-          <Button default full label="Choose File" onClick={handleModal} />
+          <Button
+            key={index}
+            default
+            label="Choose File"
+            onClick={handleModal}
+          />
         )
         const amount = (
           <FormInput
-            onChange={e => alert(e.target.value)}
+            onChange={onChangeOfAmount}
             name={'amount'}
             type="text"
             placeholder="0.0"
+            key={index}
           />
         )
         const sendButton = <Button default disabled label="Send" />
         const dueDate = (
           <DatePicker
-            minDate={new Date()}
+            disabledPreviousDate={new Date()}
             date={selectedDate}
-            handleChange={handleChangeDate}
+            onChange={handleChangeDate}
+            key={index}
           />
         )
 
@@ -230,17 +247,16 @@ function Unsent({ month, year }) {
   const table = useTableRows(!loading && data && data?.getDuesPerUnit?.data)
 
   useEffect(() => {
-    if (!loading && data && table) {
-      const duesData = {
+    if (!loading && !error && data) {
+      const duesTable = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
         offset: data?.getDuesPerUnit.offset || 0,
-        data: table
+        data: table || []
       }
-
-      setDues(duesData)
+      setDues(duesTable)
     }
-  }, [loading, data, error, table])
+  }, [loading, data, error])
 
   useEffect(() => {
     let optionsData = [
@@ -249,14 +265,14 @@ function Unsent({ month, year }) {
         value: ''
       }
     ]
-    if (!loadingFloorNumbers && dataAllFloors) {
+    if (!loadingFloorNumbers && !errorGetAllFloors) {
       optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
-        return { lbael: floor, value: floor }
+        return { label: floor, value: floor }
       })
     }
 
     setFloors(optionsData)
-  }, [loadingFloorNumbers, errorGetAllFloors, dataAllFloors])
+  }, [loadingFloorNumbers, dataAllFloors, errorGetAllFloors])
 
   const handleModal = () => setShowModal(show => !show)
 
@@ -265,10 +281,6 @@ function Unsent({ month, year }) {
   }
   const handleOkModal = () => {
     handleCloseModal()
-  }
-
-  const handleChangeDate = date => {
-    setSelectedDate(date)
   }
 
   //   Select Floors onchange
@@ -309,7 +321,7 @@ function Unsent({ month, year }) {
 
   // setting limit in pagination
   const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
+    setLimitPage(parseInt(e.target.value))
   }
 
   const calendarIcon = () => <span className="ciergio-calendar"></span>
@@ -359,6 +371,15 @@ function Unsent({ month, year }) {
         }
         content={<Table rowNames={tableRowData} items={dues} />}
       />
+
+      {!loading && dues && (
+        <Pagination
+          items={dues}
+          activePage={activePage}
+          onPageClick={onPageClick}
+          onLimitChange={onLimitChange}
+        />
+      )}
       <Modal
         title="Set Due Date"
         okText="Apply"
@@ -369,21 +390,13 @@ function Unsent({ month, year }) {
       >
         <div className="w-full flex flex-col">
           <DatePicker
-            minDate={new Date()}
+            disabledPreviousDate={new Date()}
             date={selectedDate}
-            handleChange={handleChangeDate}
-            containerClassname={'flex md:w-1/6 justify-center '}
+            onChange={handleChangeDate}
+            containerClassname={'flex w-full justify-center '}
           />
         </div>
       </Modal>
-      {!loading && dues && (
-        <Pagination
-          items={dues}
-          activePage={activePage}
-          onPageClick={onPageClick}
-          onLimitChange={onLimitChange}
-        />
-      )}
     </>
   )
 }

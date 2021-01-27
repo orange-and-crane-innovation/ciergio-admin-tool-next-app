@@ -14,6 +14,7 @@ import { toFriendlyDate } from '@app/utils/date'
 import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
 import HistoryBills from './Cards/HistoryBills'
+import UpdateBills from './Cards/UpdateBills'
 
 const GET_ALL_FLOORS = gql`
   query getFloorNUmbers($buildingId: String!) {
@@ -52,7 +53,11 @@ const GET_DUES_PER_UNIT_SENT = gql`
       limit
       offset
       data {
+        _id
         dues {
+          category {
+            name
+          }
           attachment {
             fileUrl
           }
@@ -149,6 +154,7 @@ function Sent({ month, year }) {
   const [search, setSearch] = useState(null)
 
   const keyPressed = useKeyPress('Enter')
+
   // graphQLFetching
   const { loading, data, error } = useQuery(GET_DUES_PER_UNIT_SENT, {
     variables: {
@@ -204,9 +210,22 @@ function Sent({ month, year }) {
   }, [duesLoading, duesData, duesError])
 
   const handleShowModal = (type, id) => {
-    if (id === 1) {
-      setShowModal(old => !old)
+    const selected =
+      !loading && data?.getDuesPerUnit?.data.find(due => due._id === id)
+    if (selected) {
+      switch (type) {
+        case 'update':
+          setModalTitle('Edit Billing')
+          setModalContent(<UpdateBills amount={10} dueDate={new Date()} />)
+          break
+        case 'details':
+          setModalTitle(`Unit ${selected.name} History`)
+          setModalContent(<HistoryBills dues={selected?.dues} />)
+          break
+      }
     }
+
+    setShowModal(open => !open)
   }
 
   const handleClearModal = () => {
@@ -216,20 +235,21 @@ function Sent({ month, year }) {
   const useTableRows = rows => {
     const rowData = []
     let num = 0
-    const dropdownData = [
-      {
-        label: 'Update Bills',
-        icon: <FaPencilAlt />,
-        function: () => handleShowModal('update', 1)
-      },
-      {
-        label: 'Bills Details',
-        icon: <FaRegFileAlt />,
-        function: () => handleShowModal('details', 1)
-      }
-    ]
-    if (rows.length > 0 && rows) {
+
+    if (rows) {
       rows.forEach(row => {
+        const dropdownData = [
+          {
+            label: 'Update Bills',
+            icon: <FaPencilAlt />,
+            function: () => handleShowModal('update', row?._id)
+          },
+          {
+            label: 'Bills Details',
+            icon: <FaRegFileAlt />,
+            function: () => handleShowModal('details', row?._id)
+          }
+        ]
         if (num !== row.floorNumber) {
           rowData.push({
             floorNumber: row.floorNumber,
@@ -252,33 +272,38 @@ function Sent({ month, year }) {
             View File
           </a>
         )
-
-        for (let i = 0; i <= row?.dues.length; i++) {
-          const amount = `₱${row?.dues[i]?.amount.toFixed(2)}`
-          const status =
-            row?.dues[i]?.status === 'overdue' || row?.dues[i]?.status === 'due'
-              ? 'unpaid'
-              : 'paid'
-          const seen = row?.dues[i]?.views.count ? <FaEye /> : null
-          const dueDate = toFriendlyDate(row?.dues[i]?.dueDate)
-          const unitName = row?.name
-          const unitOwner = `${row?.unitOwner?.user?.lastName},
-          ${row?.unitOwner?.user?.lastName.charAt(0)}`
-          const dropDown = (
-            <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+        const amount = `₱${row?.dues[0]?.amount.toFixed(2)}`
+        const status =
+          row?.dues[0]?.status === 'overdue' ||
+          row?.dues[0]?.status === 'due' ? (
+            <Button
+              className={styles.paid}
+              disabled
+              label="Unpaid"
+              onClick={() => alert('unpaid')}
+            />
+          ) : (
+            <Button onClick={() => alert('paid')} label="Paid" />
           )
-          rowData.push({
-            floor: '',
-            seen,
-            unitName,
-            unitOwner,
-            attachment,
-            amount,
-            dueDate,
-            status,
-            dropDown
-          })
-        }
+        const seen = row?.dues[0]?.views.count ? <FaEye /> : null
+        const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
+        const unitName = row?.name
+        const unitOwner = `${row?.unitOwner?.user?.lastName},
+          ${row?.unitOwner?.user?.lastName.charAt(0)}`
+        const dropDown = (
+          <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+        )
+        rowData.push({
+          floor: '',
+          seen,
+          unitName,
+          unitOwner,
+          attachment,
+          amount,
+          dueDate,
+          status,
+          dropDown
+        })
 
         num = row.floorNumber
       })
@@ -288,18 +313,18 @@ function Sent({ month, year }) {
 
   const table = useTableRows(!loading && data && data?.getDuesPerUnit?.data)
   // Component did mount for generating table data
+
   useEffect(() => {
-    if (!loading && data) {
+    if (!loading && data && !error) {
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
         offset: data?.getDuesPerUnit.offset || 0,
-        data: table
+        data: table || []
       }
-
       setDues(duesData)
     }
-  }, [loading, data, error, table])
+  }, [loading, data, error])
 
   useEffect(() => {
     let optionsData = [
@@ -308,24 +333,22 @@ function Sent({ month, year }) {
         value: ''
       }
     ]
-    if (!loadingFloorNumbers) {
+    if (!loadingFloorNumbers && !errorGetAllFloors) {
       optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
         return { label: floor, value: floor }
       })
     }
 
     setFloors(optionsData)
-  }, [loadingFloorNumbers, errorGetAllFloors, dataAllFloors])
+  }, [loadingFloorNumbers, dataAllFloors, errorGetAllFloors])
 
   //   Select Floors onchange
   const onFloorSelect = e => {
-    setFloorNumber(e.target.value.toString())
+    setFloorNumber(e.target.value)
   }
   // =============
 
-  const onStatusSelect = e => {
-    setFloorNumber(e.target.value)
-  }
+  const onStatusSelect = e => {}
 
   // useEffect for useKeyPress
   useEffect(() => {
@@ -358,12 +381,7 @@ function Sent({ month, year }) {
 
   // setting limit in pagination
   const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
-  }
-
-  // We will refetch the post one time
-  const handleKeyDown = e => {
-    alert('asdasd')
+    setLimitPage(parseInt(e.target.value))
   }
 
   return (
@@ -387,7 +405,6 @@ function Sent({ month, year }) {
             onSearch={onSearch}
             onClearSearch={onClearSearch}
             className={styles.SearchControl}
-            onKeyDown={handleKeyDown}
           />
         </div>
       </div>
@@ -420,14 +437,13 @@ function Sent({ month, year }) {
       )}
 
       <Modal
-        title={'sample title'}
+        title={modalTitle}
+        okText="Submit"
         visible={showModal}
         onClose={handleClearModal}
-        footer={null}
+        footer={<h1>Test</h1>}
       >
-        <div className="w-full">
-          <h1>Hello</h1>
-        </div>
+        <div className="w-full">{modalContent}</div>
       </Modal>
     </>
   )

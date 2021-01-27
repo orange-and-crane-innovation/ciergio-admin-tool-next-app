@@ -44,7 +44,7 @@ function Billing() {
             <div className={styles.BillingPeriodContainer}>
               <DatePicker
                 date={selectedDate}
-                handleChange={handleDateChange}
+                onChange={handleDateChange}
                 label={'Billing'}
                 showMonthYearPicker
               />
