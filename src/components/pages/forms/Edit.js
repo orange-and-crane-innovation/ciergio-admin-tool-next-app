@@ -3,7 +3,8 @@
 /* eslint-disable react/jsx-key */
 
 import React, { useState, useEffect } from 'react'
-import { gql, useMutation } from '@apollo/client'
+import { useRouter } from 'next/router'
+import { gql, useMutation, useQuery } from '@apollo/client'
 import axios from 'axios'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -15,23 +16,86 @@ import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
 import Button from '@app/components/button'
 import Uploader from '@app/components/uploader'
+import Modal from '@app/components/modal'
 
 import showToast from '@app/utils/toast'
 
+import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
 
 import style from './Create.module.css'
 
-const CREATE_POST_MUTATION = gql`
-  mutation($data: PostInput) {
-    createPost(data: $data) {
+const UPDATE_POST_MUTATION = gql`
+  mutation($id: String, $data: PostInput) {
+    updatePost(id: $id, data: $data) {
       _id
       processId
       message
     }
   }
 `
+
+const GET_POST_QUERY = gql`
+  query getAllPost($where: AllPostInput) {
+    getAllPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+        category {
+          _id
+          name
+        }
+        primaryMedia {
+          url
+          type
+        }
+        embeddedMediaFiles {
+          url
+          type
+        }
+        audienceType
+        audienceExpanse {
+          company {
+            id
+          }
+          complex {
+            id
+          }
+          building {
+            id
+          }
+        }
+        audienceExceptions {
+          company {
+            id
+          }
+          complex {
+            id
+          }
+          building {
+            id
+          }
+        }
+      }
+    }
+  }
+`
+
 const validationSchema = yup.object().shape({
   title: yup
     .string()
@@ -40,8 +104,8 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
-  content: yup.mixed().label('Content').nullable(),
-  embeddedFiles: yup.array().label('File').nullable().required(),
+  content: yup.string().label('Content').required(),
+  embeddedFiles: yup.array().label('Image').nullable().required(),
   category: yup.string().label('Category').nullable().required()
 })
 
@@ -52,16 +116,16 @@ const validationSchemaDraft = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
   content: yup.mixed(),
-  embeddedFiles: yup.array().label('File').nullable(),
   category: yup.string().nullable()
 })
 
 const CreatePosts = () => {
+  const { query, push } = useRouter()
   const [loading, setLoading] = useState(false)
   const [maxFiles] = useState(3)
-  const [files, setFiles] = useState([])
-  const [fileUploadedData, setFileUploadedData] = useState([])
   const [fileUrls, setFileUrls] = useState([])
+  const [fileUploadedData, setFileUploadedData] = useState([])
+  const [videoUrl, setVideoUrl] = useState()
   const [inputMaxLength] = useState(65)
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
@@ -78,24 +142,45 @@ const CreatePosts = () => {
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
+  const [isEdit, setIsEdit] = useState(true)
 
   const [
-    createPost,
+    updatePost,
     {
-      loading: loadingCreate,
-      called: calledCreate,
-      data: dataCreate,
-      error: errorCreate
+      loading: loadingUpdate,
+      called: calledUpdate,
+      data: dataUpdate,
+      error: errorUpdate
     }
-  ] = useMutation(CREATE_POST_MUTATION)
+  ] = useMutation(UPDATE_POST_MUTATION)
 
-  const { handleSubmit, control, reset, errors, register, setValue } = useForm({
+  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
+    GET_POST_QUERY,
+    {
+      variables: {
+        where: {
+          _id: query.id
+        }
+      }
+    }
+  )
+
+  const {
+    handleSubmit,
+    control,
+    reset,
+    errors,
+    register,
+    setValue,
+    getValues
+  } = useForm({
     resolver: yupResolver(
       selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
     ),
     defaultValues: {
       title: '',
       content: null,
+      video: '',
       category: null,
       embeddedFiles: null
     }
@@ -104,22 +189,123 @@ const CreatePosts = () => {
   register({ name: 'embeddedFiles' })
 
   useEffect(() => {
-    if (!loadingCreate) {
-      if (errorCreate) {
-        showToast('danger', 'Sorry, an error occured during creation of post.')
-      }
-      if (calledCreate && dataCreate) {
-        reset()
-        resetForm()
-        showToast('success', 'You have successfully created a post.')
+    if (errorPost) {
+      showToast('danger', `Sorry, there's an error occured on fetching.`)
+    } else if (!loadingPost && dataPost) {
+      const itemData = dataPost?.getAllPost?.post[0]
+
+      if (itemData) {
+        setValue('title', itemData?.title)
+        setValue('content', itemData?.content)
+        setValue('category', itemData?.category?._id)
+        setValue(
+          'embeddedFiles',
+          itemData?.primaryMedia.map(item => {
+            return item.url
+          })
+        )
+        setValue(
+          'video',
+          (itemData?.embeddedMediaFiles &&
+            itemData?.embeddedMediaFiles[0]?.url) ??
+            null
+        )
+        setFileUploadedData(
+          itemData?.primaryMedia.map(item => {
+            return { url: item.url, type: item.type }
+          })
+        )
+        setVideoUrl(
+          (itemData?.embeddedMediaFiles &&
+            itemData?.embeddedMediaFiles[0]?.url) ??
+            ''
+        )
+        setFileUrls(itemData?.primaryMedia.map(item => item.url))
+        setSelectedAudienceType(itemData?.audienceType)
+        setSelectedCompanyExcept(
+          itemData?.audienceExpanse
+            ? {
+                companyIds: itemData?.audienceExceptions?.company?.map(
+                  item => item
+                ),
+                complexIds: itemData?.audienceExceptions?.complex?.map(
+                  item => item
+                ),
+                buildingIds: itemData?.audienceExceptions?.building?.map(
+                  item => item
+                )
+              }
+            : null
+        )
+        setSelectedCompanySpecific(
+          itemData?.audienceExpanse
+            ? {
+                companyIds: itemData?.audienceExpanse?.company?.map(
+                  item => item
+                ),
+                complexIds: itemData?.audienceExpanse?.complex?.map(
+                  item => item
+                ),
+                buildingIds: itemData?.audienceExpanse?.building?.map(
+                  item => item
+                )
+              }
+            : null
+        )
       }
     }
-  }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
+  }, [loadingPost, dataPost, errorPost, setValue])
+
+  useEffect(() => {
+    if (!loadingUpdate) {
+      if (errorUpdate) {
+        showToast('danger', 'Sorry, an error occured during updating of post.')
+      }
+      if (calledUpdate && dataUpdate) {
+        reset()
+        resetForm()
+        showToast('success', 'You have successfully updated a post.')
+        goToFormsPageLists()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
+
+  const goToFormsPageLists = () => {
+    push('/forms/')
+  }
 
   const onCountChar = e => {
     if (e.currentTarget.maxLength) {
       setTextCount(e.currentTarget.value.length)
     }
+  }
+
+  const handleShowModal = type => {
+    const selected = dataPost?.getAllPost?.post?.filter(
+      item => item._id === query.id
+    )
+
+    if (selected) {
+      setModalType(type)
+
+      switch (type) {
+        case 'delete': {
+          setModalTitle('Delete Post')
+          setModalContent(
+            <UpdateCard type="trashed" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
+      }
+      setShowModal(old => !old)
+    }
+  }
+
+  const handleClearModal = () => {
+    handleShowModal()
   }
 
   const uploadApi = async payload => {
@@ -141,7 +327,14 @@ const CreatePosts = () => {
         }
       })
 
-      setFileUploadedData(imageData)
+      const combinedImages = [].concat(
+        fileUrls,
+        response.data.map(item => item.location)
+      )
+      const combinedUploadedImages = [].concat(fileUploadedData, imageData)
+
+      setFileUrls(combinedImages)
+      setFileUploadedData(combinedUploadedImages)
     }
   }
 
@@ -159,8 +352,7 @@ const CreatePosts = () => {
           const reader = new FileReader()
 
           reader.onloadend = () => {
-            setFiles(prevArr => [...prevArr, file])
-            setFileUrls(prevArr => [...prevArr, reader.result])
+            setFileUploadedData(prevArr => [...prevArr, file])
             setLoading(false)
           }
           reader.readAsDataURL(file)
@@ -176,11 +368,15 @@ const CreatePosts = () => {
   }
 
   const onRemoveFile = e => {
-    const data = fileUrls.filter(item => {
+    const files = fileUrls.filter(item => {
       return item !== e.currentTarget.dataset.id
     })
-    setFileUrls(data)
-    setValue('embeddedFiles', data.length !== 0 ? data : null)
+    const uploadedFiles = fileUploadedData.filter(image => {
+      return image.url !== e.currentTarget.dataset.id
+    })
+    setFileUrls(files)
+    setFileUploadedData(uploadedFiles)
+    setValue('embeddedFiles', files.length !== 0 ? files : null)
   }
 
   const onSubmit = (data, status) => {
@@ -191,26 +387,40 @@ const CreatePosts = () => {
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
-      const createData = {
-        type: 'form',
-        categoryId: data.category,
-        title: data?.title || 'Untitled',
-        content: data?.content,
-        audienceType: selectedAudienceType,
-        status: status,
-        primaryMedia: fileUploadedData
+      const updateData = {
+        id: query.id,
+        data: {
+          categoryId: data.category,
+          title: data?.title || 'Untitled',
+          content: data?.content,
+          audienceType: selectedAudienceType,
+          status: status,
+          primaryMedia: fileUploadedData,
+          embeddedMediaFiles: videoUrl
+            ? [
+                {
+                  url: videoUrl
+                }
+              ]
+            : null
+        }
       }
 
       if (selectedPublishDateTime) {
-        createData.publishedAt = selectedPublishDateTime
+        updateData.data.publishedAt = selectedPublishDateTime
       }
       if (selectedCompanySpecific) {
-        createData.audienceExpanse = { companyIds: selectedCompanySpecific }
+        updateData.data.audienceExpanse = {
+          companyIds: selectedCompanySpecific
+        }
       }
       if (selectedCompanyExcept) {
-        createData.audienceExceptions = { companyIds: selectedCompanyExcept }
+        updateData.data.audienceExceptions = {
+          companyIds: selectedCompanyExcept
+        }
       }
-      createPost({ variables: { data: createData } })
+
+      updatePost({ variables: updateData })
     }
   }
 
@@ -281,9 +491,13 @@ const CreatePosts = () => {
     setSelectedStatus(data)
   }
 
+  const onPreviewPost = () => {
+    onSubmit(getValues(), 'draft')
+  }
+
   return (
     <div className={style.CreatePostContainer}>
-      <h1 className={style.CreatePostHeader}>Upload a Form</h1>
+      <h1 className={style.CreatePostHeader}>Create a Post</h1>
       <form>
         <Card
           content={
@@ -300,7 +514,7 @@ const CreatePosts = () => {
                         type="text"
                         name={name}
                         value={value}
-                        placeholder="What's the title of your download form?"
+                        placeholder="What's the title of your bulletin post?"
                         maxLength={inputMaxLength}
                         count={textCount}
                         error={errors?.title?.message ?? null}
@@ -316,19 +530,21 @@ const CreatePosts = () => {
                   {textCount}/{inputMaxLength}
                 </div>
               </div>
-              <h2 className={style.CreatePostHeaderSmall}>Description</h2>
+              <h2 className={style.CreatePostHeaderSmall}>Content</h2>
               <Controller
                 name="content"
                 control={control}
                 render={({ name, value, onChange }) => (
                   <FormTextArea
-                    maxLength={500}
-                    options={['history']}
-                    placeholder="(Optional) You may add additional notes here"
-                    withCounter
+                    options={['link', 'history']}
+                    placeholder="Write your text here"
                     value={value}
                     error={errors?.content?.message ?? null}
-                    onChange={onChange}
+                    onChange={e => {
+                      onChange(e)
+                      setIsEdit(false)
+                    }}
+                    isEdit={isEdit}
                   />
                 )}
               />
@@ -345,7 +561,7 @@ const CreatePosts = () => {
               <br />
               <Uploader
                 multiple
-                files={files}
+                files={fileUploadedData}
                 fileUrls={fileUrls}
                 loading={loading}
                 error={errors?.embeddedFiles?.message ?? null}
@@ -435,34 +651,22 @@ const CreatePosts = () => {
           <Button
             default
             type="button"
-            label="Save as Draft"
+            label="Move to Trash"
             className={style.CreatePostFooterButton}
             onMouseDown={() => onUpdateStatus('draft')}
             onClick={handleSubmit(e => {
-              onSubmit(e, 'draft')
+              handleShowModal('delete')
             })}
           />
-          <span>
-            <Button
-              default
-              type="button"
-              label="Preview"
-              className={style.CreatePostFooterButton}
-              onMouseDown={() => onUpdateStatus('draft')}
-              onClick={handleSubmit(e => {
-                onSubmit(e, 'draft')
-              })}
-            />
-            <Button
-              type="button"
-              label="Publish Post"
-              primary
-              onMouseDown={() => onUpdateStatus('active')}
-              onClick={handleSubmit(e => {
-                onSubmit(e, 'active')
-              })}
-            />
-          </span>
+          <Button
+            type="button"
+            label="Publish Post"
+            primary
+            onMouseDown={() => onUpdateStatus('active')}
+            onClick={handleSubmit(e => {
+              onSubmit(e, 'active')
+            })}
+          />
         </div>
       </form>
 
@@ -488,6 +692,30 @@ const CreatePosts = () => {
         onClose={onCancelPublishTime}
         isShown={showPublishTimeModal}
       />
+
+      <Modal
+        title={modalTitle}
+        visible={showModal}
+        onClose={handleClearModal}
+        footer={modalFooter}
+        okText={
+          modalType === 'draft'
+            ? 'Yes, move to trash'
+            : modalType === 'preview'
+            ? 'Save & Continue'
+            : 'Yes'
+        }
+        onOk={() =>
+          modalType === 'delete'
+            ? onDeletePost()
+            : modalType === 'preview'
+            ? onPreviewPost()
+            : null
+        }
+        onCancel={() => setShowModal(old => !old)}
+      >
+        <div className="w-full">{modalContent}</div>
+      </Modal>
     </div>
   )
 }
