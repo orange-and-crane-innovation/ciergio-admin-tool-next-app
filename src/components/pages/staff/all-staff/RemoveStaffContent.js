@@ -4,7 +4,7 @@ function RemoveStaffContent({ user }) {
   const { firstName, lastName, jobTitle, companyName } = user
   return (
     <div className="w-full">
-      <div className="mb-4">
+      <div className="mb-4 px-4 pt-4">
         <p>
           {`Warning: You're about to remove `}
           <span className="font-bold">{`${firstName} ${lastName}`}</span>
@@ -12,7 +12,7 @@ function RemoveStaffContent({ user }) {
         </p>
       </div>
       <div className="mb-4 p-4 bg-blue-100">
-        <ul className="list-disc">
+        <ul className="list-disc p-4">
           <li className="mb-2">{`${firstName}'s Profile will be removed from the unit.`}</li>
           <li className="mb-2">{`${firstName} won't be able to access this unit from their app.`}</li>
           <li className="mb-2">
@@ -21,7 +21,7 @@ function RemoveStaffContent({ user }) {
           </li>
         </ul>
       </div>
-      <p>
+      <p className="px-4 pt-2 pb-8">
         {`Are you sure you want to remove `}
         <span className="font-bold">{`${firstName} ${lastName}`}</span>{' '}
         {` from this unit?`}
