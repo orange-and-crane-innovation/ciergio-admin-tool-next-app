@@ -7,6 +7,12 @@
     @apply bg-primary-100;
   }
 
+  &.error {
+    .imageUploaderImage {
+      @apply border-danger-500;
+    }
+  }
+
   .imageUploaderControl {
     @apply hidden;
   }
@@ -42,4 +48,9 @@
       @apply outline-none;
     }
   }
+}
+
+.imageUploaderError {
+  @apply my-4;
+  @apply text-danger-500 text-md font-bold;
 }

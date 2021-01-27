@@ -9,8 +9,11 @@ import ImageAdd from '@app/assets/svg/image-add.svg'
 import styles from './image.module.css'
 
 const UploaderImage = ({
+  name,
+  value,
   loading,
-  imageUrls,
+  error,
+  images,
   multiple,
   maxImages,
   onUploadImage,
@@ -21,6 +24,8 @@ const UploaderImage = ({
 
   const containerClass = isOver
     ? `${styles.imageUploaderContainer} ${styles.over}`
+    : error
+    ? `${styles.imageUploaderContainer} ${styles.error}`
     : styles.imageUploaderContainer
 
   const handleImageChange = () => {
@@ -46,18 +51,18 @@ const UploaderImage = ({
     setIsOver(false)
   }
 
-  if (imageUrls && imageUrls.length > 0) {
-    uploadedImages = imageUrls.map((imageUrl, index) => {
+  if (images && images.length > 0) {
+    uploadedImages = images.map((image, index) => {
       return (
         <div key={index} className={containerClass}>
           <div
             className={styles.imageUploaderImage}
-            style={{ backgroundImage: `url(${!loading && imageUrl})` }}
+            style={{ backgroundImage: `url(${!loading && image})` }}
           />
           <button
             type="button"
             className={styles.imageUploaderButton}
-            data-id={imageUrl}
+            data-id={image}
             onClick={e => {
               handleRemoveImage()
               onRemoveImage(e)
@@ -71,44 +76,51 @@ const UploaderImage = ({
   }
 
   return (
-    <div className="flex">
-      {uploadedImages}
-      {imageUrls && imageUrls.length < maxImages && (
-        <div className={containerClass}>
-          <input
-            className={styles.imageUploaderControl}
-            type="file"
-            id="image"
-            name="image"
-            multiple={multiple}
-            onChange={onUploadImage}
-            accept="image/jpg, image/jpeg, image/png"
-          />
-          <div
-            className={styles.imageUploaderImage}
-            onClick={handleImageChange}
-            onDrop={handleOnDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            {loading ? (
-              <FaSpinner className="icon-spin" />
-            ) : (
-              <span className={styles.imageUploaderImageContent}>
-                <ImageAdd />
-                Add Image
-              </span>
-            )}
+    <>
+      <div className="flex">
+        {uploadedImages}
+        {images && images.length < maxImages && (
+          <div className={containerClass}>
+            <input
+              className={styles.imageUploaderControl}
+              type="file"
+              id="image"
+              name={name}
+              value={value}
+              multiple={multiple}
+              onChange={onUploadImage}
+              accept="image/jpg, image/jpeg, image/png"
+            />
+            <div
+              className={styles.imageUploaderImage}
+              onClick={handleImageChange}
+              onDrop={handleOnDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+              {loading ? (
+                <FaSpinner className="icon-spin" />
+              ) : (
+                <span className={styles.imageUploaderImageContent}>
+                  <ImageAdd />
+                  Add Image
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+      <div className={styles.imageUploaderError}>{error}</div>
+    </>
   )
 }
 
 UploaderImage.propTypes = {
+  name: PropTypes.string,
+  value: PropTypes.any,
   loading: PropTypes.bool,
-  imageUrls: PropTypes.array,
+  error: PropTypes.string,
+  images: PropTypes.array,
   multiple: PropTypes.bool,
   maxImages: PropTypes.number,
   onUploadImage: PropTypes.func,
