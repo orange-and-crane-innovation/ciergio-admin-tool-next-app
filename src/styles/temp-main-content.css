@@ -180,10 +180,8 @@ select:active {
 }
 
 .modal {
-  top: -300px;
-  @apply bg-white w-96 flex-col flex rounded;
+  @apply bg-white flex-col flex rounded;
   @apply absolute;
-  @apply animate-drop;
 }
 
 .modal .modal-header {
