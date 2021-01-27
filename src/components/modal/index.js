@@ -36,20 +36,22 @@ function Component({
       className="modal-overlay"
     >
       <div className="modal">
-        <div className="modal-header">
-          <div className="modal-title">
-            <span>{title}</span>
+        {title ? (
+          <div className="modal-header">
+            <div className="modal-title">
+              <span>{title}</span>
+            </div>
+            <div className="modal-close-icon">
+              <span
+                className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
+                onClick={onClose}
+                onKeyDown={onClose}
+                role="button"
+                tabIndex={0}
+              />
+            </div>
           </div>
-          <div className="modal-close-icon">
-            <span
-              className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
-              onClick={onClose}
-              onKeyDown={onClose}
-              role="button"
-              tabIndex={0}
-            />
-          </div>
-        </div>
+        ) : null}
         <div className="modal-content">{children}</div>
         {footer !== null ? (
           <div className="modal-footer">

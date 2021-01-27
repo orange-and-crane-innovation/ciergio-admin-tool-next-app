@@ -123,3 +123,13 @@ export const BULK_UPDATE_MUTATION = gql`
     }
   }
 `
+
+export const TRASH_NOTIFICATION = gql`
+  mutation trashNotif($id: String!) {
+    updatePost(id: $id, data: { status: trashed }) {
+      _id
+      message
+      __typename
+    }
+  }
+`

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { useLazyQuery, useQuery } from '@apollo/client'
+import { useLazyQuery, useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
 import P from 'prop-types'
 
@@ -26,7 +26,7 @@ import {
   otherTableRows
 } from '../constants'
 
-import { GET_NOTIFICATION } from '../queries'
+import { GET_NOTIFICATION, TRASH_NOTIFICATION } from '../queries'
 
 const getNotifDate = (type, notif) => {
   switch (type) {
@@ -61,8 +61,9 @@ function Notifications({
   const [currentOffset, setCurrentOffset] = useState(0)
   const [activePage, setActivePage] = useState(1)
   const [previewNotification, setPreviewNotification] = useState(false)
-  // const [selectedNotif, setSelectedNotif] = useState(undefined)
+  const [showTrashModal, setShowTrashModal] = useState(false)
   const [selectedNotifId, setSelectedNotifId] = useState(null)
+  const [selectedNotif, setSelectedNotif] = useState(null)
 
   const {
     data: notifications,
@@ -82,6 +83,20 @@ function Notifications({
     {
       variables: {
         id: selectedNotifId
+      }
+    }
+  )
+
+  const [moveToTrash, { loading: movingToTrash }] = useMutation(
+    TRASH_NOTIFICATION,
+    {
+      onCompleted: () => {
+        setShowTrashModal(old => !old)
+        showToast(
+          'success',
+          'You have succesfully move to trash a notification.'
+        )
+        refetchNotifications()
       }
     }
   )
@@ -130,6 +145,14 @@ function Notifications({
       getNotifPreview()
     }
   }, [selectedNotifId, getNotifPreview])
+
+  const handleTrashNotification = () => {
+    moveToTrash({
+      variables: {
+        id: selectedNotif._id
+      }
+    })
+  }
 
   const onCheckAll = useCallback(
     e => {
@@ -264,7 +287,16 @@ function Notifications({
                         View
                       </span>{' '}
                       |{' '}
-                      <span className="text-red-600 cursor-pointer">
+                      <span
+                        className="text-red-600 cursor-pointer"
+                        onClick={() => {
+                          setSelectedNotif(notif)
+                          setShowTrashModal(old => !old)
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={() => {}}
+                      >
                         {type === TRASHED
                           ? 'Delete Permanent'
                           : 'Move to Trash'}
@@ -422,6 +454,22 @@ function Notifications({
               onClick={() => setPreviewNotification(old => !old)}
             />
           </div>
+        </div>
+      </Modal>
+      <Modal
+        cancelText="No"
+        okText="Yes"
+        visible={showTrashModal}
+        onCancel={() => setShowTrashModal(old => !old)}
+        onOk={handleTrashNotification}
+        okButtonProps={{
+          loading: movingToTrash
+        }}
+      >
+        <div className="p-8">
+          <p className="text-xl text-gray-600">
+            Do you move to trash a notification: {selectedNotif?.title}?
+          </p>
         </div>
       </Modal>
     </>
