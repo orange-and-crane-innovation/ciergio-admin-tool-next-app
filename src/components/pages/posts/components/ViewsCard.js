@@ -13,6 +13,7 @@ const Component = ({ data }) => {
           return (
             <UserCard
               key={index}
+              index={index}
               avatar={item?.avatar}
               firstName={item?.firstName}
               lastName={item?.lastName}

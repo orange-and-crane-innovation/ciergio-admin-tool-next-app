@@ -31,7 +31,7 @@
   }
 
   .CategoryControl {
-    @apply flex items-center justify-between w-full flex-col md:w-1/2 md:flex-row;
+    @apply flex items-center justify-end w-full flex-col md:w-1/2 md:flex-row;
 
     & > * {
       @apply mr-2;

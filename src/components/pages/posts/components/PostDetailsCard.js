@@ -58,8 +58,8 @@ Component.propTypes = {
   avatar: PropTypes.string,
   firstName: PropTypes.string,
   lastName: PropTypes.string,
-  count: PropTypes.string,
-  uniqueCount: PropTypes.string
+  count: PropTypes.number,
+  uniqueCount: PropTypes.number
 }
 
 export default Component

@@ -6,10 +6,10 @@ import { FaEllipsisH } from 'react-icons/fa'
 const DEFAULT_AVATAR =
   'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-default.png'
 
-const Component = ({ key, avatar, firstName, lastName }) => {
+const Component = ({ index, avatar, firstName, lastName }) => {
   const avatarImg = avatar || DEFAULT_AVATAR
   return (
-    <div key={key} className="flex-1 border-b py-4 px-6">
+    <div key={index} className="flex-1 border-b py-4 px-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <div className="rounded-full h-8 w-8 bg-white overflow-hidden mr-2">
@@ -28,7 +28,7 @@ const Component = ({ key, avatar, firstName, lastName }) => {
 }
 
 Component.propTypes = {
-  key: PropTypes.number,
+  index: PropTypes.number,
   avatar: PropTypes.string,
   firstName: PropTypes.string,
   lastName: PropTypes.string

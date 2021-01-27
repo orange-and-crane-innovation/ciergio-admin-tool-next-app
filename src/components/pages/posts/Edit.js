@@ -1,11 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-key */
 
 import React, { useState, useEffect } from 'react'
-import { gql, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
+import { gql, useMutation, useQuery } from '@apollo/client'
 import axios from 'axios'
 import { FaSpinner, FaTimes } from 'react-icons/fa'
 import { useForm, Controller } from 'react-hook-form'
@@ -31,15 +30,76 @@ import PublishTimeModal from './components/PublishTimeModal'
 
 import style from './Create.module.css'
 
-const CREATE_POST_MUTATION = gql`
-  mutation($data: PostInput) {
-    createPost(data: $data) {
+const UPDATE_POST_MUTATION = gql`
+  mutation($id: String, $data: PostInput) {
+    updatePost(id: $id, data: $data) {
       _id
       processId
       message
     }
   }
 `
+
+const GET_POST_QUERY = gql`
+  query getAllPost($where: AllPostInput) {
+    getAllPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+        category {
+          _id
+          name
+        }
+        primaryMedia {
+          url
+          type
+        }
+        embeddedMediaFiles {
+          url
+          type
+        }
+        audienceType
+        audienceExpanse {
+          company {
+            id
+          }
+          complex {
+            id
+          }
+          building {
+            id
+          }
+        }
+        audienceExceptions {
+          company {
+            id
+          }
+          complex {
+            id
+          }
+          building {
+            id
+          }
+        }
+      }
+    }
+  }
+`
+
 const validationSchema = yup.object().shape({
   title: yup
     .string()
@@ -48,7 +108,7 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
-  content: yup.mixed().label('Content').nullable().required(),
+  content: yup.string().label('Content').required(),
   images: yup.array().label('Image').nullable().required(),
   category: yup.string().label('Category').nullable().required()
 })
@@ -59,12 +119,12 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
-  content: yup.mixed().nullable(),
+  content: yup.mixed(),
   category: yup.string().nullable()
 })
 
 const CreatePosts = () => {
-  const { push } = useRouter()
+  const { query, push } = useRouter()
   const [loading, setLoading] = useState(false)
   const [maxImages] = useState(3)
   const [imageUrls, setImageUrls] = useState([])
@@ -76,6 +136,7 @@ const CreatePosts = () => {
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
+  const [modalID, setModalID] = useState()
   const [modalContent, setModalContent] = useState()
   const [modalTitle, setModalTitle] = useState()
   const [modalFooter, setModalFooter] = useState(null)
@@ -88,16 +149,28 @@ const CreatePosts = () => {
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
+  const [isEdit, setIsEdit] = useState(true)
 
   const [
-    createPost,
+    updatePost,
     {
-      loading: loadingCreate,
-      called: calledCreate,
-      data: dataCreate,
-      error: errorCreate
+      loading: loadingUpdate,
+      called: calledUpdate,
+      data: dataUpdate,
+      error: errorUpdate
     }
-  ] = useMutation(CREATE_POST_MUTATION)
+  ] = useMutation(UPDATE_POST_MUTATION)
+
+  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
+    GET_POST_QUERY,
+    {
+      variables: {
+        where: {
+          _id: query.id
+        }
+      }
+    }
+  )
 
   const {
     handleSubmit,
@@ -123,18 +196,101 @@ const CreatePosts = () => {
   register({ name: 'images' })
 
   useEffect(() => {
-    if (!loadingCreate) {
-      if (errorCreate) {
-        showToast('danger', 'Sorry, an error occured during creation of post.')
-      }
-      if (calledCreate && dataCreate) {
-        reset()
-        resetForm()
-        goToBulletinPageLists()
-        showToast('success', 'You have successfully created a post.')
+    if (errorPost) {
+      showToast('danger', `Sorry, there's an error occured on fetching.`)
+    } else if (!loadingPost && dataPost) {
+      const itemData = dataPost?.getAllPost?.post[0]
+
+      if (itemData) {
+        setValue('title', itemData?.title)
+        setValue('content', itemData?.content)
+        setValue('category', itemData?.category?._id)
+        setValue(
+          'images',
+          itemData?.primaryMedia.map(item => {
+            return item.url
+          })
+        )
+        setValue(
+          'video',
+          (itemData?.embeddedMediaFiles &&
+            itemData?.embeddedMediaFiles[0]?.url) ??
+            null
+        )
+        setImageUploadedData(
+          itemData?.primaryMedia.map(item => {
+            return { url: item.url, type: item.type }
+          })
+        )
+        setSelectedCategory(itemData?.category?._id)
+        setVideoUrl(
+          (itemData?.embeddedMediaFiles &&
+            itemData?.embeddedMediaFiles[0]?.url) ??
+            ''
+        )
+        setImageUrls(itemData?.primaryMedia.map(item => item.url))
+        setSelectedAudienceType(itemData?.audienceType)
+        setSelectedCompanyExcept(
+          itemData?.audienceExpanse
+            ? {
+                companyIds: itemData?.audienceExceptions?.company?.map(
+                  item => item
+                ),
+                complexIds: itemData?.audienceExceptions?.complex?.map(
+                  item => item
+                ),
+                buildingIds: itemData?.audienceExceptions?.building?.map(
+                  item => item
+                )
+              }
+            : null
+        )
+        setSelectedCompanySpecific(
+          itemData?.audienceExpanse
+            ? {
+                companyIds: itemData?.audienceExpanse?.company?.map(
+                  item => item
+                ),
+                complexIds: itemData?.audienceExpanse?.complex?.map(
+                  item => item
+                ),
+                buildingIds: itemData?.audienceExpanse?.building?.map(
+                  item => item
+                )
+              }
+            : null
+        )
       }
     }
-  }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
+  }, [loadingPost, dataPost, errorPost, setValue])
+
+  useEffect(() => {
+    if (!loadingUpdate) {
+      if (errorUpdate) {
+        showToast('danger', 'Sorry, an error occured during updating of post.')
+      }
+      if (calledUpdate && dataUpdate) {
+        reset()
+        resetForm()
+        showToast('success', 'You have successfully updated a post.')
+
+        if (modalType === 'preview') {
+          goToPreviewPage()
+        } else {
+          goToBulletinPageLists()
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
+
+  const goToBulletinPageLists = () => {
+    push('/posts/')
+  }
+
+  const goToPreviewPage = () => {
+    push(`/posts/view/${query.id}`)
+  }
 
   const onCountChar = e => {
     if (e.currentTarget.maxLength) {
@@ -142,22 +298,36 @@ const CreatePosts = () => {
     }
   }
 
-  const goToBulletinPageLists = () => {
-    push('/posts/')
-  }
-
   const handleShowModal = type => {
-    setModalType(type)
+    const selected = dataPost?.getAllPost?.post?.filter(
+      item => item._id === query.id
+    )
 
-    switch (type) {
-      case 'preview': {
-        setModalTitle('Preview Post')
-        setModalContent(<UpdateCard type="preview" />)
-        setModalFooter(true)
-        break
+    if (selected) {
+      setModalType(type)
+
+      switch (type) {
+        case 'delete': {
+          setModalTitle('Delete Post')
+          setModalContent(
+            <UpdateCard type="trashed" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
+        case 'preview': {
+          setModalTitle('Preview Post')
+          setModalContent(
+            <UpdateCard type="preview" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
       }
+      setShowModal(old => !old)
     }
-    setShowModal(old => !old)
   }
 
   const handleClearModal = () => {
@@ -183,7 +353,14 @@ const CreatePosts = () => {
         }
       })
 
-      setImageUploadedData(imageData)
+      const combinedImages = [].concat(
+        imageUrls,
+        response.data.map(item => item.location)
+      )
+      const combinedUploadedImages = [].concat(imageUploadedData, imageData)
+
+      setImageUrls(combinedImages)
+      setImageUploadedData(combinedUploadedImages)
     }
   }
 
@@ -201,7 +378,7 @@ const CreatePosts = () => {
           const reader = new FileReader()
 
           reader.onloadend = () => {
-            setImageUrls(imageUrls => [...imageUrls, reader.result])
+            // setImageUrls(imageUrls => [...imageUrls, reader.result])
             setLoading(false)
           }
           reader.readAsDataURL(file)
@@ -220,7 +397,11 @@ const CreatePosts = () => {
     const images = imageUrls.filter(image => {
       return image !== e.currentTarget.dataset.id
     })
+    const uploadedImages = imageUploadedData.filter(image => {
+      return image.url !== e.currentTarget.dataset.id
+    })
     setImageUrls(images)
+    setImageUploadedData(uploadedImages)
     setValue('images', images.length !== 0 ? images : null)
   }
 
@@ -255,33 +436,39 @@ const CreatePosts = () => {
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
-      const createData = {
-        type: 'post',
-        categoryId: data.category,
-        title: data?.title || 'Untitled',
-        content: data?.content,
-        audienceType: selectedAudienceType,
-        status: status,
-        primaryMedia: imageUploadedData,
-        embeddedMediaFiles: videoUrl
-          ? [
-              {
-                url: videoUrl
-              }
-            ]
-          : null
+      const updateData = {
+        id: query.id,
+        data: {
+          categoryId: data.category,
+          title: data?.title || 'Untitled',
+          content: data?.content,
+          audienceType: selectedAudienceType,
+          status: status,
+          primaryMedia: imageUploadedData,
+          embeddedMediaFiles: videoUrl
+            ? [
+                {
+                  url: videoUrl
+                }
+              ]
+            : null
+        }
       }
 
       if (selectedPublishDateTime) {
-        createData.publishedAt = selectedPublishDateTime
+        updateData.data.publishedAt = selectedPublishDateTime
       }
       if (selectedCompanySpecific) {
-        createData.audienceExpanse = { companyIds: selectedCompanySpecific }
+        updateData.data.audienceExpanse = {
+          companyIds: selectedCompanySpecific
+        }
       }
       if (selectedCompanyExcept) {
-        createData.audienceExceptions = { companyIds: selectedCompanyExcept }
+        updateData.data.audienceExceptions = {
+          companyIds: selectedCompanyExcept
+        }
       }
-      createPost({ variables: { data: createData } })
+      updatePost({ variables: updateData })
     }
   }
 
@@ -364,6 +551,21 @@ const CreatePosts = () => {
     setSelectedStatus(data)
   }
 
+  const onDeletePost = async () => {
+    const updateData = {
+      id: modalID,
+      data: {
+        status: 'trashed'
+      }
+    }
+
+    try {
+      await updatePost({ variables: updateData })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   const onPreviewPost = () => {
     onSubmit(getValues(), 'draft')
   }
@@ -431,7 +633,11 @@ const CreatePosts = () => {
                     placeholder="Write your text here"
                     value={value}
                     error={errors?.content?.message ?? null}
-                    onChange={onChange}
+                    onChange={e => {
+                      onChange(e)
+                      setIsEdit(false)
+                    }}
+                    isEdit={isEdit}
                   />
                 )}
               />
@@ -600,11 +806,11 @@ const CreatePosts = () => {
           <Button
             default
             type="button"
-            label="Save as Draft"
+            label="Move to Trash"
             className={style.CreatePostFooterButton}
             onMouseDown={() => onUpdateStatus('draft')}
             onClick={handleSubmit(e => {
-              onSubmit(e, 'draft')
+              handleShowModal('delete')
             })}
           />
           <span>
@@ -660,13 +866,19 @@ const CreatePosts = () => {
         onClose={handleClearModal}
         footer={modalFooter}
         okText={
-          modalType === 'draft'
+          modalType === 'delete'
             ? 'Yes, move to trash'
             : modalType === 'preview'
             ? 'Save & Continue'
             : 'Yes'
         }
-        onOk={() => (modalType === 'preview' ? onPreviewPost() : null)}
+        onOk={() =>
+          modalType === 'delete'
+            ? onDeletePost()
+            : modalType === 'preview'
+            ? onPreviewPost()
+            : null
+        }
         onCancel={() => setShowModal(old => !old)}
       >
         <div className="w-full">{modalContent}</div>
