@@ -3,7 +3,6 @@
   @apply bg-white;
   @apply border border-neutral-300;
   @apply rounded-md;
-  @apply overflow-auto;
 
   .cardHeaderControl {
     @apply p-4;
