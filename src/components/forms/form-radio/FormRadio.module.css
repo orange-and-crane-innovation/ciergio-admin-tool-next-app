@@ -1,0 +1,42 @@
+.FormCheckboxContainer {
+  @apply cursor-pointer;
+
+  .FormCheckbox {
+    @apply h-5 w-5;
+    @apply text-primary-500;
+    @apply rounded-full;
+    @apply cursor-pointer;
+
+    &:hover {
+      @apply border-neutral-900;
+      @apply shadow-lg;
+    }
+
+    &:active,
+    &:focus {
+      @apply outline-none;
+      @apply border-neutral-900;
+      @apply shadow-lg;
+    }
+
+    &.isPrimary {
+      @apply text-primary-500;
+    }
+
+    &.isSuccess {
+      @apply text-success-500;
+    }
+
+    &.isDanger {
+      @apply text-danger-500 text-white;
+    }
+
+    &.isWarning {
+      @apply text-warning-500 text-white;
+    }
+
+    &.isInfo {
+      @apply text-info-500 text-white;
+    }
+  }
+}
