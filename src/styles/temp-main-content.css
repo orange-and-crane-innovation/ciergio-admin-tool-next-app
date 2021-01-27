@@ -195,7 +195,7 @@ select:active {
 }
 
 .modal .modal-content {
-  @apply p-4 border-b-2;
+  @apply border-b-2;
 }
 
 .modal .modal-footer {

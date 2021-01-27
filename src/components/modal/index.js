@@ -13,7 +13,8 @@ function Component({
   onCancel,
   footer,
   children,
-  okButtonProps
+  okButtonProps,
+  animationClassName
 }) {
   const body = document.getElementsByTagName('body')[0]
 
@@ -31,7 +32,7 @@ function Component({
 
   return (
     <div
-      aria-label={`modal ${!visible ? 'animate-hide' : ''}`}
+      aria-label={`modal ${!visible ? animationClassName : ''}`}
       className="modal-overlay"
     >
       <div className="modal">
@@ -62,7 +63,7 @@ function Component({
               primary
               label={okText}
               onClick={onOk}
-              className=" w-full"
+              className="w-full"
               {...okButtonProps}
             />
           </div>
@@ -74,7 +75,8 @@ function Component({
 
 Component.defaultProps = {
   cancelText: 'Cancel',
-  okText: 'Ok'
+  okText: 'Ok',
+  animationClassName: 'animation-hide'
 }
 
 Component.propTypes = {
@@ -87,7 +89,8 @@ Component.propTypes = {
   onOk: P.func,
   onCancel: P.func,
   footer: P.bool,
-  okButtonProps: P.object
+  okButtonProps: P.object,
+  animationClassName: P.string
 }
 
 export default Component

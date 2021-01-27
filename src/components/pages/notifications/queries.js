@@ -69,6 +69,24 @@ export const GET_ALL_TRASHED_NOTIFICATIONS = gql`
   }
 `
 
+export const GET_NOTIFICATION = gql`
+  query getNotif($id: String!) {
+    getAllFlashNotifications(where: { _id: $id }, limit: 1) {
+      post {
+        _id
+        status
+        title
+        content
+        primaryMedia {
+          url
+          type
+          __typename
+        }
+      }
+    }
+  }
+`
+
 export const GET_POST_CATEGORIES = gql`
   {
     getPostCategory(where: { type: flash }) {

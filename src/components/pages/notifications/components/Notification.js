@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { useQuery } from '@apollo/client'
+import { useLazyQuery, useQuery } from '@apollo/client'
 import { useRouter } from 'next/router'
 import P from 'prop-types'
 
@@ -7,6 +7,7 @@ import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import Button from '@app/components/button'
+import Modal from '@app/components/modal'
 import { Card } from '@app/components/globals'
 
 import { toFriendlyDate } from '@app/utils/date'
@@ -24,6 +25,8 @@ import {
   publishedTableRows,
   otherTableRows
 } from '../constants'
+
+import { GET_NOTIFICATION } from '../queries'
 
 const getNotifDate = (type, notif) => {
   switch (type) {
@@ -57,6 +60,9 @@ function Notifications({
   const [currentLimit, setCurrentLimit] = useState(10)
   const [currentOffset, setCurrentOffset] = useState(0)
   const [activePage, setActivePage] = useState(1)
+  const [previewNotification, setPreviewNotification] = useState(false)
+  // const [selectedNotif, setSelectedNotif] = useState(undefined)
+  const [selectedNotifId, setSelectedNotifId] = useState(null)
 
   const {
     data: notifications,
@@ -71,8 +77,18 @@ function Notifications({
     }
   })
 
+  const [getNotifPreview, { data: notifPreview }] = useLazyQuery(
+    GET_NOTIFICATION,
+    {
+      variables: {
+        id: selectedNotifId
+      }
+    }
+  )
+
   const ITEM_COUNT = notifications?.getAllFlashNotifications?.count || 0
   const NOTIFICATIONS = notifications?.getAllFlashNotifications
+  const PREVIEW_NOTIFICATION = notifPreview?.getAllFlashNotifications.post[0]
 
   useEffect(() => {
     if (calledBulk && dataBulk) {
@@ -108,6 +124,12 @@ function Notifications({
     setIsBulkDisabled,
     setSelectedBulk
   ])
+
+  useEffect(() => {
+    if (selectedNotifId !== null) {
+      getNotifPreview()
+    }
+  }, [selectedNotifId, getNotifPreview])
 
   const onCheckAll = useCallback(
     e => {
@@ -229,7 +251,18 @@ function Notifications({
                   <div>
                     <p className="text-base">{notif.title}</p>
                     <p className="text-sm">
-                      <span className="text-blue-600 cursor-pointer">View</span>{' '}
+                      <span
+                        className="text-blue-600 cursor-pointer"
+                        onClick={() => {
+                          setSelectedNotifId(notif._id)
+                          setPreviewNotification(old => !old)
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={() => {}}
+                      >
+                        View
+                      </span>{' '}
                       |{' '}
                       <span className="text-red-600 cursor-pointer">
                         {type === TRASHED
@@ -306,35 +339,92 @@ function Notifications({
   }, [onCheckAll, type])
 
   return (
-    <Card
-      title={
-        <div className="flex items-center justify-between bg-white">
-          <h1 className="font-bold text-base px-8 py-4 capitalize">{`${type} Notifications (${ITEM_COUNT})`}</h1>
+    <>
+      <Card
+        title={
+          <div className="flex items-center justify-between bg-white">
+            <h1 className="font-bold text-base px-8 py-4 capitalize">{`${type} Notifications (${ITEM_COUNT})`}</h1>
+          </div>
+        }
+        actions={[
+          <Button
+            primary
+            leftIcon={<FaPlusCircle />}
+            label="Create Notifications"
+            onClick={goToCreate}
+            className="mr-4 mt-4"
+            key={`${type}-btn`}
+          />
+        ]}
+        noPadding
+        content={
+          <PrimaryDataTable
+            columns={columnsWithCheckbox}
+            data={notificationsData}
+            loading={loadingNotifications}
+            currentPage={activePage}
+            onPageChange={onPageClick}
+            onPageLimitChange={onLimitChange}
+          />
+        }
+        className="rounded-t-none"
+      />
+      <Modal
+        title="Preview Notification"
+        cancelText="Close Preview"
+        visible={previewNotification}
+        onClose={() => setPreviewNotification(old => !old)}
+        okButtonProps={{
+          className: 'hidden'
+        }}
+        footer={null}
+      >
+        <div>
+          <div className="p-2">
+            <p className="text-sm">
+              <span className="font-bold">Note:</span>{' '}
+              {`The actual appearance may
+            vary based on a viewer's mobile device.`}
+            </p>
+          </div>
+          <div className="px-16 py-8 bg-gray-500">
+            <div className="rounded">
+              <img
+                src={PREVIEW_NOTIFICATION?.primaryMedia[0]?.url}
+                alt="preview"
+                className="rounded-t"
+              />
+              <div className="bg-white p-4">
+                <div>
+                  <h4 className="font-bold text-base mb-2">
+                    {PREVIEW_NOTIFICATION?.title}
+                  </h4>
+                  <p className="text-sm mb-1">
+                    {PREVIEW_NOTIFICATION?.content}
+                  </p>
+                </div>
+                <div>
+                  <button className="bg-blue-400 text-white px-4 py-2 border w-full rounded mb-1">
+                    Okay
+                  </button>
+                  <button className="text-blue-400 px-4 py-2 border w-full rounded">
+                    Read Later
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="divide-y" />
+          <div className="pt-4 pl-4">
+            <Button
+              label="Close Preview"
+              className="text-gray-400"
+              onClick={() => setPreviewNotification(old => !old)}
+            />
+          </div>
         </div>
-      }
-      actions={[
-        <Button
-          primary
-          leftIcon={<FaPlusCircle />}
-          label="Create Notifications"
-          onClick={goToCreate}
-          className="mr-4 mt-4"
-          key={`${type}-btn`}
-        />
-      ]}
-      noPadding
-      content={
-        <PrimaryDataTable
-          columns={columnsWithCheckbox}
-          data={notificationsData}
-          loading={loadingNotifications}
-          currentPage={activePage}
-          onPageChange={onPageClick}
-          onPageLimitChange={onLimitChange}
-        />
-      }
-      className="rounded-t-none"
-    />
+      </Modal>
+    </>
   )
 }
 
