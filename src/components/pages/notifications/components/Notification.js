@@ -509,7 +509,7 @@ function Notifications({
       >
         <div className="p-8">
           <p className="text-xl text-gray-600">
-            Do you move to trash a notification: {selectedNotif?.title}?
+            Do you want to move to trash a notification: {selectedNotif?.title}?
           </p>
         </div>
       </Modal>
