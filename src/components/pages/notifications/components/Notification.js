@@ -8,9 +8,10 @@ import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import Button from '@app/components/button'
 import Modal from '@app/components/modal'
+import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
 
-import { toFriendlyDate } from '@app/utils/date'
+import { friendlyDateTimeFormat, toFriendlyDate } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 
 import { FaPlusCircle, FaEye } from 'react-icons/fa'
@@ -26,7 +27,11 @@ import {
   otherTableRows
 } from '../constants'
 
-import { GET_NOTIFICATION, TRASH_NOTIFICATION } from '../queries'
+import {
+  GET_NOTIFICATION,
+  TRASH_NOTIFICATION,
+  GET_POST_HISTORY
+} from '../queries'
 
 const getNotifDate = (type, notif) => {
   switch (type) {
@@ -64,6 +69,8 @@ function Notifications({
   const [showTrashModal, setShowTrashModal] = useState(false)
   const [selectedNotifId, setSelectedNotifId] = useState(null)
   const [selectedNotif, setSelectedNotif] = useState(null)
+  const [showEditHistoryModal, setShowEditHistoryModal] = useState(false)
+  const [viewHistory, setViewHistory] = useState(false)
 
   const {
     data: notifications,
@@ -78,14 +85,23 @@ function Notifications({
     }
   })
 
-  const [getNotifPreview, { data: notifPreview }] = useLazyQuery(
-    GET_NOTIFICATION,
-    {
-      variables: {
-        id: selectedNotifId
-      }
+  const [
+    getNotifPreview,
+    { data: notifPreview, loading: loadingNotifPreview }
+  ] = useLazyQuery(GET_NOTIFICATION, {
+    variables: {
+      id: selectedNotifId
     }
-  )
+  })
+
+  const [
+    getPostHistory,
+    { data: postHistory, loading: loadingPostHistory }
+  ] = useLazyQuery(GET_POST_HISTORY, {
+    variables: {
+      id: selectedNotifId
+    }
+  })
 
   const [moveToTrash, { loading: movingToTrash }] = useMutation(
     TRASH_NOTIFICATION,
@@ -104,6 +120,11 @@ function Notifications({
   const ITEM_COUNT = notifications?.getAllFlashNotifications?.count || 0
   const NOTIFICATIONS = notifications?.getAllFlashNotifications
   const PREVIEW_NOTIFICATION = notifPreview?.getAllFlashNotifications.post[0]
+  const POST_HISTORY = postHistory?.getPostHistory
+  const PARSED_JSON_HISTORY =
+    POST_HISTORY?.post?.length > 0
+      ? JSON.parse(POST_HISTORY.post[0].data)
+      : undefined
 
   useEffect(() => {
     if (calledBulk && dataBulk) {
@@ -142,9 +163,20 @@ function Notifications({
 
   useEffect(() => {
     if (selectedNotifId !== null) {
-      getNotifPreview()
+      if (previewNotification) {
+        getNotifPreview()
+      }
+      if (showEditHistoryModal) {
+        getPostHistory()
+      }
     }
-  }, [selectedNotifId, getNotifPreview])
+  }, [
+    selectedNotifId,
+    getNotifPreview,
+    previewNotification,
+    showEditHistoryModal,
+    getPostHistory
+  ])
 
   const handleTrashNotification = () => {
     moveToTrash({
@@ -248,12 +280,18 @@ function Notifications({
                 {
                   label: 'Edit History',
                   icon: <span className="ciergio-edit" />,
-                  function: () => {}
+                  function: () => {
+                    setSelectedNotifId(notif._id)
+                    setShowEditHistoryModal(old => !old)
+                  }
                 },
                 {
                   label: 'View History',
                   icon: <FaEye />,
-                  function: () => {}
+                  function: () => {
+                    setSelectedNotifId(notif._id)
+                    setViewHistory(old => !old)
+                  }
                 }
               ]
 
@@ -410,6 +448,8 @@ function Notifications({
           className: 'hidden'
         }}
         footer={null}
+        width={500}
+        loading={loadingNotifPreview}
       >
         <div>
           <div className="p-2">
@@ -424,7 +464,7 @@ function Notifications({
               <img
                 src={PREVIEW_NOTIFICATION?.primaryMedia[0]?.url}
                 alt="preview"
-                className="rounded-t"
+                className="rounded-t max-w-sm"
               />
               <div className="bg-white p-4">
                 <div>
@@ -465,6 +505,7 @@ function Notifications({
         okButtonProps={{
           loading: movingToTrash
         }}
+        width={450}
       >
         <div className="p-8">
           <p className="text-xl text-gray-600">
@@ -472,6 +513,69 @@ function Notifications({
           </p>
         </div>
       </Modal>
+      <Modal
+        title="Edit History"
+        visible={showEditHistoryModal}
+        onClose={() => setShowEditHistoryModal(old => !old)}
+        footer={null}
+        width={650}
+        loading={loadingPostHistory}
+      >
+        <div className="p-4">
+          <div className="w-full flex justify-start items-center mb-8">
+            <div className="w-1/2">
+              <h4 className="text-base">Date Created</h4>
+              <p className="font-medium text-base">
+                {friendlyDateTimeFormat(POST_HISTORY?.post?.[0]?.date, 'll')}
+              </p>
+            </div>
+            <div className="w-1/2">
+              <h4 className="text-base">Created By</h4>
+              <div className="flex items-center">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${PARSED_JSON_HISTORY?.authorName}&rounded=true&size=25`}
+                  alt="avatar"
+                  className="max-w-sm"
+                />
+                <p className="font-medium text-base ml-2">
+                  {PARSED_JSON_HISTORY?.authorName}
+                </p>
+              </div>
+            </div>
+          </div>
+          <Table
+            rowNames={[
+              {
+                name: 'Date',
+                width: ''
+              },
+              {
+                name: 'Edited By',
+                width: ''
+              }
+            ]}
+            items={{
+              count: 1,
+              limit: 1,
+              offset: 0,
+              data: POST_HISTORY?.post?.map(p => {
+                if (p !== undefined) {
+                  const parsedData = JSON.parse(p.data)
+                  return {
+                    date: `${toFriendlyDate(
+                      p?.date
+                    )} - ${friendlyDateTimeFormat(p?.date, 'LT')}`,
+                    editBy: `${parsedData?.authorName} published a notification: ${parsedData?.title}`
+                  }
+                }
+
+                return null
+              })
+            }}
+          />
+        </div>
+      </Modal>
+      <Modal visible={viewHistory}></Modal>
     </>
   )
 }

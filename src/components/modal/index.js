@@ -5,6 +5,7 @@ import { useTransition, animated } from 'react-spring'
 import Button from '@app/components/button'
 
 import '@reach/dialog/styles.css'
+import Spinner from '../spinner'
 
 function Component({
   title,
@@ -17,17 +18,16 @@ function Component({
   footer,
   children,
   okButtonProps,
-  width
+  width,
+  loading
 }) {
   const AnimatedDialogOverlay = animated(DialogOverlay)
   const AnimatedDialogContent = animated(DialogContent)
   const transitions = useTransition(visible, null, {
-    from: { opacity: 0, y: -10 },
+    from: { opacity: 1, y: -10 },
     enter: { opacity: 1, y: 0 },
     leave: { opacity: 0, y: 10 }
   })
-
-  if (!visible) return null
 
   return (
     <>
@@ -36,7 +36,7 @@ function Component({
           item && (
             <AnimatedDialogOverlay
               key={key}
-              style={{ opacity: styles.opacity, zIndex: 100 }}
+              style={{ zIndex: 100, opacity: 1, ...styles }}
             >
               <AnimatedDialogContent
                 aria-label="modal"
@@ -52,21 +52,25 @@ function Component({
                     width
                   }}
                 >
-                  <div className="modal-header">
-                    <div className="modal-title">
-                      <span>{title}</span>
+                  {title ? (
+                    <div className="modal-header">
+                      <div className="modal-title">
+                        <span>{title}</span>
+                      </div>
+                      <div className="modal-close-icon">
+                        <span
+                          className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
+                          onClick={onClose}
+                          onKeyDown={onClose}
+                          role="button"
+                          tabIndex={0}
+                        />
+                      </div>
                     </div>
-                    <div className="modal-close-icon">
-                      <span
-                        className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
-                        onClick={onClose}
-                        onKeyDown={onClose}
-                        role="button"
-                        tabIndex={0}
-                      />
-                    </div>
+                  ) : null}
+                  <div className="modal-content">
+                    {loading ? <Spinner /> : children}
                   </div>
-                  <div className="modal-content">{children}</div>
                   {footer !== null ? (
                     <div className="modal-footer">
                       <Button
@@ -95,7 +99,8 @@ function Component({
 
 Component.defaultProps = {
   cancelText: 'Cancel',
-  okText: 'Ok'
+  okText: 'Ok',
+  loading: false
 }
 
 Component.propTypes = {
@@ -109,7 +114,8 @@ Component.propTypes = {
   onCancel: P.func,
   footer: P.bool,
   okButtonProps: P.object,
-  width: P.number || P.string
+  width: P.number || P.string,
+  loading: P.bool
 }
 
 export default Component

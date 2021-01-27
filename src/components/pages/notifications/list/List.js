@@ -106,11 +106,14 @@ function NotificationsList() {
 
       <Tabs defaultTab={UPCOMING}>
         <TabLabels>
-          {tabs.map(({ type }) => (
-            <TabLabel key={type} id={type}>
-              <span className="capitalize">{type}</span>
-            </TabLabel>
-          ))}
+          {tabs.map(({ type }) => {
+            const label = `${type.charAt(0).toUpperCase()}${type.slice(1)}`
+            return (
+              <TabLabel key={type} id={type}>
+                {label}
+              </TabLabel>
+            )
+          })}
         </TabLabels>
 
         <div className="flex items-center justify-between mt-12 flex-col md:flex-row">

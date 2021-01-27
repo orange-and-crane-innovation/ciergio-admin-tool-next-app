@@ -115,6 +115,21 @@ export const GET_FLASH_NOTIFICATION = gql`
     }
   }
 `
+
+export const GET_POST_HISTORY = gql`
+  query getPostHistory($id: String!) {
+    getPostHistory(id: $id) {
+      post {
+        action
+        data
+        date
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
 export const BULK_UPDATE_MUTATION = gql`
   mutation bulkUpdatePost($id: [String], $status: postStatus) {
     bulkUpdatePost(id: $id, status: $status) {
