@@ -3,7 +3,7 @@
 
   .tabLabel {
     @apply mb-6;
-    @apply flex flex-col sm:flex-row;
+    @apply flex flex-col lg:flex-row;
     @apply border-b;
   }
 
