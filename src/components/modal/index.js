@@ -36,7 +36,7 @@ function Component({
           item && (
             <AnimatedDialogOverlay
               key={key}
-              style={{ opacity: styles.opacity, zIndex: 100, width }}
+              style={{ opacity: styles.opacity, zIndex: 100 }}
             >
               <AnimatedDialogContent
                 aria-label="modal"
@@ -46,7 +46,12 @@ function Component({
                   )
                 }}
               >
-                <div className="modal">
+                <div
+                  className="modal"
+                  style={{
+                    width
+                  }}
+                >
                   <div className="modal-header">
                     <div className="modal-title">
                       <span>{title}</span>
@@ -90,8 +95,7 @@ function Component({
 
 Component.defaultProps = {
   cancelText: 'Cancel',
-  okText: 'Ok',
-  animationClassName: 'animation-drop'
+  okText: 'Ok'
 }
 
 Component.propTypes = {
@@ -105,7 +109,6 @@ Component.propTypes = {
   onCancel: P.func,
   footer: P.bool,
   okButtonProps: P.object,
-  animationClassName: P.string,
   width: P.number || P.string
 }
 
