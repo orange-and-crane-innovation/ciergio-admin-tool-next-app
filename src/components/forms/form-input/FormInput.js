@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import P from 'prop-types'
-import { useMemo } from 'react'
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa'
 
 import styles from './FormInput.module.css'
 
@@ -11,6 +13,7 @@ function FormInput({
   label,
   value,
   error,
+  disabled,
   placeholder,
   maxLength,
   onChange,
@@ -19,8 +22,12 @@ function FormInput({
   inputClassName,
   errorClassName,
   description,
-  inputProps
+  inputProps,
+  icon,
+  iconOnClick
 }) {
+  const [showPassword, setShowPassword] = useState(false)
+
   const containerClasses = useMemo(
     () =>
       clsx(styles.FormInput, containerClassName, {
@@ -38,23 +45,53 @@ function FormInput({
     errorClassName
   ])
 
+  const togglePassword = () => {
+    setShowPassword(!showPassword)
+  }
+
   const renderLabel = useMemo(() => {
     return label ? <span className={labelClasses}>{label}</span> : null
   }, [label, labelClasses])
 
   const renderInput = useMemo(() => {
     return (
-      <input
-        id={id}
-        name={name}
-        type={type}
-        className={inputClasses}
-        placeholder={placeholder}
-        value={value}
-        maxLength={maxLength}
-        onChange={onChange}
-        {...inputProps}
-      />
+      <div className={styles.FormInputContainer}>
+        <input
+          id={id}
+          name={name}
+          type={
+            type === 'password' ? (showPassword ? 'text' : 'password') : type
+          }
+          className={inputClasses}
+          placeholder={placeholder}
+          value={value}
+          maxLength={maxLength}
+          onChange={onChange}
+          {...inputProps}
+        />
+        {type !== 'password' && icon && (
+          <button
+            type="button"
+            className={styles.FormInputButton}
+            onClick={iconOnClick}
+            disabled={disabled}
+          >
+            <i className={icon}></i>
+          </button>
+        )}
+        {type === 'password' && (
+          <button
+            type="button"
+            className={styles.FormInputButton}
+            onClick={() => {
+              togglePassword()
+            }}
+            disabled={disabled}
+          >
+            {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+          </button>
+        )}
+      </div>
     )
   }, [
     id,
@@ -63,9 +100,13 @@ function FormInput({
     inputClasses,
     placeholder,
     value,
+    disabled,
     maxLength,
     onChange,
-    inputProps
+    inputProps,
+    icon,
+    iconOnClick,
+    showPassword
   ])
 
   const renderError = useMemo(() => {
@@ -96,6 +137,7 @@ FormInput.propTypes = {
   id: P.string,
   label: P.string,
   value: P.any,
+  disabled: P.bool,
   placeholder: P.string,
   maxLength: P.number,
   error: P.string,
@@ -105,7 +147,9 @@ FormInput.propTypes = {
   inputClassName: P.string,
   errorClassName: P.string,
   inputProps: P.object,
-  description: P.node || P.string
+  description: P.node || P.string,
+  icon: P.string,
+  iconOnClick: P.func
 }
 
 export default FormInput

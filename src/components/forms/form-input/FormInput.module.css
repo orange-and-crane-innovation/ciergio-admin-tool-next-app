@@ -1,3 +1,11 @@
+.FormInputContainer {
+  @apply relative;
+
+  .FormInputButton {
+    @apply absolute top-3 right-4;
+  }
+}
+
 .FormInput {
   & [type='text'],
   & [type='password'] {
@@ -9,7 +17,7 @@
   }
 
   .customCalender {
-    @apply text-xl
+    @apply text-xl;
   }
 
   &:active {
