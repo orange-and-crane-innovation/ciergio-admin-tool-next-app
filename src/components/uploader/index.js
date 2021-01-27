@@ -14,6 +14,7 @@ import styles from './index.module.css'
 const Uploader = ({
   type,
   loading,
+  error,
   files,
   fileUrls,
   multiple,
@@ -27,6 +28,8 @@ const Uploader = ({
 
   const containerClass = isOver
     ? `${styles.uploaderContainer} ${styles.over}`
+    : error
+    ? `${styles.uploaderContainer} ${styles.error}`
     : styles.uploaderContainer
 
   const handleChange = () => {
@@ -95,7 +98,7 @@ const Uploader = ({
             <FaRegTrashAlt />
           </button>
 
-          {files[index] && (
+          {files[index] && files[index].name && (
             <>
               <div className={styles.uploaderContent}>{files[index].name}</div>
               <div className="font-normal text-neutral-500">
@@ -109,50 +112,54 @@ const Uploader = ({
   }
 
   return (
-    <div className="flex">
-      {uploadedFiles}
-      {fileUrls && fileUrls.length < maxFiles && (
-        <div className={containerClass}>
-          <input
-            className={styles.uploaderControl}
-            type="file"
-            id="file"
-            name="file"
-            multiple={multiple}
-            onChange={onUpload}
-            accept={accept}
-          />
-          <div
-            className={styles.uploaderImage}
-            onClick={handleChange}
-            onDrop={handleOnDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            {loading ? (
-              <FaSpinner className="icon-spin" />
-            ) : type === 'image' ? (
-              <span className={styles.uploaderImageContent}>
-                <ImageAdd />
-                Add Image
-              </span>
-            ) : (
-              <span className={styles.uploaderImageContent}>
-                <ImageFile />
-                Add File
-              </span>
-            )}
+    <>
+      <div className="flex">
+        {uploadedFiles}
+        {fileUrls && fileUrls.length < maxFiles && (
+          <div className={containerClass}>
+            <input
+              className={styles.uploaderControl}
+              type="file"
+              id="file"
+              name="file"
+              multiple={multiple}
+              onChange={onUpload}
+              accept={accept}
+            />
+            <div
+              className={styles.uploaderImage}
+              onClick={handleChange}
+              onDrop={handleOnDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+              {loading ? (
+                <FaSpinner className="icon-spin" />
+              ) : type === 'image' ? (
+                <span className={styles.uploaderImageContent}>
+                  <ImageAdd />
+                  Add Image
+                </span>
+              ) : (
+                <span className={styles.uploaderImageContent}>
+                  <ImageFile />
+                  Add File
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+      <div className={styles.uploaderError}>{error}</div>
+    </>
   )
 }
 
 Uploader.propTypes = {
   type: PropTypes.string,
   loading: PropTypes.bool,
-  files: PropTypes.object,
+  error: PropTypes.bool,
+  files: PropTypes.array,
   fileUrls: PropTypes.array,
   multiple: PropTypes.bool,
   maxFiles: PropTypes.number,

@@ -5,3 +5,9 @@
     @apply absolute top-4 right-4;
   }
 }
+
+@screen lg {
+  .SearchControlContainer {
+    max-width: 260px;
+  }
+}

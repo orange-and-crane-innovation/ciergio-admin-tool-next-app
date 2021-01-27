@@ -41,7 +41,7 @@ function Component({
           </div>
           <div className="modal-close-icon">
             <span
-              className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
+              className="ciergio-close p-2 hover:cursor-pointer relative top-0"
               onClick={onClose}
               onKeyDown={onClose}
               role="button"
@@ -56,15 +56,9 @@ function Component({
               default
               label={cancelText}
               onClick={onCancel}
-              className="mr-4 w-full"
+              className="mr-4"
             />
-            <Button
-              primary
-              label={okText}
-              onClick={onOk}
-              className=" w-full"
-              {...okButtonProps}
-            />
+            <Button primary label={okText} onClick={onOk} {...okButtonProps} />
           </div>
         ) : null}
       </div>

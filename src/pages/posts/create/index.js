@@ -1,4 +1,4 @@
-import CreatePosts from '@app/components/pages/posts/Create'
+import CreatePosts from '@app/components/pages/posts/create'
 
 function CreateBulletinPage() {
   return <CreatePosts />

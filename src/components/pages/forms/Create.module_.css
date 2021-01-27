@@ -1,0 +1,127 @@
+.CreatePostContainer {
+  @apply pt-4 pb-8 px-8 max-w-5xl;
+  @apply text-base;
+
+  .CreateContentContainer {
+    @apply p-4;
+  }
+
+  .CreatePostHeader {
+    @apply mb-5;
+    @apply font-heading font-black;
+    @apply text-neutral-dark text-3xl leading-10;
+  }
+
+  .CreatePostHeaderSmall {
+    @apply mb-2;
+    @apply font-body font-semibold text-black;
+    @apply text-md leading-relaxed;
+  }
+
+  .CreatePostSubContent {
+    @apply relative flex items-center mb-4;
+
+    .CreatePostSubContentGrow {
+      @apply flex-grow;
+    }
+
+    .CreatePostInputCustom {
+      @apply font-heading;
+      @apply border-0 border-b;
+      @apply text-lg leading-5 font-black;
+
+      &:focus,
+      &:active {
+        @apply border-none;
+      }
+    }
+
+    .CreatePostCounter {
+      @apply absolute top-2 right-4 text-md text-neutral-500;
+    }
+  }
+
+  .CardHeader {
+    @apply font-heading font-black;
+    @apply text-base leading-7;
+  }
+
+  .CreatePostVideoHeader {
+    @apply mt-2 mb-4;
+  }
+
+  .CreatePostCardContent {
+    @apply max-w-lg;
+  }
+
+  .CreatePostVideoContent {
+    @apply max-w-xl;
+  }
+
+  .CreatePostVideoInputContent {
+    @apply relative flex items-center mb-4;
+  }
+
+  .CreatePostVideoContainer {
+    @apply relative;
+    padding-top: 56.25%;
+
+    .CreatePostVideoPlayer {
+      @apply absolute top-0 left-0;
+    }
+  }
+
+  .CreatePostVideoInput {
+    @apply mb-2;
+    @apply font-body font-semibold text-md leading-relaxed;
+  }
+
+  .CreatePostPublishContent {
+    @apply flex items-start justify-between;
+
+    .CreatePostPublishSubContent {
+      @apply flex flex-col;
+
+      > span {
+        @apply mb-2;
+      }
+    }
+
+    .CreatePostPublishMarginContainer {
+      @apply ml-4;
+    }
+  }
+
+  .CreatePostLink {
+    @apply text-neutral-700;
+  }
+
+  .CreatePostFooter {
+    @apply flex items-center justify-between;
+
+    > span {
+      @apply flex;
+
+      .CreatePostFooterButton {
+        @apply mr-2;
+      }
+    }
+
+    .CreatePostFooterButton {
+      @apply mr-2;
+    }
+  }
+
+  .CreatePostVideoButtonClose {
+    @apply absolute top-3 right-4;
+    @apply cursor-pointer;
+  }
+
+  .CreatePostVideoLoading {
+    @apply absolute top-3 -right-6;
+  }
+
+  .TextError {
+    @apply -mt-6 font-semibold text-danger-500;
+  }
+}

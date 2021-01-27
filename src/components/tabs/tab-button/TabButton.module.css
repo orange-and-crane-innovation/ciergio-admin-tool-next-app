@@ -1,5 +1,5 @@
 .tabButton {
-  @apply text-neutral-600 py-4 px-6 block text-blue-500 font-medium text-base;
+  @apply py-4 px-6 block text-blue-500 font-medium text-base;
 
   .tabIcon {
     @apply inline-block mr-4;

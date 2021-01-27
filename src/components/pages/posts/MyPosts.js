@@ -1,6 +1,10 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/jsx-key */
-import React, { useState, useEffect, useCallback } from 'react'
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { debounce } from 'lodash'
 import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
@@ -8,57 +12,30 @@ import { FiFileText, FiEye } from 'react-icons/fi'
 
 import PageLoader from '@app/components/page-loader'
 import Card from '@app/components/card'
-import FormSelect from '@app/components/forms/form-select'
 import Checkbox from '@app/components/forms/form-checkbox'
 import Button from '@app/components/button'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
-import { Draggable } from '@app/components/globals'
 import Modal from '@app/components/modal'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
 
 import ViewsCard from './components/ViewsCard'
+import UpdateCard from './components/UpdateCard'
 import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
+import SelectStatus from '@app/components/globals/SelectStatus'
 import SearchControl from '@app/components/globals/SearchControl'
 
 import styles from './Main.module.css'
 
 const bulkOptions = [
   {
-    label: '',
-    value: ''
-  },
-  {
     label: 'Move to Trash',
     value: 'trashed'
-  }
-]
-
-const filterOptions = [
-  {
-    label: 'All Status',
-    value: ''
-  },
-  {
-    label: 'Draft',
-    value: 'draft'
-  },
-  {
-    label: 'Published',
-    value: 'published'
-  },
-  {
-    label: 'Scheduled',
-    value: 'scheduled'
-  },
-  {
-    label: 'Unpublished',
-    value: 'unpublished'
   }
 ]
 
@@ -122,6 +99,16 @@ const BULK_UPDATE_MUTATION = gql`
   }
 `
 
+const UPDATE_POST_MUTATION = gql`
+  mutation($id: String, $data: PostInput) {
+    updatePost(id: $id, data: $data) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
 const PostComponent = () => {
   const router = useRouter()
   const [posts, setPosts] = useState()
@@ -129,12 +116,13 @@ const PostComponent = () => {
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
-  const [reorder, setReorder] = useState(false)
-  const [reOrderedLists, setReOrderedLists] = useState()
   const [selectedData, setSelectedData] = useState([])
   const [showModal, setShowModal] = useState(false)
+  const [modalType, setModalType] = useState()
+  const [modalID, setModalID] = useState()
   const [modalContent, setModalContent] = useState()
   const [modalTitle, setModalTitle] = useState()
+  const [modalFooter, setModalFooter] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState()
   const [selectedStatus, setSelectedStatus] = useState()
   const [selectedBulk, setSelectedBulk] = useState()
@@ -200,76 +188,24 @@ const PostComponent = () => {
     }
   )
 
-  const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
-    BULK_UPDATE_MUTATION
-  )
+  const [
+    bulkUpdate,
+    { loading: loadingBulk, called: calledBulk, data: dataBulk }
+  ] = useMutation(BULK_UPDATE_MUTATION)
 
-  const onCheck = useCallback(
-    e => {
-      const data = e.target.getAttribute('data-id')
-      const allCheck = document.getElementsByName('checkbox_select_all')[0]
-      const checkboxes = document.querySelectorAll(
-        'input[name="checkbox"]:checked'
-      )
+  const [
+    updatePost,
+    {
+      loading: loadingUpdate,
+      called: calledUpdate,
+      data: dataUpdate,
+      error: errorUpdate
+    }
+  ] = useMutation(UPDATE_POST_MUTATION)
 
-      if (e.target.checked) {
-        if (!selectedData.includes(data)) {
-          setSelectedData(prevState => [...prevState, data])
-        }
-        setIsBulkDisabled(false)
-      } else {
-        setSelectedData(prevState => [
-          ...prevState.filter(item => item !== data)
-        ])
-        if (checkboxes.length === 0) {
-          setSelectedBulk('')
-          setIsBulkDisabled(true)
-          setIsBulkButtonDisabled(true)
-        }
-      }
-
-      if (checkboxes.length === limitPage) {
-        allCheck.checked = true
-      } else {
-        allCheck.checked = false
-      }
-    },
-    [limitPage, selectedData]
-  )
-
-  const handleShowModal = useCallback(
-    (type, id) => {
-      const selected = data?.getAllPost?.post?.filter(item => item._id === id)
-
-      if (selected) {
-        switch (type) {
-          case 'details': {
-            setModalTitle('Article Details')
-            setModalContent(
-              <PostDetailsCard
-                date={selected[0].createdAt}
-                avatar={selected[0].author.user?.avatar}
-                firstName={selected[0].author?.user?.firstName}
-                lastName={selected[0].author?.user?.lasttName}
-                count={selected[0].views?.count}
-                uniqueCount={selected[0].views?.unique?.count}
-              />
-            )
-            break
-          }
-          case 'views': {
-            setModalTitle('Who Viewed this Article')
-            setModalContent(
-              <ViewsCard data={selected[0].views?.unique?.users} />
-            )
-            break
-          }
-        }
-        setShowModal(old => !old)
-      }
-    },
-    [data]
-  )
+  useEffect(() => {
+    refetchPosts()
+  }, [])
 
   useEffect(() => {
     if (!loading && data) {
@@ -341,7 +277,27 @@ const PostComponent = () => {
                   onChange={onCheck}
                 />
               ),
-              title: item.title,
+              title: (
+                <div className="flex flex-col">
+                  {item.title}
+                  <div className="flex text-info-500 text-sm">
+                    <Link href={`/posts/view/${item._id}`}>
+                      <a className="mr-2 hover:underline">View</a>
+                    </Link>
+                    {` | `}
+                    <Link href={`/posts/edit/${item._id}`}>
+                      <a className="mx-2 hover:underline">Edit</a>
+                    </Link>
+                    {` | `}
+                    <span
+                      className="mx-2 cursor-pointer hover:underline"
+                      onClick={() => handleShowModal('delete', item._id)}
+                    >
+                      Move to Trash
+                    </span>
+                  </div>
+                </div>
+              ),
               author: (
                 <div className="flex flex-col">
                   <span>{buildingName}</span>
@@ -365,18 +321,11 @@ const PostComponent = () => {
       }
 
       setPosts(tableData)
-
-      setReOrderedLists(
-        tableData.data.map((item, index) => ({
-          ...item,
-          id: index
-        }))
-      )
     }
-  }, [loading, data, error, onCheck, handleShowModal])
+  }, [loading, data, error])
 
   useEffect(() => {
-    if (calledBulk && dataBulk) {
+    if ((!loadingBulk, calledBulk && dataBulk)) {
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
@@ -393,7 +342,8 @@ const PostComponent = () => {
 
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk('')
+        setSelectedBulk(null)
+        setShowModal(old => !old)
 
         showToast('success', `You have successfully updated a post`)
         refetchPosts()
@@ -401,10 +351,27 @@ const PostComponent = () => {
         showToast('danger', `Bulk update failed`)
       }
     }
-  }, [calledBulk, dataBulk, refetchPosts])
+  }, [loadingBulk, calledBulk, dataBulk, refetchPosts])
+
+  useEffect(() => {
+    if (errorUpdate) {
+      showToast('danger', `Update failed`)
+    } else if (!loadingUpdate && calledUpdate && dataUpdate) {
+      if (dataUpdate?.updatePost?.message === 'success') {
+        setShowModal(old => !old)
+        showToast('success', `You have successfully updated a post`)
+        refetchPosts()
+      } else {
+        showToast('danger', `Update failed`)
+      }
+    }
+  }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, refetchPosts])
 
   const onSearch = debounce(e => {
     setSearchText(e.target.value !== '' ? e.target.value : null)
+    setActivePage(1)
+    setLimitPage(10)
+    setOffsetPage(0)
   }, 1000)
 
   const onClearSearch = () => {
@@ -412,7 +379,7 @@ const PostComponent = () => {
   }
 
   const onClearCategory = () => {
-    setSelectedCategory('')
+    setSelectedCategory(null)
   }
 
   const onClearStatus = () => {
@@ -420,7 +387,8 @@ const PostComponent = () => {
   }
 
   const onClearBulk = () => {
-    setSelectedBulk('')
+    setSelectedBulk(null)
+    setIsBulkButtonDisabled(true)
   }
 
   const goToCreatePage = () => {
@@ -433,13 +401,13 @@ const PostComponent = () => {
   }
 
   const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
+    setLimitPage(Number(e.value))
   }
 
   const onCheckAll = e => {
     const checkboxes = document.getElementsByName('checkbox')
 
-    setSelectedBulk('')
+    setSelectedBulk(null)
     setIsBulkDisabled(true)
     setIsBulkButtonDisabled(true)
 
@@ -460,6 +428,85 @@ const PostComponent = () => {
     }
   }
 
+  const onCheck = e => {
+    const data = e.target.getAttribute('data-id')
+    const allCheck = document.getElementsByName('checkbox_select_all')[0]
+    const checkboxes = document.querySelectorAll(
+      'input[name="checkbox"]:checked'
+    )
+
+    if (e.target.checked) {
+      if (!selectedData.includes(data)) {
+        setSelectedData(prevState => [...prevState, data])
+      }
+      setIsBulkDisabled(false)
+    } else {
+      setSelectedData(prevState => [...prevState.filter(item => item !== data)])
+      if (checkboxes.length === 0) {
+        setSelectedBulk(null)
+        setIsBulkDisabled(true)
+        setIsBulkButtonDisabled(true)
+      }
+    }
+
+    if (checkboxes.length === limitPage) {
+      allCheck.checked = true
+    } else {
+      allCheck.checked = false
+    }
+  }
+
+  const handleShowModal = async (type, id) => {
+    const selected = data?.getAllPost?.post?.filter(item => item._id === id)
+
+    if (selected || selectedData?.length > 0) {
+      setModalType(type)
+
+      switch (type) {
+        case 'details': {
+          setModalTitle('Article Details')
+          setModalContent(
+            <PostDetailsCard
+              date={selected[0].createdAt}
+              avatar={selected[0].author.user?.avatar}
+              firstName={selected[0].author?.user?.firstName}
+              lastName={selected[0].author?.user?.lasttName}
+              count={selected[0].views?.count}
+              uniqueCount={selected[0].views?.unique?.count}
+            />
+          )
+          break
+        }
+        case 'views': {
+          setModalTitle('Who Viewed this Article')
+          setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
+          break
+        }
+        case 'delete': {
+          setModalTitle('Delete Post')
+          setModalContent(
+            <UpdateCard type="trashed" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
+        case 'bulk': {
+          setModalTitle('Bulk Update Post')
+          setModalContent(
+            <UpdateCard
+              type={selectedBulk}
+              title={`(${selectedData.length}) items`}
+            />
+          )
+          setModalFooter(true)
+          break
+        }
+      }
+      setShowModal(old => !old)
+    }
+  }
+
   const handleClearModal = () => {
     handleShowModal()
   }
@@ -471,51 +518,72 @@ const PostComponent = () => {
   }
 
   const onCategorySelect = e => {
-    setSelectedCategory(e.target.value !== '' ? e.target.value : null)
+    setSelectedCategory(e.value !== '' ? e.value : null)
     resetPages()
   }
 
   const onStatusSelect = e => {
-    setSelectedStatus(e.target.value !== '' ? e.target.value : null)
+    setSelectedStatus(e.value !== '' ? e.value : null)
     resetPages()
   }
 
   const onBulkChange = e => {
-    setSelectedBulk(e.target.value)
-    if (e.target.value !== '') {
+    setSelectedBulk(e.value)
+    if (e.value !== '') {
       setIsBulkButtonDisabled(false)
     } else {
       setIsBulkButtonDisabled(true)
     }
   }
 
-  const onBulkSubmit = () => {
+  const onBulkSubmit = async () => {
     const data = { id: selectedData, status: selectedBulk }
-    bulkUpdate({ variables: data })
+
+    try {
+      await bulkUpdate({ variables: data })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const onDeletePost = async () => {
+    const updateData = {
+      id: modalID,
+      data: {
+        status: 'trashed'
+      }
+    }
+
+    try {
+      await updatePost({ variables: updateData })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   return (
     <>
       <div className={styles.MainControl}>
         <SelectBulk
-          placeholder="Select"
+          placeholder="Bulk Action"
           options={bulkOptions}
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
           onBulkChange={onBulkChange}
-          onBulkSubmit={onBulkSubmit}
+          onBulkSubmit={() => handleShowModal('bulk')}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
         />
 
         <div className={styles.CategoryControl}>
-          <FormSelect
-            options={filterOptions}
+          <SelectStatus
+            placeholder="Filter Status"
             onChange={onStatusSelect}
             onClear={onClearStatus}
-            value={selectedStatus}
+            selected={selectedStatus}
           />
           <SelectCategory
+            placeholder="Filter Category"
             type="post"
             userType="administrator"
             onChange={onCategorySelect}
@@ -536,64 +604,24 @@ const PostComponent = () => {
         header={
           <div className={styles.ContentFlex}>
             <span className={styles.CardHeader}>
-              {reorder
-                ? 'Reorder Posts'
-                : searchText
+              {searchText
                 ? `Search result for "${searchText}" (${posts?.count || 0})`
                 : `My Posts (${posts?.count || 0})`}
             </span>
 
             <div className={styles.ContentFlex}>
-              {reorder ? (
-                <>
-                  <Button
-                    default
-                    label="Cancel"
-                    onClick={() => setReorder(prevState => !prevState)}
-                    className="mr-4"
-                  />
-                  <Button
-                    primary
-                    label="Save"
-                    onClick={() => {
-                      setPosts({
-                        ...posts,
-                        data: reOrderedLists
-                      })
-                      setReorder(prevState => !prevState)
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  <Button
-                    default
-                    label="Reorder"
-                    onClick={() => setReorder(prevState => !prevState)}
-                    className="mr-4"
-                  />
-                  <Button
-                    default
-                    leftIcon={<FaPlusCircle />}
-                    label="Create Post"
-                    onClick={goToCreatePage}
-                  />
-                </>
-              )}
+              <Button
+                default
+                leftIcon={<FaPlusCircle />}
+                label="Create Post"
+                onClick={goToCreatePage}
+              />
             </div>
           </div>
         }
         content={
           loading ? (
             <PageLoader />
-          ) : reorder ? (
-            posts && (
-              <Draggable
-                list={reOrderedLists}
-                onListChange={setReOrderedLists}
-                rowNames={tableRowData}
-              />
-            )
           ) : (
             posts && <Table rowNames={tableRowData} items={posts} />
           )
@@ -612,7 +640,16 @@ const PostComponent = () => {
         title={modalTitle}
         visible={showModal}
         onClose={handleClearModal}
-        footer={null}
+        footer={modalFooter}
+        okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
+        onOk={() =>
+          modalType === 'delete'
+            ? onDeletePost()
+            : modalType === 'bulk'
+            ? onBulkSubmit()
+            : null
+        }
+        onCancel={() => setShowModal(old => !old)}
       >
         <div className="w-full">{modalContent}</div>
       </Modal>
