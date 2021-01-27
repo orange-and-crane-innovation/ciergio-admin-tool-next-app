@@ -49,6 +49,9 @@ const SelectCategoryComponent = ({
   type,
   userType,
   selected,
+  error,
+  disabled,
+  placeholder,
   onChange,
   onClear
 }) => {
@@ -101,14 +104,14 @@ const SelectCategoryComponent = ({
       (!loadingCategory || !loadingAllowedCategory) &&
       (dataCategory || dataAllowedCategory)
     ) {
-      const dataLists = [{ value: '', label: 'All Categories' }]
-
-      dataCategory?.getPostCategory?.category.map((item, index) => {
-        return dataLists.push({
-          value: item._id,
-          label: item.name
-        })
-      })
+      const dataLists = dataCategory?.getPostCategory?.category.map(
+        (item, index) => {
+          return {
+            value: item._id,
+            label: item.name
+          }
+        }
+      )
       setLists(dataLists)
     }
   }, [
@@ -129,12 +132,20 @@ const SelectCategoryComponent = ({
   }
 
   return (
-    <FormSelect
-      value={selected}
-      options={lists || []}
-      onChange={onChange}
-      onClear={onClear}
-    />
+    <div className={styles.SelectCategoryContainer}>
+      <FormSelect
+        name="category"
+        placeholder={placeholder}
+        noOptionsMessage={() => 'No item found.'}
+        value={lists ? lists.filter(item => item.value === selected) : null}
+        error={error}
+        options={lists || []}
+        disabled={disabled}
+        onChange={onChange}
+        onClear={onClear}
+        isClearable
+      />
+    </div>
   )
 }
 
@@ -142,6 +153,9 @@ SelectCategoryComponent.propTypes = {
   type: PropTypes.string,
   userType: PropTypes.string,
   selected: PropTypes.string,
+  error: PropTypes.string,
+  disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
   onChange: PropTypes.func,
   onClear: PropTypes.func
 }
