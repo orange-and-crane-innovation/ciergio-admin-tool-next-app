@@ -1,8 +1,27 @@
 .FormTextAreaContainer {
-  @apply flex flex-col h-128;
+  @apply flex flex-col;
 
-  .FormCounter {
-    @apply my-2;
-    @apply text-right text-neutral-500;
+  .FormTextAreaSubContainer {
+    @apply border;
+    @apply rounded-md;
+    min-height: 32rem;
+  }
+
+  .hasError {
+    @apply border-danger-500;
+  }
+
+  .FormTextContainer {
+    @apply flex items-center justify-between;
+
+    .FormCounter {
+      @apply my-2;
+      @apply text-right text-neutral-500;
+    }
+
+    .FormError {
+      @apply my-4;
+      @apply text-danger-500 text-md font-bold;
+    }
   }
 }
