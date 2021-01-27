@@ -289,8 +289,9 @@ function Contact({ id }) {
         okButtonProps={{
           loading: creatingContact
         }}
+        width={450}
       >
-        <div className="w-full">
+        <div className="w-full p-4">
           <form>
             <Controller
               name="title"
@@ -353,8 +354,9 @@ function Contact({ id }) {
         okButtonProps={{
           loading: editingContact
         }}
+        width={450}
       >
-        <div className="w-full">
+        <div className="w-full p-4">
           <form>
             <Controller
               name="title"
@@ -416,8 +418,9 @@ function Contact({ id }) {
         okButtonProps={{
           loading: deletingContact
         }}
+        width={450}
       >
-        <div className="w-full">
+        <div className="w-full p-4">
           <div>
             <p className="mb-4">
               <span className="font-medium">Warning: </span>{' '}
