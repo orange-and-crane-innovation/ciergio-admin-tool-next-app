@@ -58,7 +58,6 @@ function Button({
   }, [label, icon, loading])
 
   const renderLeftIcon = useMemo(() => {
-    console.log(rightIcon)
     return !loading && leftIcon ? (
       <span className="mr-2">{leftIcon}</span>
     ) : null
