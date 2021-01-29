@@ -71,15 +71,17 @@ const FormDatePicker = ({
       />
     )
   }, [
+    id,
     date,
     inputClasses,
     onChange,
     placeHolder,
     showMonthYearPicker,
-    datepickerprops,
     format,
     disabled,
-    disabledPreviousDate
+    calendarClasses,
+    disabledPreviousDate,
+    datepickerprops
   ])
 
   const renderError = useMemo(
@@ -110,7 +112,9 @@ FormDatePicker.propTypes = {
   errorClassname: P.string,
   labelClassname: P.string,
   showMonthYearPicker: P.bool,
-  datepickerprops: P.object
+  datepickerprops: P.object,
+  disabledPreviousDate: P.date,
+  date: P.date
 }
 
 FormDatePicker.defaultProps = {

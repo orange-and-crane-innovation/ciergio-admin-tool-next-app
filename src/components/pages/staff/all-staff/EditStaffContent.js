@@ -7,7 +7,7 @@ function EditStaffContent({ form }) {
   const { control, errors } = form
 
   return (
-    <div className="w-full">
+    <div className="w-full p-4">
       <form>
         <div className="mb-4">
           <p className="font-bold text-base text-gray-500 mb-2">First Name</p>

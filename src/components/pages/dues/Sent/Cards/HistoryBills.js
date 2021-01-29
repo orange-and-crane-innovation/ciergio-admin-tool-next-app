@@ -11,7 +11,7 @@ export default function HistoryBills({ dues }) {
             {dues &&
               dues.map((due, index) => {
                 return (
-                  <div className="tabled-item item w-full">
+                  <div key={index} className="tabled-item item w-full">
                     <span className="text-gray-700 font-bold inline-block w-1/2">
                       {toFriendlyDate(due.dueDate)}
                     </span>
@@ -40,6 +40,6 @@ export default function HistoryBills({ dues }) {
   )
 }
 
-HistoryBills.prototype = {
+HistoryBills.propTypes = {
   dues: P.array.isRequired
 }

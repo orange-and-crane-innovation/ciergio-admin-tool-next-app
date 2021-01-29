@@ -10,7 +10,6 @@ import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
 import { gql, useQuery } from '@apollo/client'
-import { useRouter } from 'next/router'
 import P from 'prop-types'
 import useKeyPress from '@app/utils/useKeyPress'
 
@@ -104,7 +103,7 @@ const tableRowData = [
 
 function Unsent({ month, year }) {
   // router
-  const router = useRouter()
+  // const router = useRouter()
 
   // components state
   const [selectedFloor, setSelectedFloor] = useState('all')
@@ -217,6 +216,7 @@ function Unsent({ month, year }) {
             type="text"
             placeholder="0.0"
             key={index}
+            value={amountValue}
           />
         )
         const sendButton = <Button default disabled label="Send" />
@@ -256,6 +256,7 @@ function Unsent({ month, year }) {
       }
       setDues(duesTable)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, data, error])
 
   useEffect(() => {

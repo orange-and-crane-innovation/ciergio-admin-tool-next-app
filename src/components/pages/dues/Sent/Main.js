@@ -137,6 +137,8 @@ const tableRowData = [
 ]
 
 function Sent({ month, year }) {
+  // const [selectedFloor] = useState('')
+  const [searchText, setSearchText] = useState('')
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
@@ -150,7 +152,6 @@ function Sent({ month, year }) {
   const [modalTitle, setModalTitle] = useState('')
   const [modalContent, setModalContent] = useState()
   const [showModal, setShowModal] = useState(false)
-  const [searchText, setSearchText] = useState(null)
   const [search, setSearch] = useState(null)
 
   const keyPressed = useKeyPress('Enter')
@@ -324,7 +325,7 @@ function Sent({ month, year }) {
       }
       setDues(duesData)
     }
-  }, [loading, data, error])
+  }, [loading, data, error, table])
 
   useEffect(() => {
     let optionsData = [
@@ -449,7 +450,7 @@ function Sent({ month, year }) {
   )
 }
 
-Sent.prototype = {
+Sent.propTypes = {
   month: P.number.isRequired,
   year: P.number.isRequired
 }

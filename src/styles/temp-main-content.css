@@ -180,10 +180,8 @@ select:active {
 }
 
 .modal {
-  @apply bg-white w-full flex-col flex rounded lg:w-128;
+  @apply bg-white flex-col flex rounded;
   @apply absolute;
-  @apply animate-drop;
-  top: -60%;
 }
 
 .modal .modal-header {
@@ -195,9 +193,7 @@ select:active {
 }
 
 .modal .modal-content {
-  @apply p-4;
   @apply border-b-2;
-  @apply h-full;
 }
 
 .modal .modal-footer {

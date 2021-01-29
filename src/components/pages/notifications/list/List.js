@@ -1,76 +1,151 @@
-import React, { useState } from 'react'
-import P from 'prop-types'
-import { useRouter } from 'next/router'
+import React, { useState, useMemo } from 'react'
+import { useQuery, useMutation } from '@apollo/client'
+
 import Tabs from '@app/components/tabs'
-import Button from '@app/components/button'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
-import { Card, Table } from '@app/components/globals'
+import SelectBulk from '@app/components/globals/SelectBulk'
 
-import { FaPlusCircle, FaSearch, FaTimes } from 'react-icons/fa'
+import useDebounce from '@app/utils/useDebounce'
+
+import Notification from '../components/Notification'
+
+import { FaSearch, FaTimes } from 'react-icons/fa'
+
+import { bulkOptions, UPCOMING, PUBLISHED, DRAFT, TRASHED } from '../constants'
 
 import {
-  upcomingTableRows,
-  publishedTableRows,
-  otherTableRows,
-  upcomingData,
-  publishedData,
-  draftsData,
-  trashData
-} from './mockData'
+  GET_ALL_UPCOMING_NOTIFICATIONS,
+  GET_ALL_PUBLISHED_NOTIFICATIONS,
+  GET_ALL_DRAFT_NOTIFICATIONS,
+  GET_ALL_TRASHED_NOTIFICATIONS,
+  BULK_UPDATE_MUTATION,
+  GET_POST_CATEGORIES
+} from '../queries'
 
-const bulkOptions = [
+const tabs = [
   {
-    label: 'Unpublished',
-    value: 'unpublish'
+    type: UPCOMING,
+    query: GET_ALL_UPCOMING_NOTIFICATIONS
   },
   {
-    label: 'Move to Trash',
-    value: 'trash'
+    type: PUBLISHED,
+    query: GET_ALL_PUBLISHED_NOTIFICATIONS
+  },
+  {
+    type: DRAFT,
+    query: GET_ALL_DRAFT_NOTIFICATIONS
+  },
+  {
+    type: TRASHED,
+    query: GET_ALL_TRASHED_NOTIFICATIONS
   }
 ]
 
-const categoryOptions = [
-  {
-    label: 'Announcements',
-    value: 'announcements'
-  },
-  {
-    label: 'Emergency',
-    value: 'emergency'
-  }
-]
+const { TabPanels, TabPanel, TabLabel, TabLabels } = Tabs
 
 function NotificationsList() {
-  const [searchText, setSearchtext] = useState('')
+  const [searchText, setSearchtext] = useState(null)
+  const [isBulkDisabled, setIsBulkDisabled] = useState(true)
+  const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
+  const [selectedBulk, setSelectedBulk] = useState()
+  const [category, setCategory] = useState(null)
+  const [selectedData, setSelectedData] = useState([])
+
+  const debouncedSearchText = useDebounce(searchText, 700)
+
+  const { data: categories } = useQuery(GET_POST_CATEGORIES)
+
+  const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
+    BULK_UPDATE_MUTATION
+  )
+
+  const CATEGORIES = categories?.getPostCategory
+
+  const onClearBulk = () => {
+    setSelectedBulk('')
+  }
+
+  const onBulkSubmit = () => {
+    const data = { id: selectedData, status: selectedBulk }
+    bulkUpdate({ variables: data })
+  }
+
+  const onBulkChange = e => {
+    setSelectedBulk(e.target.value)
+    if (e.target.value !== '') {
+      setIsBulkButtonDisabled(false)
+    } else {
+      setIsBulkButtonDisabled(true)
+    }
+  }
+
+  const categoryOptions = useMemo(() => {
+    if (CATEGORIES !== undefined) {
+      const cats = CATEGORIES?.category?.map(category => ({
+        label: category.name,
+        value: category._id
+      }))
+      return [
+        {
+          label: 'All',
+          value: null
+        },
+        ...cats
+      ]
+    }
+
+    return []
+  }, [CATEGORIES])
 
   return (
-    <section className={`content-wrap pt-4 pb-8 px-8`}>
+    <section className="content-wrap">
       <h1 className="content-title">
         Orange and Crane Innovations Inc. Notifications
       </h1>
 
-      <Tabs defaultTab="1">
-        <Tabs.TabLabels>
-          <Tabs.TabLabel id="1">Upcoming</Tabs.TabLabel>
-          <Tabs.TabLabel id="2">Published</Tabs.TabLabel>
-          <Tabs.TabLabel id="3">Draft</Tabs.TabLabel>
-          <Tabs.TabLabel id="4">Trash</Tabs.TabLabel>
-        </Tabs.TabLabels>
+      <Tabs defaultTab={UPCOMING}>
+        <TabLabels>
+          {tabs.map(({ type }) => {
+            const label = `${type.charAt(0).toUpperCase()}${type.slice(1)}`
+            return (
+              <TabLabel key={type} id={type}>
+                {label}
+              </TabLabel>
+            )
+          })}
+        </TabLabels>
 
-        <div className="flex items-center justify-between mt-12 mx-4 flex-col md:flex-row">
-          <div className="flex items-center justify-between w-full md:w-1/4">
-            <FormSelect options={bulkOptions} />
-            <Button default type="button" label="Apply" className="ml-2" />
-          </div>
-          <div className="flex items-center justify-between w-full flex-col md:w-1/3 md:flex-row">
-            <FormSelect options={categoryOptions} />
-            <div className="w-full md:w-80 md:ml-2 relative">
+        <div className="flex items-center justify-between mt-12 flex-col md:flex-row">
+          <SelectBulk
+            placeholder="Select"
+            options={bulkOptions}
+            disabled={isBulkDisabled}
+            isButtonDisabled={isBulkButtonDisabled}
+            onBulkChange={onBulkChange}
+            onBulkSubmit={onBulkSubmit}
+            onBulkClear={onClearBulk}
+            selected={selectedBulk}
+          />
+          <div className="flex items-center justify-between w-full flex-col md:w-6/12 md:flex-row">
+            <FormSelect
+              options={categoryOptions}
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              onClear={() => setCategory(null)}
+            />
+            <div className="w-full md:w-120 md:ml-2 relative">
               <FormInput
                 name="search"
                 placeholder="Search by title"
                 inputClassName="pr-8"
-                onChange={e => setSearchtext(e.target.value)}
+                onChange={e => {
+                  if (e.target.value !== '') {
+                    setSearchtext(e.target.value)
+                  } else {
+                    setSearchtext(null)
+                  }
+                }}
                 value={searchText}
               />
               <span className="absolute top-4 right-4">
@@ -83,73 +158,28 @@ function NotificationsList() {
             </div>
           </div>
         </div>
-        <Tabs.TabPanels>
-          <Tabs.TabPanel id="1">
-            <Header
-              title={`Upcoming Notifications (${upcomingData.data.length})`}
-            />
-            <Card
-              noPadding
-              content={
-                <Table columns={upcomingTableRows} payload={upcomingData} />
-              }
-              className="rounded-t-none"
-            />
-          </Tabs.TabPanel>
-          <Tabs.TabPanel id="2">
-            <Header
-              title={`Published Notifications (${publishedData.data.length})`}
-            />
-            <Card
-              noPadding
-              content={
-                <Table columns={publishedTableRows} payload={publishedData} />
-              }
-            />
-          </Tabs.TabPanel>
-          <Tabs.TabPanel id="3">
-            <Header title={`Drafts (${draftsData.data.length})`} />
-            <Card
-              noPadding
-              content={<Table columns={otherTableRows} payload={draftsData} />}
-            />
-          </Tabs.TabPanel>
-          <Tabs.TabPanel id="4">
-            <Header title={`Trash (${trashData.data.length})`} />
-            <Card
-              noPadding
-              content={<Table columns={otherTableRows} payload={trashData} />}
-            />
-          </Tabs.TabPanel>
-        </Tabs.TabPanels>
+        <TabPanels>
+          {tabs.map(({ type, query }) => (
+            <TabPanel key={type} id={type}>
+              <Notification
+                type={type}
+                query={query}
+                calledBulk={calledBulk}
+                dataBulk={dataBulk}
+                selectedData={selectedData}
+                setSelectedData={setSelectedData}
+                setIsBulkButtonDisabled={setIsBulkButtonDisabled}
+                setIsBulkDisabled={setIsBulkDisabled}
+                setSelectedBulk={setSelectedBulk}
+                categoryId={category}
+                searchText={debouncedSearchText}
+              />
+            </TabPanel>
+          ))}
+        </TabPanels>
       </Tabs>
     </section>
   )
-}
-
-const Header = ({ title }) => {
-  const router = useRouter()
-
-  const goToCreate = () => router.push('/notifications/create')
-
-  return (
-    <>
-      <div className="flex items-center justify-between">
-        <h1 className="font-bold text-base px-8 py-4">{title}</h1>
-        <Button
-          primary
-          leftIcon={<FaPlusCircle />}
-          label="Create Notifications"
-          onClick={goToCreate}
-          className="mr-4 mt-4"
-        />
-      </div>
-    </>
-  )
-}
-
-Header.propTypes = {
-  title: P.string.required
 }
 
 export default NotificationsList

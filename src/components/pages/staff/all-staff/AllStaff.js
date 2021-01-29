@@ -610,6 +610,7 @@ function AllStaff() {
           loading: sendingInvite
         }}
         onOk={handleInviteStaffSubmit(handleOk)}
+        width={450}
       >
         <InviteStaffContent
           form={{
@@ -635,6 +636,7 @@ function AllStaff() {
           loading: updatingUser
         }}
         onOk={handleEditStaffSubmit(handleEditOk)}
+        width={450}
       >
         <EditStaffContent
           form={{
@@ -653,6 +655,7 @@ function AllStaff() {
           loading: deletingUser
         }}
         onOk={handleDeleteStaff}
+        width={450}
       >
         <RemoveStaffContent
           user={{

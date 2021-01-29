@@ -336,8 +336,9 @@ function Contact({ id }) {
         okButtonProps={{
           loading: creatingContact
         }}
+        width={550}
       >
-        <div className="w-full">
+        <div className="w-full p-4">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>
           <form>
             <div className="flex justify-between mb-4">
@@ -424,8 +425,9 @@ function Contact({ id }) {
         okButtonProps={{
           loading: editingContact
         }}
+        width={550}
       >
-        <div className="w-full">
+        <div className="w-full p-4">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>
           <form>
             <div className="flex justify-between mb-4">
@@ -511,8 +513,9 @@ function Contact({ id }) {
         okButtonProps={{
           loading: deletingContact
         }}
+        width={450}
       >
-        <div className="w-full">
+        <div className="w-full p-4">
           <div>
             <p className="mb-4">
               <span className="font-medium">Warning: </span>{' '}

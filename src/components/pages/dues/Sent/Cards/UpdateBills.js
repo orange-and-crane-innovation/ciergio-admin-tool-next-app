@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react'
+import P from 'prop-types'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
-import { useEffect, useState } from 'react'
 
 export default function UpdateBills({ amount, dueDate }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -38,4 +39,9 @@ export default function UpdateBills({ amount, dueDate }) {
       </form>
     </>
   )
+}
+
+UpdateBills.propTypes = {
+  amount: P.number,
+  dueDate: P.date
 }
