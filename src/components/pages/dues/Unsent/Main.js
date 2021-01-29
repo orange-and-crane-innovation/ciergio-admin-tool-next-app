@@ -120,6 +120,7 @@ function Unsent({ month, year }) {
   const [offsetPage, setOffsetPage] = useState(0)
   const [count, setCount] = useState({})
   const keyPressed = useKeyPress('Enter')
+  const [modalDate, setModalDate] = useState(new Date())
 
   const [amountValue, setAmountValue] = useState()
 
@@ -178,7 +179,13 @@ function Unsent({ month, year }) {
   }
 
   const handleChangeDate = date => {
-    setSelectedDate(date)
+    if (date) {
+      setSelectedDate(date)
+    }
+  }
+
+  const handleModalChangeDate = date => {
+    setModalDate(date)
   }
 
   // Hooks for formatting table row
@@ -257,7 +264,7 @@ function Unsent({ month, year }) {
       setDues(duesTable)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, data, error])
+  }, [loading, data, error, selectedDate])
 
   useEffect(() => {
     let optionsData = [
@@ -281,6 +288,8 @@ function Unsent({ month, year }) {
     handleModal()
   }
   const handleOkModal = () => {
+    console.log(modalDate)
+    setSelectedDate(modalDate)
     handleCloseModal()
   }
 
@@ -392,8 +401,8 @@ function Unsent({ month, year }) {
         <div className="w-full flex flex-col">
           <DatePicker
             disabledPreviousDate={new Date()}
-            date={selectedDate}
-            onChange={handleChangeDate}
+            date={modalDate}
+            onChange={handleModalChangeDate}
             containerClassname={'flex w-full justify-center '}
           />
         </div>
