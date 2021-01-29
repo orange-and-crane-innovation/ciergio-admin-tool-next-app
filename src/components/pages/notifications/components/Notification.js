@@ -616,9 +616,9 @@ function Notifications({
       >
         <div className="p-8">
           <p className="text-xl text-gray-600">
-            {` Do you want to move to ${
-              type === 'trashed' ? 'delete' : 'trash'
-            } a notification: {selectedNotif?.title}?`}
+            {` Do you want to ${
+              type === 'trashed' ? 'delete permanently' : 'move to trash'
+            } a notification: ${selectedNotif?.title}?`}
           </p>
         </div>
       </Modal>
