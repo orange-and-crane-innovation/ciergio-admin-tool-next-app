@@ -4,12 +4,18 @@ import { Button, FormInput, FormSelect } from '@app/components/globals'
 
 import FormTextArea from '@app/components/forms/form-textarea'
 import UploaderImage from '@app/components/uploader/image'
+import DatePicker from '@app/components/forms/form-datepicker/'
 
 import Highlight from './highlight'
 
 function Components() {
   const [loading, setLoading] = useState(false)
   const [imageUrl, setImageUrl] = useState()
+  const [date, setDate] = useState(new Date())
+
+  const handleChangeDate = date => {
+    setDate(date)
+  }
 
   const onUploadImage = e => {
     const reader = new FileReader()
@@ -156,6 +162,49 @@ function Components() {
               onUploadImage={onUploadImage}
               onRemoveImage={onRemoveImage}
             />`}
+        />
+      </div>
+
+      <div className="">
+        <h1 className="text-xl font-semibold">Date Picker</h1>
+        <DatePicker date={date} onChange={handleChangeDate} label="label" />
+        <Highlight
+          code={` <DatePicker
+          date={date}
+          onChange={handleChangeDate}
+          label="Label" // Label 
+
+        />`}
+        />
+        <DatePicker
+          rightIcon
+          date={date}
+          onChange={handleChangeDate}
+          label="With Icon"
+        />
+        <Highlight
+          code={` <DatePicker
+          rightIcon //With Icon
+          date={date}
+          onChange={handleChangeDate}
+          label="Right Icon" // Label 
+       
+        />`}
+        />
+        <DatePicker
+          rightIcon
+          date={date}
+          onChange={handleChangeDate}
+          showMonthYearPicker
+          label="Month Picker"
+        />
+        <Highlight
+          code={` <DatePicker
+          date={date}
+          onChange={handleChangeDate}
+          label="Month Picker" // Label 
+          showMonthYearPicker // Month Picker
+        />`}
         />
       </div>
     </div>

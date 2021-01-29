@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import P from 'prop-types'
 import styles from './Main.module.css'
+import { FaCalendarAlt } from 'react-icons/fa'
 
 const FormDatePicker = ({
   id,
@@ -14,6 +15,7 @@ const FormDatePicker = ({
   placeHolder,
   disabledPreviousDate,
   error,
+  rightIcon,
   label,
   containerClassname,
   calendarClassname,
@@ -50,25 +52,31 @@ const FormDatePicker = ({
   )
 
   const renderLabel = useMemo(
-    () => (label ? <span className={labelClasses}>{label}</span> : null),
+    () =>
+      label ? (
+        <span className={clsx(styles.labelClass, labelClasses)}>{label}</span>
+      ) : null,
     [label, labelClasses]
   )
 
   const renderDatePicker = useMemo(() => {
     return (
-      <DatePicker
-        id={id}
-        selected={date}
-        placeholderText={placeHolder}
-        onChange={onChange}
-        dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
-        disabled={disabled}
-        showMonthYearPicker={showMonthYearPicker}
-        calendarClassName={calendarClasses}
-        className={inputClasses}
-        minDate={disabledPreviousDate}
-        {...datepickerprops}
-      />
+      <div className={styles.DatepickerHandler}>
+        <DatePicker
+          id={id}
+          selected={date}
+          placeholderText={placeHolder}
+          onChange={onChange}
+          dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
+          disabled={disabled}
+          showMonthYearPicker={showMonthYearPicker}
+          calendarClassName={calendarClasses}
+          className={inputClasses}
+          minDate={disabledPreviousDate}
+          {...datepickerprops}
+        />
+        {rightIcon && <FaCalendarAlt />}
+      </div>
     )
   }, [
     id,
@@ -81,7 +89,8 @@ const FormDatePicker = ({
     disabled,
     calendarClasses,
     disabledPreviousDate,
-    datepickerprops
+    datepickerprops,
+    rightIcon
   ])
 
   const renderError = useMemo(
@@ -114,7 +123,8 @@ FormDatePicker.propTypes = {
   showMonthYearPicker: P.bool,
   disabledPreviousDate: P.oneOfType([P.func, P.date]),
   datepickerprops: P.object,
-  date: P.oneOfType([P.func, P.date])
+  date: P.oneOfType([P.func, P.date]),
+  rightIcon: P.bool
 }
 
 FormDatePicker.defaultProps = {

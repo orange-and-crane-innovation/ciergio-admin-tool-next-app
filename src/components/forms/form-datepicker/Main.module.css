@@ -1,9 +1,20 @@
 .FormDatePicker {
     @apply w-full;
-    .inputClass {
-      @apply mb-4 w-full rounded-md border-gray-300 placeholder-neutral-500;
     
+    .DatepickerHandler {
+      @apply w-full rounded-md border-gray-500 flex flex-row  justify-between items-center bg-white m-0 px-0 py-1 placeholder-neutral-500;
+      border: 1px lightGrey solid !important;
+      svg {
+        @apply text-gray-800 w-auto mr-3;
+      }
+      .inputClass {
+        @apply border-0 w-full;
+      }
+  
+
     }
+
+   
   
     &:hover {
       @apply border-neutral-500;

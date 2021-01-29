@@ -1,5 +1,6 @@
 .BillingContainer {
     @apply pt-4 pb-8 px-8;
+
   
     .BillingHeader {
       @apply mb-5;
@@ -9,7 +10,8 @@
 
     .BillingPeriodContainer {
       @apply mb-5;
-      @apply flex items-start justify-between mt-6 flex-col md:w-1/4 md:flex-col;
+      @apply flex items-start justify-between mt-6 flex-col md:w-2/12 md:flex-col;
+     
     }
   
     .HeaderSmall {
