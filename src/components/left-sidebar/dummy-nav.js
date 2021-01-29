@@ -68,7 +68,18 @@ const navigation = [
         url: '/posts',
         icon: 'ciergio-bulletin',
         title: 'Bulletin Board',
-        items: []
+        items: [
+          {
+            url: '/posts',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/posts/create',
+            title: 'Create Bulletin',
+            items: []
+          }
+        ]
       },
       {
         url: '/maintenance',
@@ -80,7 +91,30 @@ const navigation = [
         url: '/forms',
         icon: 'ciergio-file',
         title: 'Forms',
-        items: []
+        items: [
+          {
+            url: '/forms/create',
+            title: 'Upload Form',
+            items: []
+          },
+          {
+            url: '/forms',
+            title: 'View Forms',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/dues',
+        icon: 'ciergio-dues',
+        title: 'My Dues',
+        items: [
+          {
+            url: '/dues/billing',
+            title: 'Billing',
+            items: []
+          }
+        ]
       },
       {
         url: '/directory',

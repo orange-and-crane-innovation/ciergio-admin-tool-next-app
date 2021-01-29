@@ -59,7 +59,7 @@ function Component({
                       </div>
                       <div className="modal-close-icon">
                         <span
-                          className="ciergio-close absolute p-4 hover:cursor-pointer relative top-0"
+                          className="ciergio-close p-4 hover:cursor-pointer relative top-0"
                           onClick={onClose}
                           onKeyDown={onClose}
                           role="button"

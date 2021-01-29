@@ -1,0 +1,5 @@
+.ImageSliderContainer {
+  @apply h-auto;
+  @apply bg-white;
+  @apply shadow-md;
+}

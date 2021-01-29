@@ -7,6 +7,12 @@
     @apply bg-primary-100;
   }
 
+  &.error {
+    .uploaderImage {
+      @apply border-danger-500;
+    }
+  }
+
   .uploaderControl {
     @apply hidden;
   }
@@ -48,4 +54,9 @@
       @apply outline-none;
     }
   }
+}
+
+.uploaderError {
+  @apply my-4;
+  @apply text-danger-500 text-md font-bold;
 }

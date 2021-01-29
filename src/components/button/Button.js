@@ -65,7 +65,7 @@ function Button({
 
   const renderRightIcon = useMemo(() => {
     return !loading && rightIcon ? (
-      <span className="ml-2">{rightIcon}</span>
+      <span className="ml-2 text-white">{rightIcon}</span>
     ) : null
   }, [loading, rightIcon])
 

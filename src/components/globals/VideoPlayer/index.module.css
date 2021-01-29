@@ -1,0 +1,8 @@
+.CreatePostVideoContainer {
+  @apply relative;
+  padding-top: 56.25%;
+
+  .CreatePostVideoPlayer {
+    @apply absolute top-0 left-0;
+  }
+}

@@ -1,0 +1,65 @@
+.FormDatePicker {
+    @apply w-full;
+
+ 
+    .inputClass {
+      @apply mb-4 w-full rounded-md border-gray-300 placeholder-neutral-500;
+    
+    }
+  
+    &:hover {
+      @apply border-neutral-500;
+    }
+
+    & span {
+        @apply block mb-3 text-base text-gray-800;
+    }   
+  
+    &:active {
+      @apply outline-none;
+      @apply border-secondary-500;
+    }
+  
+    &:focus {
+      @apply outline-none;
+    }
+  
+    & label {
+      @apply block;
+  
+      & .formLabel {
+        @apply block mb-4;
+      }
+  
+      & span {
+        @apply text-neutral-dark font-body font-bold text-sm;
+      }
+    }
+  }
+  
+  .hasError {
+    & [type='text'],
+    & [type='password'] {
+      @apply border-red-500;
+    }
+  
+    &:hover {
+      @apply border-red-700;
+    }
+  
+    &:active {
+      @apply outline-none;
+      @apply border-red-700;
+    }
+  
+    &:focus {
+      @apply outline-none;
+    }
+  
+    & label {
+      & span {
+        @apply text-red-500;
+      }
+    }
+  }
+  

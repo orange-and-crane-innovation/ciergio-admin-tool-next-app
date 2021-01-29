@@ -4,7 +4,7 @@
   @apply text-base;
 
   .dropdownControl {
-    @apply relative z-10 block p-2;
+    @apply relative block p-2;
     @apply overflow-hidden;
     @apply rounded;
     @apply border border-transparent;

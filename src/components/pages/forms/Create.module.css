@@ -29,10 +29,11 @@
       @apply font-heading;
       @apply border-0 border-b;
       @apply text-lg leading-5 font-black;
+      @apply rounded-none;
 
       &:focus,
       &:active {
-        @apply border-none;
+        @apply border-b;
       }
     }
 
@@ -94,6 +95,11 @@
 
   .CreatePostLink {
     @apply text-neutral-700;
+
+    &:hover {
+      @apply underline;
+      @apply cursor-pointer;
+    }
   }
 
   .CreatePostFooter {

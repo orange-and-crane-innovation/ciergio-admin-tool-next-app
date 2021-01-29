@@ -175,8 +175,8 @@ select:active {
 /* MODAL */
 .modal-overlay {
   @apply flex justify-center items-center;
-  @apply absolute z-50 overflow-y-hidden;
-  @apply bg-opacity-25 bg-gray-400 w-screen h-full top-0 left-0;
+  @apply fixed z-50 overflow-y-hidden;
+  @apply bg-opacity-50 bg-gray-400 w-screen h-full top-0 left-0;
 }
 
 .modal {
