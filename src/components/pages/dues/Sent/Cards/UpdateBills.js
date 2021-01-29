@@ -12,7 +12,7 @@ export default function UpdateBills({ amount, dueDate }) {
 
   useEffect(() => {
     setSelectedDate(dueDate)
-  }, [dueDate])
+  }, [])
 
   return (
     <>

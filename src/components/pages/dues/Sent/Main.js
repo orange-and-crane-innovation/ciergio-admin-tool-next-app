@@ -137,8 +137,6 @@ const tableRowData = [
 ]
 
 function Sent({ month, year }) {
-  // const [selectedFloor] = useState('')
-  const [searchText, setSearchText] = useState('')
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
@@ -152,6 +150,7 @@ function Sent({ month, year }) {
   const [modalTitle, setModalTitle] = useState('')
   const [modalContent, setModalContent] = useState()
   const [showModal, setShowModal] = useState(false)
+  const [searchText, setSearchText] = useState(null)
   const [search, setSearch] = useState(null)
 
   const keyPressed = useKeyPress('Enter')
@@ -325,7 +324,7 @@ function Sent({ month, year }) {
       }
       setDues(duesData)
     }
-  }, [loading, data, error, table])
+  }, [loading, data, error])
 
   useEffect(() => {
     let optionsData = [
@@ -444,13 +443,13 @@ function Sent({ month, year }) {
         onClose={handleClearModal}
         footer={<h1>Test</h1>}
       >
-        <div className="w-full">{modalContent}</div>
+        <div className="w-full px-5">{modalContent}</div>
       </Modal>
     </>
   )
 }
 
-Sent.propTypes = {
+Sent.prototype = {
   month: P.number.isRequired,
   year: P.number.isRequired
 }
