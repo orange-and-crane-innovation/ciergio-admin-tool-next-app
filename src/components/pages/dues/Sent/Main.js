@@ -8,79 +8,14 @@ import Pagination from '@app/components/pagination'
 import Card from '@app/components/card'
 import FormSelect from '@app/components/globals/FormSelect'
 import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
-import { gql, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
 import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
 import HistoryBills from './Cards/HistoryBills'
 import UpdateBills from './Cards/UpdateBills'
-
-const GET_ALL_FLOORS = gql`
-  query getFloorNUmbers($buildingId: String!) {
-    getFloorNumbers(buildingId: $buildingId)
-  }
-`
-
-const GETDEUS_QUERY = gql`
-  query getDues($where: DuesQueryInput) {
-    getDues(where: $where) {
-      count {
-        all
-        seen
-        sent
-      }
-    }
-  }
-`
-
-const GET_DUES_PER_UNIT_SENT = gql`
-  query(
-    $unit: DuesPerUnitInput2
-    $filter: DuesPerUnitInput3
-    $dues: DuesPerUnitInput1
-    $offset: Int
-    $limit: Int
-  ) {
-    getDuesPerUnit(
-      unit: $unit
-      filter: $filter
-      limit: $limit
-      offset: $offset
-      dues: $dues
-    ) {
-      count
-      limit
-      offset
-      data {
-        _id
-        dues {
-          category {
-            name
-          }
-          attachment {
-            fileUrl
-          }
-          amount
-          dueDate
-          status
-          views {
-            count
-          }
-        }
-
-        floorNumber
-        name
-        unitOwner {
-          user {
-            firstName
-            lastName
-          }
-        }
-      }
-    }
-  }
-`
+import * as Query from './Query'
 
 const statusOptions = [
   {
@@ -156,7 +91,7 @@ function Sent({ month, year }) {
   const keyPressed = useKeyPress('Enter')
 
   // graphQLFetching
-  const { loading, data, error } = useQuery(GET_DUES_PER_UNIT_SENT, {
+  const { loading, data, error } = useQuery(Query.GET_DUES_PER_UNIT_SENT, {
     variables: {
       unit: {
         buildingId: '5d804d6543df5f4239e72911',
@@ -178,7 +113,7 @@ function Sent({ month, year }) {
   })
 
   const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
-    GETDEUS_QUERY,
+    Query.GETDEUS_QUERY,
     {
       variables: {
         where: {
@@ -197,7 +132,7 @@ function Sent({ month, year }) {
     loading: loadingFloorNumbers,
     error: errorGetAllFloors,
     data: dataAllFloors
-  } = useQuery(GET_ALL_FLOORS, {
+  } = useQuery(Query.GET_ALL_FLOORS, {
     variables: {
       buildingId: '5d804d6543df5f4239e72911'
     }

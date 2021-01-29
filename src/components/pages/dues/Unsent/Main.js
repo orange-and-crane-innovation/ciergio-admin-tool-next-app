@@ -9,66 +9,10 @@ import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
-import { gql, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import P from 'prop-types'
 import useKeyPress from '@app/utils/useKeyPress'
-
-const GET_UNSENT_DUES_QUERY = gql`
-  query getDuesPerUnit(
-    $unit: DuesPerUnitInput2
-    $filter: DuesPerUnitInput3
-    $dues: DuesPerUnitInput1
-    $offset: Int
-    $limit: Int
-  ) {
-    getDuesPerUnit(
-      unit: $unit
-      filter: $filter
-      limit: $limit
-      offset: $offset
-      dues: $dues
-    ) {
-      count
-      limit
-      offset
-      data {
-        floorNumber
-        name
-        unitType {
-          name
-        }
-        unitOwner {
-          user {
-            firstName
-            lastName
-          }
-        }
-      }
-    }
-  }
-`
-
-const GET_ALL_FLOORS = gql`
-  query getFloorNUmbers($buildingId: String!) {
-    getFloorNumbers(buildingId: $buildingId)
-  }
-`
-
-const GETDEUS_QUERY = gql`
-  query getDues($where: DuesQueryInput) {
-    getDues(where: $where) {
-      count {
-        all
-        seen
-        sent
-        units {
-          all
-          withResidents
-        }
-      }
-    }
-  }
-`
+import * as Query from './Query.js'
 
 const tableRowData = [
   {
@@ -109,7 +53,7 @@ function Unsent({ month, year }) {
   const [selectedFloor, setSelectedFloor] = useState('all')
   const [searchText, setSearchText] = useState(null)
   const [search, setSearch] = useState(null)
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [dues, setDues] = useState()
   const [floors, setFloors] = useState([])
@@ -120,14 +64,14 @@ function Unsent({ month, year }) {
   const [offsetPage, setOffsetPage] = useState(0)
   const [count, setCount] = useState({})
   const keyPressed = useKeyPress('Enter')
-  const [modalDate, setModalDate] = useState(new Date())
-
+  const [modalDate, setModalDate] = useState(null)
+  const [date, setDate] = useState(null)
   const [amountValue, setAmountValue] = useState()
 
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
   // graphQLFetching
-  const { loading, data, error } = useQuery(GET_UNSENT_DUES_QUERY, {
+  const { loading, data, error } = useQuery(Query.GET_UNSENT_DUES_QUERY, {
     variables: {
       unit: {
         buildingId: temporaryBuildingID,
@@ -150,14 +94,14 @@ function Unsent({ month, year }) {
     loading: loadingFloorNumbers,
     error: errorGetAllFloors,
     data: dataAllFloors
-  } = useQuery(GET_ALL_FLOORS, {
+  } = useQuery(Query.GET_ALL_FLOORS, {
     variables: {
       buildingId: temporaryBuildingID
     }
   })
 
   const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
-    GETDEUS_QUERY,
+    Query.GETDEUS_QUERY,
     {
       variables: {
         where: {
@@ -173,6 +117,16 @@ function Unsent({ month, year }) {
       setCount(prevState => ({ ...prevState, ...duesData?.getDues?.count }))
     }
   }, [duesLoading, duesData, duesError])
+
+  useEffect(() => {
+    const today = new Date()
+
+    const formatTodate = `${month}-${String(today.getDate()).padStart(
+      2,
+      '0'
+    )}-${year}`
+    setDate(formatTodate)
+  }, [month, year])
 
   const onChangeOfAmount = e => {
     setAmountValue(e.target.value)
@@ -229,10 +183,12 @@ function Unsent({ month, year }) {
         const sendButton = <Button default disabled label="Send" />
         const dueDate = (
           <DatePicker
-            disabledPreviousDate={new Date()}
+            id={index}
+            disabledPreviousDate={date && date}
             date={selectedDate}
             onChange={handleChangeDate}
             key={index}
+            placeHolder="Date"
           />
         )
 
@@ -264,7 +220,7 @@ function Unsent({ month, year }) {
       setDues(duesTable)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, data, error, selectedDate])
+  }, [loading, data, error, selectedDate, date])
 
   useEffect(() => {
     let optionsData = [
@@ -288,7 +244,6 @@ function Unsent({ month, year }) {
     handleModal()
   }
   const handleOkModal = () => {
-    console.log(modalDate)
     setSelectedDate(modalDate)
     handleCloseModal()
   }
@@ -398,9 +353,9 @@ function Unsent({ month, year }) {
         onCancel={handleCloseModal}
         onOk={handleOkModal}
       >
-        <div className="w-full flex flex-col">
+        <div className="w-full flex flex-col p-4">
           <DatePicker
-            disabledPreviousDate={new Date()}
+            disabledPreviousDate={date && date}
             date={modalDate}
             onChange={handleModalChangeDate}
             containerClassname={'flex w-full justify-center '}

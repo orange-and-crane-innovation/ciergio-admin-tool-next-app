@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import clsx from 'clsx'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -25,6 +25,8 @@ const FormDatePicker = ({
   showMonthYearPicker,
   datepickerprops
 }) => {
+  const dateRef = useRef(null)
+  const [blur, setBlur] = useState(false)
   const containerClasses = useMemo(
     () =>
       clsx(styles.FormDatePicker, containerClassname, {
@@ -63,8 +65,9 @@ const FormDatePicker = ({
     return (
       <div className={styles.DatepickerHandler}>
         <DatePicker
+          ref={dateRef}
           id={id}
-          selected={date}
+          selected={date && date}
           placeholderText={placeHolder}
           onChange={onChange}
           dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
@@ -72,7 +75,7 @@ const FormDatePicker = ({
           showMonthYearPicker={showMonthYearPicker}
           calendarClassName={calendarClasses}
           className={inputClasses}
-          minDate={disabledPreviousDate}
+          minDate={new Date(disabledPreviousDate)}
           {...datepickerprops}
         />
         {rightIcon && <FaCalendarAlt />}
@@ -98,8 +101,20 @@ const FormDatePicker = ({
     [error, errorClasses]
   )
 
+  const openDate = date => {
+    setBlur(blur => !blur)
+  }
+
+  useEffect(() => {
+    if (blur) {
+      dateRef.current.setFocus()
+    } else {
+      dateRef.current.setBlur()
+    }
+  }, [blur])
+
   return (
-    <div className={containerClasses}>
+    <div className={containerClasses} onClick={openDate}>
       {renderLabel}
       {renderDatePicker}
       {renderError}
@@ -108,7 +123,7 @@ const FormDatePicker = ({
 }
 
 FormDatePicker.propTypes = {
-  id: P.string,
+  id: P.oneOfType([P.string, P.number]),
   onChange: P.func.isRequired,
   format: P.string,
   disabled: P.bool,
@@ -121,7 +136,7 @@ FormDatePicker.propTypes = {
   errorClassname: P.string,
   labelClassname: P.string,
   showMonthYearPicker: P.bool,
-  disabledPreviousDate: P.oneOfType([P.func, P.date]),
+  disabledPreviousDate: P.string,
   datepickerprops: P.object,
   date: P.oneOfType([P.func, P.date]),
   rightIcon: P.bool
@@ -129,7 +144,7 @@ FormDatePicker.propTypes = {
 
 FormDatePicker.defaultProps = {
   format: 'MMM dd, yyyy',
-  placeHolder: 'Select Date'
+  placeHolder: ''
 }
 
 export default FormDatePicker
