@@ -33,7 +33,8 @@ import {
   GET_NOTIFICATION,
   TRASH_NOTIFICATION,
   GET_POST_HISTORY,
-  GET_VIEW_HISTORY
+  GET_VIEW_HISTORY,
+  DELETE_NOTIFICATION
 } from '../queries'
 
 const getNotifDate = (type, notif) => {
@@ -129,6 +130,17 @@ function Notifications({
     }
   )
 
+  const [deletePermanently, { loading: deletingNotification }] = useMutation(
+    DELETE_NOTIFICATION,
+    {
+      onCompleted: () => {
+        setShowTrashModal(old => !old)
+        showToast('success', 'You have succesfully deleted a notification.')
+        refetchNotifications()
+      }
+    }
+  )
+
   const ITEM_COUNT = notifications?.getAllFlashNotifications?.count || 0
   const NOTIFICATIONS = notifications?.getAllFlashNotifications
   const PREVIEW_NOTIFICATION = notifPreview?.getAllFlashNotifications.post[0]
@@ -197,11 +209,19 @@ function Notifications({
   ])
 
   const handleTrashNotification = () => {
-    moveToTrash({
-      variables: {
-        id: selectedNotif._id
-      }
-    })
+    if (type === 'trashed') {
+      deletePermanently({
+        variables: {
+          id: selectedNotif._id
+        }
+      })
+    } else {
+      moveToTrash({
+        variables: {
+          id: selectedNotif._id
+        }
+      })
+    }
   }
 
   const onCheckAll = useCallback(
@@ -590,13 +610,15 @@ function Notifications({
         onCancel={() => setShowTrashModal(old => !old)}
         onOk={handleTrashNotification}
         okButtonProps={{
-          loading: movingToTrash
+          loading: movingToTrash || deletingNotification
         }}
         width={450}
       >
         <div className="p-8">
           <p className="text-xl text-gray-600">
-            Do you want to move to trash a notification: {selectedNotif?.title}?
+            {` Do you want to move to ${
+              type === 'trashed' ? 'delete' : 'trash'
+            } a notification: {selectedNotif?.title}?`}
           </p>
         </div>
       </Modal>

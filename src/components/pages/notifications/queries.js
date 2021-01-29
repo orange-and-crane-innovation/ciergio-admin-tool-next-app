@@ -176,3 +176,13 @@ export const TRASH_NOTIFICATION = gql`
     }
   }
 `
+
+export const DELETE_NOTIFICATION = gql`
+  mutation trashNotif($id: String!) {
+    updatePost(id: $id, data: { status: deleted }) {
+      _id
+      message
+      __typename
+    }
+  }
+`
