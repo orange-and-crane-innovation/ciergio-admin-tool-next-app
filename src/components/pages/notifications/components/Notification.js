@@ -16,6 +16,7 @@ import showToast from '@app/utils/toast'
 
 import { FaPlusCircle, FaEye } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
+import { BsFillClockFill } from 'react-icons/bs'
 
 import {
   UPCOMING,
@@ -24,13 +25,15 @@ import {
   TRASHED,
   upcomingTableRows,
   publishedTableRows,
-  otherTableRows
+  otherTableRows,
+  modalColumns
 } from '../constants'
 
 import {
   GET_NOTIFICATION,
   TRASH_NOTIFICATION,
-  GET_POST_HISTORY
+  GET_POST_HISTORY,
+  GET_VIEW_HISTORY
 } from '../queries'
 
 const getNotifDate = (type, notif) => {
@@ -95,6 +98,15 @@ function Notifications({
   })
 
   const [
+    getViewsHistory,
+    { data: views, loading: loadingViewHistory }
+  ] = useLazyQuery(GET_VIEW_HISTORY, {
+    variables: {
+      id: selectedNotifId
+    }
+  })
+
+  const [
     getPostHistory,
     { data: postHistory, loading: loadingPostHistory }
   ] = useLazyQuery(GET_POST_HISTORY, {
@@ -121,6 +133,7 @@ function Notifications({
   const NOTIFICATIONS = notifications?.getAllFlashNotifications
   const PREVIEW_NOTIFICATION = notifPreview?.getAllFlashNotifications.post[0]
   const POST_HISTORY = postHistory?.getPostHistory
+  const VIEWS_HISTORY = views?.getPostViewsHistory?.data
   const PARSED_JSON_HISTORY =
     POST_HISTORY?.post?.length > 0
       ? JSON.parse(POST_HISTORY.post[0].data)
@@ -169,13 +182,18 @@ function Notifications({
       if (showEditHistoryModal) {
         getPostHistory()
       }
+      if (viewHistory) {
+        getViewsHistory()
+      }
     }
   }, [
     selectedNotifId,
     getNotifPreview,
     previewNotification,
     showEditHistoryModal,
-    getPostHistory
+    getPostHistory,
+    viewHistory,
+    getViewsHistory
   ])
 
   const handleTrashNotification = () => {
@@ -354,6 +372,75 @@ function Notifications({
           : []
     }
   }, [NOTIFICATIONS, onCheck, type])
+
+  const editHistoryData = useMemo(() => {
+    return {
+      count: 1,
+      limit: 1,
+      offset: 0,
+      data:
+        POST_HISTORY?.post?.length > 0
+          ? POST_HISTORY?.post?.map(p => {
+              if (p !== undefined) {
+                const parsedData = JSON.parse(p.data)
+                return {
+                  date: `${toFriendlyDate(p?.date)} - ${friendlyDateTimeFormat(
+                    p?.date,
+                    'LT'
+                  )}`,
+                  editBy: `${parsedData?.authorName} published a notification: ${parsedData?.title}`
+                }
+              }
+
+              return null
+            })
+          : []
+    }
+  }, [POST_HISTORY])
+
+  const viewsHistoryData = useMemo(() => {
+    return {
+      count: 0,
+      limit: 10,
+      offset: 0,
+      data:
+        VIEWS_HISTORY?.user?.length > 0
+          ? VIEWS_HISTORY.user.map(usr => {
+              if (!usr) return null
+
+              const { avatar, firstName, lastName, address } = usr
+
+              const dropdownData = [
+                {
+                  label: 'View User',
+                  icon: <span className="ciergio-employees" />,
+                  function: () => {}
+                }
+              ]
+
+              return {
+                avatar: <img src={avatar} alt="avatar" />,
+                name: (
+                  <div>
+                    <p>{`${firstName} ${lastName}`}</p>
+                    <p>
+                      {address !== undefined
+                        ? `${address?.line2 || ''} ${address?.line1 || ''}`
+                        : 'No address provided'}
+                    </p>
+                  </div>
+                ),
+                dropdown: (
+                  <Dropdown
+                    label={<AiOutlineEllipsis />}
+                    items={dropdownData}
+                  />
+                )
+              }
+            })
+          : []
+    }
+  }, [VIEWS_HISTORY])
 
   const columnsWithCheckbox = useMemo(() => {
     switch (type) {
@@ -544,38 +631,72 @@ function Notifications({
             </div>
           </div>
           <Table
-            rowNames={[
-              {
-                name: 'Date',
-                width: ''
-              },
-              {
-                name: 'Edited By',
-                width: ''
-              }
-            ]}
-            items={{
-              count: 1,
-              limit: 1,
-              offset: 0,
-              data: POST_HISTORY?.post?.map(p => {
-                if (p !== undefined) {
-                  const parsedData = JSON.parse(p.data)
-                  return {
-                    date: `${toFriendlyDate(
-                      p?.date
-                    )} - ${friendlyDateTimeFormat(p?.date, 'LT')}`,
-                    editBy: `${parsedData?.authorName} published a notification: ${parsedData?.title}`
-                  }
-                }
-
-                return null
-              })
-            }}
+            rowNames={modalColumns}
+            items={editHistoryData}
+            emptyText={
+              <div className="p-4">
+                <BsFillClockFill className="ciergio-employees text-gray-500 text-7xl" />
+                <p className="text-gray-500">{`No history yet.`}</p>
+              </div>
+            }
           />
         </div>
       </Modal>
-      <Modal visible={viewHistory}></Modal>
+      <Modal
+        title="View History"
+        visible={viewHistory}
+        loading={loadingViewHistory}
+        width={650}
+        onClose={() => setViewHistory(old => !old)}
+        footer={null}
+      >
+        <div className="p-4">
+          <div className="w-full flex justify-start items-center mb-8">
+            <div className="w-1/2">
+              <h4 className="text-base">Viewed By</h4>
+              <p className="font-medium text-sm">
+                {`${VIEWS_HISTORY?.count?.uniqViews || 0} `}
+                <span className="text-gray-600">users</span>
+              </p>
+            </div>
+            <div className="w-1/2">
+              <h4 className="text-base">Not Viewed By</h4>
+              <p className="font-bold text-sm">
+                {`${
+                  VIEWS_HISTORY?.count?.audience -
+                    VIEWS_HISTORY?.count?.uniqViews || 0
+                } `}
+                <span className="text-gray-600">users</span>
+              </p>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-bold text-xl">View History</h4>
+            <Table
+              rowNames={[
+                { name: '', width: '5%' },
+                { name: '', width: '90%' },
+                {
+                  name: '',
+                  width: '5%'
+                }
+              ]}
+              items={viewsHistoryData}
+              emptyText={
+                <div className="p-4">
+                  <span className="ciergio-employees text-gray-500 text-7xl" />
+                  <p className="text-gray-500 font-bold text-base">
+                    No viewer yet.
+                  </p>
+                  <p className="text-gray-500">
+                    {`Sorry, this post don't have any viewer yet.`}
+                  </p>
+                </div>
+              }
+            />
+          </div>
+        </div>
+      </Modal>
     </>
   )
 }

@@ -130,6 +130,34 @@ export const GET_POST_HISTORY = gql`
   }
 `
 
+export const GET_VIEW_HISTORY = gql`
+  query getViews($id: String) {
+    getPostViewsHistory(limit: 10, offset: 0, id: $id) {
+      data {
+        _id
+        count {
+          audience
+          uniqViews
+          allViews
+        }
+        user {
+          _id
+          firstName
+          lastName
+          avatar
+          address {
+            line1
+            line2
+          }
+          email
+          __typename
+        }
+        __typename
+      }
+    }
+  }
+`
+
 export const BULK_UPDATE_MUTATION = gql`
   mutation bulkUpdatePost($id: [String], $status: postStatus) {
     bulkUpdatePost(id: $id, status: $status) {

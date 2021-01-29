@@ -81,3 +81,14 @@ export const categoryOptions = [
     value: 'emergency'
   }
 ]
+
+export const modalColumns = [
+  {
+    name: 'Date',
+    width: ''
+  },
+  {
+    name: 'Edited By',
+    width: ''
+  }
+]

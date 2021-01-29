@@ -100,7 +100,8 @@ function Component({
 Component.defaultProps = {
   cancelText: 'Cancel',
   okText: 'Ok',
-  loading: false
+  loading: false,
+  width: 550
 }
 
 Component.propTypes = {
