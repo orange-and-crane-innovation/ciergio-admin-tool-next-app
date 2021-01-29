@@ -16,10 +16,11 @@ function Component({
       <div className="main">
         <select
           type={type || 'text'}
+          placeholder={placeholder || ''}
           className="input"
-          placeholder={placeholder || ``}
           onChange={onChange}
         >
+          {placeholder ? <option value="all">{placeholder}</option> : null}
           {options.map(({ label, value }) => (
             <option key={label} value={value}>
               {label}
