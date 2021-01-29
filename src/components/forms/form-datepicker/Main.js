@@ -8,7 +8,7 @@ import styles from './Main.module.css'
 const FormDatePicker = ({
   id,
   date,
-  handleChange,
+  onChange,
   format,
   disabled,
   placeHolder,
@@ -60,7 +60,7 @@ const FormDatePicker = ({
         id={id}
         selected={date}
         placeholderText={placeHolder}
-        onChange={handleChange}
+        onChange={onChange}
         dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
         disabled={disabled}
         showMonthYearPicker={showMonthYearPicker}
@@ -73,13 +73,13 @@ const FormDatePicker = ({
   }, [
     id,
     date,
+    inputClasses,
+    onChange,
     placeHolder,
-    handleChange,
     showMonthYearPicker,
     format,
     disabled,
     calendarClasses,
-    inputClasses,
     disabledPreviousDate,
     datepickerprops
   ])
@@ -100,7 +100,6 @@ const FormDatePicker = ({
 
 FormDatePicker.propTypes = {
   id: P.string,
-  date: P.date,
   onChange: P.func.isRequired,
   format: P.array,
   disabled: P.bool,
@@ -115,7 +114,7 @@ FormDatePicker.propTypes = {
   showMonthYearPicker: P.bool,
   datepickerprops: P.object,
   disabledPreviousDate: P.date,
-  handleChange: P.func
+  date: P.date
 }
 
 FormDatePicker.defaultProps = {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
-import SelectCategory from '@app/components/globals/SelectCategory'
+import FormSelect from '@app/components/globals/FormSelect'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
@@ -11,7 +11,7 @@ import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
 import { gql, useQuery } from '@apollo/client'
 import P from 'prop-types'
-// import { useRouter } from 'next/router'
+import useKeyPress from '@app/utils/useKeyPress'
 
 const GET_UNSENT_DUES_QUERY = gql`
   query getDuesPerUnit(
@@ -48,120 +48,232 @@ const GET_UNSENT_DUES_QUERY = gql`
   }
 `
 
+const GET_ALL_FLOORS = gql`
+  query getFloorNUmbers($buildingId: String!) {
+    getFloorNumbers(buildingId: $buildingId)
+  }
+`
+
+const GETDEUS_QUERY = gql`
+  query getDues($where: DuesQueryInput) {
+    getDues(where: $where) {
+      count {
+        all
+        seen
+        sent
+        units {
+          all
+          withResidents
+        }
+      }
+    }
+  }
+`
+
+const tableRowData = [
+  {
+    name: '',
+    width: '10%'
+  },
+  {
+    name: 'Unit',
+    width: '10%'
+  },
+  {
+    name: 'Unit Owner',
+    width: '15%'
+  },
+  {
+    name: 'Upload File',
+    width: '15%'
+  },
+  {
+    name: 'Amount (Optional)',
+    width: '20%'
+  },
+  {
+    name: 'Due Date',
+    width: '15%'
+  },
+  {
+    name: '',
+    width: '15%'
+  }
+]
+
 function Unsent({ month, year }) {
   // router
   // const router = useRouter()
 
   // components state
-  const [selectedCategory] = useState('')
-  const [searchText] = useState('')
+  const [selectedFloor, setSelectedFloor] = useState('all')
+  const [searchText, setSearchText] = useState(null)
+  const [search, setSearch] = useState(null)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showModal, setShowModal] = useState(false)
   const [dues, setDues] = useState()
+  const [floors, setFloors] = useState([])
 
   // Pagination states
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
+  const [count, setCount] = useState({})
+  const keyPressed = useKeyPress('Enter')
+
+  const [amountValue, setAmountValue] = useState()
+
+  const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
   // graphQLFetching
   const { loading, data, error } = useQuery(GET_UNSENT_DUES_QUERY, {
     variables: {
       unit: {
-        buildingId: '5d804d6543df5f4239e72911'
+        buildingId: temporaryBuildingID,
+        search,
+        floorNumber: selectedFloor
       },
-      filter: {
-        sent: true
-      },
+      filter: { sent: false },
       dues: {
         period: {
-          month,
-          year
+          month: month,
+          year: year
         }
       },
-      limit: limitPage,
-      offset: offsetPage
+      offset: offsetPage,
+      limit: limitPage
     }
   })
 
-  useEffect(() => {
-    console.log(month, year)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const {
+    loading: loadingFloorNumbers,
+    error: errorGetAllFloors,
+    data: dataAllFloors
+  } = useQuery(GET_ALL_FLOORS, {
+    variables: {
+      buildingId: temporaryBuildingID
+    }
+  })
 
-  // Component did mount for generating table data
-  useEffect(() => {
-    let copyOfFloorNumber = null
+  const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
+    GETDEUS_QUERY,
+    {
+      variables: {
+        where: {
+          buildingId: temporaryBuildingID,
+          sent: false
+        }
+      }
+    }
+  )
 
-    if (!loading && data) {
-      const duesData = {
+  useEffect(() => {
+    if (!duesLoading && duesData) {
+      setCount(prevState => ({ ...prevState, ...duesData?.getDues?.count }))
+    }
+  }, [duesLoading, duesData, duesError])
+
+  const onChangeOfAmount = e => {
+    setAmountValue(e.target.value)
+  }
+
+  const handleChangeDate = date => {
+    setSelectedDate(date)
+  }
+
+  // Hooks for formatting table row
+  const useTableRows = rows => {
+    const rowData = []
+    let num = 0
+    if (rows) {
+      rows.forEach((row, index) => {
+        if (num !== row.floorNumber) {
+          rowData.push({
+            floorNumber: row.floorNumber,
+            b: '',
+            bl: '',
+            bla: '',
+            blan: '',
+            blank: '',
+            blankrow: ''
+          })
+        }
+        const unitName = row.name
+        const unitOwner = `${row?.unitOwner?.user?.lastName},
+        ${row?.unitOwner?.user?.lastName.charAt(0)}`
+        const uploadFile = (
+          <Button
+            key={index}
+            default
+            label="Choose File"
+            onClick={handleModal}
+          />
+        )
+        const amount = (
+          <FormInput
+            onChange={onChangeOfAmount}
+            name={'amount'}
+            type="text"
+            placeholder="0.0"
+            key={index}
+            value={amountValue}
+          />
+        )
+        const sendButton = <Button default disabled label="Send" />
+        const dueDate = (
+          <DatePicker
+            disabledPreviousDate={new Date()}
+            date={selectedDate}
+            onChange={handleChangeDate}
+            key={index}
+          />
+        )
+
+        rowData.push({
+          blank: '',
+          unitName,
+          unitOwner,
+          uploadFile,
+          amount,
+          dueDate,
+          sendButton
+        })
+        num = row.floorNumber
+      })
+    }
+    return rowData
+  }
+
+  const table = useTableRows(!loading && data && data?.getDuesPerUnit?.data)
+
+  useEffect(() => {
+    if (!loading && !error && data) {
+      const duesTable = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
         offset: data?.getDuesPerUnit.offset || 0,
-        data:
-          data?.getDuesPerUnit?.data.map((floor, index) => {
-            const floorNumber = floor?.floorNumber
-            const unitName = floor?.name
-            const name = `${floor?.unitOwner?.user?.lastName},
-              ${
-                floor?.unitOwner?.user?.lastName &&
-                floor?.unitOwner?.user?.lastName.charAt(0)
-              }`
-            const unitOwnerName = name
-            const uploadFile = (
-              <Button default full label="Choose File" onClick={handleModal} />
-            )
-            const amount = (
-              <FormInput name={'amount'} type="text" placeholder="0.0" />
-            )
-            const dueDate = (
-              <DatePicker
-                minDate={new Date()}
-                date={selectedDate}
-                handleChange={handleChangeDate}
-              />
-            )
-
-            const sendButton = <Button default disabled label="Send" />
-            const rowData = []
-            let copyOfOtherData = []
-            if (copyOfFloorNumber !== floorNumber) {
-              rowData.push(floorNumber, '', '', '', '', '', '')
-              copyOfOtherData.push(
-                '',
-                unitName,
-                unitOwnerName,
-                uploadFile,
-                amount,
-                dueDate,
-                sendButton
-              )
-            } else {
-              copyOfOtherData = []
-              rowData.push(
-                '',
-                unitName,
-                unitOwnerName,
-                uploadFile,
-                amount,
-                dueDate,
-                sendButton
-              )
-            }
-            copyOfFloorNumber = floorNumber
-
-            if (copyOfOtherData.length <= 0) {
-              return { ...rowData, ...copyOfOtherData }
-            } else {
-              return { ...rowData }
-            }
-          }) || null
+        data: table || []
       }
-
-      setDues(duesData)
+      setDues(duesTable)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, data, error])
+
+  useEffect(() => {
+    let optionsData = [
+      {
+        label: '',
+        value: ''
+      }
+    ]
+    if (!loadingFloorNumbers && !errorGetAllFloors) {
+      optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
+        return { label: floor, value: floor }
+      })
+    }
+
+    setFloors(optionsData)
+  }, [loadingFloorNumbers, dataAllFloors, errorGetAllFloors])
 
   const handleModal = () => setShowModal(show => !show)
 
@@ -172,55 +284,34 @@ function Unsent({ month, year }) {
     handleCloseModal()
   }
 
-  const handleChangeDate = date => {
-    setSelectedDate(date)
-  }
-
-  const tableRowData = [
-    {
-      name: '',
-      width: '10%'
-    },
-    {
-      name: 'Unit',
-      width: '10%'
-    },
-    {
-      name: 'Unit Owner',
-      width: '15%'
-    },
-    {
-      name: 'Upload File',
-      width: '15%'
-    },
-    {
-      name: 'Amount (Optional)',
-      width: '20%'
-    },
-    {
-      name: 'Due Date',
-      width: '15%'
-    },
-    {
-      name: '',
-      width: '15%'
-    }
-  ]
-
   //   Select Floors onchange
-  const onCategorySelect = e => {}
+  const onFloorSelect = e => {
+    setSelectedFloor(e.target.value)
+  }
   // =============
 
-  //  Select Floors On Clear Category
-  const onClearCategory = e => {}
+  // useEffect for useKeyPress
+  useEffect(() => {
+    if (keyPressed) {
+      setSearch(searchText)
+    }
+  }, [keyPressed, searchText])
   // ============
 
   // Handle Searches
-  const onSearch = e => {}
+  const onSearch = e => {
+    if (e.target.value === '') {
+      setSearch(null)
+    } else {
+      setSearchText(e.target.value)
+    }
+  }
   // ==========
 
   // Clear searches
-  const onClearSearch = e => {}
+  const onClearSearch = e => {
+    setSearchText(null)
+  }
   // ==============
 
   // Click pagination
@@ -231,9 +322,11 @@ function Unsent({ month, year }) {
 
   // setting limit in pagination
   const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
+    setLimitPage(parseInt(e.target.value))
   }
+
   const calendarIcon = () => <span className="ciergio-calendar"></span>
+
   return (
     <>
       <div className={styles.FormContainer}>
@@ -246,12 +339,11 @@ function Unsent({ month, year }) {
           />
         </div>
         <div className={styles.FloorControl}>
-          <SelectCategory
-            type="post"
-            userType="administrators"
-            onChange={onCategorySelect}
-            onClear={onClearCategory}
-            selected={selectedCategory}
+          <FormSelect
+            onChange={onFloorSelect}
+            options={floors}
+            classNames="mb-4"
+            placeholder="All Floors"
           />
           <SearchControl
             placeholder="Search by title"
@@ -271,13 +363,24 @@ function Unsent({ month, year }) {
             <div className={styles.InfoViewText}>
               <span className="ciergio-dues"></span>
               <div>
-                Bill sent <span className={styles.BoldText}>0</span>/17 units
+                Bills Sent &nbsp;
+                <span className={styles.BoldText}> {count?.sent}</span>/
+                {count?.units?.withResidents} bills
               </div>
             </div>
           </div>
         }
         content={<Table rowNames={tableRowData} items={dues} />}
       />
+
+      {!loading && dues && (
+        <Pagination
+          items={dues}
+          activePage={activePage}
+          onPageClick={onPageClick}
+          onLimitChange={onLimitChange}
+        />
+      )}
       <Modal
         title="Set Due Date"
         okText="Apply"
@@ -288,21 +391,13 @@ function Unsent({ month, year }) {
       >
         <div className="w-full flex flex-col">
           <DatePicker
-            minDate={new Date()}
+            disabledPreviousDate={new Date()}
             date={selectedDate}
-            handleChange={handleChangeDate}
-            containerClassname={'flex md:w-1/6 justify-center '}
+            onChange={handleChangeDate}
+            containerClassname={'flex w-full justify-center '}
           />
         </div>
       </Modal>
-      {!loading && dues && (
-        <Pagination
-          items={dues}
-          activePage={activePage}
-          onPageClick={onPageClick}
-          onLimitChange={onLimitChange}
-        />
-      )}
     </>
   )
 }
