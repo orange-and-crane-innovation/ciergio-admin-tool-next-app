@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import P from 'prop-types'
 import styles from './style.module.css'
 import { toFriendlyDate } from '@app/utils/date'
@@ -39,6 +40,8 @@ export default function HistoryBills({ dues }) {
     </>
   )
 }
+
+HistoryBills.getInitialProps = () => {}
 
 HistoryBills.propTypes = {
   dues: P.array.isRequired

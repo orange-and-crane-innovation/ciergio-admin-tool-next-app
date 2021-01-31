@@ -6,6 +6,7 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import Card from '@app/components/card'
+import PageLoader from '@app/components/page-loader'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
@@ -334,7 +335,13 @@ function Unsent({ month, year }) {
             </div>
           </div>
         }
-        content={<Table rowNames={tableRowData} items={dues} />}
+        content={
+          loading ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={tableRowData} items={dues} />
+          )
+        }
       />
 
       {!loading && dues && (

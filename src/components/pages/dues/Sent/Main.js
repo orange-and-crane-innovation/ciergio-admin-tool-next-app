@@ -7,6 +7,8 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Card from '@app/components/card'
 import FormSelect from '@app/components/globals/FormSelect'
+import PageLoader from '@app/components/page-loader'
+
 import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
 import { useQuery } from '@apollo/client'
 import P from 'prop-types'
@@ -20,11 +22,11 @@ import * as Query from './Query'
 const statusOptions = [
   {
     label: 'All Status',
-    value: 'null'
+    value: null
   },
   {
     label: 'Paid',
-    value: 'settled'
+    value: 'paid'
   },
   {
     label: 'Unpaid',
@@ -90,6 +92,8 @@ function Sent({ month, year }) {
 
   const keyPressed = useKeyPress('Enter')
 
+  const [status, setStatus] = useState([])
+
   // graphQLFetching
   const { loading, data, error } = useQuery(Query.GET_DUES_PER_UNIT_SENT, {
     variables: {
@@ -99,7 +103,8 @@ function Sent({ month, year }) {
         floorNumber: floorNumber
       },
       filter: {
-        sent: true
+        sent: true,
+        status: status
       },
       dues: {
         period: {
@@ -210,7 +215,7 @@ function Sent({ month, year }) {
         const amount = `₱${row?.dues[0]?.amount.toFixed(2)}`
         const status =
           row?.dues[0]?.status === 'overdue' ||
-          row?.dues[0]?.status === 'due' ? (
+          row?.dues[0]?.status === 'unpaid' ? (
             <Button
               className={styles.paid}
               disabled
@@ -283,7 +288,11 @@ function Sent({ month, year }) {
   }
   // =============
 
-  const onStatusSelect = e => {}
+  const onStatusSelect = e => {
+    const value =
+      e.target.value === 'paid' ? ['settled'] : ['overdue', 'unpaid']
+    setStatus(value)
+  }
 
   // useEffect for useKeyPress
   useEffect(() => {
@@ -360,7 +369,13 @@ function Sent({ month, year }) {
             </div>
           </div>
         }
-        content={<Table rowNames={tableRowData} items={dues} />}
+        content={
+          loading ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={tableRowData} items={dues} />
+          )
+        }
       />
       {!loading && dues && (
         <Pagination
