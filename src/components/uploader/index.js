@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { FaSpinner, FaRegTrashAlt } from 'react-icons/fa'
@@ -23,6 +23,9 @@ const Uploader = ({
   onUpload,
   onRemove
 }) => {
+  useEffect(() => {
+    console.log('ua')
+  }, [])
   const [isOver, setIsOver] = useState(false)
   let uploadedFiles
 
@@ -117,6 +120,7 @@ const Uploader = ({
         {uploadedFiles}
         {fileUrls && fileUrls.length < maxFiles && (
           <div className={containerClass}>
+            label
             <input
               className={styles.uploaderControl}
               type="file"

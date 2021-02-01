@@ -5,6 +5,7 @@ import FormSelect from '@app/components/globals/FormSelect'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
+import Uploader from '@app/components/uploader'
 import Card from '@app/components/card'
 import PageLoader from '@app/components/page-loader'
 import FormInput from '@app/components/forms/form-input'
@@ -14,6 +15,10 @@ import { useQuery } from '@apollo/client'
 import P from 'prop-types'
 import useKeyPress from '@app/utils/useKeyPress'
 import * as Query from './Query.js'
+import * as yup from 'yup'
+import { Controller, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import FileUpload from '@app/components/forms/form-fileupload'
 
 const tableRowData = [
   {
@@ -46,6 +51,20 @@ const tableRowData = [
   }
 ]
 
+// const validationSchema = yup.object().shape({
+//   unitName: yup.string().required(),
+//   unitOwnerFirstName: yup.string().required(),
+//   unitOwnerLastName: yup.string().required(),
+//   file: yup
+//     .object()
+//     .shape({
+//       name: yup.string().required()
+//     })
+//     .required(),
+//   amount: yup.number().required(),
+//   dueDate: yup.date().min(yup.ref('startDate'), "date should start based on the due billing date")
+// })
+
 function Unsent({ month, year }) {
   // router
   // const router = useRouter()
@@ -68,6 +87,9 @@ function Unsent({ month, year }) {
   const [modalDate, setModalDate] = useState(null)
   const [date, setDate] = useState(null)
   const [amountValue, setAmountValue] = useState()
+
+  const [fileUrl, setFileUrl] = useState('')
+  const [loader, setLoader] = useState()
 
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
@@ -143,6 +165,25 @@ function Unsent({ month, year }) {
     setModalDate(date)
   }
 
+  const handleFileUpload = e => {
+    const reader = new FileReader()
+    const formData = new FormData()
+    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0]
+
+    setLoader(true)
+    if (file) {
+      reader.onloadend = () => {
+        setFileUrl(reader.result)
+      }
+      reader.readAsDataURL(file)
+      formData.append('photos', file)
+      setLoader(false)
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setFileUrl(null)
+  }
   // Hooks for formatting table row
   const useTableRows = rows => {
     const rowData = []
@@ -163,18 +204,11 @@ function Unsent({ month, year }) {
         const unitName = row.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
         ${row?.unitOwner?.user?.lastName.charAt(0)}`
-        const uploadFile = (
-          <Button
-            key={index}
-            default
-            label="Choose File"
-            onClick={handleModal}
-          />
-        )
+        const uploadFile = <FileUpload />
         const amount = (
           <FormInput
             onChange={onChangeOfAmount}
-            name={'amount'}
+            name="amount"
             type="text"
             placeholder="0.0"
             key={index}

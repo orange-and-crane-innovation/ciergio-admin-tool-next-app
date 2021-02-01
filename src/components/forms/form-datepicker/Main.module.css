@@ -2,25 +2,27 @@
     @apply w-full ;
 
     .DatepickerHandler {
-      @apply w-full rounded-md border-gray-500 cursor-auto flex flex-row overflow-auto  justify-between items-center bg-white m-0 px-0 py-1 placeholder-neutral-500;
+      @apply w-full rounded-md border-gray-500 flex flex-row overflow-auto justify-between items-center bg-white m-0 px-0 py-1 placeholder-neutral-500;
       border: 1px lightGrey solid !important;
  
       svg {
-        @apply text-gray-800 w-auto mr-1;
+        @apply text-gray-800 w-auto mr-3;
       }
 
       .inputClass {
-        @apply border-0 ml-3;
+        @apply border-0 ml-3 cursor-pointer;
       }
 
       &:hover{
         @apply cursor-auto;
       
       }
-  
-  
 
+      &:hover{
+        @apply cursor-pointer;
+      }
     }
+    
 
   
     &:hover {

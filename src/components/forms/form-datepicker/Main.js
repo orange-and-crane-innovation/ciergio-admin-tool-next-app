@@ -4,7 +4,7 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import P from 'prop-types'
 import styles from './Main.module.css'
-import { FaCalendarAlt } from 'react-icons/fa'
+import { FaRegCalendarAlt } from 'react-icons/fa'
 
 const FormDatePicker = ({
   id,
@@ -23,7 +23,7 @@ const FormDatePicker = ({
   errorClassname,
   labelClassname,
   showMonthYearPicker,
-  datepickerprops
+  ...datepickerprops
 }) => {
   const dateRef = useRef(null)
   const [blur, setBlur] = useState(false)
@@ -78,7 +78,7 @@ const FormDatePicker = ({
           minDate={new Date(disabledPreviousDate)}
           {...datepickerprops}
         />
-        {rightIcon && <FaCalendarAlt />}
+        {rightIcon && <FaRegCalendarAlt />}
       </div>
     )
   }, [

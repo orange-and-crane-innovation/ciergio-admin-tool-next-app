@@ -43,11 +43,11 @@ function Billing() {
           <Tabs.TabPanel id="1">
             <div className={styles.BillingPeriodContainer}>
               <DatePicker
-                rightIcon
                 date={selectedDate}
                 onChange={handleDateChange}
                 label={'Billing'}
                 showMonthYearPicker
+                rightIcon
               />
             </div>
 

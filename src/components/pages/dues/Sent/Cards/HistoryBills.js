@@ -41,8 +41,6 @@ export default function HistoryBills({ dues }) {
   )
 }
 
-HistoryBills.getInitialProps = () => {}
-
 HistoryBills.propTypes = {
   dues: P.array.isRequired
 }
