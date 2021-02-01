@@ -165,25 +165,6 @@ function Unsent({ month, year }) {
     setModalDate(date)
   }
 
-  const handleFileUpload = e => {
-    const reader = new FileReader()
-    const formData = new FormData()
-    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0]
-
-    setLoader(true)
-    if (file) {
-      reader.onloadend = () => {
-        setFileUrl(reader.result)
-      }
-      reader.readAsDataURL(file)
-      formData.append('photos', file)
-      setLoader(false)
-    }
-  }
-
-  const handleRemoveFile = () => {
-    setFileUrl(null)
-  }
   // Hooks for formatting table row
   const useTableRows = rows => {
     const rowData = []
@@ -204,7 +185,7 @@ function Unsent({ month, year }) {
         const unitName = row.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
         ${row?.unitOwner?.user?.lastName.charAt(0)}`
-        const uploadFile = <FileUpload />
+        const uploadFile = <FileUpload label="Upload File" maxSize={5} />
         const amount = (
           <FormInput
             onChange={onChangeOfAmount}
@@ -396,6 +377,7 @@ function Unsent({ month, year }) {
       >
         <div className="w-full flex flex-col p-4">
           <DatePicker
+            rightIcon
             disabledPreviousDate={date && date}
             date={modalDate}
             onChange={handleModalChangeDate}

@@ -7,7 +7,7 @@ import styles from './Main.module.css'
 import showToast from '@app/utils/toast'
 import Link from 'next/link'
 
-export default function FileUpload({ fileUrl, label, loading, maxSize }) {
+export default function FileUpload({ label, maxSize }) {
   const [fileName, setFileName] = useState(null)
   const [file, setFile] = useState(null)
   const inputRef = useRef(null)
@@ -20,8 +20,8 @@ export default function FileUpload({ fileUrl, label, loading, maxSize }) {
   const handleChangeFile = e => {
     const file = e.target.files[0]
     const reader = new FileReader()
-
-    if (file.size < 5242880) {
+    const max = maxSize && maxSize * (1024 * 1024)
+    if (file.size < max) {
       setFileName(file.name)
 
       reader.onload = function (e) {
@@ -29,7 +29,7 @@ export default function FileUpload({ fileUrl, label, loading, maxSize }) {
       }
       reader.readAsDataURL(e.target.files[0])
     } else {
-      showToast('danger', 'File should be less than 5mb')
+      showToast('danger', `File should be less than ${maxSize || 5}mb`)
     }
   }
 
@@ -75,4 +75,9 @@ export default function FileUpload({ fileUrl, label, loading, maxSize }) {
     )
   }, [label])
   return <>{file ? editFile : inputFile}</>
+}
+
+FileUpload.propTypes = {
+  label: P.string,
+  maxSize: P.number
 }
