@@ -16,6 +16,7 @@ import { CREATE_POST_MUTATION, GET_POST_CATEGORIES } from '../queries'
 
 import AudienceModal from '../components/AudienceModal'
 import PublishTimeModal from '../components/PublishTimeModal'
+import PreviewModal from '../components/PreviewModal'
 import AudienceType from './AudienceType'
 import PublishType from './PublishType'
 
@@ -55,6 +56,8 @@ function CreateNotification() {
   const [selectedCompanyExcept, setSelectedCompanyExcept] = useState()
   const [showAudienceModal, setShowAudienceModal] = useState(false)
   const [showPublishTimeModal, setShowPublishTimeModal] = useState(false)
+  const [previewNotification, setPreviewNotification] = useState(false)
+  const [previewData, setPreviewData] = useState(null)
 
   const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
@@ -118,6 +121,20 @@ function CreateNotification() {
 
   const onSubmit = (data, status) => {
     console.log({ data, status })
+    // if (status === 'preview') {
+    //   setPreviewData({
+    //     primaryMedia: [
+    //       {
+    //         url: null
+    //       }
+    //     ],
+    //     title: 'test notif',
+    //     content: 'test content'
+    //   })
+    //   setPreviewNotification(old => !old)
+    //   return
+    // }
+
     if (
       data?.embeddedFiles === null &&
       data?.title === '' &&
@@ -351,7 +368,17 @@ function CreateNotification() {
                   default
                   label="Preview"
                   onClick={() => {
-                    handleSubmit(e => onSubmit(e, 'draft'))
+                    // handleSubmit(e => onSubmit(e, 'preview'))
+                    setPreviewData({
+                      primaryMedia: [
+                        {
+                          url: null
+                        }
+                      ],
+                      title: 'test notif',
+                      content: 'test content'
+                    })
+                    setPreviewNotification(old => !old)
                   }}
                   className="w-1/5 mr-4"
                 />
@@ -382,6 +409,15 @@ function CreateNotification() {
         onSave={() => setShowPublishTimeModal(old => !old)}
         onSelectType={setSelectedPublishTimeType}
         onSelectDateTime={setSelectedPublishDateTime}
+      />
+      <PreviewModal
+        showPreview={previewNotification}
+        onClose={() => {
+          setPreviewNotification(old => !old)
+          setPreviewData(null)
+        }}
+        loading={false}
+        previewData={previewData}
       />
     </section>
   )
