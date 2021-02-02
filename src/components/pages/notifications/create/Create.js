@@ -12,9 +12,12 @@ import Button from '@app/components/button'
 import UploaderImage from '@app/components/uploader/image'
 
 import showToast from '@app/utils/toast'
-import { friendlyDateTimeFormat } from '@app/utils/date'
-
 import { CREATE_POST_MUTATION, GET_POST_CATEGORIES } from '../queries'
+
+import AudienceModal from '../components/AudienceModal'
+import PublishTimeModal from '../components/PublishTimeModal'
+import AudienceType from './AudienceType'
+import PublishType from './PublishType'
 
 const validationSchema = yup.object().shape({
   title: yup
@@ -45,11 +48,13 @@ function CreateNotification() {
   const [fileUploadedData, setFileUploadedData] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(false)
-  const [selectedAudienceType, setSelectedAudienceType] = useState()
+  const [selectedAudienceType, setSelectedAudienceType] = useState('all')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedCompanySpecific, setSelectedCompanySpecific] = useState()
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState()
   const [selectedCompanyExcept, setSelectedCompanyExcept] = useState()
+  const [showAudienceModal, setShowAudienceModal] = useState(false)
+  const [showPublishTimeModal, setShowPublishTimeModal] = useState(false)
 
   const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
@@ -112,6 +117,7 @@ function CreateNotification() {
   }
 
   const onSubmit = (data, status) => {
+    console.log({ data, status })
     if (
       data?.embeddedFiles === null &&
       data?.title === '' &&
@@ -183,8 +189,8 @@ function CreateNotification() {
     setImageUrls([])
     setFileUploadedData([])
     // setTextCount(0)
-    // setShowAudienceModal(false)
-    // setShowPublishTimeModal(false)
+    setShowAudienceModal(false)
+    setShowPublishTimeModal(false)
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
     setSelectedCompanySpecific(null)
@@ -279,121 +285,104 @@ function CreateNotification() {
                 }
               />
             </div>
-          </div>
 
-          <div className="w-3/12">
             <Card
-              title={<h1 className="text-base font-bold mb-4">Categories</h1>}
+              title={<h1 className="text-base font-bold">Categories</h1>}
               content={
-                <div className="p-4">
-                  <Controller
-                    control={control}
-                    name="postCategory"
-                    render={({ name, onChange, value }) => (
-                      <FormSelect
-                        name={name}
-                        value={value}
-                        options={postCategories}
-                        onChange={onChange}
-                      />
-                    )}
-                  />
+                <div className="p-4 w-full border-t ">
+                  <div className="w-1/3 mt-4">
+                    <Controller
+                      control={control}
+                      name="postCategory"
+                      render={({ name, onChange, value }) => (
+                        <FormSelect
+                          name={name}
+                          value={value}
+                          options={postCategories}
+                          onChange={onChange}
+                        />
+                      )}
+                    />
+                  </div>
                 </div>
               }
             />
             <Card
               title={<h1 className="text-base font-bold ">Publish Details</h1>}
               content={
-                <div>
-                  <div className="mb-4 p-4 border-b">
+                <div className="flex items-start w-full border-t pt-2">
+                  <div className="w-1/2 mb-4 p-4 border-b">
                     <div className="mb-2">
                       <span>Status:</span>{' '}
                       <span className="font-bold ml-5">New</span>
                     </div>
-                    <div className="flex mb-2">
-                      <span>Audience:</span>{' '}
-                      <div className="flex flex-col ml-2">
-                        <strong>All</strong>
-                        {selectedAudienceType === 'allExcept' ||
-                          (selectedAudienceType === 'specific' && (
-                            <div className="ml-20">
-                              <strong>
-                                {selectedCompanyExcept && (
-                                  <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
-                                )}
-                                {selectedCompanySpecific && (
-                                  <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
-                                )}
-                              </strong>
-                            </div>
-                          ))}
-                        <span
-                          onClick={() => {}}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={() => {}}
-                          className="text-blue-700"
-                        >
-                          Edit
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex">
-                      <span>Publish:</span>{' '}
-                      <div className="flex flex-col ml-5">
-                        <strong>
-                          {selectedPublishTimeType === 'later'
-                            ? ` Scheduled, ${friendlyDateTimeFormat(
-                                selectedPublishDateTime
-                              ).format('MMM DD, YYYY - hh:mm A')} `
-                            : ' Immediately '}
-                        </strong>
-                        <span
-                          onClick={() => {}}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={() => {}}
-                          className="text-blue-700"
-                        >
-                          Edit
-                        </span>
-                      </div>
-                    </div>
+                    <AudienceType
+                      audienceType={selectedAudienceType}
+                      specificCompanies={selectedCompanySpecific}
+                      excludedCompanies={selectedCompanyExcept}
+                      onShowAudienceModal={() =>
+                        setShowAudienceModal(old => !old)
+                      }
+                    />
                   </div>
-                  <div className="px-4">
-                    <Button
-                      primary
-                      label="Publish"
-                      className="w-full"
-                      onClick={() => {
-                        handleSubmit(e => onSubmit(e, 'active'))
-                      }}
+                  <div className="w-1/2 mb-4 p-4">
+                    <PublishType
+                      onShowPublishTypeModal={() =>
+                        setShowPublishTimeModal(old => !old)
+                      }
+                      publishType={selectedPublishTimeType}
+                      publishDateTime={selectedPublishDateTime}
                     />
                   </div>
                 </div>
               }
             />
-            <div className="w-full flex justify-between">
-              <Button
-                default
-                label="Save as Draft"
-                onClick={() => {
-                  handleSubmit(e => onSubmit(e, 'draft'))
-                }}
-                className="w-1/2 mr-4"
-              />
-              <Button
-                default
-                label="Preview"
-                onClick={() => {
-                  handleSubmit(e => onSubmit(e, 'draft'))
-                }}
-                className="w-1/2"
-              />
+            <div className="w-full flex justify-end">
+              <div className="w-3/4 flex justify-end">
+                <Button
+                  default
+                  label="Save as Draft"
+                  onClick={() => {
+                    handleSubmit(e => onSubmit(e, 'draft'))
+                  }}
+                  className="w-1/5 mr-4"
+                />
+                <Button
+                  default
+                  label="Preview"
+                  onClick={() => {
+                    handleSubmit(e => onSubmit(e, 'draft'))
+                  }}
+                  className="w-1/5 mr-4"
+                />
+                <Button
+                  primary
+                  label="Publish"
+                  className="w-1/5"
+                  onClick={() => {
+                    handleSubmit(e => onSubmit(e, 'active'))
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
       </form>
+      <AudienceModal
+        visible={showAudienceModal}
+        onCancel={() => setShowAudienceModal(old => !old)}
+        onSave={() => setShowAudienceModal(old => !old)}
+        onSelectAudienceType={setSelectedAudienceType}
+        onSelectCompanyExcept={setSelectedCompanyExcept}
+        onSelectCompanySpecific={setSelectedCompanySpecific}
+      />
+      <PublishTimeModal
+        visible={showPublishTimeModal}
+        onCancel={() => setShowPublishTimeModal(old => !old)}
+        onSave={() => setShowPublishTimeModal(old => !old)}
+        onSelectType={setSelectedPublishTimeType}
+        onSelectDateTime={setSelectedPublishDateTime}
+      />
     </section>
   )
 }
