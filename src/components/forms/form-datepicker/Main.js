@@ -23,6 +23,8 @@ const FormDatePicker = ({
   errorClassname,
   labelClassname,
   showMonthYearPicker,
+  inputRef,
+  customPicker,
   ...datepickerprops
 }) => {
   const dateRef = useRef(null)
@@ -65,9 +67,8 @@ const FormDatePicker = ({
     return (
       <div className={styles.DatepickerHandler}>
         <DatePicker
-          ref={dateRef}
           id={id}
-          selected={date && date}
+          selected={date}
           placeholderText={placeHolder}
           onChange={onChange}
           dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
@@ -76,6 +77,8 @@ const FormDatePicker = ({
           calendarClassName={calendarClasses}
           className={inputClasses}
           minDate={new Date(disabledPreviousDate)}
+          customInput={customPicker}
+          ref={inputRef}
           {...datepickerprops}
         />
         {rightIcon && <FaRegCalendarAlt />}
@@ -93,7 +96,9 @@ const FormDatePicker = ({
     calendarClasses,
     disabledPreviousDate,
     datepickerprops,
-    rightIcon
+    rightIcon,
+    customPicker,
+    inputRef
   ])
 
   const renderError = useMemo(
@@ -102,16 +107,16 @@ const FormDatePicker = ({
   )
 
   const openDate = date => {
-    setBlur(blur => !blur)
+    // setBlur(blur => !blur
   }
 
-  useEffect(() => {
-    if (blur) {
-      dateRef.current.setFocus()
-    } else {
-      dateRef.current.setBlur()
-    }
-  }, [blur])
+  // useEffect(() => {
+  //   if (blur) {
+  //     dateRef.current.setFocus()
+  //   } else {
+  //     dateRef.current.setBlur()
+  //   }
+  // }, [blur])
 
   return (
     <div className={containerClasses} onClick={openDate}>

@@ -5,3 +5,7 @@
 .editContainer {
     @apply flex flex-row items-center;
 }
+
+.fileUrl {
+    @apply text-blue-600 whitespace-nowrap overflow-hidden block overflow-ellipsis text-left my-2;
+}

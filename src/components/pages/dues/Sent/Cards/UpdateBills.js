@@ -2,38 +2,53 @@ import { useEffect, useState } from 'react'
 import P from 'prop-types'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
+import FileUpload from '@app/components/forms/form-fileupload'
 
-export default function UpdateBills({ amount, dueDate }) {
+export default function UpdateBills({ amount, dueDate, fileUrl }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [text, setText] = useState('')
 
   const handleChangeDate = date => {
     setSelectedDate(date)
   }
 
+  const handleTextChange = e => {
+    setText(e.target.value)
+  }
+
   useEffect(() => {
-    setSelectedDate(dueDate)
-  }, [])
+    setSelectedDate(new Date(dueDate))
+  }, [dueDate])
 
   return (
     <>
       <form className="custom-form w-label">
-        <div className="w-full">
+        <div className="w-full px-2 py-3">
+          <div className="form-group">
+            <label className="control-label text-gray-700 font-semibold">
+              Upload File:
+            </label>
+            <FileUpload id="file" fileUrl={fileUrl} />
+          </div>
           <FormInput
             label="Amount"
-            placeholder={amount && amount.toFixed(2)}
+            placeholder={amount && amount.toFixed(2).toString()}
             type="text"
-            onChange={e => console.log('log')}
+            onChange={handleTextChange}
             name="amount"
+            value={text}
             inputClassName="w-full rounded border-gray-300"
           />
           {selectedDate && (
-            <DatePicker
-              inputClassname="w-screen"
-              label="Due Date"
-              disabledPreviousDate={new Date()}
-              date={selectedDate}
-              onChange={handleChangeDate}
-            />
+            <>
+              <label className="text-gray-700 font-semibold">Due Date</label>
+              <DatePicker
+                inputClassname="w-screen"
+                disabledPreviousDate={dueDate}
+                date={selectedDate}
+                onChange={handleChangeDate}
+              />
+            </>
           )}
         </div>
       </form>
@@ -43,5 +58,5 @@ export default function UpdateBills({ amount, dueDate }) {
 
 UpdateBills.propTypes = {
   amount: P.number,
-  dueDate: P.date
+  dueDate: P.string
 }

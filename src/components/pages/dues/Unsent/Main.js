@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import FormSelect from '@app/components/globals/FormSelect'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
-import Uploader from '@app/components/uploader'
+import FileUpload from '@app/components/forms/form-fileupload'
 import Card from '@app/components/card'
 import PageLoader from '@app/components/page-loader'
 import FormInput from '@app/components/forms/form-input'
@@ -15,10 +15,7 @@ import { useQuery } from '@apollo/client'
 import P from 'prop-types'
 import useKeyPress from '@app/utils/useKeyPress'
 import * as Query from './Query.js'
-import * as yup from 'yup'
-import { Controller, useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import FileUpload from '@app/components/forms/form-fileupload'
+import axios from 'axios'
 
 const tableRowData = [
   {
@@ -88,8 +85,15 @@ function Unsent({ month, year }) {
   const [date, setDate] = useState(null)
   const [amountValue, setAmountValue] = useState()
 
-  const [fileUrl, setFileUrl] = useState('')
-  const [loader, setLoader] = useState()
+  const [fileUrl, setFileUrl] = useState()
+  const [loader, setLoader] = useState(false)
+  const [fileUploadedData, setFileUploadedData] = useState()
+  const ref = useRef(null)
+  const [perDate, setPerDate] = useState([
+    {
+      date: new Date()
+    }
+  ])
 
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
@@ -143,7 +147,6 @@ function Unsent({ month, year }) {
 
   useEffect(() => {
     const today = new Date()
-
     const formatTodate = `${month}-${String(today.getDate()).padStart(
       2,
       '0'
@@ -156,6 +159,8 @@ function Unsent({ month, year }) {
   }
 
   const handleChangeDate = date => {
+    console.log(ref.current)
+
     if (date) {
       setSelectedDate(date)
     }
@@ -163,6 +168,45 @@ function Unsent({ month, year }) {
 
   const handleModalChangeDate = date => {
     setModalDate(date)
+  }
+
+  useEffect(() => {
+    console.log(fileUploadedData)
+  }, [fileUploadedData])
+
+  const uploadApi = async payload => {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_UPLOAD_API,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
+    if (response.data) {
+      const imageData = response.data.map(item => {
+        return {
+          url: item.location,
+          type: item.mimetype
+        }
+      })
+
+      setFileUploadedData(imageData)
+    }
+  }
+
+  const handleFile = file => {
+    const formData = new FormData()
+
+    setLoader(true)
+    if (file) {
+      formData.append('file', file)
+      setLoader(false)
+
+      uploadApi(formData)
+    }
   }
 
   // Hooks for formatting table row
@@ -185,7 +229,15 @@ function Unsent({ month, year }) {
         const unitName = row.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
         ${row?.unitOwner?.user?.lastName.charAt(0)}`
-        const uploadFile = <FileUpload label="Upload File" maxSize={5} />
+        const uploadFile = (
+          <FileUpload
+            label="Upload File"
+            getFile={handleFile}
+            loading={loader}
+            maxSize={5}
+            key={index}
+          />
+        )
         const amount = (
           <FormInput
             onChange={onChangeOfAmount}
@@ -196,15 +248,17 @@ function Unsent({ month, year }) {
             value={amountValue}
           />
         )
-        const sendButton = <Button default disabled label="Send" />
+        const sendButton = <Button full default disabled label="Send" />
+
         const dueDate = (
           <DatePicker
             id={index}
             disabledPreviousDate={date && date}
-            date={selectedDate}
+            date={perDate[index]?.date}
             onChange={handleChangeDate}
             key={index}
             placeHolder="Date"
+            inputRef={ref}
           />
         )
 

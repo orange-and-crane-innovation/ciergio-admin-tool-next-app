@@ -152,11 +152,18 @@ function Sent({ month, year }) {
   const handleShowModal = (type, id) => {
     const selected =
       !loading && data?.getDuesPerUnit?.data.find(due => due._id === id)
+    console.log(selected)
     if (selected) {
       switch (type) {
         case 'update':
           setModalTitle('Edit Billing')
-          setModalContent(<UpdateBills amount={10} dueDate={new Date()} />)
+          setModalContent(
+            <UpdateBills
+              amount={selected?.dues[0]?.amount}
+              dueDate={selected?.dues[0]?.dueDate}
+              fileUrl={selected?.dues[0]?.attachment.fileUrl}
+            />
+          )
           break
         case 'details':
           setModalTitle(`Unit ${selected.name} History`)
@@ -219,11 +226,12 @@ function Sent({ month, year }) {
             <Button
               className={styles.paid}
               disabled
+              full
               label="Unpaid"
               onClick={() => alert('unpaid')}
             />
           ) : (
-            <Button onClick={() => alert('paid')} label="Paid" />
+            <Button full onClick={() => alert('paid')} label="Paid" />
           )
         const seen = row?.dues[0]?.views.count ? <FaEye /> : null
         const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
