@@ -12,7 +12,7 @@ import { FiClock } from 'react-icons/fi'
 
 import 'react-datetime/css/react-datetime.css'
 
-function DateInput({ date, onDateChange, dateFormat, name, label }) {
+function DateInput({ date, onDateChange, dateFormat, name, label, disabled }) {
   let dateValue = toFriendlyDateTime(date)
 
   if (dateFormat) {
@@ -40,11 +40,12 @@ function DateInput({ date, onDateChange, dateFormat, name, label }) {
       timeFormat={false}
       value={date}
       onChange={onDateChange}
+      disabled={disabled}
     />
   )
 }
 
-function TimeInput({ time, timeFormat, onTimeChange, label, name }) {
+function TimeInput({ time, timeFormat, onTimeChange, label, name, disabled }) {
   let timeValue = toFriendlyTime(time)
 
   if (timeFormat) {
@@ -69,6 +70,7 @@ function TimeInput({ time, timeFormat, onTimeChange, label, name }) {
       timeFormat={timeFormat}
       value={time}
       onChange={onTimeChange}
+      disabled={disabled}
     />
   )
 }
@@ -83,7 +85,8 @@ DateInput.propTypes = {
   onDateChange: P.func,
   dateFormat: P.string,
   name: P.string,
-  label: P.string
+  label: P.string,
+  disabled: P.bool
 }
 
 TimeInput.defaultProps = {
@@ -96,7 +99,8 @@ TimeInput.propTypes = {
   onTimeChange: P.func,
   timeFormat: P.string,
   name: P.string,
-  label: P.string
+  label: P.string,
+  disabled: P.bool
 }
 
 export { DateInput, TimeInput }

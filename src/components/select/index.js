@@ -48,7 +48,7 @@ function Component({
         isSearchable={isSearchable}
         placeholder={placeholder}
         loading={loading}
-        disabled={disabled}
+        isDisabled={disabled}
         rtl={rtl}
         isMulti={allowMultiple}
         inputValue={inputValue}

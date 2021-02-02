@@ -7,10 +7,10 @@ function PublishType({ publishType, publishDateTime, onShowPublishTypeModal }) {
   let publishTime = null
 
   if (publishDateTime) {
-    publishTime = friendlyDateTimeFormat(
+    publishTime = `${friendlyDateTimeFormat(
       publishDateTime,
-      'MMM DD, YYYY - hh:mm A'
-    )
+      'MMM DD, YYYY'
+    )} - ${friendlyDateTimeFormat(publishDateTime, 'hh:mm A')}`
   }
 
   return (
@@ -18,7 +18,7 @@ function PublishType({ publishType, publishDateTime, onShowPublishTypeModal }) {
       <span>Publish:</span>{' '}
       <div className="flex ml-5">
         <p className="font-bold mr-2">
-          {PUBLISH_LATER ? ` Scheduled, ${publishTime}} ` : ' Immediately '}
+          {PUBLISH_LATER ? ` Scheduled, ${publishTime} ` : ' Immediately '}
         </p>
         <EditButton handleClick={onShowPublishTypeModal} />
       </div>

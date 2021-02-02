@@ -65,7 +65,7 @@ function PreviewModal({ showPreview, onClose, loading, previewData }) {
 PreviewModal.propTypes = {
   showPreview: P.bool.isRequired,
   onClose: P.func.isRequired,
-  loading: P.boo,
+  loading: P.bool,
   previewData: P.object.isRequired
 }
 

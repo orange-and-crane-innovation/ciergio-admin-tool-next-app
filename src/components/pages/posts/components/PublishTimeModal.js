@@ -11,8 +11,6 @@ import FormInput from '@app/components/forms/form-input'
 import RadioBox from '@app/components/forms/form-radio'
 import Modal from '@app/components/modal'
 
-import 'react-datetime/css/react-datetime.css'
-
 const Component = ({
   isShown,
   onSelectType,

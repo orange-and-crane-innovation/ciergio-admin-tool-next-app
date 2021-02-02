@@ -57,7 +57,15 @@ function CreateNotification() {
   const [showAudienceModal, setShowAudienceModal] = useState(false)
   const [showPublishTimeModal, setShowPublishTimeModal] = useState(false)
   const [previewNotification, setPreviewNotification] = useState(false)
-  const [previewData, setPreviewData] = useState(null)
+  const [previewData, setPreviewData] = useState({
+    primaryMedia: [
+      {
+        url: null
+      }
+    ],
+    title: '',
+    content: ''
+  })
 
   const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
@@ -120,20 +128,15 @@ function CreateNotification() {
   }
 
   const onSubmit = (data, status) => {
-    console.log({ data, status })
-    // if (status === 'preview') {
-    //   setPreviewData({
-    //     primaryMedia: [
-    //       {
-    //         url: null
-    //       }
-    //     ],
-    //     title: 'test notif',
-    //     content: 'test content'
-    //   })
-    //   setPreviewNotification(old => !old)
-    //   return
-    // }
+    if (status === 'preview') {
+      setPreviewData({
+        primaryMedia: fileUploadedData,
+        title: data?.title,
+        content: data?.content
+      })
+      setPreviewNotification(old => !old)
+      return
+    }
 
     if (
       data?.embeddedFiles === null &&
@@ -368,17 +371,7 @@ function CreateNotification() {
                   default
                   label="Preview"
                   onClick={() => {
-                    // handleSubmit(e => onSubmit(e, 'preview'))
-                    setPreviewData({
-                      primaryMedia: [
-                        {
-                          url: null
-                        }
-                      ],
-                      title: 'test notif',
-                      content: 'test content'
-                    })
-                    setPreviewNotification(old => !old)
+                    handleSubmit(e => onSubmit(e, 'preview'))
                   }}
                   className="w-1/5 mr-4"
                 />
@@ -417,7 +410,7 @@ function CreateNotification() {
           setPreviewData(null)
         }}
         loading={false}
-        previewData={previewData}
+        previewData={previewData || {}}
       />
     </section>
   )
