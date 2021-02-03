@@ -77,7 +77,7 @@ export default function FileUpload({
         </Link>
       </div>
     )
-  }, [fileName, inputFileUpload])
+  }, [fileName])
 
   const inputFile = useMemo(() => {
     return (
@@ -108,7 +108,7 @@ export default function FileUpload({
         )}
       </>
     )
-  }, [label, inputFileUpload, fileUrl])
+  }, [label, fileUrl])
 
   const containerClasses = useMemo(
     () =>

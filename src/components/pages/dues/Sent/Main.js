@@ -8,9 +8,16 @@ import Pagination from '@app/components/pagination'
 import Card from '@app/components/card'
 import FormSelect from '@app/components/globals/FormSelect'
 import PageLoader from '@app/components/page-loader'
+import showToast from '@app/utils/toast'
 
-import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
-import { useQuery } from '@apollo/client'
+import {
+  FaEye,
+  FaEllipsisH,
+  FaPencilAlt,
+  FaRegFileAlt,
+  FaBullseye
+} from 'react-icons/fa'
+import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
 import Modal from '@app/components/modal'
@@ -18,6 +25,7 @@ import useKeyPress from '@app/utils/useKeyPress'
 import HistoryBills from './Cards/HistoryBills'
 import UpdateBills from './Cards/UpdateBills'
 import * as Query from './Query'
+import * as Mutation from './Mutation'
 
 const statusOptions = [
   {
@@ -94,28 +102,35 @@ function Sent({ month, year }) {
 
   const [status, setStatus] = useState([])
 
+  const [modalFooter, setModalFooter] = useState(false)
+  const [confirmationModal, setConfirmationModal] = useState()
+  const [updateDuesId, setUpdateDuesId] = useState()
+
   // graphQLFetching
-  const { loading, data, error } = useQuery(Query.GET_DUES_PER_UNIT_SENT, {
-    variables: {
-      unit: {
-        buildingId: '5d804d6543df5f4239e72911',
-        search: search,
-        floorNumber: floorNumber
-      },
-      filter: {
-        sent: true,
-        status: status
-      },
-      dues: {
-        period: {
-          month: month,
-          year: year
-        }
-      },
-      limit: 10,
-      offset: offsetPage
+  const { loading, data, error, refetch } = useQuery(
+    Query.GET_DUES_PER_UNIT_SENT,
+    {
+      variables: {
+        unit: {
+          buildingId: '5d804d6543df5f4239e72911',
+          search: search,
+          floorNumber: floorNumber
+        },
+        filter: {
+          sent: true,
+          status: status
+        },
+        dues: {
+          period: {
+            month: month,
+            year: year
+          }
+        },
+        limit: 10,
+        offset: offsetPage
+      }
     }
-  })
+  )
 
   const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
     Query.GETDEUS_QUERY,
@@ -143,6 +158,31 @@ function Sent({ month, year }) {
     }
   })
 
+  const [
+    updateDues,
+    {
+      loading: loadingUpdateDues,
+      called: calledUpdateDues,
+      data: dataUpdateDues
+    }
+  ] = useMutation(Mutation.UPDATE_DUES)
+
+  useEffect(() => {
+    if (!loadingUpdateDues && calledUpdateDues && dataUpdateDues) {
+      console.log('yow')
+      if (dataUpdateDues?.data?.updateDues?.message === 'success') {
+        setShowModal(show => !show)
+        setConfirmationModal(show => !show)
+        showToast('success', `You have successfully updated a billing`)
+        refetch()
+      } else {
+        setShowModal(show => !show)
+        setConfirmationModal(show => !show)
+        showToast('warning', dataUpdateDues?.errors[0]?.message)
+      }
+    }
+  }, [loadingUpdateDues, calledUpdateDues, dataUpdateDues])
+
   useEffect(() => {
     if (!duesLoading) {
       setCount(preState => ({ ...preState, ...duesData?.getDues?.count }))
@@ -164,10 +204,13 @@ function Sent({ month, year }) {
               fileUrl={selected?.dues[0]?.attachment.fileUrl}
             />
           )
+          setUpdateDuesId(selected?._id)
+          setModalFooter(true)
           break
         case 'details':
           setModalTitle(`Unit ${selected.name} History`)
           setModalContent(<HistoryBills dues={selected?.dues} />)
+
           break
       }
     }
@@ -336,6 +379,31 @@ function Sent({ month, year }) {
     setLimitPage(parseInt(e.target.value))
   }
 
+  const handleOkModal = () => {
+    setConfirmationModal(show => !show)
+    setShowModal(show => !show)
+  }
+
+  const handleConfirmUpdate = async () => {
+    const data = { amount: 20, dueDate: new Date(), attachment: null }
+
+    try {
+      await updateDues({
+        variables: {
+          data,
+          id: updateDuesId
+        }
+      })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleClearConfirmationModal = () => {
+    setConfirmationModal(show => !show)
+    setShowModal(show => !show)
+  }
+
   return (
     <>
       <div className={styles.FormContainer}>
@@ -399,9 +467,29 @@ function Sent({ month, year }) {
         okText="Submit"
         visible={showModal}
         onClose={handleClearModal}
-        footer={<h1>Test</h1>}
+        footer={modalFooter}
+        onOk={handleOkModal}
+        onCancel={() => setShowModal(old => !old)}
       >
         <div className="w-full px-5">{modalContent}</div>
+      </Modal>
+
+      <Modal
+        title=""
+        okText="Confirm"
+        visible={confirmationModal}
+        onClose={handleClearConfirmationModal}
+        onOk={handleConfirmUpdate}
+        cancelText="Cancel"
+        onCancel={() => setConfirmationModal(old => !old)}
+      >
+        <div className="w-full p-12">
+          <p className="text-4xl text-gray-500">
+            The resident may have already seen the file, but you can update the
+            document if you made a mistake. Are you sure you want to update this
+            file?
+          </p>
+        </div>
       </Modal>
     </>
   )

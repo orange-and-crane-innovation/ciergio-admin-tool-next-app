@@ -62,6 +62,23 @@ const tableRowData = [
 //   dueDate: yup.date().min(yup.ref('startDate'), "date should start based on the due billing date")
 // })
 
+const DueDate = ({ fieldData }) => {
+  // console.log(fieldData.value?.data ? fieldData.value?.data : null)
+  return (
+    <DatePicker
+      date={
+        fieldData.value?.data ? fieldData.value?.data[fieldData.Name] : null
+      }
+      placeHolder="Date"
+      disabledPreviousDate={fieldData.minDate}
+      onChange={(value, event) => {
+        event.target = { type: 'text', value: value, name: fieldData.Name }
+        fieldData.ChangeHandler(event)
+      }}
+    />
+  )
+}
+
 function Unsent({ month, year }) {
   // router
   // const router = useRouter()
@@ -88,12 +105,8 @@ function Unsent({ month, year }) {
   const [fileUrl, setFileUrl] = useState()
   const [loader, setLoader] = useState(false)
   const [fileUploadedData, setFileUploadedData] = useState()
-  const ref = useRef(null)
-  const [perDate, setPerDate] = useState([
-    {
-      date: new Date()
-    }
-  ])
+  const [allDates, setAllDates] = useState([])
+  const [perDate, setPerDate] = useState([])
 
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
@@ -155,12 +168,13 @@ function Unsent({ month, year }) {
   }, [month, year])
 
   const onChangeOfAmount = e => {
-    setAmountValue(e.target.value)
+    setAmountValue({
+      ...amountValue,
+      [e.target.name]: e.target.value
+    })
   }
 
-  const handleChangeDate = date => {
-    console.log(ref.current)
-
+  const handleChangeDate = (data, event) => {
     if (date) {
       setSelectedDate(date)
     }
@@ -185,7 +199,8 @@ function Unsent({ month, year }) {
       }
     )
 
-    if (response.data) {
+    if (response) {
+      console.log(`this is error ${response}`)
       const imageData = response.data.map(item => {
         return {
           url: item.location,
@@ -196,6 +211,10 @@ function Unsent({ month, year }) {
       setFileUploadedData(imageData)
     }
   }
+
+  useEffect(() => {
+    console.log(fileUploadedData)
+  }, [fileUploadedData])
 
   const handleFile = file => {
     const formData = new FormData()
@@ -211,9 +230,13 @@ function Unsent({ month, year }) {
 
   // Hooks for formatting table row
   const useTableRows = rows => {
+    const data = []
     const rowData = []
     let num = 0
     if (rows) {
+      // rows.forEach((row, index) => {
+      //   data[`date${index}`] = new Date(date)
+      // })
       rows.forEach((row, index) => {
         if (num !== row.floorNumber) {
           rowData.push({
@@ -241,7 +264,7 @@ function Unsent({ month, year }) {
         const amount = (
           <FormInput
             onChange={onChangeOfAmount}
-            name="amount"
+            name={`amount${index}`}
             type="text"
             placeholder="0.0"
             key={index}
@@ -250,17 +273,31 @@ function Unsent({ month, year }) {
         )
         const sendButton = <Button full default disabled label="Send" />
 
-        const dueDate = (
-          <DatePicker
-            id={index}
-            disabledPreviousDate={date && date}
-            date={perDate[index]?.date}
-            onChange={handleChangeDate}
-            key={index}
-            placeHolder="Date"
-            inputRef={ref}
-          />
-        )
+        // const dueDate = (
+        //   <DatePicker
+        //     name={index}
+        //     id="asdasd"
+        //     disabledPreviousDate={date && date}
+        //     date={perDate[index]?.date}
+        //     onChange={handleChangeDate}
+        //     key={index}
+        //     placeHolder="Date"
+        //     inputRef={el => (ref.current[index] = el)}
+        //   />
+        // )
+
+        const fieldData = {
+          Name: `date${index}`,
+          ChangeHandler: function (event) {
+            data[`date${index}`] = event.target.value
+
+            setPerDate(old => ({ ...old, data }))
+          },
+          value: perDate,
+          minDate: date
+        }
+
+        const dueDate = <DueDate fieldData={fieldData} />
 
         rowData.push({
           blank: '',
@@ -290,7 +327,7 @@ function Unsent({ month, year }) {
       setDues(duesTable)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, data, error, selectedDate, date])
+  }, [loading, data, error, selectedDate, date, perDate])
 
   useEffect(() => {
     let optionsData = [

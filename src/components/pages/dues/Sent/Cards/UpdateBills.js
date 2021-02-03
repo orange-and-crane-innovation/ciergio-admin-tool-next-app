@@ -13,12 +13,9 @@ export default function UpdateBills({ amount, dueDate, fileUrl }) {
   }
 
   const handleTextChange = e => {
-    setText(e.target.value)
+    const value = e.target.value
+    setText(value)
   }
-
-  useEffect(() => {
-    setSelectedDate(new Date(dueDate))
-  }, [dueDate])
 
   return (
     <>
@@ -32,7 +29,7 @@ export default function UpdateBills({ amount, dueDate, fileUrl }) {
           </div>
           <FormInput
             label="Amount"
-            placeholder={amount && amount.toFixed(2).toString()}
+            placeholder={`₱ ${amount.toFixed(2)}`}
             type="text"
             onChange={handleTextChange}
             name="amount"
@@ -58,5 +55,6 @@ export default function UpdateBills({ amount, dueDate, fileUrl }) {
 
 UpdateBills.propTypes = {
   amount: P.number,
-  dueDate: P.string
+  dueDate: P.string,
+  fileUrl: P.string
 }

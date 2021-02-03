@@ -11,6 +11,7 @@ const FormDatePicker = ({
   date,
   onChange,
   format,
+  name,
   disabled,
   placeHolder,
   disabledPreviousDate,
@@ -68,6 +69,7 @@ const FormDatePicker = ({
       <div className={styles.DatepickerHandler}>
         <DatePicker
           id={id}
+          name={name}
           selected={date}
           placeholderText={placeHolder}
           onChange={onChange}
@@ -77,7 +79,6 @@ const FormDatePicker = ({
           calendarClassName={calendarClasses}
           className={inputClasses}
           minDate={new Date(disabledPreviousDate)}
-          customInput={customPicker}
           ref={inputRef}
           {...datepickerprops}
         />
@@ -97,8 +98,8 @@ const FormDatePicker = ({
     disabledPreviousDate,
     datepickerprops,
     rightIcon,
-    customPicker,
-    inputRef
+    inputRef,
+    name
   ])
 
   const renderError = useMemo(
