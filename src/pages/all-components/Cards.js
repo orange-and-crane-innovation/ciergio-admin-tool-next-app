@@ -51,10 +51,31 @@ function Components() {
             <Button leftIcon="ciergio-circle-plus" label="Action 2" />
           ]}
           content={
-            <ul>
-              <li>test</li>
-              <li>test</li>
-            </ul>
+            <table>
+              <thead>
+                <tr>
+                  <td>Name</td>
+                  <td>Age</td>
+                  <td>Address</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Nick Coloma</td>
+                  <td>100</td>
+                  <td>Philippines</td>
+                </tr>
+                <tr>
+                  <td>Ivan</td>
+                  <td>100</td>
+                  <td>United States</td>
+                </tr>
+              </tbody>
+            </table>
+            // <ul>
+            //   <li>test</li>
+            //   <li>test</li>
+            // </ul>
           }
         />
         <Highlight

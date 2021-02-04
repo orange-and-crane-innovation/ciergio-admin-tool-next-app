@@ -1,21 +1,52 @@
 import { useQuery, gql } from '@apollo/client'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import * as GraphQLVar from './schema-varibles'
 
 const verifySession = gql`
-    query {
-      getProfile{
-        ${GraphQLVar.User}
-        accounts {
-          ${GraphQLVar.Page}
-          data {
-            ${GraphQLVar.UserAccount}
+  query {
+    getProfile {
+      _id
+      email
+      avatar
+      firstName
+      lastName
+      birthDate
+      contactNo
+      jobTitle
+      status
+      address {
+        line1
+        line2
+        city
+        province
+        zipCode
+        country
+      }
+      createdAt
+      updatedAt
+      accounts {
+        count
+        limit
+        skip
+        data {
+          _id
+          accountType
+          status
+          active
+          notificationSettings {
+            _id
+            messages
+            announcement
+            myDues
+            repairAndMaintenanceUpdates
+            extensionAccountRequests
+            promotions
           }
         }
       }
     }
-  `
+  }
+`
 
 const withGuest = WrappedComponent => {
   const GuestComponent = props => {
