@@ -5,8 +5,25 @@ import HeaderNav from '@app/components/header-nav'
 import LeftSidebar from '@app/components/left-sidebar'
 
 // TODO: Update with proper navigtion coming from state/props
-import navigation from '@app/components/left-sidebar/dummy-nav'
+import {
+  circleNavigation,
+  homeNavigation,
+  prayNavigation
+} from '@app/components/left-sidebar/dummy-nav'
 import withAuth from '@app/utils/withAuth'
+
+const getNavigation = type => {
+  switch (type) {
+    case 'pray':
+      return prayNavigation
+    case 'circle':
+      return circleNavigation
+    default:
+      return homeNavigation
+  }
+}
+const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+const navigation = getNavigation(systemType)
 
 const Layout = ({ children }) => {
   const [collapsed, setCollapse] = useState(false)
