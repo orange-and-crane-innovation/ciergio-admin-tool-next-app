@@ -37,8 +37,8 @@ export const GET_DUES_PER_UNIT_SENT = gql`
       limit
       offset
       data {
-        _id
         dues {
+          _id
           category {
             name
           }

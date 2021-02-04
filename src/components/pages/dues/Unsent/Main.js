@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import FormSelect from '@app/components/globals/FormSelect'
@@ -63,12 +63,27 @@ const tableRowData = [
 // })
 
 const DueDate = ({ fieldData }) => {
-  // console.log(fieldData.value?.data ? fieldData.value?.data : null)
+  const [selectedDate, setSelectedDate] = useState(null)
+
+  useEffect(() => {
+    if (fieldData.value.length === 0) {
+      setSelectedDate(null)
+    } else {
+      fieldData.value.forEach((val, index) => {
+        const data = fieldData.value[index]
+
+        if (Object.keys(data)[0] === 'all') {
+          setSelectedDate(data.all)
+        } else if (Object.keys(data)[0] === fieldData?.Name) {
+          setSelectedDate(data)
+        }
+      })
+    }
+  }, [fieldData])
   return (
     <DatePicker
-      date={
-        fieldData.value?.data ? fieldData.value?.data[fieldData.Name] : null
-      }
+      rightIcon
+      date={selectedDate ? selectedDate[fieldData.Name] : null}
       placeHolder="Date"
       disabledPreviousDate={fieldData.minDate}
       onChange={(value, event) => {
@@ -79,6 +94,10 @@ const DueDate = ({ fieldData }) => {
   )
 }
 
+DueDate.propTypes = {
+  fieldData: P.object
+}
+
 function Unsent({ month, year }) {
   // router
   // const router = useRouter()
@@ -87,7 +106,7 @@ function Unsent({ month, year }) {
   const [selectedFloor, setSelectedFloor] = useState('all')
   const [searchText, setSearchText] = useState(null)
   const [search, setSearch] = useState(null)
-  const [selectedDate, setSelectedDate] = useState(null)
+
   const [showModal, setShowModal] = useState(false)
   const [dues, setDues] = useState()
   const [floors, setFloors] = useState([])
@@ -100,12 +119,16 @@ function Unsent({ month, year }) {
   const keyPressed = useKeyPress('Enter')
   const [modalDate, setModalDate] = useState(null)
   const [date, setDate] = useState(null)
-  const [amountValue, setAmountValue] = useState()
+  const [amountValue, setAmountValue] = useState([
+    {
+      initial: null
+    }
+  ])
 
   const [fileUrl, setFileUrl] = useState()
   const [loader, setLoader] = useState(false)
   const [fileUploadedData, setFileUploadedData] = useState()
-  const [allDates, setAllDates] = useState([])
+
   const [perDate, setPerDate] = useState([])
 
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
@@ -165,28 +188,19 @@ function Unsent({ month, year }) {
       '0'
     )}-${year}`
     setDate(formatTodate)
+    setPerDate([])
   }, [month, year])
 
-  const onChangeOfAmount = e => {
-    setAmountValue({
-      ...amountValue,
-      [e.target.name]: e.target.value
-    })
-  }
-
-  const handleChangeDate = (data, event) => {
-    if (date) {
-      setSelectedDate(date)
-    }
+  const handleChangeDate = event => {
+    const value = event.target.value
+    const name = event.target.name
+    const date = { [name]: value }
+    setPerDate(prevState => [...prevState, date])
   }
 
   const handleModalChangeDate = date => {
     setModalDate(date)
   }
-
-  useEffect(() => {
-    console.log(fileUploadedData)
-  }, [fileUploadedData])
 
   const uploadApi = async payload => {
     const response = await axios.post(
@@ -200,7 +214,6 @@ function Unsent({ month, year }) {
     )
 
     if (response) {
-      console.log(`this is error ${response}`)
       const imageData = response.data.map(item => {
         return {
           url: item.location,
@@ -223,20 +236,15 @@ function Unsent({ month, year }) {
     if (file) {
       formData.append('file', file)
       setLoader(false)
-
       uploadApi(formData)
     }
   }
 
   // Hooks for formatting table row
   const useTableRows = rows => {
-    const data = []
     const rowData = []
     let num = 0
     if (rows) {
-      // rows.forEach((row, index) => {
-      //   data[`date${index}`] = new Date(date)
-      // })
       rows.forEach((row, index) => {
         if (num !== row.floorNumber) {
           rowData.push({
@@ -261,40 +269,34 @@ function Unsent({ month, year }) {
             key={index}
           />
         )
+
         const amount = (
           <FormInput
-            onChange={onChangeOfAmount}
+            onChange={e => {
+              setAmountValue(prevState => ({
+                ...prevState,
+                [e.target.name]: e.target.value
+              }))
+            }}
             name={`amount${index}`}
             type="text"
             placeholder="0.0"
             key={index}
-            value={amountValue}
+            value={
+              amountValue[`amount${index}`]
+                ? amountValue[`amount${index}`]
+                : amountValue.initial
+            }
           />
         )
         const sendButton = <Button full default disabled label="Send" />
 
-        // const dueDate = (
-        //   <DatePicker
-        //     name={index}
-        //     id="asdasd"
-        //     disabledPreviousDate={date && date}
-        //     date={perDate[index]?.date}
-        //     onChange={handleChangeDate}
-        //     key={index}
-        //     placeHolder="Date"
-        //     inputRef={el => (ref.current[index] = el)}
-        //   />
-        // )
-
         const fieldData = {
           Name: `date${index}`,
-          ChangeHandler: function (event) {
-            data[`date${index}`] = event.target.value
-
-            setPerDate(old => ({ ...old, data }))
-          },
+          ChangeHandler: handleChangeDate,
           value: perDate,
-          minDate: date
+          minDate: date,
+          allDate: modalDate
         }
 
         const dueDate = <DueDate fieldData={fieldData} />
@@ -326,8 +328,7 @@ function Unsent({ month, year }) {
       }
       setDues(duesTable)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, data, error, selectedDate, date, perDate])
+  }, [loading, data, error, date, perDate, amountValue])
 
   useEffect(() => {
     let optionsData = [
@@ -351,7 +352,13 @@ function Unsent({ month, year }) {
     handleModal()
   }
   const handleOkModal = () => {
-    setSelectedDate(modalDate)
+    const allDates = []
+    for (let i = 0; i < 10; i++) {
+      const key = `date${i}`
+      const date = { [key]: modalDate }
+      allDates.push(date)
+    }
+    setPerDate(allDates)
     handleCloseModal()
   }
 
@@ -389,12 +396,18 @@ function Unsent({ month, year }) {
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
+    setPerDate([])
+    setAmountValue([{ initial: '' }])
   }
 
   // setting limit in pagination
   const onLimitChange = e => {
     setLimitPage(parseInt(e.target.value))
   }
+
+  useEffect(() => {
+    console.log(amountValue)
+  }, [amountValue])
 
   const calendarIcon = () => <span className="ciergio-calendar"></span>
 
@@ -403,6 +416,7 @@ function Unsent({ month, year }) {
       <div className={styles.FormContainer}>
         <div className={styles.DueDateControl}>
           <Button
+            full
             primary
             label="Apply Due Dates to All Units"
             leftIcon={calendarIcon()}

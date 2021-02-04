@@ -169,16 +169,12 @@ function Sent({ month, year }) {
 
   useEffect(() => {
     if (!loadingUpdateDues && calledUpdateDues && dataUpdateDues) {
-      console.log('yow')
-      if (dataUpdateDues?.data?.updateDues?.message === 'success') {
+      console.log(dataUpdateDues?.updateDues?.processId)
+      if (dataUpdateDues?.updateDues?.processId) {
         setShowModal(show => !show)
         setConfirmationModal(show => !show)
         showToast('success', `You have successfully updated a billing`)
         refetch()
-      } else {
-        setShowModal(show => !show)
-        setConfirmationModal(show => !show)
-        showToast('warning', dataUpdateDues?.errors[0]?.message)
       }
     }
   }, [loadingUpdateDues, calledUpdateDues, dataUpdateDues])
@@ -201,10 +197,10 @@ function Sent({ month, year }) {
             <UpdateBills
               amount={selected?.dues[0]?.amount}
               dueDate={selected?.dues[0]?.dueDate}
-              fileUrl={selected?.dues[0]?.attachment.fileUrl}
+              fileUrl={selected?.dues[0]?.attachment.fileUrl || '#'}
             />
           )
-          setUpdateDuesId(selected?._id)
+          setUpdateDuesId(selected?.dues[0]?._id)
           setModalFooter(true)
           break
         case 'details':
@@ -256,7 +252,8 @@ function Sent({ month, year }) {
 
         const attachment = (
           <a
-            href={row?.dues[0]?.attachment.fileUrl}
+            // href={row?.dues[0]?.attachment.fileUrl || '#'}
+            href="#"
             className={styles.fileLink}
           >
             View File
@@ -307,6 +304,7 @@ function Sent({ month, year }) {
 
   useEffect(() => {
     if (!loading && data && !error) {
+      console.log(loading)
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
@@ -315,7 +313,7 @@ function Sent({ month, year }) {
       }
       setDues(duesData)
     }
-  }, [loading, data, error])
+  }, [loading, data, error, refetch])
 
   useEffect(() => {
     let optionsData = [
@@ -385,14 +383,14 @@ function Sent({ month, year }) {
   }
 
   const handleConfirmUpdate = async () => {
-    const data = { amount: 20, dueDate: new Date(), attachment: null }
+    const data = {
+      id: updateDuesId,
+      data: { amount: 20, dueDate: new Date(), attachment: null }
+    }
 
     try {
       await updateDues({
-        variables: {
-          data,
-          id: updateDuesId
-        }
+        variables: data
       })
     } catch (e) {
       console.log(e)

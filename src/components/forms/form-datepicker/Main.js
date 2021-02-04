@@ -79,7 +79,7 @@ const FormDatePicker = ({
           calendarClassName={calendarClasses}
           className={inputClasses}
           minDate={new Date(disabledPreviousDate)}
-          ref={inputRef}
+          ref={dateRef}
           {...datepickerprops}
         />
         {rightIcon && <FaRegCalendarAlt />}
@@ -98,7 +98,7 @@ const FormDatePicker = ({
     disabledPreviousDate,
     datepickerprops,
     rightIcon,
-    inputRef,
+    dateRef,
     name
   ])
 
@@ -108,16 +108,16 @@ const FormDatePicker = ({
   )
 
   const openDate = date => {
-    // setBlur(blur => !blur
+    setBlur(blur => !blur)
   }
 
-  // useEffect(() => {
-  //   if (blur) {
-  //     dateRef.current.setFocus()
-  //   } else {
-  //     dateRef.current.setBlur()
-  //   }
-  // }, [blur])
+  useEffect(() => {
+    if (blur) {
+      dateRef.current.setFocus()
+    } else {
+      dateRef.current.setBlur()
+    }
+  }, [blur])
 
   return (
     <div className={containerClasses} onClick={openDate}>
