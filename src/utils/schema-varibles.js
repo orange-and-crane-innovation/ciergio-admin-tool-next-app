@@ -50,6 +50,14 @@ export const MutationResponse = `
     coverPhoto
     createdAt
     updatedAt
+    address {
+      line1
+      line2
+      city
+      province
+      zipCode
+      country
+    }
 `,
   Org = `
     _id
