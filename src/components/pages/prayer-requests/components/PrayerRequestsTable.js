@@ -5,15 +5,20 @@ import P from 'prop-types'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/select'
 import Dropdown from '@app/components/dropdown'
-import Card from '@app/components/card'
+import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 
 import dayjs, { friendlyDateTimeFormat } from '@app/utils/date'
 
 import { AiOutlineEllipsis } from 'react-icons/ai'
-import { FaTimes, FaSearch } from 'react-icons/fa'
+import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
+import { FiDownload } from 'react-icons/fi'
+import { HiOutlinePrinter } from 'react-icons/hi'
 import useDebounce from '@app/utils/useDebounce'
 import { GET_POST_CATEGORY } from '../queries'
+import Button from '@app/components/button'
+
+import CreatePrayerRequestModal from './CreatePrayerRequestModal'
 
 const columns = [
   {
@@ -47,7 +52,7 @@ function PrayerRequestsTable({ queryTemplate }) {
     label: 'All Category',
     value: null
   })
-
+  const [showCreatePrayerModal, setShowCreatePrayerModal] = useState(false)
   const debouncedSearchText = useDebounce(searchText, 700)
 
   const { data, loading } = useQuery(queryTemplate, {
@@ -71,19 +76,27 @@ function PrayerRequestsTable({ queryTemplate }) {
 
   const onLimitChange = limit => setPageLimit(Number(limit.value))
 
+  const onCancel = () => setShowCreatePrayerModal(old => !old)
+
+  // const onSubmit = values => {
+  //   console.log({ values })
+  //   setShowCreatePrayerModal(old => !old)
+  //   reset({
+  //     prayerFor: 'hahaha',
+  //     prayerFrom: 'hehehe',
+  //     category: 'lolololo',
+  //     date: '',
+  //     message: ''
+  //   })
+  // }
+
   const categoryOptions = useMemo(() => {
     if (categories?.getPostCategory?.count > 0) {
       const cats = categories.getPostCategory.category.map(cat => ({
         label: cat.name,
         value: cat._id
       }))
-      return [
-        {
-          label: 'All Category',
-          value: null
-        },
-        ...cats
-      ]
+      return cats
     }
   }, [categories?.getPostCategory])
 
@@ -139,7 +152,17 @@ function PrayerRequestsTable({ queryTemplate }) {
             isClearable={false}
             placeholder="Select Category"
             value={category}
-            options={categoryOptions}
+            options={
+              categoryOptions?.length > 0
+                ? [
+                    {
+                      label: 'All Category',
+                      value: null
+                    },
+                    ...categoryOptions
+                  ]
+                : []
+            }
             onChange={selectedValue => {
               setCategory(selectedValue)
               setCurrentPage(1)
@@ -175,11 +198,34 @@ function PrayerRequestsTable({ queryTemplate }) {
       </div>
       <Card
         noPadding
-        header={
+        title={
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-xl">Prayer Requests</h3>
           </div>
         }
+        actions={[
+          <Button
+            key="print"
+            default
+            icon={<HiOutlinePrinter />}
+            onClick={() => {}}
+            className="mr-1 "
+          />,
+          <Button
+            key="download"
+            default
+            icon={<FiDownload />}
+            onClick={() => {}}
+            className="mr-1 "
+          />,
+          <Button
+            key="add"
+            primary
+            label="Create Prayer Request"
+            leftIcon={<FaPlusCircle />}
+            onClick={() => setShowCreatePrayerModal(old => !old)}
+          />
+        ]}
         content={
           <PrimaryDataTable
             columns={columns}
@@ -191,6 +237,11 @@ function PrayerRequestsTable({ queryTemplate }) {
           />
         }
         className="rounded-t-none"
+      />
+      <CreatePrayerRequestModal
+        visible={showCreatePrayerModal}
+        onCancel={onCancel}
+        categoryOptions={categoryOptions}
       />
     </>
   )

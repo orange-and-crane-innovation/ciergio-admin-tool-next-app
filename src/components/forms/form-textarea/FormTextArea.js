@@ -23,7 +23,9 @@ const FormTextArea = ({
   error,
   hasPreview,
   onChange,
-  isEdit
+  isEdit,
+  toolbarHidden,
+  editorClassName
 }) => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
 
@@ -61,6 +63,8 @@ const FormTextArea = ({
     <div className={styles.FormTextAreaContainer}>
       <div className={containerClasses}>
         <Editor
+          editorClassName={editorClassName}
+          toolbarHidden={toolbarHidden}
           editorState={editorState}
           placeholder={placeholder}
           toolbar={{
@@ -107,6 +111,10 @@ const FormTextArea = ({
   )
 }
 
+FormTextArea.defaultProps = {
+  toolbarHidden: false
+}
+
 FormTextArea.propTypes = {
   editorState: P.any,
   maxLength: P.number,
@@ -117,7 +125,9 @@ FormTextArea.propTypes = {
   value: P.any,
   error: P.string,
   onChange: P.func,
-  isEdit: P.bool
+  isEdit: P.bool,
+  toolbarHidden: P.bool,
+  editorClassName: P.string
 }
 
 export default FormTextArea
