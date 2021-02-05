@@ -3,6 +3,7 @@ import { useQuery } from '@apollo/client'
 import P from 'prop-types'
 
 import FormInput from '@app/components/forms/form-input'
+import FormSelect from '@app/components/select'
 import Dropdown from '@app/components/dropdown'
 import Card from '@app/components/card'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -11,6 +12,8 @@ import dayjs, { friendlyDateTimeFormat } from '@app/utils/date'
 
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { FaTimes, FaSearch } from 'react-icons/fa'
+import useDebounce from '@app/utils/useDebounce'
+import { GET_POST_CATEGORY } from '../queries'
 
 const columns = [
   {
@@ -35,29 +38,54 @@ const columns = [
   }
 ]
 
-function PrayerRequestsTable({ queryTemplate, type }) {
+function PrayerRequestsTable({ queryTemplate }) {
   const [searchText, setSearchText] = useState('')
   const [pageLimit, setPageLimit] = useState(10)
   const [offset, setPageOffset] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
+  const [category, setCategory] = useState({
+    label: 'All Category',
+    value: null
+  })
+
+  const debouncedSearchText = useDebounce(searchText, 700)
 
   const { data, loading } = useQuery(queryTemplate, {
     variables: {
       complexId: '5f291193643d6011be2d280b',
       offset,
       limit: pageLimit,
-      search: searchText
+      search: debouncedSearchText,
+      categoryId: category?.value || null
     }
   })
+
+  const { data: categories } = useQuery(GET_POST_CATEGORY)
 
   const prayerRequests = data?.getIssues
 
   const onPageClick = e => {
     setCurrentPage(e)
-    setPageOffset(e * pageLimit)
+    setPageOffset(pageLimit * (e - 1))
   }
 
   const onLimitChange = limit => setPageLimit(Number(limit.value))
+
+  const categoryOptions = useMemo(() => {
+    if (categories?.getPostCategory?.count > 0) {
+      const cats = categories.getPostCategory.category.map(cat => ({
+        label: cat.name,
+        value: cat._id
+      }))
+      return [
+        {
+          label: 'All Category',
+          value: null
+        },
+        ...cats
+      ]
+    }
+  }, [categories?.getPostCategory])
 
   const tableData = useMemo(() => {
     return {
@@ -102,15 +130,28 @@ function PrayerRequestsTable({ queryTemplate, type }) {
           : []
     }
   }, [prayerRequests])
-  console.log({ prayerRequests })
+
   return (
     <>
       <div className="flex items-center justify-end">
-        <div className="w-2/12 md:w-120 md:ml-2 relative">
+        <div className="w-2/12 md:w-120 mr-2 relative -top-2">
+          <FormSelect
+            isClearable={false}
+            placeholder="Select Category"
+            value={category}
+            options={categoryOptions}
+            onChange={selectedValue => {
+              setCategory(selectedValue)
+              setCurrentPage(1)
+              setPageLimit(10)
+              setPageOffset(0)
+            }}
+          />
+        </div>
+        <div className="w-2/12 md:w-120 relative">
           <FormInput
             name="search"
             placeholder="Search"
-            inputClassName="pr-8"
             onChange={e => {
               if (e.target.value !== '') {
                 setSearchText(e.target.value)
@@ -122,7 +163,10 @@ function PrayerRequestsTable({ queryTemplate, type }) {
           />
           <span className="absolute top-4 right-4">
             {searchText ? (
-              <FaTimes className="cursor-pointer" onClick={() => {}} />
+              <FaTimes
+                className="cursor-pointer"
+                onClick={() => setSearchText('')}
+              />
             ) : (
               <FaSearch />
             )}
@@ -153,8 +197,7 @@ function PrayerRequestsTable({ queryTemplate, type }) {
 }
 
 PrayerRequestsTable.propTypes = {
-  queryTemplate: P.object,
-  type: P.string
+  queryTemplate: P.object
 }
 
 export default PrayerRequestsTable
