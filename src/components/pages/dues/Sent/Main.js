@@ -9,21 +9,18 @@ import Card from '@app/components/card'
 import FormSelect from '@app/components/globals/FormSelect'
 import PageLoader from '@app/components/page-loader'
 import showToast from '@app/utils/toast'
-
-import {
-  FaEye,
-  FaEllipsisH,
-  FaPencilAlt,
-  FaRegFileAlt,
-  FaBullseye
-} from 'react-icons/fa'
+import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
 import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import schema from './schema'
 import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
-import HistoryBills from './Cards/HistoryBills'
-import UpdateBills from './Cards/UpdateBills'
+import HistoryBills from './Modals/HistoryBills'
+import UpdateBills from './Modals/UpdateBills'
+
 import * as Query from './Query'
 import * as Mutation from './Mutation'
 
@@ -97,14 +94,25 @@ function Sent({ month, year }) {
   const [showModal, setShowModal] = useState(false)
   const [searchText, setSearchText] = useState(null)
   const [search, setSearch] = useState(null)
-
   const keyPressed = useKeyPress('Enter')
-
   const [status, setStatus] = useState([])
-
   const [modalFooter, setModalFooter] = useState(false)
   const [confirmationModal, setConfirmationModal] = useState()
   const [updateDuesId, setUpdateDuesId] = useState()
+  const [selectedFileUrl, setSelectedFileUrl] = useState('')
+  const [defaultVal, setDefaultVal] = useState({
+    attachment: {
+      fileUrl: '',
+      fileType: 'pdf'
+    },
+    amount: '',
+    dueDate: ''
+  })
+
+  const { handleSubmit, control, errors, register } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: defaultVal
+  })
 
   // graphQLFetching
   const { loading, data, error, refetch } = useQuery(
@@ -169,7 +177,6 @@ function Sent({ month, year }) {
 
   useEffect(() => {
     if (!loadingUpdateDues && calledUpdateDues && dataUpdateDues) {
-      console.log(dataUpdateDues?.updateDues?.processId)
       if (dataUpdateDues?.updateDues?.processId) {
         setShowModal(show => !show)
         setConfirmationModal(show => !show)
@@ -185,29 +192,48 @@ function Sent({ month, year }) {
     }
   }, [duesLoading, duesData, duesError])
 
+  useEffect(() => {
+    console.log(defaultVal)
+  }, [defaultVal])
+
+  const getData = data => {
+    setDefaultVal(prevState => ({ ...prevState, data }))
+  }
+
   const handleShowModal = (type, id) => {
     const selected =
       !loading && data?.getDuesPerUnit?.data.find(due => due._id === id)
-    console.log(selected)
+
     if (selected) {
       switch (type) {
-        case 'update':
+        case 'update': {
           setModalTitle('Edit Billing')
+          const amount = selected?.dues[0]?.amount
+          const dueDate = selected?.dues[0]?.dueDate
+          const fileUrl = selected?.dues[0]?.attachment?.fileUrl
+          setDefaultVal({
+            fileUrl,
+            dueDate,
+            amount
+          })
           setModalContent(
             <UpdateBills
-              amount={selected?.dues[0]?.amount}
-              dueDate={selected?.dues[0]?.dueDate}
-              fileUrl={selected?.dues[0]?.attachment.fileUrl || '#'}
+              amount={amount}
+              dueDate={dueDate}
+              fileUrl={fileUrl}
+              getData={getData}
             />
           )
           setUpdateDuesId(selected?.dues[0]?._id)
           setModalFooter(true)
           break
-        case 'details':
+        }
+        case 'details': {
           setModalTitle(`Unit ${selected.name} History`)
           setModalContent(<HistoryBills dues={selected?.dues} />)
 
           break
+        }
       }
     }
 
@@ -252,9 +278,9 @@ function Sent({ month, year }) {
 
         const attachment = (
           <a
-            // href={row?.dues[0]?.attachment.fileUrl || '#'}
-            href="#"
+            href={row?.dues[0]?.attachment?.fileUrl}
             className={styles.fileLink}
+            target="_blank"
           >
             View File
           </a>
@@ -304,7 +330,6 @@ function Sent({ month, year }) {
 
   useEffect(() => {
     if (!loading && data && !error) {
-      console.log(loading)
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
@@ -313,7 +338,7 @@ function Sent({ month, year }) {
       }
       setDues(duesData)
     }
-  }, [loading, data, error, refetch])
+  }, [loading, data, error, refetch, control, errors])
 
   useEffect(() => {
     let optionsData = [
@@ -382,19 +407,17 @@ function Sent({ month, year }) {
     setShowModal(show => !show)
   }
 
-  const handleConfirmUpdate = async () => {
-    const data = {
-      id: updateDuesId,
-      data: { amount: 20, dueDate: new Date(), attachment: null }
-    }
+  const handleConfirmUpdate = data => {
+    console.log('wewew')
+    console.log(data)
 
-    try {
-      await updateDues({
-        variables: data
-      })
-    } catch (e) {
-      console.log(e)
-    }
+    // try {
+    //   await updateDues({
+    //     variables: data
+    //   })
+    // } catch (e) {
+    //   console.log(e)
+    // }
   }
 
   const handleClearConfirmationModal = () => {
@@ -477,7 +500,9 @@ function Sent({ month, year }) {
         okText="Confirm"
         visible={confirmationModal}
         onClose={handleClearConfirmationModal}
-        onOk={handleConfirmUpdate}
+        onOk={handleSubmit(data => {
+          console.log(data)
+        })}
         cancelText="Cancel"
         onCancel={() => setConfirmationModal(old => !old)}
       >

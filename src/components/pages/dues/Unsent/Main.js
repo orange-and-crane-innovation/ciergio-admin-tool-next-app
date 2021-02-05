@@ -16,6 +16,9 @@ import P from 'prop-types'
 import useKeyPress from '@app/utils/useKeyPress'
 import * as Query from './Query.js'
 import axios from 'axios'
+import schema from './schema'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const tableRowData = [
   {
@@ -47,20 +50,6 @@ const tableRowData = [
     width: '15%'
   }
 ]
-
-// const validationSchema = yup.object().shape({
-//   unitName: yup.string().required(),
-//   unitOwnerFirstName: yup.string().required(),
-//   unitOwnerLastName: yup.string().required(),
-//   file: yup
-//     .object()
-//     .shape({
-//       name: yup.string().required()
-//     })
-//     .required(),
-//   amount: yup.number().required(),
-//   dueDate: yup.date().min(yup.ref('startDate'), "date should start based on the due billing date")
-// })
 
 const DueDate = ({ fieldData }) => {
   const [selectedDate, setSelectedDate] = useState(null)
@@ -94,10 +83,6 @@ const DueDate = ({ fieldData }) => {
   )
 }
 
-DueDate.propTypes = {
-  fieldData: P.object
-}
-
 function Unsent({ month, year }) {
   // router
   // const router = useRouter()
@@ -128,10 +113,23 @@ function Unsent({ month, year }) {
   const [fileUrl, setFileUrl] = useState()
   const [loader, setLoader] = useState(false)
   const [fileUploadedData, setFileUploadedData] = useState()
-
+  const [canSend, setCanSend] = useState(true)
   const [perDate, setPerDate] = useState([])
 
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
+
+  const { control, handleSubmit, errors } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      unitName: {},
+      unitOwner: {},
+      attachment: {},
+      amount: 0,
+      dueDate: 0
+    }
+  })
+
+  const [perRowData, setPerRowData] = useState([])
 
   // graphQLFetching
   const { loading, data, error } = useQuery(Query.GET_UNSENT_DUES_QUERY, {
@@ -202,6 +200,10 @@ function Unsent({ month, year }) {
     setModalDate(date)
   }
 
+  useEffect(() => {
+    console.log(fileUploadedData)
+  }, [fileUploadedData])
+
   const uploadApi = async payload => {
     const response = await axios.post(
       process.env.NEXT_PUBLIC_UPLOAD_API,
@@ -225,19 +227,16 @@ function Unsent({ month, year }) {
     }
   }
 
-  useEffect(() => {
-    console.log(fileUploadedData)
-  }, [fileUploadedData])
-
   const handleFile = file => {
     const formData = new FormData()
+    console.log(file)
 
     setLoader(true)
     if (file) {
-      formData.append('file', file)
+      formData.append('photos', file)
       setLoader(false)
-      uploadApi(formData)
     }
+    uploadApi(formData)
   }
 
   // Hooks for formatting table row
@@ -289,7 +288,9 @@ function Unsent({ month, year }) {
             }
           />
         )
-        const sendButton = <Button full default disabled label="Send" />
+        const sendButton = (
+          <Button full default disabled={canSend} label="Send" />
+        )
 
         const fieldData = {
           Name: `date${index}`,
@@ -328,7 +329,7 @@ function Unsent({ month, year }) {
       }
       setDues(duesTable)
     }
-  }, [loading, data, error, date, perDate, amountValue])
+  }, [loading, data, error, date, perDate, amountValue, canSend])
 
   useEffect(() => {
     let optionsData = [
@@ -492,6 +493,10 @@ function Unsent({ month, year }) {
       </Modal>
     </>
   )
+}
+
+DueDate.propTypes = {
+  fieldData: P.object
 }
 
 Unsent.propTypes = {

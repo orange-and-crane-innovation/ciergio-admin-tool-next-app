@@ -3,18 +3,29 @@ import P from 'prop-types'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import FileUpload from '@app/components/forms/form-fileupload'
+import { Controller } from 'react-hook-form'
 
-export default function UpdateBills({ amount, dueDate, fileUrl }) {
+export default function UpdateBills({ amount, dueDate, fileUrl, getData }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [text, setText] = useState('')
+  const [data, setData] = useState({
+    attachment: {
+      fileUrl,
+      fileType: 'pdf'
+    },
+    amount,
+    dueDate
+  })
 
-  const handleChangeDate = date => {
-    setSelectedDate(date)
+  const handleChangeDate = dueDate => {
+    setSelectedDate(dueDate)
+    setData(prevState => ({ ...prevState, dueDate }))
   }
 
   const handleTextChange = e => {
-    const value = e.target.value
-    setText(value)
+    const amount = e.target.value
+    setText(amount)
+    setData(prevState => ({ ...prevState, amount }))
   }
 
   return (
@@ -32,7 +43,6 @@ export default function UpdateBills({ amount, dueDate, fileUrl }) {
             placeholder={`₱ ${amount.toFixed(2)}`}
             type="text"
             onChange={handleTextChange}
-            name="amount"
             value={text}
             inputClassName="w-full rounded border-gray-300"
           />
@@ -56,5 +66,6 @@ export default function UpdateBills({ amount, dueDate, fileUrl }) {
 UpdateBills.propTypes = {
   amount: P.number,
   dueDate: P.string,
-  fileUrl: P.string
+  fileUrl: P.string,
+  form: P.object
 }
