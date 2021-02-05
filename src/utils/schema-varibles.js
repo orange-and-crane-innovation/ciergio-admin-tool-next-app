@@ -430,4 +430,66 @@ export const MutationResponse = `
       name
     }
   }
-`
+`,
+  PRAYER_REQUESTS_RESPONSE = `
+  issue {
+    _id
+    content
+    assignee {
+      _id
+      accountType
+      user {
+        avatar
+        firstName
+        lastName
+        __typename
+      }
+      __typename
+    }
+    author {
+      _id
+      user {
+        firstName
+        lastName
+        __typename
+      }
+      __typename
+    }
+    category {
+      name
+      __typename
+    }
+    prayer {
+      from
+      for
+      date
+      __typename
+    }
+    reporter {
+      _id
+      user {
+        firstName
+        lastName
+        __typename
+      }
+      __typename
+    }
+    building {
+      _id
+      name
+      __typename
+    }
+    unit {
+      _id
+      name
+      __typename
+    }
+    readAt
+    status
+    updatedAt
+    createdAt
+    __typename
+  }
+  __typename
+}
+  `
