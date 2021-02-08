@@ -1,0 +1,9 @@
+.createPrayerContainer {
+  @apply w-full p-4;
+
+  & .dateInput {
+    & .react-datepicker-wrapper {
+      width: 100% !important;
+    }
+  }
+}
