@@ -101,7 +101,7 @@ const FormDatePicker = ({
 FormDatePicker.propTypes = {
   id: P.string,
   onChange: P.func.isRequired,
-  format: P.array,
+  format: P.oneOfType([P.array, P.string]),
   disabled: P.bool,
   placeHolder: P.string,
   error: P.string,
@@ -113,8 +113,8 @@ FormDatePicker.propTypes = {
   labelClassname: P.string,
   showMonthYearPicker: P.bool,
   datepickerprops: P.object,
-  disabledPreviousDate: P.date,
-  date: P.date
+  disabledPreviousDate: P.func,
+  date: P.instanceOf(Date)
 }
 
 FormDatePicker.defaultProps = {

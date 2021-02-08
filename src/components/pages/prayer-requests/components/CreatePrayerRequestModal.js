@@ -1,7 +1,5 @@
 import P from 'prop-types'
-import { Controller, useForm } from 'react-hook-form'
-import * as yup from 'yup'
-import { yupResolver } from '@hookform/resolvers/yup'
+import { Controller } from 'react-hook-form'
 
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
@@ -10,43 +8,31 @@ import FormSelect from '@app/components/select'
 import FormDate from '@app/components/forms/form-datepicker'
 
 import styles from './CreatePrayerRequest.module.css'
-// import Button from '@app/components/button'
 
-const validationSchema = yup.object().shape({
-  prayerFor: yup.string().required(),
-  prayerFrom: yup.string().required(),
-  category: yup.string().email(),
-  date: yup.date().default(function () {
-    return new Date()
-  }),
-  message: yup.string()
-})
-
-function CreatePrayerRequestModal({ visible, onCancel, categoryOptions }) {
-  const { handleSubmit, control, errors } = useForm({
-    resolver: yupResolver(validationSchema),
-    defaultValues: {
-      prayerFor: '',
-      prayerFrom: '',
-      category: '',
-      date: '',
-      message: ''
-    }
-  })
-
-  const onSubmitForm = values => console.log({ values })
+const CreatePrayerRequestModal = ({
+  visible,
+  onCancel,
+  categoryOptions,
+  form,
+  onSubmit,
+  loading
+}) => {
+  const { control, errors } = form
 
   return (
     <Modal
       title="Create Prayer Request"
       visible={visible}
-      footer={null}
-      // okText="Create Request"
-      // onCancel={onCancel}
-      // onClose={onCancel}
+      okText="Create Request"
+      onCancel={onCancel}
+      onClose={onCancel}
+      onOk={onSubmit}
+      okButtonProps={{
+        loading
+      }}
     >
       <div className={styles.createPrayerContainer}>
-        <form onSubmit={handleSubmit(onSubmitForm)}>
+        <form>
           <Controller
             name="prayerFor"
             control={control}
@@ -147,10 +133,6 @@ function CreatePrayerRequestModal({ visible, onCancel, categoryOptions }) {
               </>
             )}
           />
-          <div>
-            <button>Cancel</button>
-            <button type="submit">Create Request</button>
-          </div>
         </form>
       </div>
     </Modal>
@@ -160,7 +142,10 @@ function CreatePrayerRequestModal({ visible, onCancel, categoryOptions }) {
 CreatePrayerRequestModal.propTypes = {
   visible: P.bool,
   onCancel: P.func,
-  categoryOptions: P.array
+  categoryOptions: P.array,
+  onSubmit: P.func,
+  form: P.object,
+  loading: P.bool
 }
 
 export default CreatePrayerRequestModal

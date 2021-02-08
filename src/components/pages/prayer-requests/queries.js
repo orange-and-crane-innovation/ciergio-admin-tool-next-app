@@ -65,3 +65,14 @@ export const GET_POST_CATEGORY = gql`
     }
   }
 `
+
+export const CREATE_PRAYER_REQUEST = gql`
+  mutation createPrayerRequest($data: InputCreateIssue) {
+    createIssue(data: $data) {
+      _id
+      message
+      processId
+      __typename
+    }
+  }
+`

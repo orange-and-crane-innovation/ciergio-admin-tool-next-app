@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/select'
@@ -9,13 +12,14 @@ import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 
 import dayjs, { friendlyDateTimeFormat } from '@app/utils/date'
+import showToast from '@app/utils/toast'
 
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import useDebounce from '@app/utils/useDebounce'
-import { GET_POST_CATEGORY } from '../queries'
+import { GET_POST_CATEGORY, CREATE_PRAYER_REQUEST } from '../queries'
 import Button from '@app/components/button'
 
 import CreatePrayerRequestModal from './CreatePrayerRequestModal'
@@ -43,7 +47,28 @@ const columns = [
   }
 ]
 
+const validationSchema = yup.object().shape({
+  prayerFor: yup.string().required(),
+  prayerFrom: yup.string().required(),
+  category: yup.object().shape({
+    label: yup.string(),
+    value: yup.string()
+  }),
+  date: yup.date(),
+  message: yup.string()
+})
+
 function PrayerRequestsTable({ queryTemplate }) {
+  const { handleSubmit, control, errors, reset } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      prayerFor: '',
+      prayerFrom: '',
+      category: '',
+      date: new Date(),
+      message: ''
+    }
+  })
   const [searchText, setSearchText] = useState('')
   const [pageLimit, setPageLimit] = useState(10)
   const [offset, setPageOffset] = useState(0)
@@ -67,6 +92,23 @@ function PrayerRequestsTable({ queryTemplate }) {
 
   const { data: categories } = useQuery(GET_POST_CATEGORY)
 
+  const [createRequest, { loading: creatingPrayerRequest }] = useMutation(
+    CREATE_PRAYER_REQUEST,
+    {
+      onCompleted: () => {
+        showToast('success', `Request created.`)
+        reset({
+          prayerFor: 'hahaha',
+          prayerFrom: 'hehehe',
+          category: 'lolololo',
+          date: '',
+          message: ''
+        })
+        setShowCreatePrayerModal(old => !old)
+      }
+    }
+  )
+
   const prayerRequests = data?.getIssues
 
   const onPageClick = e => {
@@ -78,17 +120,26 @@ function PrayerRequestsTable({ queryTemplate }) {
 
   const onCancel = () => setShowCreatePrayerModal(old => !old)
 
-  // const onSubmit = values => {
-  //   console.log({ values })
-  //   setShowCreatePrayerModal(old => !old)
-  //   reset({
-  //     prayerFor: 'hahaha',
-  //     prayerFrom: 'hehehe',
-  //     category: 'lolololo',
-  //     date: '',
-  //     message: ''
-  //   })
-  // }
+  const onSubmit = values => {
+    const { date, category, message, prayerFor, prayerFrom } = values
+
+    createRequest({
+      variables: {
+        data: {
+          authorAccountId: '5fd1d549ae785b6e2e923c6a',
+          companyId: '5f290f7d0dcafc0ba70e0721',
+          complexId: '5f291193643d6011be2d280b',
+          categoryId: category?.value,
+          content: message,
+          prayer: {
+            for: prayerFor,
+            from: prayerFrom,
+            date: date.toISOString()
+          }
+        }
+      }
+    })
+  }
 
   const categoryOptions = useMemo(() => {
     if (categories?.getPostCategory?.count > 0) {
@@ -242,6 +293,12 @@ function PrayerRequestsTable({ queryTemplate }) {
         visible={showCreatePrayerModal}
         onCancel={onCancel}
         categoryOptions={categoryOptions}
+        onSubmit={handleSubmit(onSubmit)}
+        form={{
+          errors,
+          control
+        }}
+        loading={creatingPrayerRequest}
       />
     </>
   )
