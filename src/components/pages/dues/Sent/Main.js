@@ -99,7 +99,7 @@ function Sent({ month, year }) {
   const [modalFooter, setModalFooter] = useState(false)
   const [confirmationModal, setConfirmationModal] = useState()
   const [updateDuesId, setUpdateDuesId] = useState()
-  const [selectedFileUrl, setSelectedFileUrl] = useState('')
+
   const [defaultVal, setDefaultVal] = useState({
     attachment: {
       fileUrl: '',
@@ -191,10 +191,6 @@ function Sent({ month, year }) {
       setCount(preState => ({ ...preState, ...duesData?.getDues?.count }))
     }
   }, [duesLoading, duesData, duesError])
-
-  useEffect(() => {
-    console.log(defaultVal)
-  }, [defaultVal])
 
   const getData = data => {
     setDefaultVal(prevState => ({ ...prevState, data }))
@@ -407,17 +403,14 @@ function Sent({ month, year }) {
     setShowModal(show => !show)
   }
 
-  const handleConfirmUpdate = data => {
-    console.log('wewew')
-    console.log(data)
-
-    // try {
-    //   await updateDues({
-    //     variables: data
-    //   })
-    // } catch (e) {
-    //   console.log(e)
-    // }
+  const handleConfirmUpdate = async data => {
+    try {
+      await updateDues({
+        variables: data
+      })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const handleClearConfirmationModal = () => {

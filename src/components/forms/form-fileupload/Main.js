@@ -40,7 +40,7 @@ export default function FileUpload({
       if (file.size < max) {
         setFileName(file.name)
         setFile(file)
-        getFile && getFile(file)
+        getFile && getFile(e)
       } else {
         showToast('danger', `File should be less than ${maxSize || 5}mb`)
       }

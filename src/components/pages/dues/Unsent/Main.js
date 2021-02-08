@@ -11,14 +11,15 @@ import PageLoader from '@app/components/page-loader'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
-import { useQuery } from '@apollo/client'
+import showToast from '@app/utils/toast'
+import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import useKeyPress from '@app/utils/useKeyPress'
 import * as Query from './Query.js'
 import axios from 'axios'
-import schema from './schema'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
+import * as Mutation from './Mutation'
+
+const _ = require('lodash')
 
 const tableRowData = [
   {
@@ -110,26 +111,34 @@ function Unsent({ month, year }) {
     }
   ])
 
-  const [fileUrl, setFileUrl] = useState()
-  const [loader, setLoader] = useState(false)
-  const [fileUploadedData, setFileUploadedData] = useState()
-  const [canSend, setCanSend] = useState(true)
-  const [perDate, setPerDate] = useState([])
+  const [isSent, setIsSent] = useState(false)
 
+  const [loader, setLoader] = useState(false)
+  const [fileUploadedData, setFileUploadedData] = useState({})
+  const [datePerRow, setDatePerRow] = useState({})
+  const [testids, setTestIds] = useState({
+    companyId: '5d79adf32174a96807fec886',
+    complexId: '5d79c58a2174a96807fec88e',
+    categoryId: '5deddc8474e2dda248a5e0da',
+    unitId: '5d941b26faa4554c3f63dab1'
+  })
+  const [period, setPeriod] = useState({
+    month: 2,
+    year: 2021
+  })
+  const [title, setTitle] = useState('Test Title - Fen 2021')
+  const [amountPerRow, setAmountPerRow] = useState({})
+  const [perDate, setPerDate] = useState([])
   const temporaryBuildingID = '5d804d6543df5f4239e72911'
 
-  const { control, handleSubmit, errors } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      unitName: {},
-      unitOwner: {},
-      attachment: {},
-      amount: 0,
-      dueDate: 0
+  const [
+    createDues,
+    {
+      loading: loadingCreatingDues,
+      called: calledCreatingDues,
+      data: dataCreatingDues
     }
-  })
-
-  const [perRowData, setPerRowData] = useState([])
+  ] = useMutation(Mutation.CREATE_DUES)
 
   // graphQLFetching
   const { loading, data, error } = useQuery(Query.GET_UNSENT_DUES_QUERY, {
@@ -192,19 +201,23 @@ function Unsent({ month, year }) {
   const handleChangeDate = event => {
     const value = event.target.value
     const name = event.target.name
+    const id = name[name.length - 1]
+
     const date = { [name]: value }
     setPerDate(prevState => [...prevState, date])
+    setDatePerRow(prevState => ({
+      ...prevState,
+      [`form${id}`]: {
+        dueDate: value
+      }
+    }))
   }
 
   const handleModalChangeDate = date => {
     setModalDate(date)
   }
 
-  useEffect(() => {
-    console.log(fileUploadedData)
-  }, [fileUploadedData])
-
-  const uploadApi = async payload => {
+  const uploadApi = async (payload, name) => {
     const response = await axios.post(
       process.env.NEXT_PUBLIC_UPLOAD_API,
       payload,
@@ -218,25 +231,78 @@ function Unsent({ month, year }) {
     if (response) {
       const imageData = response.data.map(item => {
         return {
-          url: item.location,
-          type: item.mimetype
+          fileUrl: item.location,
+          fileType: item.mimetype
         }
       })
 
-      setFileUploadedData(imageData)
+      setFileUploadedData(prevState => ({ ...prevState, [name]: imageData[0] }))
     }
+  }
+
+  const onChangeAmount = e => {
+    const name = e.target.name
+    setAmountValue(prevState => ({
+      ...prevState,
+      [name]: e.target.value
+    }))
+    const id = name[name.length - 1]
+    const amount = { amount: e.target.value }
+    const formName = [`form${id}`]
+    setAmountPerRow(prevData => ({ ...prevData, [formName]: { ...amount } }))
   }
 
   const handleFile = file => {
     const formData = new FormData()
-    console.log(file)
-
+    const name = file.target.name
+    const formName = `form${name[name.length - 1]}`
+    const fileData = file.target.files
+      ? file.target.files[0]
+      : file.dataTransfer.files[0]
     setLoader(true)
     if (file) {
-      formData.append('photos', file)
+      formData.append('photos', fileData)
       setLoader(false)
     }
-    uploadApi(formData)
+    uploadApi(formData, formName)
+  }
+
+  useEffect(() => {
+    if (!loadingCreatingDues && calledCreatingDues && dataCreatingDues) {
+      console.log('sending')
+      console.log(dataCreatingDues)
+      setIsSent(true)
+    } else {
+      console.log(dataCreatingDues)
+    }
+  }, [loadingCreatingDues, calledCreatingDues, dataCreatingDues])
+
+  const submitForm = async e => {
+    e.preventDefault()
+    const name = e.target.name
+
+    try {
+      const data = {
+        amount: parseInt(amountPerRow[name]?.amount),
+        ...testids,
+        dueDate: datePerRow[name]?.dueDate,
+        buildingId: temporaryBuildingID,
+        sent: true,
+        title,
+        period: {
+          ...period
+        },
+        attachment: { ...fileUploadedData[name] }
+      }
+
+      await createDues({
+        variables: {
+          data: data
+        }
+      })
+    } catch (e) {
+      showToast('warning', 'Send Failed')
+    }
   }
 
   // Hooks for formatting table row
@@ -262,6 +328,7 @@ function Unsent({ month, year }) {
         const uploadFile = (
           <FileUpload
             label="Upload File"
+            name={`file${index}`}
             getFile={handleFile}
             loading={loader}
             maxSize={5}
@@ -271,12 +338,7 @@ function Unsent({ month, year }) {
 
         const amount = (
           <FormInput
-            onChange={e => {
-              setAmountValue(prevState => ({
-                ...prevState,
-                [e.target.name]: e.target.value
-              }))
-            }}
+            onChange={onChangeAmount}
             name={`amount${index}`}
             type="text"
             placeholder="0.0"
@@ -288,8 +350,23 @@ function Unsent({ month, year }) {
             }
           />
         )
+        const isAmountEmpty = !!(
+          amountPerRow[`form${index}`] &&
+          amountPerRow[`form${index}`].amount !== ''
+        )
+        const isDueDateEmpty = !_.isEmpty(datePerRow[`form${index}`])
+        const isFileEmpty = !_.isEmpty(fileUploadedData[`form${index}`])
+
         const sendButton = (
-          <Button full default disabled={canSend} label="Send" />
+          <Button
+            full
+            primary={!isSent}
+            success={isSent}
+            disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
+            label={isSent ? 'Sent' : 'Send'}
+            name={`form${index}`}
+            onClick={e => submitForm(e)}
+          />
         )
 
         const fieldData = {
@@ -329,7 +406,17 @@ function Unsent({ month, year }) {
       }
       setDues(duesTable)
     }
-  }, [loading, data, error, date, perDate, amountValue, canSend])
+  }, [
+    loading,
+    data,
+    error,
+    date,
+    perDate,
+    amountPerRow,
+    datePerRow,
+    fileUploadedData,
+    isSent
+  ])
 
   useEffect(() => {
     let optionsData = [
@@ -345,7 +432,13 @@ function Unsent({ month, year }) {
     }
 
     setFloors(optionsData)
-  }, [loadingFloorNumbers, dataAllFloors, errorGetAllFloors])
+  }, [
+    loadingFloorNumbers,
+    dataAllFloors,
+    errorGetAllFloors,
+    amountPerRow,
+    datePerRow
+  ])
 
   const handleModal = () => setShowModal(show => !show)
 
@@ -405,10 +498,6 @@ function Unsent({ month, year }) {
   const onLimitChange = e => {
     setLimitPage(parseInt(e.target.value))
   }
-
-  useEffect(() => {
-    console.log(amountValue)
-  }, [amountValue])
 
   const calendarIcon = () => <span className="ciergio-calendar"></span>
 
