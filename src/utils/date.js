@@ -12,7 +12,7 @@ export const toFriendlyDateTime = data => {
   if (data) {
     const dateObj = new Date(data)
     const dayObj = dayjs(dateObj)
-    convertedDate = dayObj.format('MMMM DD, YYYY hh:mm:ss A')
+    convertedDate = dayObj.format('MMMM DD, YYYY hh:mm A')
   }
 
   return convertedDate
