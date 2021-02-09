@@ -26,7 +26,8 @@ function Component({
   value,
   inputValue,
   onChange,
-  name
+  name,
+  hasCheckbox
 }) {
   const renderError = useMemo(() => {
     return error ? <span className={errorClasses}>{error}</span> : null
@@ -47,7 +48,7 @@ function Component({
         isSearchable={isSearchable}
         placeholder={placeholder}
         loading={loading}
-        disabled={disabled}
+        isDisabled={disabled}
         rtl={rtl}
         isMulti={allowMultiple}
         inputValue={inputValue}
@@ -95,7 +96,8 @@ Component.propTypes = {
   name: P.string,
   value: P.any,
   onChange: P.func,
-  inputValue: P.string
+  inputValue: P.string,
+  hasCheckbox: P.bool
 }
 
 export default Component

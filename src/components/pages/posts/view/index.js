@@ -16,7 +16,7 @@ import showToast from '@app/utils/toast'
 
 import NotifCard from '../components/NotifCard'
 
-import styles from './index.module.css'
+// import styles from './index.module.css'
 
 const GET_POST_QUERY = gql`
   query getAllPost($where: AllPostInput) {

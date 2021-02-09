@@ -8,7 +8,7 @@ import styles from './Main.module.css'
 const FormDatePicker = ({
   id,
   date,
-  handleChange,
+  onChange,
   format,
   disabled,
   placeHolder,
@@ -60,7 +60,7 @@ const FormDatePicker = ({
         id={id}
         selected={date}
         placeholderText={placeHolder}
-        onChange={handleChange}
+        onChange={onChange}
         dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
         disabled={disabled}
         showMonthYearPicker={showMonthYearPicker}
@@ -71,15 +71,17 @@ const FormDatePicker = ({
       />
     )
   }, [
+    id,
     date,
     inputClasses,
-    handleChange,
+    onChange,
     placeHolder,
     showMonthYearPicker,
-    datepickerprops,
     format,
     disabled,
-    disabledPreviousDate
+    calendarClasses,
+    disabledPreviousDate,
+    datepickerprops
   ])
 
   const renderError = useMemo(
@@ -98,9 +100,8 @@ const FormDatePicker = ({
 
 FormDatePicker.propTypes = {
   id: P.string,
-  date: P.date,
   onChange: P.func.isRequired,
-  format: P.array,
+  format: P.oneOfType([P.array, P.string]),
   disabled: P.bool,
   placeHolder: P.string,
   error: P.string,
@@ -112,7 +113,8 @@ FormDatePicker.propTypes = {
   labelClassname: P.string,
   showMonthYearPicker: P.bool,
   datepickerprops: P.object,
-  disabledPreviousDate: P.date
+  disabledPreviousDate: P.func,
+  date: P.instanceOf(Date)
 }
 
 FormDatePicker.defaultProps = {

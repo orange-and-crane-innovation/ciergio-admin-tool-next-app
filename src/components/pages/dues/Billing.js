@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Tabs from '@app/components/tabs'
 import styles from './Billing.module.css'
-import { useRouter } from 'next/router'
+// import { useRouter } from 'next/router'
 
 import DatePicker from '@app/components/forms/form-datepicker/'
 
@@ -9,9 +9,9 @@ import Unsent from './Unsent'
 import Sent from './Sent'
 
 function Billing() {
-  const router = useRouter()
+  // const router = useRouter()
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const [activeTab, setActiveTab] = useState(1)
+  // const [activeTab, setActiveTab] = useState(1)
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [year, setYear] = useState(new Date().getFullYear())
 
@@ -44,7 +44,7 @@ function Billing() {
             <div className={styles.BillingPeriodContainer}>
               <DatePicker
                 date={selectedDate}
-                handleChange={handleDateChange}
+                onChange={handleDateChange}
                 label={'Billing'}
                 showMonthYearPicker
               />

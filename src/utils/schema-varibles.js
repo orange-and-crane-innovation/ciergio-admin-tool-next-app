@@ -1,3 +1,4 @@
+/* eslint-disable one-var */
 export const MutationResponse = `
     {
       _id
@@ -6,24 +7,24 @@ export const MutationResponse = `
       processId
     }
 `,
-	MutationResponse2 = `
+  MutationResponse2 = `
     {
       _id
       message
       processId
     }
 `,
-	Page = `
+  Page = `
     count
     limit
     skip
 `,
-	Pagev2 = `
+  Pagev2 = `
     count
     limit
     offset
 `,
-	Pagev3 = `
+  Pagev3 = `
     count {
       all
       unread
@@ -36,7 +37,7 @@ export const MutationResponse = `
     offset
     limit
 `,
-	User = `
+  User = `
     _id
     email
     status
@@ -49,8 +50,16 @@ export const MutationResponse = `
     coverPhoto
     createdAt
     updatedAt
+    address {
+      line1
+      line2
+      city
+      province
+      zipCode
+      country
+    }
 `,
-	Org = `
+  Org = `
     _id
     name
     status
@@ -63,7 +72,7 @@ export const MutationResponse = `
       city
     }
 `,
-	Administrator = `
+  Administrator = `
     ${Page}
     data {
       _id
@@ -72,13 +81,13 @@ export const MutationResponse = `
       }
     }
 `,
-	Reservee = `
+  Reservee = `
     reservee {
       _id
       email
     }
 `,
-	UnitType = `
+  UnitType = `
     unitType {
       _id
       name
@@ -89,7 +98,7 @@ export const MutationResponse = `
       updatedAt
     }
 `,
-	Unit = `
+  Unit = `
     _id
     name
     status
@@ -100,13 +109,13 @@ export const MutationResponse = `
     createdAt
     updatedAt
 `,
-	Building = `
+  Building = `
     ${Org}
     buildingAdministrators (limit: 1) {
       ${Administrator}
     }
 `,
-	Buildings = `
+  Buildings = `
     ${Page}
     data {
       ${Org}
@@ -115,7 +124,7 @@ export const MutationResponse = `
       }
     }
 `,
-	Complex = `
+  Complex = `
     ${Org}
     complexAdministrators (limit: 1)  {
       ${Administrator}
@@ -127,7 +136,7 @@ export const MutationResponse = `
       ${Buildings}
     }
 `,
-	Complexes = `
+  Complexes = `
     ${Page}
     data {
       ${Org}
@@ -136,7 +145,7 @@ export const MutationResponse = `
       }
     }
 `,
-	Company = `
+  Company = `
     ${Org}
     email
     tinNumber
@@ -153,7 +162,7 @@ export const MutationResponse = `
       ${Administrator}
     }
 `,
-	UserAccount = `
+  UserAccount = `
     _id
     active
     accountType
@@ -200,37 +209,37 @@ export const MutationResponse = `
       ${Unit}
     }
 `,
-	// conversations {
-	//   count
-	//   limit
-	//   skip
-	//   data{
-	//     _id
-	//     name
-	//     messages (limit: 1) {
-	//       count
-	//       limit
-	//       skip
-	//       data {
-	//         _id
-	//         message
-	//         viewers {
-	//           count
-	//           data {
-	//             _id
-	//           }
-	//         }
-	//         author {
-	//           _id
-	//         }
-	//       }
-	//     }
-	//   }
-	// }
-	// conversations {
-	//   ${Conversations}
-	// }
-	Post = `
+  // conversations {
+  //   count
+  //   limit
+  //   skip
+  //   data{
+  //     _id
+  //     name
+  //     messages (limit: 1) {
+  //       count
+  //       limit
+  //       skip
+  //       data {
+  //         _id
+  //         message
+  //         viewers {
+  //           count
+  //           data {
+  //             _id
+  //           }
+  //         }
+  //         author {
+  //           _id
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+  // conversations {
+  //   ${Conversations}
+  // }
+  Post = `
     _id
     title
     content
@@ -249,7 +258,7 @@ export const MutationResponse = `
       type
     }
 `,
-	PostViews = `
+  PostViews = `
     ${Pagev2}
     unique {
       count
@@ -258,7 +267,7 @@ export const MutationResponse = `
       }
     }
 `,
-	PostCats = `
+  PostCats = `
     category {
       _id
       name
@@ -270,7 +279,7 @@ export const MutationResponse = `
       status
     }
 `,
-	PostAudience = `
+  PostAudience = `
     company {
       _id
     }
@@ -281,7 +290,7 @@ export const MutationResponse = `
       _id
     }
 `,
-	MessageViewer = `
+  MessageViewer = `
     ${Page}
     data {
       _id
@@ -292,13 +301,13 @@ export const MutationResponse = `
       }
     }
 `,
-	Participants = `
+  Participants = `
     ${Page}
     data {
       ${UserAccount}
     }
 `,
-	Message = `
+  Message = `
     _id
     message
     status
@@ -326,13 +335,13 @@ export const MutationResponse = `
       ${MessageViewer}
     }
 `,
-	Messages = `
+  Messages = `
     ${Page}
     data {
       ${Message}
     }
 `,
-	Conversations = `
+  Conversations = `
     ${Page}
     data {
       _id
@@ -350,7 +359,7 @@ export const MutationResponse = `
       }
     }
 `,
-	Issue = `
+  Issue = `
     _id
     code
     status
@@ -382,7 +391,7 @@ export const MutationResponse = `
       ${Unit}
     }
 `,
-	ExtensionAccount = `
+  ExtensionAccount = `
     _id
     firstName
     lastName
@@ -409,9 +418,86 @@ export const MutationResponse = `
       }
     }
 `,
-	ExtensionAccountRequests = `
+  ExtensionAccountRequests = `
     ${Page}
     data {
       ${ExtensionAccount}
     }
-`
+`,
+  NOTIFICATION_RESPONSE = `
+  ${Pagev2}
+  post {
+    _id
+    title
+    publishedAt
+    publishedNextAt
+    createdAt
+    updatedAt
+    category {
+      _id
+      name
+    }
+  }
+`,
+  PRAYER_REQUESTS_RESPONSE = `
+  issue {
+    _id
+    content
+    assignee {
+      _id
+      accountType
+      user {
+        avatar
+        firstName
+        lastName
+        __typename
+      }
+      __typename
+    }
+    author {
+      _id
+      user {
+        firstName
+        lastName
+        __typename
+      }
+      __typename
+    }
+    category {
+      name
+      __typename
+    }
+    prayer {
+      from
+      for
+      date
+      __typename
+    }
+    reporter {
+      _id
+      user {
+        firstName
+        lastName
+        __typename
+      }
+      __typename
+    }
+    building {
+      _id
+      name
+      __typename
+    }
+    unit {
+      _id
+      name
+      __typename
+    }
+    readAt
+    status
+    updatedAt
+    createdAt
+    __typename
+  }
+  __typename
+}
+  `

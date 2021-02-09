@@ -1,49 +1,34 @@
 import { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
-import SelectCategory from '@app/components/globals/SelectCategory'
-
+import Button from '@app/components/button'
+import Dropdown from '@app/components/dropdown'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
-import Button from '@app/components/button'
 import Card from '@app/components/card'
-import FormSelect from '@app/components/forms/form-select'
-import { FaEye } from 'react-icons/fa'
+import FormSelect from '@app/components/globals/FormSelect'
+import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
 import { gql, useQuery } from '@apollo/client'
 import P from 'prop-types'
-import Link from 'next/link'
+import { toFriendlyDate } from '@app/utils/date'
+import Modal from '@app/components/modal'
+import useKeyPress from '@app/utils/useKeyPress'
+import HistoryBills from './Cards/HistoryBills'
+import UpdateBills from './Cards/UpdateBills'
 
-const statusOptions = [
-  {
-    label: 'All Status',
-    value: 'all'
-  },
-  {
-    label: 'Paid',
-    value: 'paid'
-  },
-  {
-    label: 'Unpaid',
-    value: 'unpaid'
+const GET_ALL_FLOORS = gql`
+  query getFloorNUmbers($buildingId: String!) {
+    getFloorNumbers(buildingId: $buildingId)
   }
-]
+`
 
 const GETDEUS_QUERY = gql`
-  query {
-    getDues(
-      where: {
-        buildingId: "5d804d6543df5f4239e72911"
-        period: { month: 1, year: 2020 }
-      }
-    ) {
+  query getDues($where: DuesQueryInput) {
+    getDues(where: $where) {
       count {
         all
         seen
         sent
-        units {
-          all
-          withResidents
-        }
       }
     }
   }
@@ -68,11 +53,15 @@ const GET_DUES_PER_UNIT_SENT = gql`
       limit
       offset
       data {
+        _id
         dues {
+          category {
+            name
+          }
           attachment {
             fileUrl
-            fileUrl
           }
+          amount
           dueDate
           status
           views {
@@ -93,132 +82,296 @@ const GET_DUES_PER_UNIT_SENT = gql`
   }
 `
 
+const statusOptions = [
+  {
+    label: 'All Status',
+    value: 'null'
+  },
+  {
+    label: 'Paid',
+    value: 'settled'
+  },
+  {
+    label: 'Unpaid',
+    value: 'unpaid'
+  }
+]
+
+const tableRowData = [
+  {
+    name: 'Floor',
+    width: '10%'
+  },
+  {
+    name: 'Seen',
+    width: '5%'
+  },
+  {
+    name: 'Unit',
+    width: '10%'
+  },
+  {
+    name: 'Unit Owner',
+    width: '15%'
+  },
+  {
+    name: 'Upload File',
+    width: '15%'
+  },
+  {
+    name: 'Amount ',
+    width: '10%'
+  },
+  {
+    name: 'Due Date',
+    width: '20%'
+  },
+  {
+    name: 'Paid',
+    width: '10%'
+  },
+  {
+    name: '',
+    width: '10%'
+  }
+]
+
 function Sent({ month, year }) {
-  const [selectedFloor, setSelectedFloor] = useState('')
+  // const [selectedFloor] = useState('')
   const [searchText, setSearchText] = useState('')
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
   const [dues, setDues] = useState()
+  const [floors, setFloors] = useState([])
+  const [floorNumber, setFloorNumber] = useState('all')
+  const [count, setCount] = useState({
+    all: 0,
+    seen: 0
+  })
+  const [modalTitle, setModalTitle] = useState('')
+  const [modalContent, setModalContent] = useState()
+  const [showModal, setShowModal] = useState(false)
+  const [search, setSearch] = useState(null)
+
+  const keyPressed = useKeyPress('Enter')
 
   // graphQLFetching
-  const { loading, data, error, refetch: refetchPosts } = useQuery(
-    GET_DUES_PER_UNIT_SENT,
+  const { loading, data, error } = useQuery(GET_DUES_PER_UNIT_SENT, {
+    variables: {
+      unit: {
+        buildingId: '5d804d6543df5f4239e72911',
+        search: search,
+        floorNumber: floorNumber
+      },
+      filter: {
+        sent: true
+      },
+      dues: {
+        period: {
+          month: month,
+          year: year
+        }
+      },
+      limit: 10,
+      offset: offsetPage
+    }
+  })
+
+  const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
+    GETDEUS_QUERY,
     {
       variables: {
-        unit: {
-          buildingId: '5d804d6543df5f4239e72911'
-        },
-        filter: {
-          sent: true
-        },
-        dues: {
+        where: {
+          sent: true,
+          buildingId: '5d804d6543df5f4239e72911',
           period: {
             month,
             year
           }
-        },
-        limit: limitPage,
-        offset: offsetPage
+        }
       }
     }
   )
 
-  const tableRowData = [
-    {
-      name: 'Seen',
-      width: '10%'
-    },
-    {
-      name: 'Unit',
-      width: '10%'
-    },
-    {
-      name: 'Unit Owner',
-      width: '15%'
-    },
-    {
-      name: 'Upload File',
-      width: '15%'
-    },
-    {
-      name: 'Amount (Optional)',
-      width: '20%'
-    },
-    {
-      name: 'Due Date',
-      width: '15%'
-    },
-    {
-      name: 'Paid',
-      width: '15%'
+  const {
+    loading: loadingFloorNumbers,
+    error: errorGetAllFloors,
+    data: dataAllFloors
+  } = useQuery(GET_ALL_FLOORS, {
+    variables: {
+      buildingId: '5d804d6543df5f4239e72911'
     }
-  ]
+  })
 
-  // Component did mount for generating table data
   useEffect(() => {
-    let copyOfFloorNumber = null
+    if (!duesLoading) {
+      setCount(preState => ({ ...preState, ...duesData?.getDues?.count }))
+    }
+  }, [duesLoading, duesData, duesError])
 
-    if (!loading && data) {
-      console.log(data)
+  const handleShowModal = (type, id) => {
+    const selected =
+      !loading && data?.getDuesPerUnit?.data.find(due => due._id === id)
+    if (selected) {
+      switch (type) {
+        case 'update':
+          setModalTitle('Edit Billing')
+          setModalContent(<UpdateBills amount={10} dueDate={new Date()} />)
+          break
+        case 'details':
+          setModalTitle(`Unit ${selected.name} History`)
+          setModalContent(<HistoryBills dues={selected?.dues} />)
+          break
+      }
+    }
+
+    setShowModal(open => !open)
+  }
+
+  const handleClearModal = () => {
+    handleShowModal()
+  }
+  // Hooks for formatting table row
+  const useTableRows = rows => {
+    const rowData = []
+    let num = 0
+
+    if (rows) {
+      rows.forEach(row => {
+        const dropdownData = [
+          {
+            label: 'Update Bills',
+            icon: <FaPencilAlt />,
+            function: () => handleShowModal('update', row?._id)
+          },
+          {
+            label: 'Bills Details',
+            icon: <FaRegFileAlt />,
+            function: () => handleShowModal('details', row?._id)
+          }
+        ]
+        if (num !== row.floorNumber) {
+          rowData.push({
+            floorNumber: row.floorNumber,
+            b: '',
+            bl: '',
+            bla: '',
+            blan: '',
+            blank: '',
+            blankrow: '',
+            blankrowspa: '',
+            blankrowspan: ''
+          })
+        }
+
+        const attachment = (
+          <a
+            href={row?.dues[0]?.attachment.fileUrl}
+            className={styles.fileLink}
+          >
+            View File
+          </a>
+        )
+        const amount = `₱${row?.dues[0]?.amount.toFixed(2)}`
+        const status =
+          row?.dues[0]?.status === 'overdue' ||
+          row?.dues[0]?.status === 'due' ? (
+            <Button
+              className={styles.paid}
+              disabled
+              label="Unpaid"
+              onClick={() => alert('unpaid')}
+            />
+          ) : (
+            <Button onClick={() => alert('paid')} label="Paid" />
+          )
+        const seen = row?.dues[0]?.views.count ? <FaEye /> : null
+        const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
+        const unitName = row?.name
+        const unitOwner = `${row?.unitOwner?.user?.lastName},
+          ${row?.unitOwner?.user?.lastName.charAt(0)}`
+        const dropDown = (
+          <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+        )
+        rowData.push({
+          floor: '',
+          seen,
+          unitName,
+          unitOwner,
+          attachment,
+          amount,
+          dueDate,
+          status,
+          dropDown
+        })
+
+        num = row.floorNumber
+      })
+    }
+    return rowData
+  }
+
+  const table = useTableRows(!loading && data && data?.getDuesPerUnit?.data)
+  // Component did mount for generating table data
+
+  useEffect(() => {
+    if (!loading && data && !error) {
       const duesData = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
         offset: data?.getDuesPerUnit.offset || 0,
-        data:
-          data?.getDuesPerUnit?.data.map((floor, index) => {
-            const floorNumber = floor?.floorNumber
-            const unitName = floor?.name
-            const name = `${floor?.unitOwner?.user?.lastName}
-              ${floor?.unitOwner?.user?.lastName}`
-            const unitOwnerName = name
-            const uploadedFile = (
-              <a href={floor?.dues?.attachment?.fileUrl}>View File</a>
-            )
-            const amount = floor?.dues?.amount
-            const dueDate = floor?.dues?.dueDate
-
-            const status = floor?.dues?.status
-            const seen = floor?.dues?.views?.count > 0 ? <FaEye /> : null
-            const rowData = []
-
-            if (copyOfFloorNumber !== floorNumber) {
-              rowData.push(floorNumber, '', '', '', '', '', '')
-            } else {
-              rowData.push(
-                seen,
-                unitName,
-                unitOwnerName,
-                uploadedFile,
-                amount,
-                dueDate,
-                status
-              )
-            }
-            copyOfFloorNumber = floorNumber
-
-            return { ...rowData }
-          }) || null
+        data: table || []
       }
-
       setDues(duesData)
     }
-  }, [loading, data, error])
+  }, [loading, data, error, table])
+
+  useEffect(() => {
+    let optionsData = [
+      {
+        label: '',
+        value: ''
+      }
+    ]
+    if (!loadingFloorNumbers && !errorGetAllFloors) {
+      optionsData = dataAllFloors?.getFloorNumbers.map(floor => {
+        return { label: floor, value: floor }
+      })
+    }
+
+    setFloors(optionsData)
+  }, [loadingFloorNumbers, dataAllFloors, errorGetAllFloors])
 
   //   Select Floors onchange
-  const onFloorSelect = e => {}
+  const onFloorSelect = e => {
+    setFloorNumber(e.target.value)
+  }
   // =============
 
-  //  Select Floors On Clear Category
-  const onClearFloor = e => {}
+  const onStatusSelect = e => {}
+
+  // useEffect for useKeyPress
+  useEffect(() => {
+    if (keyPressed) {
+      setSearch(searchText)
+    }
+  }, [keyPressed, searchText])
   // ============
 
   // Handle Searches
-  const onSearch = e => {}
-  // ==========
+  const onSearch = e => {
+    if (e.target.value === '') {
+      setSearch(null)
+    } else {
+      setSearchText(e.target.value)
+    }
+  }
 
   // Clear searches
-  const onClearSearch = e => {}
+  const onClearSearch = e => {
+    setSearchText(null)
+  }
   // ==============
 
   // Click pagination
@@ -229,23 +382,26 @@ function Sent({ month, year }) {
 
   // setting limit in pagination
   const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
+    setLimitPage(parseInt(e.target.value))
   }
 
   return (
     <>
       <div className={styles.FormContainer}>
         <div className={styles.StatusFloorControl}>
-          <FormSelect options={statusOptions} />
-          <SelectCategory
-            type="post"
-            userType="administrators"
+          <FormSelect
+            onChange={onStatusSelect}
+            options={statusOptions}
+            classNames="mb-4"
+          />
+          <FormSelect
+            placeholder="All Floors"
             onChange={onFloorSelect}
-            onClear={onClearFloor}
-            selected={selectedFloor}
+            options={floors}
+            classNames="mb-4"
           />
           <SearchControl
-            placeholder="Search by title"
+            placeholder="Search by unit"
             searchText={searchText}
             onSearch={onSearch}
             onClearSearch={onClearSearch}
@@ -262,8 +418,10 @@ function Sent({ month, year }) {
             <div className={styles.InfoViewText}>
               <FaEye />
               <div>
-                Bill viewed <span className={styles.BoldText}>0</span>/0 units
-                bills
+                Bills viewed &nbsp;
+                <span className={styles.BoldText}>{count?.seen}</span>/
+                {count?.all}
+                &nbsp;bills
               </div>
             </div>
           </div>
@@ -278,11 +436,21 @@ function Sent({ month, year }) {
           onLimitChange={onLimitChange}
         />
       )}
+
+      <Modal
+        title={modalTitle}
+        okText="Submit"
+        visible={showModal}
+        onClose={handleClearModal}
+        footer={<h1>Test</h1>}
+      >
+        <div className="w-full">{modalContent}</div>
+      </Modal>
     </>
   )
 }
 
-Sent.prototype = {
+Sent.propTypes = {
   month: P.number.isRequired,
   year: P.number.isRequired
 }

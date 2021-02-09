@@ -22,7 +22,7 @@ const SearchComponent = ({
       <FormInput
         id="search"
         name="search"
-        placeholder="Search by title"
+        placeholder={placeholder}
         inputClassName="pr-8"
         onChange={onSearch}
       />

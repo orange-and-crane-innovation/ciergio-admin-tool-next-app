@@ -1,7 +1,5 @@
 .FormDatePicker {
     @apply w-full;
-
- 
     .inputClass {
       @apply mb-4 w-full rounded-md border-gray-300 placeholder-neutral-500;
     

@@ -2,10 +2,51 @@ import React, { useState, useEffect, useRef } from 'react'
 import { FiChevronRight } from 'react-icons/fi'
 import Userinfo from './user-info'
 import MenuItem from './menu-item'
+import { useQuery } from '@apollo/client'
+import gql from 'graphql-tag'
+export const GET_PROFILE = gql`
+  query {
+    getProfile {
+      _id
+      email
+      avatar
+      firstName
+      lastName
+      birthDate
+      contactNo
+      jobTitle
+      status
+      address {
+        line1
+        line2
+        city
+        province
+        zipCode
+        country
+      }
+      createdAt
+      updatedAt
+      accounts {
+        count
+        limit
+        skip
+        data {
+          _id
+          accountType
+          active
+        }
+      }
+    }
+  }
+`
 
 const Dropdown = () => {
   const [hidden, setHidden] = useState(true)
 
+  const { data } = useQuery(GET_PROFILE, {
+    fetchPolicy: 'cache-only'
+  })
+  const profile = data ? data.getProfile : {}
   const buttonRef = useRef(null)
   const dropdownRef = useRef(null)
 
@@ -43,10 +84,10 @@ const Dropdown = () => {
             <div className="dropdown-section">
               <div className="userinfo-wrap">
                 <Userinfo
-                  imgSrc={'../ciergio-icon.png'}
+                  imgSrc={profile.avatar}
                   imgAlt={'Logo'}
-                  userName={'Jose Lapez'}
-                  userTitle={'admin@orangeandcrane.com'}
+                  userName={`${profile.firstName} ${profile.lastName}`}
+                  userTitle={profile.email}
                 />
               </div>
             </div>
@@ -58,7 +99,7 @@ const Dropdown = () => {
             <div className="dropdown-section">
               <div className="section-title">My Account</div>
               <MenuItem
-                url={'/dashboard'}
+                url={'/account/profile'}
                 icon={'ciergio-employees'}
                 title={'My Profile'}
               />

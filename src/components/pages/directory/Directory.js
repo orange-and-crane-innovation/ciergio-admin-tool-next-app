@@ -218,8 +218,9 @@ function Directory() {
               onClose={() => handleClearModal('create')}
               onCancel={() => handleClearModal('create')}
               onOk={handleSubmit(handleOk)}
+              width={450}
             >
-              <div className="w-full">
+              <div className="w-full p-4">
                 <form>
                   <Controller
                     name="category_name"
@@ -244,8 +245,9 @@ function Directory() {
               onClose={() => handleClearModal('edit')}
               onCancel={() => handleClearModal('edit')}
               onOk={handleSubmit(handleEditCategory)}
+              width={450}
             >
-              <div className="w-full">
+              <div className="w-full p-4">
                 <form>
                   <Controller
                     name="category_name"
@@ -270,8 +272,9 @@ function Directory() {
               onClose={() => handleClearModal('delete')}
               onCancel={() => handleClearModal('delete')}
               onOk={handleDeleteCategory}
+              width={450}
             >
-              <div className="w-full">
+              <div className="w-full p-4">
                 <div>
                   <p className="mb-4">
                     <span className="font-medium">Warning: </span>{' '}

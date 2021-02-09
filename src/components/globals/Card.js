@@ -27,7 +27,7 @@ function Component({ title, content, actions, className }) {
 Component.propTypes = {
   title: P.any,
   content: P.any,
-  actions: P.string,
+  actions: P.array,
   className: P.string
 }
 

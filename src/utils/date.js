@@ -91,3 +91,5 @@ export const displayDateCreated = data => {
   }
   return returnData
 }
+
+export default dayjs

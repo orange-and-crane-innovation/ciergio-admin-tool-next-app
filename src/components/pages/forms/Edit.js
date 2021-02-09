@@ -130,7 +130,7 @@ const CreatePosts = () => {
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
-  const [modalID, setModalID] = useState()
+  const [, setModalID] = useState()
   const [modalContent, setModalContent] = useState()
   const [modalTitle, setModalTitle] = useState()
   const [modalFooter, setModalFooter] = useState(null)
@@ -494,6 +494,8 @@ const CreatePosts = () => {
   const onPreviewPost = () => {
     onSubmit(getValues(), 'draft')
   }
+
+  const onDeletePost = () => {}
 
   return (
     <div className={style.CreatePostContainer}>
