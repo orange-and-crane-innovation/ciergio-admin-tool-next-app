@@ -8,6 +8,7 @@ function FormCheckbox({
   id,
   name,
   label,
+  value,
   primary,
   success,
   danger,
@@ -40,7 +41,8 @@ function FormCheckbox({
         className={checkboxClasses}
         id={id}
         name={name}
-        defaultChecked={isChecked}
+        value={value}
+        checked={isChecked}
         disabled={isDisabled}
         onChange={onChange}
         {...rest}
@@ -58,6 +60,7 @@ FormCheckbox.propTypes = {
   id: P.string.isRequired,
   name: P.string.isRequired,
   label: P.string,
+  value: P.string,
   primary: P.bool,
   success: P.bool,
   danger: P.bool,
