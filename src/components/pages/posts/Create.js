@@ -92,9 +92,9 @@ const CreatePosts = () => {
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
-  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
-  const user = JSON.parse(localStorage.getItem('profile'))
-  const accountType = user?.accounts?.data[0]?.accountType
+  // const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  // const user = JSON.parse(localStorage.getItem('profile'))
+  // const accountType = user?.accounts?.data[0]?.accountType
 
   const [
     createPost,

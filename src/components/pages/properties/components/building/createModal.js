@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import axios from 'axios'
+// import axios from 'axios'
 
 import FormInput from '@app/components/forms/form-input'
 import FormAddress from '@app/components/forms/form-address'
-import UploaderImage from '@app/components/uploader/image'
+// import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
 
 const validationSchema = yup.object().shape({
@@ -26,8 +26,8 @@ const Component = ({
   onSave,
   onCancel
 }) => {
-  const [loadingUploader, setLoadingUploader] = useState(false)
-  const [imageUrls, setImageUrls] = useState([])
+  // const [loadingUploader, setLoadingUploader] = useState(false)
+  // const [imageUrls, setImageUrls] = useState([])
 
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),

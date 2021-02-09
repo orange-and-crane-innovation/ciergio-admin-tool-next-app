@@ -33,10 +33,16 @@ function PrayerRequests() {
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="new">
-            <PrayerRequestsTable queryTemplate={GET_NEW_PRAYER_REQUESTS} />
+            <PrayerRequestsTable
+              queryTemplate={GET_NEW_PRAYER_REQUESTS}
+              status="new"
+            />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="received">
-            <PrayerRequestsTable queryTemplate={GET_RECEIVED_PRAYER_REQUESTS} />
+            <PrayerRequestsTable
+              queryTemplate={GET_RECEIVED_PRAYER_REQUESTS}
+              status="received"
+            />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
