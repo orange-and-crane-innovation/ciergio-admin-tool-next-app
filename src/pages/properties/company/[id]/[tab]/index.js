@@ -1,4 +1,4 @@
-import CompanyDataComponent from '@app/components/pages/properties/company'
+import CompanyDataComponent from '@app/components/pages/properties/company/companyData'
 
 function CompanySinglePropertiesPage() {
   return <CompanyDataComponent />

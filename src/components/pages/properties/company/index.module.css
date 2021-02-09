@@ -9,6 +9,7 @@
       @apply h-32 w-32 p-2;
       @apply bg-white;
       @apply shadow-md rounded-full;
+      @apply overflow-auto;
 
       & > img {
         @apply object-contain object-center;
@@ -55,6 +56,7 @@
 
   .ContentLink {
     @apply font-bold hover:underline;
+    @apply cursor-pointer;
   }
 
   .CardContentContainer {
