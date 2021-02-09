@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@apollo/client'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useReactToPrint } from 'react-to-print'
-// import { CSVLink } from "react-csv"
+import { CSVLink } from 'react-csv'
 import P from 'prop-types'
 import * as yup from 'yup'
 
@@ -156,6 +156,54 @@ function PrayerRequestsTable({ queryTemplate, status }) {
     })
   }
 
+  const downloadData = useMemo(() => {
+    const listData = [
+      [PDF_TITLE],
+      [''],
+      [
+        '#',
+        'Date Created',
+        'Category',
+        'Requestor',
+        'Prayer For',
+        'Prayer From',
+        'Date of Mass',
+        'Message'
+      ]
+    ]
+
+    prayerRequests?.issue?.map(
+      ({ createdAt, category, reporter, prayer, content }, index) => {
+        const dateCreated = createdAt
+          ? friendlyDateTimeFormat(Number(createdAt), 'MMM DD, YYYY')
+          : ''
+        const title = category?.name || ''
+        const requestor = reporter?.user
+          ? `${reporter.user.firstName} ${reporter.user.lastName}`
+          : ''
+        const prayerFor = prayer.for || ''
+        const prayerFrom = prayer.from || ''
+        const dateRequested = prayer?.date
+          ? friendlyDateTimeFormat(Number(prayer.date), 'MMM DD, YYYY')
+          : ''
+        const message = content || ''
+
+        return listData.push([
+          `${index + 1}`,
+          `${dateCreated}`,
+          `${title}`,
+          `${requestor}`,
+          `${prayerFor}`,
+          `${prayerFrom}`,
+          `${dateRequested}`,
+          `${message}`
+        ])
+      }
+    )
+
+    return listData
+  }, [prayerRequests?.issue])
+
   const categoryOptions = useMemo(() => {
     if (categories?.getPostCategory?.count > 0) {
       const cats = categories.getPostCategory.category.map(cat => ({
@@ -210,7 +258,7 @@ function PrayerRequestsTable({ queryTemplate, status }) {
             )
           : []
     }
-  }, [prayerRequests])
+  }, [prayerRequests?.issue])
 
   return (
     <>
@@ -280,14 +328,19 @@ function PrayerRequestsTable({ queryTemplate, status }) {
             onClick={onPrintPreview}
             disabled={loading}
           />,
-          <Button
+          <CSVLink
             key="download"
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-1 "
-            disabled={loading}
-          />,
+            filename={'prayer_requests.csv'}
+            data={downloadData}
+          >
+            <Button
+              default
+              icon={<FiDownload />}
+              onClick={() => {}}
+              className="mr-1 "
+              disabled={loading}
+            />
+          </CSVLink>,
           <Button
             key="add"
             primary

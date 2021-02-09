@@ -39,7 +39,7 @@ class PrayerRequestPrintView extends React.PureComponent {
 
 PrayerRequestPrintView.propTypes = {
   title: P.string,
-  data: P.array.isRequired
+  data: P.array
 }
 
 export default PrayerRequestPrintView

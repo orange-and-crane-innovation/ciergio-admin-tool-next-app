@@ -10,7 +10,7 @@ export default function PrintData({ data }) {
             <td>{index + 1}</td>
             <td className="text-center min-w-100">
               {createdAt
-                ? friendlyDateTimeFormat(createdAt, 'MMM DD, YYYY')
+                ? friendlyDateTimeFormat(Number(createdAt), 'MMM DD, YYYY')
                 : null}
             </td>
             <td className="min-w-150">{category?.name || null}</td>
@@ -23,7 +23,7 @@ export default function PrintData({ data }) {
             <td className="min-w-150">{prayer?.from || null}</td>
             <td className="text-center min-w-100">
               {prayer.date
-                ? friendlyDateTimeFormat(prayer.date, 'MMM DD, YYYY')
+                ? friendlyDateTimeFormat(Number(prayer.date), 'MMM DD, YYYY')
                 : '---'}
             </td>
             <td className="min-w-200">{content || '---'}</td>
@@ -41,5 +41,5 @@ export default function PrintData({ data }) {
 }
 
 PrintData.propTypes = {
-  data: P.array.isRequired
+  data: P.array
 }
