@@ -38,10 +38,10 @@ function FormInput({
   const labelClasses = useMemo(() => clsx(styles.formLabel, labelClassName), [
     labelClassName
   ])
-  const inputClasses = useMemo(() => clsx(styles.formControl, inputClassName), [
+  const inputClasses = useMemo(() => clsx(styles.FormControl, inputClassName), [
     inputClassName
   ])
-  const errorClasses = useMemo(() => clsx(styles.formError, errorClassName), [
+  const errorClasses = useMemo(() => clsx(styles.FormError, errorClassName), [
     errorClassName
   ])
 
@@ -55,7 +55,7 @@ function FormInput({
 
   const renderInput = useMemo(() => {
     return (
-      <div className={styles.FormInputContainer}>
+      <div className="relative">
         <input
           id={id}
           name={name}
@@ -76,7 +76,7 @@ function FormInput({
             onClick={iconOnClick}
             disabled={disabled}
           >
-            <i className={icon}></i>
+            {icon}
           </button>
         )}
         {type === 'password' && (
@@ -115,12 +115,14 @@ function FormInput({
 
   return (
     <div className={containerClasses}>
-      <label htmlFor={id || name}>
-        {renderLabel}
-        {description || null}
-        {renderInput}
-        {renderError}
-      </label>
+      <div className={styles.FormInputContainer}>
+        <label htmlFor={id || name}>
+          {renderLabel}
+          {description || null}
+          {renderInput}
+          {renderError}
+        </label>
+      </div>
     </div>
   )
 }
@@ -148,7 +150,7 @@ FormInput.propTypes = {
   errorClassName: P.string,
   inputProps: P.object,
   description: P.node || P.string,
-  icon: P.string,
+  icon: P.any,
   iconOnClick: P.func
 }
 

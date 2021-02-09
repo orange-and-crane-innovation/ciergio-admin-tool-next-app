@@ -1,5 +1,5 @@
 .FormInputContainer {
-  @apply relative;
+  @apply relative mb-4;
 
   .FormInputButton {
     @apply absolute top-3 right-4;
@@ -9,7 +9,7 @@
 .FormInput {
   & [type='text'],
   & [type='password'] {
-    @apply mb-4 block w-full rounded-md border-gray-300 placeholder-neutral-500;
+    @apply block w-full rounded-md border-gray-300 placeholder-neutral-500;
   }
 
   &:hover {
@@ -39,6 +39,14 @@
     & span {
       @apply text-neutral-dark font-body font-bold text-sm;
     }
+  }
+
+  .FormError {
+    @apply mb-4;
+  }
+
+  .FormControl {
+    @apply pr-12;
   }
 }
 

@@ -5,6 +5,8 @@ import RadioBox from '@app/components/forms/form-radio'
 import Modal from '@app/components/modal'
 
 import SelectCompany from '@app/components/globals/SelectCompany'
+import SelectComplex from '@app/components/globals/SelectComplex'
+import SelectBuilding from '@app/components/globals/SelectBuilding'
 
 const Component = ({
   isShown,
@@ -16,17 +18,55 @@ const Component = ({
   onSelectBuildingExcept,
   onSelectBuildingSpecific,
   onSave,
-  onCancel
+  onCancel,
+  valueAudienceType,
+  valueCompanyExcept,
+  valueCompanySpecific,
+  valueComplexExcept,
+  valueComplexSpecific,
+  valueBuildingExcept,
+  valueBuildingSpecific
 }) => {
-  const [selectedAudience, setSelectedAudience] = useState('all')
-  const [selectedCompanyExcept, setSelectedCompanyExcept] = useState()
-  const [selectedCompanySpecific, setSelectedCompanySpecific] = useState()
+  const [selectedAudience, setSelectedAudience] = useState(valueAudienceType)
+  const [selectedCompanyExcept, setSelectedCompanyExcept] = useState(
+    valueCompanyExcept
+  )
+  const [selectedCompanySpecific, setSelectedCompanySpecific] = useState(
+    valueCompanySpecific
+  )
+  const [selectedComplexExcept, setSelectedComplexExcept] = useState(
+    valueComplexExcept
+  )
+  const [selectedComplexSpecific, setSelectedComplexSpecific] = useState(
+    valueComplexSpecific
+  )
+  const [selectedBuildingExcept, setSelectedBuildingExcept] = useState(
+    valueBuildingExcept
+  )
+  const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState(
+    valueBuildingSpecific
+  )
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
+  let userType
 
   useEffect(() => {
-    setSelectedAudience('all')
-    setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
-  }, [])
+    setSelectedAudience(valueAudienceType)
+    setSelectedCompanyExcept(valueCompanyExcept)
+    setSelectedCompanySpecific(valueCompanySpecific)
+    setSelectedComplexExcept(valueComplexExcept)
+    setSelectedComplexSpecific(valueComplexSpecific)
+    setSelectedBuildingExcept(valueBuildingExcept)
+    setSelectedBuildingSpecific(valueBuildingSpecific)
+  }, [
+    valueAudienceType,
+    valueCompanyExcept,
+    valueCompanySpecific,
+    valueComplexExcept,
+    valueComplexSpecific,
+    valueBuildingExcept,
+    valueBuildingSpecific
+  ])
 
   const onSelectAudience = e => {
     setSelectedAudience(e.target.value)
@@ -61,6 +101,86 @@ const Component = ({
     setSelectedCompanySpecific(null)
   }
 
+  const handleSelectComplexExcept = data => {
+    const selected = data.map(item => {
+      return item.value
+    })
+    setSelectedComplexSpecific(null)
+    setSelectedComplexExcept(data)
+    onSelectComplexExcept(selected)
+    onSelectComplexSpecific(null)
+  }
+
+  const handleClearComplexExcept = () => {
+    setSelectedComplexExcept(null)
+  }
+
+  const handleSelectComplexSpecific = data => {
+    const selected = data.map(item => {
+      if (item.value) {
+        return item.value
+      } else {
+        return item
+      }
+    })
+
+    setSelectedComplexExcept(null)
+    setSelectedComplexSpecific(selected)
+    onSelectComplexSpecific(selected)
+    onSelectComplexExcept(null)
+  }
+
+  const handleClearComplexSpecific = () => {
+    setSelectedComplexSpecific(null)
+  }
+
+  const handleSelectBuildingExcept = data => {
+    const selected = data.map(item => {
+      return item.value
+    })
+    setSelectedBuildingSpecific(null)
+    setSelectedBuildingExcept(data)
+    onSelectBuildingExcept(selected)
+    onSelectBuildingSpecific(null)
+  }
+
+  const handleClearBuildingExcept = () => {
+    setSelectedBuildingExcept(null)
+  }
+
+  const handleSelectBuildingSpecific = data => {
+    const selected = data.map(item => {
+      return item.value
+    })
+    setSelectedBuildingExcept(null)
+    setSelectedBuildingSpecific(data)
+    onSelectBuildingSpecific(selected)
+    onSelectBuildingExcept(null)
+  }
+
+  const handleClearBuildingSpecific = () => {
+    setSelectedBuildingSpecific(null)
+  }
+
+  switch (accountType) {
+    case 'company_admin': {
+      userType = 'company'
+      break
+    }
+    case 'complex_admin': {
+      userType = 'complex'
+      break
+    }
+    case 'building_admin': {
+      userType = 'building'
+      break
+    }
+    default: {
+      userType = null
+      break
+    }
+  }
+
   return (
     <Modal
       title="Who are the audience"
@@ -86,7 +206,9 @@ const Component = ({
                 isChecked={selectedAudience === 'all'}
               />
               <div className="ml-7 text-neutral-500 text-md leading-relaxed">
-                All those registered under your complex
+                {userType
+                  ? `All those registered under your ${userType}`
+                  : `All those registered`}
               </div>
             </div>
             <div className="p-4">
@@ -97,9 +219,12 @@ const Component = ({
                 label="All except"
                 value="allExcept"
                 onChange={onSelectAudience}
+                isChecked={selectedAudience === 'allExcept'}
               />
               <div className="ml-7 text-neutral-500 text-md leading-relaxed">
-                All those registered under your complex except
+                {userType
+                  ? `All those registered under your ${userType} except`
+                  : `All those registered except`}
               </div>
             </div>
           </div>
@@ -111,6 +236,7 @@ const Component = ({
               label="Select specific audience"
               value="specific"
               onChange={onSelectAudience}
+              isChecked={selectedAudience === 'specific'}
             />
             <div className="ml-7 text-neutral-500 text-md leading-relaxed">
               Only show to those selected
@@ -130,16 +256,45 @@ const Component = ({
                   </p>
                 </div>
 
-                <div className="mb-4">
-                  <p className="font-bold text-neutral-500 mb-2">Companies</p>
-                  <SelectCompany
-                    type="active"
-                    userType="administrator"
-                    onChange={handleSelectCompanyExcept}
-                    onClear={handleClearCompanyExcept}
-                    selected={selectedCompanyExcept}
-                  />
-                </div>
+                {accountType === 'administrator' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Companies</p>
+                    <SelectCompany
+                      type="active"
+                      userType={accountType}
+                      onChange={handleSelectCompanyExcept}
+                      onClear={handleClearCompanyExcept}
+                      selected={selectedCompanyExcept}
+                    />
+                  </div>
+                )}
+
+                {accountType === 'company_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Complexes</p>
+                    <SelectComplex
+                      type="active"
+                      userType={accountType}
+                      companyId={user?.accounts?.data[0]?.company?._id}
+                      onChange={handleSelectComplexExcept}
+                      onClear={handleClearComplexExcept}
+                      selected={selectedComplexExcept}
+                    />
+                  </div>
+                )}
+
+                {accountType === 'complex_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Buildings</p>
+                    <SelectBuilding
+                      type="active"
+                      userType={accountType}
+                      onChange={handleSelectBuildingExcept}
+                      onClear={handleClearBuildingExcept}
+                      selected={selectedBuildingExcept}
+                    />
+                  </div>
+                )}
               </>
             )}
             {selectedAudience === 'specific' && (
@@ -152,16 +307,45 @@ const Component = ({
                   </p>
                 </div>
 
-                <div className="mb-4">
-                  <p className="font-bold text-neutral-500 mb-2">Companies</p>
-                  <SelectCompany
-                    type="active"
-                    userType="administrator"
-                    onChange={handleSelectCompanySpecific}
-                    onClear={handleClearCompanySpecific}
-                    selected={selectedCompanySpecific}
-                  />
-                </div>
+                {accountType === 'administrator' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Companies</p>
+                    <SelectCompany
+                      type="active"
+                      userType={accountType}
+                      onChange={handleSelectCompanySpecific}
+                      onClear={handleClearCompanySpecific}
+                      selected={selectedCompanySpecific}
+                    />
+                  </div>
+                )}
+
+                {accountType === 'company_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Complexes</p>
+                    <SelectComplex
+                      type="active"
+                      userType={accountType}
+                      companyId={user?.accounts?.data[0]?.company?._id}
+                      onChange={handleSelectComplexSpecific}
+                      onClear={handleClearComplexSpecific}
+                      selected={selectedComplexSpecific}
+                    />
+                  </div>
+                )}
+
+                {accountType === 'complex_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Buildings</p>
+                    <SelectBuilding
+                      type="active"
+                      userType={accountType}
+                      onChange={handleSelectBuildingSpecific}
+                      onClear={handleClearBuildingSpecific}
+                      selected={selectedBuildingSpecific}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -181,7 +365,14 @@ Component.propTypes = {
   onSelectBuildingExcept: PropTypes.func,
   onSelectBuildingSpecific: PropTypes.func,
   onSave: PropTypes.func,
-  onCancel: PropTypes.func
+  onCancel: PropTypes.func,
+  valueAudienceType: PropTypes.string,
+  valueCompanyExcept: PropTypes.array,
+  valueCompanySpecific: PropTypes.array,
+  valueComplexExcept: PropTypes.array,
+  valueComplexSpecific: PropTypes.array,
+  valueBuildingExcept: PropTypes.array,
+  valueBuildingSpecific: PropTypes.array
 }
 
 export default Component

@@ -4,6 +4,7 @@ import Userinfo from './user-info'
 import Dropdown from './dropdown'
 import { useQuery } from '@apollo/client'
 import gql from 'graphql-tag'
+
 export const GET_PROFILE = gql`
   query {
     getProfile {
@@ -13,7 +14,7 @@ export const GET_PROFILE = gql`
       firstName
       lastName
       accounts {
-        data{
+        data {
           accountType
           active
         }
@@ -27,7 +28,10 @@ const Navbar = ({ onToggle, isCollapsed }) => {
     fetchPolicy: 'cache-only'
   })
   const profile = data ? data.getProfile : {}
-  let account = profile.accounts.data.length > 0 ? profile.accounts.data.filter(account => account.active === true) : []
+  const account =
+    profile.accounts.data.length > 0
+      ? profile.accounts.data.filter(account => account.active === true)
+      : []
   return (
     <div className="navbar navbar-1">
       <div className="navbar-inner">

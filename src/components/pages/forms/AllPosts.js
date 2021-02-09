@@ -367,7 +367,7 @@ const PostComponent = () => {
 
   const onPageClick = e => {
     setActivePage(e)
-    setOffsetPage(e * limitPage)
+    setOffsetPage(e * limitPage - 10)
   }
 
   const onLimitChange = e => {
@@ -445,11 +445,13 @@ const PostComponent = () => {
               uniqueCount={selected[0].views?.unique?.count}
             />
           )
+          setModalFooter(null)
           break
         }
         case 'views': {
           setModalTitle('Who Viewed this Form')
           setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
+          setModalFooter(null)
           break
         }
         case 'delete': {

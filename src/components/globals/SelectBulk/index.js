@@ -23,7 +23,7 @@ const SelectBulkComponent = ({
         name="bulkSelect"
         options={options}
         placeholder={placeholder}
-        value={options.filter(item => item.value === selected)}
+        defaultValue={options.filter(item => item.value === selected)}
         onChange={onBulkChange}
         onClear={onBulkClear}
         disabled={disabled}
