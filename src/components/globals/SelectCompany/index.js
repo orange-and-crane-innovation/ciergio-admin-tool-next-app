@@ -73,7 +73,7 @@ const SelectCategoryComponent = ({
         placeholder={'Select a Company'}
         valueholder="Company"
         noOptionsMessage={() => 'No item found.'}
-        value={selected}
+        defaultValue={selected}
         options={lists || []}
         onChange={onChange}
         onClear={onClear}

@@ -137,7 +137,9 @@ const SelectCategoryComponent = ({
         name="category"
         placeholder={placeholder}
         noOptionsMessage={() => 'No item found.'}
-        value={lists ? lists.filter(item => item.value === selected) : null}
+        defaultValue={
+          lists ? lists.filter(item => item.value === selected) : null
+        }
         error={error}
         options={lists || []}
         disabled={disabled}
