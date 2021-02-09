@@ -73,17 +73,11 @@ function Component({
                   </div>
                   {footer !== null ? (
                     <div className="modal-footer">
-                      <Button
-                        default
-                        label={cancelText}
-                        onClick={onCancel}
-                        className="mr-4 w-full"
-                      />
+                      <Button default label={cancelText} onClick={onCancel} />
                       <Button
                         primary
                         label={okText}
                         onClick={onOk}
-                        className=" w-full"
                         {...okButtonProps}
                       />
                     </div>

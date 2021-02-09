@@ -186,3 +186,13 @@ export const DELETE_NOTIFICATION = gql`
     }
   }
 `
+
+export const CREATE_POST_MUTATION = gql`
+  mutation($data: PostInput) {
+    createPost(data: $data) {
+      _id
+      processId
+      message
+    }
+  }
+`

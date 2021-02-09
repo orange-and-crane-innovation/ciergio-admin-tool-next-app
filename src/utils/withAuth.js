@@ -24,10 +24,10 @@ const withAuth = WrappedComponent => {
     const { loading, error } = useQuery(verifySession, {
       onError: () => {},
       onCompleted: ({ getProfile }) => {
-        localStorage.setItem('profile', getProfile)
+        localStorage.setItem('profile', JSON.stringify(getProfile))
       }
     })
- 
+
     useEffect(() => {
       if (!loading) {
         if (error) {

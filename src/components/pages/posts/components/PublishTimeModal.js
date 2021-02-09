@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 // eslint-disable-next-line jsx-a11y/click-events-have-key-events
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Datetime from 'react-datetime'
 import moment from 'moment'
@@ -18,10 +18,19 @@ const Component = ({
   onSelectType,
   onSelectDateTime,
   onSave,
-  onCancel
+  onCancel,
+  valuePublishType,
+  valueDateTime
 }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [selectedPublishType, setSelectedPublishType] = useState('now')
+  const [selectedDate, setSelectedDate] = useState(valueDateTime)
+  const [selectedPublishType, setSelectedPublishType] = useState(
+    valuePublishType
+  )
+
+  useEffect(() => {
+    setSelectedPublishType(valuePublishType)
+    setSelectedDate(valueDateTime)
+  }, [valuePublishType, valueDateTime])
 
   const onSelectPublishType = e => {
     setSelectedPublishType(e.target.value)
@@ -67,6 +76,7 @@ const Component = ({
                 label="Later"
                 value="later"
                 onChange={onSelectPublishType}
+                isChecked={selectedPublishType === 'later'}
               />
               <div className="ml-7 text-neutral-500 text-md leading-relaxed">
                 Set a date when to publish this post.
@@ -150,7 +160,9 @@ Component.propTypes = {
   onSelectType: PropTypes.func,
   onSelectDateTime: PropTypes.func,
   onSave: PropTypes.func,
-  onCancel: PropTypes.func
+  onCancel: PropTypes.func,
+  valuePublishType: PropTypes.string,
+  valueDateTime: PropTypes.string
 }
 
 export default Component

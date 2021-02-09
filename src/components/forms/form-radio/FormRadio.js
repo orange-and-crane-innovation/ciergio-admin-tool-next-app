@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useMemo } from 'react'
 import P from 'prop-types'
 import clsx from 'clsx'
@@ -40,22 +42,15 @@ function FormRadio({
         className={checkboxClasses}
         id={id}
         name={name}
-        defaultChecked={isChecked}
+        checked={isChecked}
         disabled={isDisabled}
         onChange={onChange}
         {...rest}
       />
       {label && (
-        <span
-          htmlFor={id}
-          className="ml-2 cursor-pointer"
-          onClick={onChange}
-          role="button"
-          tabIndex={0}
-          onKeyDown={() => {}}
-        >
+        <label htmlFor={id} className="ml-2 cursor-pointer" onClick={onChange}>
           {label}
-        </span>
+        </label>
       )}
     </div>
   )

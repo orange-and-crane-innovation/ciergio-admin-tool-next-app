@@ -8,6 +8,7 @@ import styles from './FormSelect.module.css'
 const InputSelect = ({
   id,
   name,
+  defaultValue,
   value,
   placeholder,
   valueholder,
@@ -57,7 +58,7 @@ const InputSelect = ({
         placeholder={placeholder}
         options={options}
         noOptionsMessage={() => 'No item found.'}
-        value={value}
+        defaultValue={defaultValue}
         disabled={disabled}
         components={
           isMulti
@@ -92,6 +93,7 @@ const InputSelect = ({
 InputSelect.propTypes = {
   id: PropTypes.string,
   name: PropTypes.string,
+  defaultValue: PropTypes.any,
   value: PropTypes.any,
   placeholder: PropTypes.string,
   valueholder: PropTypes.string,

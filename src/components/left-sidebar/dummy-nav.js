@@ -1,4 +1,4 @@
-const navigation = [
+const commonNavigation = [
   {
     title: 'Applications',
     items: [
@@ -82,12 +82,6 @@ const navigation = [
         ]
       },
       {
-        url: '/maintenance',
-        icon: 'ciergio-maintenance',
-        title: 'Maintenance & Repairs',
-        items: []
-      },
-      {
         url: '/forms',
         icon: 'ciergio-file',
         title: 'Forms',
@@ -104,18 +98,7 @@ const navigation = [
           }
         ]
       },
-      {
-        url: '/dues',
-        icon: 'ciergio-dues',
-        title: 'My Dues',
-        items: [
-          {
-            url: '/dues/billing',
-            title: 'Billing',
-            items: []
-          }
-        ]
-      },
+
       {
         url: '/directory',
         icon: 'ciergio-store',
@@ -155,4 +138,71 @@ const navigation = [
   }
 ]
 
-export default navigation
+const homeNavigation = [
+  {
+    title: 'Applications',
+    items: [
+      ...commonNavigation[0].items,
+      ...[
+        {
+          url: '/maintenance',
+          icon: 'ciergio-maintenance',
+          title: 'Maintenance & Repairs',
+          items: []
+        },
+        {
+          url: '/dues',
+          icon: 'ciergio-dues',
+          title: 'My Dues',
+          items: [
+            {
+              url: '/dues/billing',
+              title: 'Billing',
+              items: []
+            }
+          ]
+        }
+      ]
+    ]
+  }
+]
+
+const prayNavigation = [
+  {
+    title: 'Applications',
+    items: [
+      ...commonNavigation[0].items,
+      ...[
+        {
+          url: '/prayer-requests',
+          icon: 'ciergio-prayer',
+          title: 'Prayer Requests',
+          items: []
+        },
+        {
+          url: '/donations',
+          icon: 'ciergio-donate',
+          title: 'Donations',
+          items: []
+        }
+      ]
+    ]
+  }
+]
+
+const circleNavigation = [
+  {
+    title: 'Applications',
+    items: [
+      ...commonNavigation[0].items,
+      {
+        url: '/qr-codes',
+        icon: 'fa fa-qrcode',
+        title: 'QR Codes',
+        items: []
+      }
+    ]
+  }
+]
+
+export { homeNavigation, prayNavigation, circleNavigation }

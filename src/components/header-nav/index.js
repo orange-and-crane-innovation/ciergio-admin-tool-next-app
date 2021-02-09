@@ -2,8 +2,36 @@ import P from 'prop-types'
 import { FiMenu } from 'react-icons/fi'
 import Userinfo from './user-info'
 import Dropdown from './dropdown'
+import { useQuery } from '@apollo/client'
+import gql from 'graphql-tag'
+
+export const GET_PROFILE = gql`
+  query {
+    getProfile {
+      _id
+      email
+      avatar
+      firstName
+      lastName
+      accounts {
+        data {
+          accountType
+          active
+        }
+      }
+    }
+  }
+`
 
 const Navbar = ({ onToggle, isCollapsed }) => {
+  const { data } = useQuery(GET_PROFILE, {
+    fetchPolicy: 'cache-only'
+  })
+  const profile = data ? data.getProfile : {}
+  const account =
+    profile.accounts.data.length > 0
+      ? profile.accounts.data.filter(account => account.active === true)
+      : []
   return (
     <div className="navbar navbar-1">
       <div className="navbar-inner">
@@ -19,10 +47,10 @@ const Navbar = ({ onToggle, isCollapsed }) => {
         <span className="ml-auto"></span>
 
         <Userinfo
-          imgSrc={'../ciergio-icon.png'}
+          imgSrc={profile.avatar}
           imgAlt={'Logo'}
-          userName={'Orange and Crane Innovations Inc.'}
-          userTitle={'Orange and Crane Innovations Inc.'}
+          userName={`${profile.firstName} ${profile.lastName}`}
+          userTitle={account[0] ? account[0].accountType : '---'}
         />
         {/* User dropdown */}
         <div className="header-item-wrap user-dropdown">

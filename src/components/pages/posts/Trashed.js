@@ -327,7 +327,6 @@ const PostComponent = () => {
 
   useEffect(() => {
     if (!loadingBulk && errorBulk) {
-      console.log(errorBulk.networkError)
       showToast(
         'danger',
         // `An error occured during update. Please contact your system administrator.`
@@ -396,7 +395,7 @@ const PostComponent = () => {
   }
   const onPageClick = e => {
     setActivePage(e)
-    setOffsetPage(e * limitPage)
+    setOffsetPage(e * limitPage - 10)
   }
 
   const onLimitChange = e => {
@@ -474,11 +473,13 @@ const PostComponent = () => {
               uniqueCount={selected[0].views?.unique?.count}
             />
           )
+          setModalFooter(null)
           break
         }
         case 'views': {
           setModalTitle('Who Viewed this Article')
           setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
+          setModalFooter(null)
           break
         }
         case 'delete': {

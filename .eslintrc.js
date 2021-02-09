@@ -40,5 +40,13 @@ module.exports = {
         aspects: ['invalidHref', 'preferButton']
       }
     ]
-  }
+  },
+  overrides: [
+    {
+      files: ['**/*.js'],
+      rules: {
+        'react-hooks/exhaustive-deps': 'off'
+      }
+    }
+  ]
 }

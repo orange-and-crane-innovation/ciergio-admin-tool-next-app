@@ -92,3 +92,73 @@ export const modalColumns = [
     width: ''
   }
 ]
+
+export const repeatOptions = [
+  {
+    label: 'Daily',
+    value: 'daily'
+  },
+  {
+    label: 'Weekly',
+    value: 'weekly'
+  },
+  {
+    label: 'Monthly',
+    value: 'monthly'
+  },
+  {
+    label: 'Annually',
+    value: 'annually'
+  },
+  {
+    label: 'Custom',
+    value: 'custom'
+  }
+]
+
+export const repeatEveryOptions = [
+  {
+    label: 'Week',
+    value: 'week'
+  },
+  {
+    label: 'Month',
+    value: 'month'
+  }
+]
+
+export const days = [
+  {
+    label: 'S',
+    value: 'sun'
+  },
+  {
+    label: 'M',
+    value: 'mon'
+  },
+  {
+    label: 'T',
+    value: 'tue'
+  },
+  {
+    label: 'W',
+    value: 'wed'
+  },
+  {
+    label: 'T',
+    value: 'thu'
+  },
+  {
+    label: 'F',
+    value: 'fri'
+  },
+  {
+    label: 'S',
+    value: 'sat'
+  }
+]
+
+export const monthArrayFiller = [...new Array(31)].map((item, i) => ({
+  label: i + 1,
+  value: i + 1
+}))

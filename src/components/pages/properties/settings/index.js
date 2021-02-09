@@ -1,170 +1,250 @@
 /* eslint-disable react/jsx-key */
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { gql, useQuery, useMutation } from '@apollo/client'
+import { useRouter } from 'next/router'
+import P from 'prop-types'
+import _ from 'underscore'
 
 import Card from '@app/components/card'
 import Checkbox from '@app/components/forms/form-checkbox'
+import PageLoader from '@app/components/page-loader'
+
+import showToast from '@app/utils/toast'
 
 import styles from './index.module.css'
 
-const CompanySettingsComponent = () => {
-  const bulletinCategoriesData = [
-    {
-      name: 'Announcements',
-      checked: true
-    },
-    {
-      name: 'Attractions',
-      checked: true
-    },
-    {
-      name: 'Building Cleanup',
-      checked: false
-    },
-    {
-      name: 'Daily Inspirations',
-      checked: true
-    },
-    {
-      name: 'Emergency',
-      checked: false
-    },
-    {
-      name: 'Environment',
-      checked: true
-    },
-    {
-      name: 'Parking Maintenance',
-      checked: false
-    },
-    {
-      name: 'Events',
-      checked: false
-    },
-    {
-      name: 'Facilities',
-      checked: false
-    },
-    {
-      name: 'Newsletter',
-      checked: true
-    },
-    {
-      name: 'Sale',
-      checked: false
-    },
-    {
-      name: 'Sponsor',
-      checked: true
-    },
-    {
-      name: 'Technology',
-      checked: false
-    },
-    {
-      name: 'Updates',
-      checked: false
-    },
-    {
-      name: 'Utilities',
-      checked: false
+const GET_POST_CATEGORY_QUERY = gql`
+  query getPostCategory($where: PostCategoryInput, $limit: Int, $offset: Int) {
+    getPostCategory(where: $where, limit: $limit, offset: $offset) {
+      count
+      category {
+        _id
+        name
+        type
+      }
     }
-  ]
-  const RMCategoriesData = [
-    {
-      name: 'Cable Repair',
-      checked: false
-    },
-    {
-      name: 'Defective Hardware',
-      checked: true
-    },
-    {
-      name: 'Electricity Repair',
-      checked: false
-    },
-    {
-      name: 'General Cleaning Maintenance',
-      checked: true
-    },
-    {
-      name: 'Installation',
-      checked: false
-    },
-    {
-      name: 'Internet Repair',
-      checked: true
-    },
-    {
-      name: 'Parking Maintenance',
-      checked: false
-    },
-    {
-      name: 'Plumbing Repair',
-      checked: false
-    },
-    {
-      name: 'Preventive Maintenance',
-      checked: false
-    },
-    {
-      name: 'Protective Maintenance',
-      checked: true
-    },
-    {
-      name: 'Security Maintenance',
-      checked: false
-    },
-    {
-      name: 'Unit Repair',
-      checked: true
-    },
-    {
-      name: 'Utility Maintenance',
-      checked: false
-    },
-    {
-      name: 'Water Repair',
-      checked: false
+  }
+`
+const GET_ALLLOWED_POST_CATEGORY_QUERY = gql`
+  query getAllowedPostCategory(
+    $where: AllowedPostCategoryInput
+    $limit: Int
+    $offset: Int
+  ) {
+    getAllowedPostCategory(where: $where, limit: $limit, offset: $offset) {
+      count
+      limit
+      offset
+      count
+      data {
+        categories {
+          _id
+          name
+          type
+        }
+      }
     }
-  ]
-  const notifCategoriesData = [
-    {
-      name: 'Flash 1 - Announcements',
-      checked: false
-    },
-    {
-      name: 'Flash 2 - Ads',
-      checked: true
-    },
-    {
-      name: 'Flash 3 - Meeting',
-      checked: false
-    },
-    {
-      name: 'Flash 4 - Warning',
-      checked: true
-    },
-    {
-      name: 'Flash 5 - Invitation',
-      checked: false
-    },
-    {
-      name: 'Flash 6 - General Meeting',
-      checked: true
-    },
-    {
-      name: 'Flash 7 - Association Meeting',
-      checked: false
-    },
-    {
-      name: 'Flash 8 - Billing Reminder',
-      checked: false
-    },
-    {
-      name: 'Flash 9 - General Cleaning',
-      checked: false
+  }
+`
+
+const ADD_CATEGORY_QUERY = gql`
+  mutation(
+    $accountType: CategoryAccountType
+    $accountId: String
+    $categoryIds: [String]
+  ) {
+    addPostCategory(
+      accountType: $accountType
+      accountId: $accountId
+      categoryIds: $categoryIds
+    ) {
+      _id
+      processId
+      message
     }
-  ]
+  }
+`
+
+const REMOVE_CATEGORY_QUERY = gql`
+  mutation(
+    $accountType: CategoryAccountType
+    $accountId: String
+    $categoryIds: [String]
+  ) {
+    removePostCategory(
+      accountType: $accountType
+      accountId: $accountId
+      categoryIds: $categoryIds
+    ) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
+const CompanySettingsComponent = ({ type }) => {
+  const router = useRouter()
+  const [categoryLists, setCategoryLists] = useState([])
+  const [allowedCategoryLists, setAllowedCategoryLists] = useState([])
+
+  const {
+    loading: loadingCategory,
+    data: dataCategory,
+    error: errorCategory,
+    refetch: refetchCategory
+  } = useQuery(GET_POST_CATEGORY_QUERY, {
+    enabled: false,
+    variables: {
+      limit: 500,
+      offset: 0
+    }
+  })
+
+  const {
+    loading: loadingAllowedCategory,
+    data: dataAllowedCategory,
+    error: errorAllowedCategory,
+    refetch: refetchAllowedCategory
+  } = useQuery(GET_ALLLOWED_POST_CATEGORY_QUERY, {
+    enabled: false,
+    variables: {
+      where: {
+        settings: {
+          accountType: 'company',
+          accountId: router.query.id
+        }
+      },
+      limit: 500,
+      offset: 0
+    }
+  })
+
+  const [
+    addCategory,
+    {
+      loading: loadingAddCategory,
+      called: calledAddCategory,
+      data: dataAddCategory,
+      error: errorAddCategory
+    }
+  ] = useMutation(ADD_CATEGORY_QUERY)
+
+  const [
+    removeCategory,
+    {
+      loading: loadingRemoveCategory,
+      called: calledRemoveCategory,
+      data: dataRemoveCategory,
+      error: errorRemoveCategory
+    }
+  ] = useMutation(REMOVE_CATEGORY_QUERY)
+
+  useEffect(() => {
+    router.replace(`/properties/${type}/${router.query.id}/settings`)
+    refetchCategory()
+    refetchAllowedCategory()
+  }, [])
+
+  useEffect(() => {
+    if (!loadingCategory) {
+      if (errorCategory) {
+        errorHandler(errorCategory)
+      } else if (dataCategory) {
+        const groupedCat = _.mapObject(
+          _.groupBy(dataCategory?.getPostCategory?.category, 'type'),
+          item => _.sortBy(item, 'name')
+        )
+        setCategoryLists(groupedCat)
+      }
+    }
+  }, [loadingCategory, dataCategory, errorCategory])
+
+  useEffect(() => {
+    if (!loadingAllowedCategory) {
+      if (errorAllowedCategory) {
+        errorHandler(errorAllowedCategory)
+      } else if (dataAllowedCategory) {
+        const groupedCat = _.mapObject(
+          _.groupBy(
+            dataAllowedCategory?.getAllowedPostCategory?.data[0]?.categories,
+            'type'
+          ),
+          item => _.sortBy(item, 'name')
+        )
+        setAllowedCategoryLists(groupedCat)
+      }
+    }
+  }, [loadingAllowedCategory, dataAllowedCategory, errorAllowedCategory])
+
+  useEffect(() => {
+    if (!loadingAddCategory) {
+      if (errorAddCategory) {
+        errorHandler(errorAddCategory)
+      }
+      if (calledAddCategory && dataAddCategory) {
+        showToast('success', 'You have successfully updated a setting.')
+      }
+      refetchAllowedCategory()
+    }
+  }, [loadingAddCategory, calledAddCategory, dataAddCategory, errorAddCategory])
+
+  useEffect(() => {
+    if (!loadingRemoveCategory) {
+      if (errorRemoveCategory) {
+        errorHandler(errorRemoveCategory)
+      }
+      if (calledRemoveCategory && dataRemoveCategory) {
+        showToast('success', 'You have successfully updated a setting.')
+      }
+      refetchAllowedCategory()
+    }
+  }, [
+    loadingRemoveCategory,
+    calledRemoveCategory,
+    dataRemoveCategory,
+    errorRemoveCategory
+  ])
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError) {
+        if (networkError?.result?.errors[0]?.code === 4000) {
+          showToast('danger', 'Category name already exists')
+        } else {
+          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+        }
+      }
+    }
+  }
+
+  const onSettingsChanged = async data => {
+    const selected = data.target.value
+    const isChecked = data.target.checked
+    const item = {
+      accountType: 'company',
+      accountId: router.query.id,
+      categoryIds: [selected]
+    }
+
+    try {
+      if (isChecked) {
+        await addCategory({ variables: item })
+      } else {
+        await removeCategory({ variables: item })
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
 
   return (
     <div className={styles.PageContainer}>
@@ -190,24 +270,35 @@ const CompanySettingsComponent = () => {
                 property.
               </div>
               <div>
-                <label className="inline-flex items-center mt-3">
-                  <ul className={styles.CheckboxListContainer}>
-                    {bulletinCategoriesData.map((item, index) => {
-                      return (
-                        <li key={index}>
-                          <Checkbox
-                            primary
-                            id={`bulletin-${index}`}
-                            name="post_category"
-                            label={item.name}
-                            isChecked={item.checked}
-                            onChange={() => console.log('clicked')}
-                          />
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </label>
+                {loadingCategory || loadingAllowedCategory ? (
+                  <PageLoader />
+                ) : (
+                  <label className="inline-flex items-center mt-3">
+                    <ul className={styles.CheckboxListContainer}>
+                      {(categoryLists?.post?.length > 0 ||
+                        allowedCategoryLists?.post?.length > 0) &&
+                        categoryLists?.post?.map((item, index) => {
+                          const isChecked = (allowedCategoryLists?.post ?? [])
+                            .map(item2 => item2._id)
+                            .includes(item._id)
+
+                          return (
+                            <li key={index}>
+                              <Checkbox
+                                primary
+                                id={`post-${index}`}
+                                name="post_category"
+                                label={item.name}
+                                value={item._id}
+                                isChecked={isChecked}
+                                onChange={onSettingsChanged}
+                              />
+                            </li>
+                          )
+                        })}
+                    </ul>
+                  </label>
+                )}
               </div>
             </div>
           }
@@ -227,24 +318,35 @@ const CompanySettingsComponent = () => {
                 property.
               </div>
               <div>
-                <label className="inline-flex items-center mt-3">
-                  <ul className={styles.CheckboxListContainer}>
-                    {RMCategoriesData.map((item, index) => {
-                      return (
-                        <li key={index}>
-                          <Checkbox
-                            primary
-                            id={`rm-${index}`}
-                            name="post_category"
-                            label={item.name}
-                            isChecked={item.checked}
-                            onChange={() => console.log('clicked')}
-                          />
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </label>
+                {loadingCategory || loadingAllowedCategory ? (
+                  <PageLoader />
+                ) : (
+                  <label className="inline-flex items-center mt-3">
+                    <ul className={styles.CheckboxListContainer}>
+                      {(categoryLists?.issue?.length > 0 ||
+                        allowedCategoryLists?.issue?.length > 0) &&
+                        categoryLists?.issue?.map((item, index) => {
+                          const isChecked = (allowedCategoryLists?.issue ?? [])
+                            .map(item2 => item2._id)
+                            .includes(item._id)
+
+                          return (
+                            <li key={index}>
+                              <Checkbox
+                                primary
+                                id={`issue-${index}`}
+                                name="issue_category"
+                                label={item.name}
+                                value={item._id}
+                                isChecked={isChecked}
+                                onChange={onSettingsChanged}
+                              />
+                            </li>
+                          )
+                        })}
+                    </ul>
+                  </label>
+                )}
               </div>
             </div>
           }
@@ -266,24 +368,35 @@ const CompanySettingsComponent = () => {
                 property.
               </div>
               <div>
-                <label className="inline-flex items-center mt-3">
-                  <ul className={styles.CheckboxListContainer}>
-                    {notifCategoriesData.map((item, index) => {
-                      return (
-                        <li key={index}>
-                          <Checkbox
-                            primary
-                            id={`rm-${index}`}
-                            name="post_category"
-                            label={item.name}
-                            isChecked={item.checked}
-                            onChange={() => console.log('clicked')}
-                          />
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </label>
+                {loadingCategory || loadingAllowedCategory ? (
+                  <PageLoader />
+                ) : (
+                  <label className="inline-flex items-center mt-3">
+                    <ul className={styles.CheckboxListContainer}>
+                      {(categoryLists?.flash?.length > 0 ||
+                        allowedCategoryLists?.flash?.length > 0) &&
+                        categoryLists?.flash?.map((item, index) => {
+                          const isChecked = (allowedCategoryLists?.flash ?? [])
+                            .map(item2 => item2._id)
+                            .includes(item._id)
+
+                          return (
+                            <li key={index}>
+                              <Checkbox
+                                primary
+                                id={`flash-${index}`}
+                                name="flash_category"
+                                label={item.name}
+                                value={item._id}
+                                isChecked={isChecked}
+                                onChange={onSettingsChanged}
+                              />
+                            </li>
+                          )
+                        })}
+                    </ul>
+                  </label>
+                )}
               </div>
             </div>
           }
@@ -291,6 +404,10 @@ const CompanySettingsComponent = () => {
       </div>
     </div>
   )
+}
+
+CompanySettingsComponent.propTypes = {
+  type: P.string.isRequired
 }
 
 export default CompanySettingsComponent

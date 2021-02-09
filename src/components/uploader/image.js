@@ -16,6 +16,7 @@ const UploaderImage = ({
   images,
   multiple,
   maxImages,
+  circle,
   onUploadImage,
   onRemoveImage
 }) => {
@@ -56,7 +57,9 @@ const UploaderImage = ({
       return (
         <div key={index} className={containerClass}>
           <div
-            className={styles.imageUploaderImage}
+            className={`${styles.imageUploaderImage} ${
+              circle ? styles.imageUploaderImageCircle : ''
+            }`}
             style={{ backgroundImage: `url(${!loading && image})` }}
           />
           <button
@@ -92,7 +95,9 @@ const UploaderImage = ({
               accept="image/jpg, image/jpeg, image/png"
             />
             <div
-              className={styles.imageUploaderImage}
+              className={`${styles.imageUploaderImage} ${
+                circle ? styles.imageUploaderImageCircle : ''
+              }`}
               onClick={handleImageChange}
               onDrop={handleOnDrop}
               onDragOver={handleDragOver}
@@ -123,6 +128,7 @@ UploaderImage.propTypes = {
   images: PropTypes.array,
   multiple: PropTypes.bool,
   maxImages: PropTypes.number,
+  circle: PropTypes.bool,
   onUploadImage: PropTypes.func,
   onRemoveImage: PropTypes.func
 }

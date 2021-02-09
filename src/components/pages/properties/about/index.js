@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-key */
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useRouter } from 'next/router'
 import P from 'prop-types'
 import { FiEdit2, FiMapPin, FiMail, FiPhone } from 'react-icons/fi'
 import { FaRegUser, FaRegBuilding } from 'react-icons/fa'
@@ -10,6 +11,7 @@ import Button from '@app/components/button'
 import styles from './index.module.css'
 
 const CompanyAboutComponent = ({
+  type,
   address,
   tinNo,
   email,
@@ -17,6 +19,12 @@ const CompanyAboutComponent = ({
   approvedBy,
   onButtonClick
 }) => {
+  const router = useRouter()
+
+  useEffect(() => {
+    router.replace(`/properties/${type}/${router.query.id}/about`)
+  }, [])
+
   return (
     <div className={styles.PageContainer}>
       <div className="flex">
@@ -47,16 +55,22 @@ const CompanyAboutComponent = ({
                 </div>
                 <hr />
 
-                <div className={styles.CardSubContentContainer}>
-                  <span>
-                    <FaRegBuilding />
-                  </span>
-                  <div className={styles.FlexCol}>
-                    <span className={styles.ContentTitle}>Company Tin #</span>
-                    <span>{tinNo}</span>
-                  </div>
-                </div>
-                <hr />
+                {type === 'company' && (
+                  <>
+                    <div className={styles.CardSubContentContainer}>
+                      <span>
+                        <FaRegBuilding />
+                      </span>
+                      <div className={styles.FlexCol}>
+                        <span className={styles.ContentTitle}>
+                          Company Tin #
+                        </span>
+                        <span>{tinNo}</span>
+                      </div>
+                    </div>
+                    <hr />
+                  </>
+                )}
 
                 <div className={styles.CardSubContentContainer2}>
                   <div className={styles.CardSubContentContainer3}>
@@ -101,14 +115,15 @@ const CompanyAboutComponent = ({
 }
 
 CompanyAboutComponent.defaultProps = {
-  address: '---',
-  tinNo: '---',
-  email: '---',
-  contactNo: '---',
-  approvedBy: '---'
+  address: 'Not available',
+  tinNo: 'Not available',
+  email: 'Not available',
+  contactNo: 'Not available',
+  approvedBy: 'Not available'
 }
 
 CompanyAboutComponent.propTypes = {
+  type: P.string.isRequired,
   address: P.string.isRequired,
   tinNo: P.string.isRequired,
   email: P.string.isRequired,
