@@ -382,7 +382,7 @@ const PostComponent = () => {
 
   const onPageClick = e => {
     setActivePage(e)
-    setOffsetPage(e * limitPage)
+    setOffsetPage(e * limitPage - 10)
   }
 
   const onLimitChange = e => {

@@ -71,24 +71,24 @@ const GET_POST_QUERY = gql`
         audienceType
         audienceExpanse {
           company {
-            id
+            _id
           }
           complex {
-            id
+            _id
           }
           building {
-            id
+            _id
           }
         }
         audienceExceptions {
           company {
-            id
+            _id
           }
           complex {
-            id
+            _id
           }
           building {
-            id
+            _id
           }
         }
       }
@@ -123,6 +123,7 @@ const CreatePosts = () => {
   const { query, push } = useRouter()
   const [loading, setLoading] = useState(false)
   const [maxFiles] = useState(3)
+  const [post, setPost] = useState([])
   const [fileUrls, setFileUrls] = useState([])
   const [fileUploadedData, setFileUploadedData] = useState([])
   const [videoUrl, setVideoUrl] = useState()
@@ -130,7 +131,7 @@ const CreatePosts = () => {
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
-  const [, setModalID] = useState()
+  const [modalID, setModalID] = useState()
   const [modalContent, setModalContent] = useState()
   const [modalTitle, setModalTitle] = useState()
   const [modalFooter, setModalFooter] = useState(null)
@@ -139,6 +140,10 @@ const CreatePosts = () => {
   const [selectedAudienceType, setSelectedAudienceType] = useState('all')
   const [selectedCompanyExcept, setSelectedCompanyExcept] = useState()
   const [selectedCompanySpecific, setSelectedCompanySpecific] = useState()
+  const [selectedComplexExcept, setSelectedComplexExcept] = useState()
+  const [selectedComplexSpecific, setSelectedComplexSpecific] = useState()
+  const [selectedBuildingExcept, setSelectedBuildingExcept] = useState()
+  const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState()
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
@@ -165,15 +170,7 @@ const CreatePosts = () => {
     }
   )
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    errors,
-    register,
-    setValue,
-    getValues
-  } = useForm({
+  const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
       selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
     ),
@@ -195,6 +192,7 @@ const CreatePosts = () => {
       const itemData = dataPost?.getAllPost?.post[0]
 
       if (itemData) {
+        setPost(itemData)
         setValue('title', itemData?.title)
         setValue('content', itemData?.content)
         setValue('category', itemData?.category?._id)
@@ -223,35 +221,71 @@ const CreatePosts = () => {
         setFileUrls(itemData?.primaryMedia.map(item => item.url))
         setSelectedAudienceType(itemData?.audienceType)
         setSelectedCompanyExcept(
-          itemData?.audienceExpanse
-            ? {
-                companyIds: itemData?.audienceExceptions?.company?.map(
-                  item => item
-                ),
-                complexIds: itemData?.audienceExceptions?.complex?.map(
-                  item => item
-                ),
-                buildingIds: itemData?.audienceExceptions?.building?.map(
-                  item => item
-                )
-              }
+          itemData?.audienceExceptions?.company?.length > 0
+            ? itemData?.audienceExceptions?.company.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
             : null
         )
         setSelectedCompanySpecific(
-          itemData?.audienceExpanse
-            ? {
-                companyIds: itemData?.audienceExpanse?.company?.map(
-                  item => item
-                ),
-                complexIds: itemData?.audienceExpanse?.complex?.map(
-                  item => item
-                ),
-                buildingIds: itemData?.audienceExpanse?.building?.map(
-                  item => item
-                )
-              }
+          itemData?.audienceExpanse?.company?.length > 0
+            ? itemData?.audienceExpanse?.company.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
             : null
         )
+        setSelectedComplexExcept(
+          itemData?.audienceExceptions?.complex?.length > 0
+            ? itemData?.audienceExceptions?.complex.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedComplexSpecific(
+          itemData?.audienceExpanse?.complex?.length > 0
+            ? itemData?.audienceExpanse?.complex.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedBuildingExcept(
+          itemData?.audienceExceptions?.building?.length > 0
+            ? itemData?.audienceExceptions?.building.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedBuildingSpecific(
+          itemData?.audienceExpanse?.building?.length > 0
+            ? itemData?.audienceExpanse?.building.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedPublishTimeType(
+          moment().isAfter(moment(new Date(itemData?.publishedAt)))
+            ? 'now'
+            : 'later'
+        )
+        setSelectedPublishDateTime(itemData?.publishedAt)
       }
     }
   }, [loadingPost, dataPost, errorPost, setValue])
@@ -410,16 +444,71 @@ const CreatePosts = () => {
         updateData.data.publishedAt = selectedPublishDateTime
       }
       if (selectedCompanySpecific) {
-        updateData.data.audienceExpanse = {
-          companyIds: selectedCompanySpecific
+        if (selectedCompanySpecific[0]?.value) {
+          updateData.data.audienceExpanse = {
+            companyIds: selectedCompanySpecific.map(item => item.value)
+          }
+        } else {
+          updateData.data.audienceExpanse = {
+            companyIds: selectedCompanySpecific
+          }
         }
       }
       if (selectedCompanyExcept) {
-        updateData.data.audienceExceptions = {
-          companyIds: selectedCompanyExcept
+        if (selectedCompanyExcept[0]?.value) {
+          updateData.data.audienceExpanse = {
+            companyIds: selectedCompanyExcept.map(item => item.value)
+          }
+        } else {
+          updateData.data.audienceExceptions = {
+            companyIds: selectedCompanyExcept
+          }
         }
       }
-
+      if (selectedComplexSpecific) {
+        if (selectedComplexSpecific[0]?.value) {
+          updateData.data.audienceExpanse = {
+            complexIds: selectedComplexSpecific.map(item => item.value)
+          }
+        } else {
+          updateData.data.audienceExpanse = {
+            complexIds: selectedComplexSpecific
+          }
+        }
+      }
+      if (selectedComplexExcept) {
+        if (selectedComplexExcept[0]?.value) {
+          updateData.data.audienceExpanse = {
+            complexIds: selectedComplexExcept.map(item => item.value)
+          }
+        } else {
+          updateData.data.audienceExceptions = {
+            complexIds: selectedComplexExcept
+          }
+        }
+      }
+      if (selectedBuildingSpecific) {
+        if (selectedBuildingSpecific[0]?.value) {
+          updateData.data.audienceExpanse = {
+            buildingIds: selectedBuildingSpecific.map(item => item.value)
+          }
+        } else {
+          updateData.data.audienceExpanse = {
+            buildingIds: selectedBuildingSpecific
+          }
+        }
+      }
+      if (selectedBuildingExcept) {
+        if (selectedBuildingExcept[0]?.value) {
+          updateData.data.audienceExpanse = {
+            buildingIds: selectedBuildingExcept.map(item => item.value)
+          }
+        } else {
+          updateData.data.audienceExceptions = {
+            buildingIds: selectedBuildingExcept
+          }
+        }
+      }
       updatePost({ variables: updateData })
     }
   }
@@ -436,6 +525,22 @@ const CreatePosts = () => {
     setSelectedCompanySpecific(data)
   }
 
+  const onSelectComplexExcept = data => {
+    setSelectedComplexExcept(data)
+  }
+
+  const onSelectComplexSpecific = data => {
+    setSelectedComplexSpecific(data)
+  }
+
+  const onSelectBuildingExcept = data => {
+    setSelectedBuildingExcept(data)
+  }
+
+  const onSelectBuildingSpecific = data => {
+    setSelectedBuildingSpecific(data)
+  }
+
   const handleShowAudienceModal = () => {
     setShowAudienceModal(old => !old)
   }
@@ -445,9 +550,67 @@ const CreatePosts = () => {
   }
 
   const onCancelAudience = () => {
-    setSelectedAudienceType('all')
-    setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
+    setSelectedAudienceType(post?.audienceType)
+    setSelectedCompanyExcept(
+      post?.audienceExceptions?.company?.length > 0
+        ? post?.audienceExceptions?.company.map(item => {
+            return {
+              value: item._id,
+              label: item.name
+            }
+          })
+        : null
+    )
+    setSelectedCompanySpecific(
+      post?.audienceExpanse?.company?.length > 0
+        ? post?.audienceExpanse?.company.map(item => {
+            return {
+              value: item._id,
+              label: item.name
+            }
+          })
+        : null
+    )
+    setSelectedComplexExcept(
+      post?.audienceExceptions?.complex?.length > 0
+        ? post?.audienceExceptions?.complex.map(item => {
+            return {
+              value: item._id,
+              label: item.name
+            }
+          })
+        : null
+    )
+    setSelectedComplexSpecific(
+      post?.audienceExpanse?.complex?.length > 0
+        ? post?.audienceExpanse?.complex.map(item => {
+            return {
+              value: item._id,
+              label: item.name
+            }
+          })
+        : null
+    )
+    setSelectedBuildingExcept(
+      post?.audienceExceptions?.building?.length > 0
+        ? post?.audienceExceptions?.building.map(item => {
+            return {
+              value: item._id,
+              label: item.name
+            }
+          })
+        : null
+    )
+    setSelectedBuildingSpecific(
+      post?.audienceExpanse?.building?.length > 0
+        ? post?.audienceExpanse?.building.map(item => {
+            return {
+              value: item._id,
+              label: item.name
+            }
+          })
+        : null
+    )
     handleShowAudienceModal()
   }
 
@@ -491,15 +654,24 @@ const CreatePosts = () => {
     setSelectedStatus(data)
   }
 
-  const onPreviewPost = () => {
-    onSubmit(getValues(), 'draft')
-  }
+  const onDeletePost = async () => {
+    const updateData = {
+      id: modalID,
+      data: {
+        status: 'trashed'
+      }
+    }
 
-  const onDeletePost = () => {}
+    try {
+      await updatePost({ variables: updateData })
+    } catch (e) {
+      console.log(e)
+    }
+  }
 
   return (
     <div className={style.CreatePostContainer}>
-      <h1 className={style.CreatePostHeader}>Create a Post</h1>
+      <h1 className={style.CreatePostHeader}>Edit Post</h1>
       <form>
         <Card
           content={
@@ -615,6 +787,18 @@ const CreatePosts = () => {
                           {selectedCompanySpecific && (
                             <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
                           )}
+                          {selectedComplexExcept && (
+                            <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                          )}
+                          {selectedComplexSpecific && (
+                            <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                          )}
+                          {selectedBuildingExcept && (
+                            <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                          )}
+                          {selectedBuildingSpecific && (
+                            <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                          )}
                         </strong>
                         <span
                           className={style.CreatePostLink}
@@ -650,16 +834,29 @@ const CreatePosts = () => {
         />
 
         <div className={style.CreatePostFooter}>
-          <Button
-            default
-            type="button"
-            label="Move to Trash"
-            className={style.CreatePostFooterButton}
-            onMouseDown={() => onUpdateStatus('draft')}
-            onClick={handleSubmit(e => {
-              handleShowModal('delete')
-            })}
-          />
+          <span>
+            <Button
+              default
+              type="button"
+              label="Move to Trash"
+              className={style.CreatePostFooterButton}
+              onMouseDown={() => onUpdateStatus('draft')}
+              onClick={handleSubmit(e => {
+                handleShowModal('delete')
+              })}
+            />
+            <Button
+              default
+              type="button"
+              label="Save as Draft"
+              className={style.CreatePostFooterButton}
+              onMouseDown={() => onUpdateStatus('draft')}
+              onClick={handleSubmit(e => {
+                onSubmit(e, 'draft')
+              })}
+            />
+          </span>
+
           <Button
             type="button"
             label="Publish Post"
@@ -676,14 +873,21 @@ const CreatePosts = () => {
         onSelectAudienceType={onSelectType}
         onSelectCompanyExcept={onSelectCompanyExcept}
         onSelectCompanySpecific={onSelectCompanySpecific}
-        // onSelectComplexExcept={onSelectComplexExcept}
-        // onSelectComplexSpecific={onSelectComplexSpecific}
-        // onSelectBuildingExcept={onSelectBuildingExcept}
-        // onSelectBuildingSpecific={onSelectBuildingSpecific}
+        onSelectComplexExcept={onSelectComplexExcept}
+        onSelectComplexSpecific={onSelectComplexSpecific}
+        onSelectBuildingExcept={onSelectBuildingExcept}
+        onSelectBuildingSpecific={onSelectBuildingSpecific}
         onSave={onSaveAudience}
         onCancel={onCancelAudience}
         onClose={onCancelAudience}
         isShown={showAudienceModal}
+        valueAudienceType={selectedAudienceType}
+        valueCompanyExcept={selectedCompanyExcept}
+        valueCompanySpecific={selectedCompanySpecific}
+        valueComplexExcept={selectedComplexExcept}
+        valueComplexSpecific={selectedComplexSpecific}
+        valueBuildingExcept={selectedBuildingExcept}
+        valueBuildingSpecific={selectedBuildingSpecific}
       />
 
       <PublishTimeModal
@@ -693,6 +897,8 @@ const CreatePosts = () => {
         onCancel={onCancelPublishTime}
         onClose={onCancelPublishTime}
         isShown={showPublishTimeModal}
+        valuePublishType={selectedPublishTimeType}
+        valueDateTime={selectedPublishDateTime}
       />
 
       <Modal
@@ -707,13 +913,7 @@ const CreatePosts = () => {
             ? 'Save & Continue'
             : 'Yes'
         }
-        onOk={() =>
-          modalType === 'delete'
-            ? onDeletePost()
-            : modalType === 'preview'
-            ? onPreviewPost()
-            : null
-        }
+        onOk={() => (modalType === 'delete' ? onDeletePost() : null)}
         onCancel={() => setShowModal(old => !old)}
       >
         <div className="w-full">{modalContent}</div>
