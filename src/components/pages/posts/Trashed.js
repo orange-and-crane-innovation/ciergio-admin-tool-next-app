@@ -327,7 +327,6 @@ const PostComponent = () => {
 
   useEffect(() => {
     if (!loadingBulk && errorBulk) {
-      console.log(errorBulk.networkError)
       showToast(
         'danger',
         // `An error occured during update. Please contact your system administrator.`
@@ -396,7 +395,7 @@ const PostComponent = () => {
   }
   const onPageClick = e => {
     setActivePage(e)
-    setOffsetPage(e * limitPage)
+    setOffsetPage(e * limitPage - 10)
   }
 
   const onLimitChange = e => {

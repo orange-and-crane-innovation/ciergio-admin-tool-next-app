@@ -85,9 +85,16 @@ const CreatePosts = () => {
   const [selectedAudienceType, setSelectedAudienceType] = useState('all')
   const [selectedCompanyExcept, setSelectedCompanyExcept] = useState()
   const [selectedCompanySpecific, setSelectedCompanySpecific] = useState()
+  const [selectedComplexExcept, setSelectedComplexExcept] = useState()
+  const [selectedComplexSpecific, setSelectedComplexSpecific] = useState()
+  const [selectedBuildingExcept, setSelectedBuildingExcept] = useState()
+  const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState()
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
 
   const [
     createPost,
@@ -281,6 +288,18 @@ const CreatePosts = () => {
       if (selectedCompanyExcept) {
         createData.audienceExceptions = { companyIds: selectedCompanyExcept }
       }
+      if (selectedComplexSpecific) {
+        createData.audienceExpanse = { complexIds: selectedComplexSpecific }
+      }
+      if (selectedComplexExcept) {
+        createData.audienceExceptions = { complexIds: selectedComplexExcept }
+      }
+      if (selectedBuildingSpecific) {
+        createData.audienceExpanse = { buildingIds: selectedBuildingSpecific }
+      }
+      if (selectedBuildingExcept) {
+        createData.audienceExceptions = { buildingIds: selectedBuildingExcept }
+      }
       createPost({ variables: { data: createData } })
     }
   }
@@ -305,6 +324,23 @@ const CreatePosts = () => {
     setSelectedCompanySpecific(data)
   }
 
+  const onSelectComplexExcept = data => {
+    setSelectedComplexExcept(data)
+  }
+
+  const onSelectComplexSpecific = data => {
+    console.log(data)
+    setSelectedComplexSpecific(data)
+  }
+
+  const onSelectBuildingExcept = data => {
+    setSelectedBuildingExcept(data)
+  }
+
+  const onSelectBuildingSpecific = data => {
+    setSelectedBuildingSpecific(data)
+  }
+
   const handleShowAudienceModal = () => {
     setShowAudienceModal(old => !old)
   }
@@ -317,6 +353,10 @@ const CreatePosts = () => {
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
     setSelectedCompanySpecific(null)
+    setSelectedComplexExcept(null)
+    setSelectedComplexSpecific(null)
+    setSelectedBuildingExcept(null)
+    setSelectedBuildingSpecific(null)
     handleShowAudienceModal()
   }
 
@@ -355,6 +395,10 @@ const CreatePosts = () => {
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
     setSelectedCompanySpecific(null)
+    setSelectedComplexExcept(null)
+    setSelectedComplexSpecific(null)
+    setSelectedBuildingExcept(null)
+    setSelectedBuildingSpecific(null)
     setSelectedPublishTimeType('now')
     setSelectedPublishDateTime(null)
     setSelectedStatus('active')
@@ -562,6 +606,18 @@ const CreatePosts = () => {
                           {selectedCompanySpecific && (
                             <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
                           )}
+                          {selectedComplexExcept && (
+                            <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                          )}
+                          {selectedComplexSpecific && (
+                            <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                          )}
+                          {selectedBuildingExcept && (
+                            <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                          )}
+                          {selectedBuildingSpecific && (
+                            <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                          )}
                         </strong>
                         <span
                           className={style.CreatePostLink}
@@ -635,14 +691,21 @@ const CreatePosts = () => {
         onSelectAudienceType={onSelectType}
         onSelectCompanyExcept={onSelectCompanyExcept}
         onSelectCompanySpecific={onSelectCompanySpecific}
-        // onSelectComplexExcept={onSelectComplexExcept}
-        // onSelectComplexSpecific={onSelectComplexSpecific}
-        // onSelectBuildingExcept={onSelectBuildingExcept}
-        // onSelectBuildingSpecific={onSelectBuildingSpecific}
+        onSelectComplexExcept={onSelectComplexExcept}
+        onSelectComplexSpecific={onSelectComplexSpecific}
+        onSelectBuildingExcept={onSelectBuildingExcept}
+        onSelectBuildingSpecific={onSelectBuildingSpecific}
         onSave={onSaveAudience}
         onCancel={onCancelAudience}
         onClose={onCancelAudience}
         isShown={showAudienceModal}
+        valueAudienceType={selectedAudienceType}
+        valueCompanyExcept={selectedCompanyExcept}
+        valueCompanySpecific={selectedCompanySpecific}
+        valueComplexExcept={selectedComplexExcept}
+        valueComplexSpecific={selectedComplexSpecific}
+        valueBuildingExcept={selectedBuildingExcept}
+        valueBuildingSpecific={selectedBuildingSpecific}
       />
 
       <PublishTimeModal
@@ -652,6 +715,8 @@ const CreatePosts = () => {
         onCancel={onCancelPublishTime}
         onClose={onCancelPublishTime}
         isShown={showPublishTimeModal}
+        valuePublishType={selectedPublishTimeType}
+        valueDateTime={selectedPublishDateTime}
       />
 
       <Modal
