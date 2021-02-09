@@ -54,3 +54,7 @@
   @apply my-4;
   @apply text-danger-500 text-md font-bold;
 }
+
+.imageUploaderImageCircle {
+  @apply rounded-full !important;
+}
