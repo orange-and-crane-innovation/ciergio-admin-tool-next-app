@@ -1,15 +1,48 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Tabs from '@app/components/tabs'
 import styles from './Billing.module.css'
-// import { useRouter } from 'next/router'
-
 import DatePicker from '@app/components/forms/form-datepicker/'
-
+import * as Query from './Query'
 import Unsent from './Unsent'
 import Sent from './Sent'
+import { useQuery } from '@apollo/client'
+// import { useRouter } from 'next/router'
 
 function Billing() {
-  // const router = useRouter()
+  const [accountID, setAccountID] = useState(null)
+  const [accountType, setAccountType] = useState('')
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('profile'))
+    const id = user?.accounts?.data[0]._id
+    const type = user?.accounts?.data[0].accountType
+    console.log(user)
+    setAccountID(id)
+    setAccountType(type)
+  }, [])
+
+  useEffect(() => {
+    console.log(accountType)
+  }, [accountType])
+
+  const { loading, data, error, refetch } = useQuery(
+    Query.GET_ALLOWED_CATEGORY,
+    {
+      variables: {
+        where: {
+          accountId: accountID,
+          accountType: 'complex'
+        },
+        limit: 100
+      }
+    }
+  )
+
+  useEffect(() => {
+    if (!loading && data) {
+      console.log(data)
+    }
+  }, [loading, data, error, refetch])
+
   const [selectedDate, setSelectedDate] = useState(new Date())
   // const [activeTab, setActiveTab] = useState(1)
   const [month, setMonth] = useState(new Date().getMonth() + 1)

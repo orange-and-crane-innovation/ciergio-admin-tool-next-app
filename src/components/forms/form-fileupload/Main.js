@@ -23,11 +23,6 @@ export default function FileUpload({
   const [file, setFile] = useState(null)
   const inputRef = useRef(null)
 
-  const fileClasses = useMemo(
-    () => fileUrl && clsx(styles.longName, className),
-    [fileUrl, className]
-  )
-
   const handleFileUpload = e => {
     e.preventDefault()
     inputRef.current.click()
@@ -57,6 +52,7 @@ export default function FileUpload({
         onChange={handleFile}
         ref={inputRef}
         {...rest}
+        key="file1"
       />
     ),
     [inputRef, handleFile, rest]

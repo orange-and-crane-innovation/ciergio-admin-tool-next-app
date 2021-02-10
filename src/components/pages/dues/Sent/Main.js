@@ -96,9 +96,11 @@ function Sent({ month, year }) {
   const [search, setSearch] = useState(null)
   const keyPressed = useKeyPress('Enter')
   const [status, setStatus] = useState([])
-  const [modalFooter, setModalFooter] = useState(false)
+
   const [confirmationModal, setConfirmationModal] = useState()
   const [updateDuesId, setUpdateDuesId] = useState()
+  const [updatedData, setUpdatedData] = useState({})
+  const [updateID, setUpdateID] = useState('')
 
   const [defaultVal, setDefaultVal] = useState({
     attachment: {
@@ -177,9 +179,10 @@ function Sent({ month, year }) {
 
   useEffect(() => {
     if (!loadingUpdateDues && calledUpdateDues && dataUpdateDues) {
-      if (dataUpdateDues?.updateDues?.processId) {
-        setShowModal(show => !show)
-        setConfirmationModal(show => !show)
+      console.log(dataUpdateDues)
+      if (dataUpdateDues?.updateDues?.message === 'success') {
+        setShowModal(false)
+
         showToast('success', `You have successfully updated a billing`)
         refetch()
       }
@@ -192,14 +195,35 @@ function Sent({ month, year }) {
     }
   }, [duesLoading, duesData, duesError])
 
-  const getData = data => {
-    setDefaultVal(prevState => ({ ...prevState, data }))
+  const getData = async items => {
+    const data = {
+      id: items.id,
+      data: {
+        amount: items.amount,
+        dueDate: items.dueDate,
+        attachment: items.attachment
+      }
+    }
+
+    try {
+      await updateDues({
+        variables: data
+      })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const isConfirm = confirmed => {
+    if (confirmed) {
+      handleShowModal(false)
+    }
   }
 
   const handleShowModal = (type, id) => {
     const selected =
       !loading && data?.getDuesPerUnit?.data.find(due => due._id === id)
-
+    console.log(selected)
     if (selected) {
       switch (type) {
         case 'update': {
@@ -207,6 +231,8 @@ function Sent({ month, year }) {
           const amount = selected?.dues[0]?.amount
           const dueDate = selected?.dues[0]?.dueDate
           const fileUrl = selected?.dues[0]?.attachment?.fileUrl
+          const id = selected?.dues[0]?._id
+
           setDefaultVal({
             fileUrl,
             dueDate,
@@ -218,10 +244,12 @@ function Sent({ month, year }) {
               dueDate={dueDate}
               fileUrl={fileUrl}
               getData={getData}
+              id={id}
+              isClose={isConfirm}
             />
           )
           setUpdateDuesId(selected?.dues[0]?._id)
-          setModalFooter(true)
+
           break
         }
         case 'details': {
@@ -299,10 +327,11 @@ function Sent({ month, year }) {
         const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
         const unitName = row?.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
-          ${row?.unitOwner?.user?.lastName.charAt(0)}`
+            ${row?.unitOwner?.user?.lastName.charAt(0)}`
         const dropDown = (
           <Dropdown label={<FaEllipsisH />} items={dropdownData} />
         )
+
         rowData.push({
           floor: '',
           seen,
@@ -395,26 +424,10 @@ function Sent({ month, year }) {
 
   // setting limit in pagination
   const onLimitChange = e => {
-    setLimitPage(parseInt(e.target.value))
+    setLimitPage(parseInt(e.value))
   }
 
   const handleOkModal = () => {
-    setConfirmationModal(show => !show)
-    setShowModal(show => !show)
-  }
-
-  const handleConfirmUpdate = async data => {
-    try {
-      await updateDues({
-        variables: data
-      })
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
-  const handleClearConfirmationModal = () => {
-    setConfirmationModal(show => !show)
     setShowModal(show => !show)
   }
 
@@ -481,31 +494,11 @@ function Sent({ month, year }) {
         okText="Submit"
         visible={showModal}
         onClose={handleClearModal}
-        footer={modalFooter}
+        footer={null}
         onOk={handleOkModal}
         onCancel={() => setShowModal(old => !old)}
       >
         <div className="w-full px-5">{modalContent}</div>
-      </Modal>
-
-      <Modal
-        title=""
-        okText="Confirm"
-        visible={confirmationModal}
-        onClose={handleClearConfirmationModal}
-        onOk={handleSubmit(data => {
-          console.log(data)
-        })}
-        cancelText="Cancel"
-        onCancel={() => setConfirmationModal(old => !old)}
-      >
-        <div className="w-full p-12">
-          <p className="text-4xl text-gray-500">
-            The resident may have already seen the file, but you can update the
-            document if you made a mistake. Are you sure you want to update this
-            file?
-          </p>
-        </div>
       </Modal>
     </>
   )
