@@ -19,6 +19,8 @@ export const GET_ALLOWED_CATEGORY = gql`
       limit
       offset
       data {
+        accountId
+        accountType
         categories {
           color
           name

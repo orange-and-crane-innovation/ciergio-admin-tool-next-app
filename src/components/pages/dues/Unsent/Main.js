@@ -18,6 +18,7 @@ import useKeyPress from '@app/utils/useKeyPress'
 import * as Query from './Query.js'
 import axios from 'axios'
 import * as Mutation from './Mutation'
+import { FaCheck, FaExclamation } from 'react-icons/fa'
 
 const _ = require('lodash')
 
@@ -84,7 +85,7 @@ const DueDate = ({ fieldData }) => {
   )
 }
 
-function Unsent({ month, year }) {
+function Unsent({ month, year, categoryID, buildingID, categoryName }) {
   // router
   // const router = useRouter()
 
@@ -112,24 +113,21 @@ function Unsent({ month, year }) {
   ])
 
   const [isSent, setIsSent] = useState(false)
-
+  const [notSent, setNotSent] = useState(false)
   const [loader, setLoader] = useState(false)
   const [fileUploadedData, setFileUploadedData] = useState({})
   const [datePerRow, setDatePerRow] = useState({})
-  const [testids, setTestIds] = useState({
-    companyId: '5d79adf32174a96807fec886',
-    complexId: '5d79c58a2174a96807fec88e',
-    categoryId: '5deddc8474e2dda248a5e0da',
-    unitId: '5d941b26faa4554c3f63dab1'
-  })
+  const [sentLoading, setSentLoading] = useState(false)
   const [period, setPeriod] = useState({
-    month: 2,
-    year: 2021
+    month: month,
+    year: year
   })
-  const [title, setTitle] = useState('Test Title - Fen 2021')
+  const [title, setTitle] = useState(`${categoryName} ${month} - ${year}`)
   const [amountPerRow, setAmountPerRow] = useState({})
   const [perDate, setPerDate] = useState([])
-  const temporaryBuildingID = '5d804d6543df5f4239e72911'
+  const [companyIdPerRow, setCompanyIdPerRow] = useState({})
+  const [complexIDPerRow, setComplexIdPerRow] = useState({})
+  const [unitIdPerRow, setUnitIdPerRow] = useState({})
 
   const [
     createDues,
@@ -144,12 +142,13 @@ function Unsent({ month, year }) {
   const { loading, data, error } = useQuery(Query.GET_UNSENT_DUES_QUERY, {
     variables: {
       unit: {
-        buildingId: temporaryBuildingID,
+        buildingId: buildingID,
         search,
         floorNumber: selectedFloor
       },
       filter: { sent: false },
       dues: {
+        categoryId: categoryID,
         period: {
           month: month,
           year: year
@@ -166,7 +165,7 @@ function Unsent({ month, year }) {
     data: dataAllFloors
   } = useQuery(Query.GET_ALL_FLOORS, {
     variables: {
-      buildingId: temporaryBuildingID
+      buildingId: buildingID
     }
   })
 
@@ -175,7 +174,7 @@ function Unsent({ month, year }) {
     {
       variables: {
         where: {
-          buildingId: temporaryBuildingID,
+          buildingId: buildingID,
           sent: false
         }
       }
@@ -196,6 +195,11 @@ function Unsent({ month, year }) {
     )}-${year}`
     setDate(formatTodate)
     setPerDate([])
+    setTitle(`${categoryName} ${month} - ${year}`)
+    setPeriod({
+      month,
+      year
+    })
   }, [month, year])
 
   const handleChangeDate = event => {
@@ -269,11 +273,16 @@ function Unsent({ month, year }) {
 
   useEffect(() => {
     if (!loadingCreatingDues && calledCreatingDues && dataCreatingDues) {
-      console.log('sending')
-      console.log(dataCreatingDues)
-      setIsSent(true)
-    } else {
-      console.log(dataCreatingDues)
+      setSentLoading(true)
+      if (
+        dataCreatingDues?.createDues?.processId &&
+        dataCreatingDues?.createDues?.processId !== ''
+      ) {
+        showToast('success', 'successfully submitted')
+        setIsSent(true)
+      } else {
+        setNotSent(true)
+      }
     }
   }, [loadingCreatingDues, calledCreatingDues, dataCreatingDues])
 
@@ -284,9 +293,12 @@ function Unsent({ month, year }) {
     try {
       const data = {
         amount: parseInt(amountPerRow[name]?.amount),
-        ...testids,
+        companyId: companyIdPerRow[name]?.companyID,
+        unitId: unitIdPerRow[name]?.unitID,
+        complexId: complexIDPerRow[name]?.complexID,
         dueDate: datePerRow[name]?.dueDate,
-        buildingId: temporaryBuildingID,
+        buildingId: buildingID,
+        categoryId: categoryID,
         sent: true,
         title,
         period: {
@@ -295,13 +307,16 @@ function Unsent({ month, year }) {
         attachment: { ...fileUploadedData[name] }
       }
 
+      console.log(data)
+
       await createDues({
         variables: {
           data: data
         }
       })
     } catch (e) {
-      showToast('warning', 'Send Failed')
+      showToast('warning', 'Submit Failed')
+      setNotSent(true)
     }
   }
 
@@ -309,6 +324,7 @@ function Unsent({ month, year }) {
   const useTableRows = rows => {
     const rowData = []
     let num = 0
+
     if (rows) {
       rows.forEach((row, index) => {
         if (num !== row.floorNumber) {
@@ -322,6 +338,7 @@ function Unsent({ month, year }) {
             blankrow: ''
           })
         }
+
         const unitName = row.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
         ${row?.unitOwner?.user?.lastName.charAt(0)}`
@@ -362,8 +379,9 @@ function Unsent({ month, year }) {
             full
             primary={!isSent}
             success={isSent}
+            danger={notSent}
             disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
-            label={isSent ? 'Sent' : 'Send'}
+            label={isSent ? <FaCheck /> : notSent ? <FaExclamation /> : 'Send'}
             name={`form${index}`}
             onClick={e => submitForm(e)}
           />
@@ -391,6 +409,7 @@ function Unsent({ month, year }) {
         num = row.floorNumber
       })
     }
+
     return rowData
   }
 
@@ -398,6 +417,19 @@ function Unsent({ month, year }) {
 
   useEffect(() => {
     if (!loading && !error && data) {
+      const companyIDArray = {}
+      const complexIDArray = {}
+      const unitIDArray = {}
+      data?.getDuesPerUnit?.data.forEach((due, index) => {
+        companyIDArray[`form${index}`] = { companyID: due?.company?._id }
+        complexIDArray[`form${index}`] = { complexID: due?.complex?._id }
+        unitIDArray[`form${index}`] = { unitID: due?.unitOwner?.unit?._id }
+      })
+
+      setCompanyIdPerRow(companyIDArray)
+      setComplexIdPerRow(complexIDArray)
+      setUnitIdPerRow(unitIDArray)
+
       const duesTable = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
@@ -415,7 +447,9 @@ function Unsent({ month, year }) {
     amountPerRow,
     datePerRow,
     fileUploadedData,
-    isSent
+    isSent,
+    sentLoading,
+    notSent
   ])
 
   useEffect(() => {
@@ -590,7 +624,10 @@ DueDate.propTypes = {
 
 Unsent.propTypes = {
   month: P.number.isRequired,
-  year: P.number.isRequired
+  year: P.number.isRequired,
+  categoryID: P.string.isRequired,
+  buildingID: P.string.isRequired,
+  categoryName: P.string.isRequired
 }
 
 export default Unsent

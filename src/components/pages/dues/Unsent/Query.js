@@ -21,13 +21,26 @@ export const GET_UNSENT_DUES_QUERY = gql`
       data {
         floorNumber
         name
-        unitType {
-          name
+        company {
+          _id
         }
+        complex {
+          _id
+        }
+
         unitOwner {
+          unit {
+            _id
+          }
+          _id
           user {
             firstName
             lastName
+          }
+        }
+        dues {
+          category {
+            _id
           }
         }
       }

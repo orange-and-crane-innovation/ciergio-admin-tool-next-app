@@ -13,9 +13,7 @@ import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
 import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import schema from './schema'
+
 import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
 import HistoryBills from './Modals/HistoryBills'
@@ -96,25 +94,6 @@ function Sent({ month, year }) {
   const [search, setSearch] = useState(null)
   const keyPressed = useKeyPress('Enter')
   const [status, setStatus] = useState([])
-
-  const [confirmationModal, setConfirmationModal] = useState()
-  const [updateDuesId, setUpdateDuesId] = useState()
-  const [updatedData, setUpdatedData] = useState({})
-  const [updateID, setUpdateID] = useState('')
-
-  const [defaultVal, setDefaultVal] = useState({
-    attachment: {
-      fileUrl: '',
-      fileType: 'pdf'
-    },
-    amount: '',
-    dueDate: ''
-  })
-
-  const { handleSubmit, control, errors, register } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: defaultVal
-  })
 
   // graphQLFetching
   const { loading, data, error, refetch } = useQuery(
@@ -233,11 +212,6 @@ function Sent({ month, year }) {
           const fileUrl = selected?.dues[0]?.attachment?.fileUrl
           const id = selected?.dues[0]?._id
 
-          setDefaultVal({
-            fileUrl,
-            dueDate,
-            amount
-          })
           setModalContent(
             <UpdateBills
               amount={amount}
@@ -248,7 +222,6 @@ function Sent({ month, year }) {
               isClose={isConfirm}
             />
           )
-          setUpdateDuesId(selected?.dues[0]?._id)
 
           break
         }
@@ -363,7 +336,7 @@ function Sent({ month, year }) {
       }
       setDues(duesData)
     }
-  }, [loading, data, error, refetch, control, errors])
+  }, [loading, data, error, refetch])
 
   useEffect(() => {
     let optionsData = [
