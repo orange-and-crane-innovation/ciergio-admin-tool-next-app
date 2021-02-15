@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
-import P from 'prop-types'
 import { useForm } from 'react-hook-form'
-import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { useReactToPrint } from 'react-to-print'
+import { CSVLink } from 'react-csv'
+import P from 'prop-types'
+import * as yup from 'yup'
 
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/select'
@@ -23,6 +25,7 @@ import { GET_POST_CATEGORY, CREATE_PRAYER_REQUEST } from '../queries'
 import Button from '@app/components/button'
 
 import CreatePrayerRequestModal from './CreatePrayerRequestModal'
+import PrayerRequestPrintView from './PrayerRequestPrintView'
 
 const columns = [
   {
@@ -58,7 +61,7 @@ const validationSchema = yup.object().shape({
   message: yup.string()
 })
 
-function PrayerRequestsTable({ queryTemplate }) {
+function PrayerRequestsTable({ queryTemplate, status }) {
   const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -80,6 +83,12 @@ function PrayerRequestsTable({ queryTemplate }) {
   const [showCreatePrayerModal, setShowCreatePrayerModal] = useState(false)
   const debouncedSearchText = useDebounce(searchText, 700)
 
+  const DOCUMENT_TITLE =
+    status === 'new' ? 'Prayer_Request_New' : 'Prayer_Request_Received'
+  const PDF_TITLE =
+    status === 'new' ? 'Prayer Request - New' : 'Prayer Request - Received'
+
+  const printRef = useRef()
   const { data, loading } = useQuery(queryTemplate, {
     variables: {
       complexId: '5f291193643d6011be2d280b',
@@ -98,9 +107,9 @@ function PrayerRequestsTable({ queryTemplate }) {
       onCompleted: () => {
         showToast('success', `Request created.`)
         reset({
-          prayerFor: 'hahaha',
-          prayerFrom: 'hehehe',
-          category: 'lolololo',
+          prayerFor: '',
+          prayerFrom: '',
+          category: '',
           date: '',
           message: ''
         })
@@ -110,6 +119,12 @@ function PrayerRequestsTable({ queryTemplate }) {
   )
 
   const prayerRequests = data?.getIssues
+
+  const onPrintPreview = useReactToPrint({
+    documentTitle: DOCUMENT_TITLE,
+    content: () => printRef.current,
+    removeAfterPrint: true
+  })
 
   const onPageClick = e => {
     setCurrentPage(e)
@@ -140,6 +155,54 @@ function PrayerRequestsTable({ queryTemplate }) {
       }
     })
   }
+
+  const downloadData = useMemo(() => {
+    const listData = [
+      [PDF_TITLE],
+      [''],
+      [
+        '#',
+        'Date Created',
+        'Category',
+        'Requestor',
+        'Prayer For',
+        'Prayer From',
+        'Date of Mass',
+        'Message'
+      ]
+    ]
+
+    prayerRequests?.issue?.map(
+      ({ createdAt, category, reporter, prayer, content }, index) => {
+        const dateCreated = createdAt
+          ? friendlyDateTimeFormat(Number(createdAt), 'MMM DD, YYYY')
+          : ''
+        const title = category?.name || ''
+        const requestor = reporter?.user
+          ? `${reporter.user.firstName} ${reporter.user.lastName}`
+          : ''
+        const prayerFor = prayer.for || ''
+        const prayerFrom = prayer.from || ''
+        const dateRequested = prayer?.date
+          ? friendlyDateTimeFormat(Number(prayer.date), 'MMM DD, YYYY')
+          : ''
+        const message = content || ''
+
+        return listData.push([
+          `${index + 1}`,
+          `${dateCreated}`,
+          `${title}`,
+          `${requestor}`,
+          `${prayerFor}`,
+          `${prayerFrom}`,
+          `${dateRequested}`,
+          `${message}`
+        ])
+      }
+    )
+
+    return listData
+  }, [prayerRequests?.issue])
 
   const categoryOptions = useMemo(() => {
     if (categories?.getPostCategory?.count > 0) {
@@ -177,7 +240,9 @@ function PrayerRequestsTable({ queryTemplate }) {
                       <span>{category.name}</span> - <span>{prayer.from}</span>
                     </p>
                   ),
-                  requestor: <span>{`${reporter.user.firstName}`}</span>,
+                  requestor: (
+                    <span>{`${reporter?.user?.firstName || ''}`}</span>
+                  ),
                   lastUpdate: friendlyDateTimeFormat(
                     dayjs(Number(updatedAt)),
                     'LL'
@@ -193,7 +258,7 @@ function PrayerRequestsTable({ queryTemplate }) {
             )
           : []
     }
-  }, [prayerRequests])
+  }, [prayerRequests?.issue])
 
   return (
     <>
@@ -259,16 +324,23 @@ function PrayerRequestsTable({ queryTemplate }) {
             key="print"
             default
             icon={<HiOutlinePrinter />}
-            onClick={() => {}}
             className="mr-1 "
+            onClick={onPrintPreview}
+            disabled={loading}
           />,
-          <Button
+          <CSVLink
             key="download"
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-1 "
-          />,
+            filename={'prayer_requests.csv'}
+            data={downloadData}
+          >
+            <Button
+              default
+              icon={<FiDownload />}
+              onClick={() => {}}
+              className="mr-1 "
+              disabled={loading}
+            />
+          </CSVLink>,
           <Button
             key="add"
             primary
@@ -300,12 +372,20 @@ function PrayerRequestsTable({ queryTemplate }) {
         }}
         loading={creatingPrayerRequest}
       />
+      <div className="hidden">
+        <PrayerRequestPrintView
+          ref={printRef}
+          title={PDF_TITLE}
+          data={prayerRequests?.issue}
+        />
+      </div>
     </>
   )
 }
 
 PrayerRequestsTable.propTypes = {
-  queryTemplate: P.object
+  queryTemplate: P.object,
+  status: P.string
 }
 
 export default PrayerRequestsTable

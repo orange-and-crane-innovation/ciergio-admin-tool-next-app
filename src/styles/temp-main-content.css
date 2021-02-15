@@ -217,9 +217,91 @@ select:active {
 .card .content table td {
   @apply py-2 px-5;
 }
-.card .content table tbody tr {
-  @apply bg-neutral-100;
-}
+
 .card .content table tbody tr:nth-child(even) {
   @apply bg-white;
+}
+
+@media print {
+  html,
+  body {
+    height: initial !important;
+    overflow: initial !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body {
+    a,
+    .single-view-link {
+      color: $black-color !important;
+    }
+
+    a[href]:after {
+      content: none;
+    }
+
+    .inner-holder {
+      & > *:not(.list-content) {
+        display: none;
+      }
+
+      .list-content {
+        display: block;
+        padding-top: 100px;
+
+        .print-list-content {
+          border: 0 !important;
+          margin: 0;
+
+          .header {
+            display: none;
+          }
+
+          thead,
+          tbody {
+            tr {
+              th i {
+                display: none;
+              }
+
+              th:last-child,
+              td:last-child {
+                display: none;
+              }
+            }
+          }
+        }
+
+        .with-pagination {
+          display: none !important;
+        }
+      }
+    }
+  }
+
+  .print-container {
+    @apply table w-full;
+  }
+
+  .print-container table thead th {
+    @apply bg-gray-300 font-bold text-sm p-2 text-center;
+  }
+
+  .print-container table tbody {
+    font-size: 11px;
+  }
+
+  .print-container table tbody tr {
+    @apply border-b border-gray-300;
+  }
+
+  .print-container table tbody td {
+    word-wrap: break-word;
+    @apply p-2;
+  }
+
+  @page {
+    size: auto;
+    margin: 10mm 15mm 10mm 15mm;
+  }
 }
