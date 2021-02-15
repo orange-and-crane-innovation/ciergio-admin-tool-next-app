@@ -15,7 +15,7 @@ function Billing() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('profile'))
-    const active = user?.accounts?.data.find(acc => acc.status === 'active')
+    const active = user?.accounts?.data.find(acc => acc.active === true)
 
     setAccount(active)
   }, [])
@@ -66,11 +66,11 @@ function Billing() {
 
     return (
       <>
-        {!isEmpty(data)
+        {data
           ? data
-              .find(account => account.accountId === account?._id)
+              .find(acc => acc.accountId === account?._id)
               ?.categories.map(category => {
-                console.log(category)
+                console.log(category._id)
                 return (
                   <Tabs defaultTab="1" key={category._id}>
                     <Tabs.TabLabels>
