@@ -1,19 +1,22 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import clsx from 'clsx'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import P from 'prop-types'
 import styles from './Main.module.css'
+import { FaRegCalendarAlt } from 'react-icons/fa'
 
 const FormDatePicker = ({
   id,
   date,
   onChange,
   format,
+  name,
   disabled,
   placeHolder,
   disabledPreviousDate,
   error,
+  rightIcon,
   label,
   containerClassname,
   calendarClassname,
@@ -21,8 +24,12 @@ const FormDatePicker = ({
   errorClassname,
   labelClassname,
   showMonthYearPicker,
-  datepickerprops
+  inputRef,
+  customPicker,
+  ...datepickerprops
 }) => {
+  const dateRef = useRef(null)
+  const [blur, setBlur] = useState(false)
   const containerClasses = useMemo(
     () =>
       clsx(styles.FormDatePicker, containerClassname, {
@@ -50,25 +57,33 @@ const FormDatePicker = ({
   )
 
   const renderLabel = useMemo(
-    () => (label ? <span className={labelClasses}>{label}</span> : null),
+    () =>
+      label ? (
+        <span className={clsx(styles.labelClass, labelClasses)}>{label}</span>
+      ) : null,
     [label, labelClasses]
   )
 
   const renderDatePicker = useMemo(() => {
     return (
-      <DatePicker
-        id={id}
-        selected={date}
-        placeholderText={placeHolder}
-        onChange={onChange}
-        dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
-        disabled={disabled}
-        showMonthYearPicker={showMonthYearPicker}
-        calendarClassName={calendarClasses}
-        className={inputClasses}
-        minDate={disabledPreviousDate}
-        {...datepickerprops}
-      />
+      <div className={styles.DatepickerHandler}>
+        <DatePicker
+          id={id}
+          name={name}
+          selected={date}
+          placeholderText={placeHolder}
+          onChange={onChange}
+          dateFormat={showMonthYearPicker ? 'MMMM yyyy' : format}
+          disabled={disabled}
+          showMonthYearPicker={showMonthYearPicker}
+          calendarClassName={calendarClasses}
+          className={inputClasses}
+          minDate={new Date(disabledPreviousDate)}
+          ref={dateRef}
+          {...datepickerprops}
+        />
+        {rightIcon && <FaRegCalendarAlt />}
+      </div>
     )
   }, [
     id,
@@ -81,7 +96,10 @@ const FormDatePicker = ({
     disabled,
     calendarClasses,
     disabledPreviousDate,
-    datepickerprops
+    datepickerprops,
+    rightIcon,
+    dateRef,
+    name
   ])
 
   const renderError = useMemo(
@@ -89,8 +107,20 @@ const FormDatePicker = ({
     [error, errorClasses]
   )
 
+  const openDate = date => {
+    setBlur(blur => !blur)
+  }
+
+  useEffect(() => {
+    if (blur) {
+      dateRef.current.setFocus()
+    } else {
+      dateRef.current.setBlur()
+    }
+  }, [blur])
+
   return (
-    <div className={containerClasses}>
+    <div className={containerClasses} onClick={openDate}>
       {renderLabel}
       {renderDatePicker}
       {renderError}
@@ -99,7 +129,7 @@ const FormDatePicker = ({
 }
 
 FormDatePicker.propTypes = {
-  id: P.string,
+  id: P.oneOfType([P.string, P.number]),
   onChange: P.func.isRequired,
   format: P.oneOfType([P.array, P.string]),
   disabled: P.bool,
@@ -119,7 +149,7 @@ FormDatePicker.propTypes = {
 
 FormDatePicker.defaultProps = {
   format: 'MMM dd, yyyy',
-  placeHolder: 'Select Date'
+  placeHolder: ''
 }
 
 export default FormDatePicker

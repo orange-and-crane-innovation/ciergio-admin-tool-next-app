@@ -7,89 +7,29 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Card from '@app/components/card'
 import FormSelect from '@app/components/globals/FormSelect'
+import PageLoader from '@app/components/page-loader'
+import showToast from '@app/utils/toast'
 import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
-import { gql, useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
+
 import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
-import HistoryBills from './Cards/HistoryBills'
-import UpdateBills from './Cards/UpdateBills'
+import HistoryBills from './Modals/HistoryBills'
+import UpdateBills from './Modals/UpdateBills'
 
-const GET_ALL_FLOORS = gql`
-  query getFloorNUmbers($buildingId: String!) {
-    getFloorNumbers(buildingId: $buildingId)
-  }
-`
-
-const GETDEUS_QUERY = gql`
-  query getDues($where: DuesQueryInput) {
-    getDues(where: $where) {
-      count {
-        all
-        seen
-        sent
-      }
-    }
-  }
-`
-
-const GET_DUES_PER_UNIT_SENT = gql`
-  query(
-    $unit: DuesPerUnitInput2
-    $filter: DuesPerUnitInput3
-    $dues: DuesPerUnitInput1
-    $offset: Int
-    $limit: Int
-  ) {
-    getDuesPerUnit(
-      unit: $unit
-      filter: $filter
-      limit: $limit
-      offset: $offset
-      dues: $dues
-    ) {
-      count
-      limit
-      offset
-      data {
-        _id
-        dues {
-          category {
-            name
-          }
-          attachment {
-            fileUrl
-          }
-          amount
-          dueDate
-          status
-          views {
-            count
-          }
-        }
-
-        floorNumber
-        name
-        unitOwner {
-          user {
-            firstName
-            lastName
-          }
-        }
-      }
-    }
-  }
-`
+import * as Query from './Query'
+import * as Mutation from './Mutation'
 
 const statusOptions = [
   {
     label: 'All Status',
-    value: 'null'
+    value: null
   },
   {
     label: 'Paid',
-    value: 'settled'
+    value: 'paid'
   },
   {
     label: 'Unpaid',
@@ -137,8 +77,6 @@ const tableRowData = [
 ]
 
 function Sent({ month, year }) {
-  // const [selectedFloor] = useState('')
-  const [searchText, setSearchText] = useState('')
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
@@ -152,34 +90,39 @@ function Sent({ month, year }) {
   const [modalTitle, setModalTitle] = useState('')
   const [modalContent, setModalContent] = useState()
   const [showModal, setShowModal] = useState(false)
+  const [searchText, setSearchText] = useState(null)
   const [search, setSearch] = useState(null)
-
   const keyPressed = useKeyPress('Enter')
+  const [status, setStatus] = useState([])
 
   // graphQLFetching
-  const { loading, data, error } = useQuery(GET_DUES_PER_UNIT_SENT, {
-    variables: {
-      unit: {
-        buildingId: '5d804d6543df5f4239e72911',
-        search: search,
-        floorNumber: floorNumber
-      },
-      filter: {
-        sent: true
-      },
-      dues: {
-        period: {
-          month: month,
-          year: year
-        }
-      },
-      limit: 10,
-      offset: offsetPage
+  const { loading, data, error, refetch } = useQuery(
+    Query.GET_DUES_PER_UNIT_SENT,
+    {
+      variables: {
+        unit: {
+          buildingId: '5d804d6543df5f4239e72911',
+          search: search,
+          floorNumber: floorNumber
+        },
+        filter: {
+          sent: true,
+          status: status
+        },
+        dues: {
+          period: {
+            month: month,
+            year: year
+          }
+        },
+        limit: 10,
+        offset: offsetPage
+      }
     }
-  })
+  )
 
   const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
-    GETDEUS_QUERY,
+    Query.GETDEUS_QUERY,
     {
       variables: {
         where: {
@@ -198,11 +141,32 @@ function Sent({ month, year }) {
     loading: loadingFloorNumbers,
     error: errorGetAllFloors,
     data: dataAllFloors
-  } = useQuery(GET_ALL_FLOORS, {
+  } = useQuery(Query.GET_ALL_FLOORS, {
     variables: {
       buildingId: '5d804d6543df5f4239e72911'
     }
   })
+
+  const [
+    updateDues,
+    {
+      loading: loadingUpdateDues,
+      called: calledUpdateDues,
+      data: dataUpdateDues
+    }
+  ] = useMutation(Mutation.UPDATE_DUES)
+
+  useEffect(() => {
+    if (!loadingUpdateDues && calledUpdateDues && dataUpdateDues) {
+      console.log(dataUpdateDues)
+      if (dataUpdateDues?.updateDues?.message === 'success') {
+        setShowModal(false)
+
+        showToast('success', `You have successfully updated a billing`)
+        refetch()
+      }
+    }
+  }, [loadingUpdateDues, calledUpdateDues, dataUpdateDues])
 
   useEffect(() => {
     if (!duesLoading) {
@@ -210,19 +174,63 @@ function Sent({ month, year }) {
     }
   }, [duesLoading, duesData, duesError])
 
+  const getData = async items => {
+    const data = {
+      id: items.id,
+      data: {
+        amount: items.amount,
+        dueDate: items.dueDate,
+        attachment: items.attachment
+      }
+    }
+
+    try {
+      await updateDues({
+        variables: data
+      })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const isConfirm = confirmed => {
+    if (confirmed) {
+      handleShowModal(false)
+    }
+  }
+
   const handleShowModal = (type, id) => {
     const selected =
       !loading && data?.getDuesPerUnit?.data.find(due => due._id === id)
+    console.log(selected)
     if (selected) {
       switch (type) {
-        case 'update':
+        case 'update': {
           setModalTitle('Edit Billing')
-          setModalContent(<UpdateBills amount={10} dueDate={new Date()} />)
+          const amount = selected?.dues[0]?.amount
+          const dueDate = selected?.dues[0]?.dueDate
+          const fileUrl = selected?.dues[0]?.attachment?.fileUrl
+          const id = selected?.dues[0]?._id
+
+          setModalContent(
+            <UpdateBills
+              amount={amount}
+              dueDate={dueDate}
+              fileUrl={fileUrl}
+              getData={getData}
+              id={id}
+              isClose={isConfirm}
+            />
+          )
+
           break
-        case 'details':
+        }
+        case 'details': {
           setModalTitle(`Unit ${selected.name} History`)
           setModalContent(<HistoryBills dues={selected?.dues} />)
+
           break
+        }
       }
     }
 
@@ -267,8 +275,9 @@ function Sent({ month, year }) {
 
         const attachment = (
           <a
-            href={row?.dues[0]?.attachment.fileUrl}
+            href={row?.dues[0]?.attachment?.fileUrl}
             className={styles.fileLink}
+            target="_blank"
           >
             View File
           </a>
@@ -276,24 +285,26 @@ function Sent({ month, year }) {
         const amount = `₱${row?.dues[0]?.amount.toFixed(2)}`
         const status =
           row?.dues[0]?.status === 'overdue' ||
-          row?.dues[0]?.status === 'due' ? (
+          row?.dues[0]?.status === 'unpaid' ? (
             <Button
               className={styles.paid}
               disabled
+              full
               label="Unpaid"
               onClick={() => alert('unpaid')}
             />
           ) : (
-            <Button onClick={() => alert('paid')} label="Paid" />
+            <Button full onClick={() => alert('paid')} label="Paid" />
           )
         const seen = row?.dues[0]?.views.count ? <FaEye /> : null
         const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
         const unitName = row?.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
-          ${row?.unitOwner?.user?.lastName.charAt(0)}`
+            ${row?.unitOwner?.user?.lastName.charAt(0)}`
         const dropDown = (
           <Dropdown label={<FaEllipsisH />} items={dropdownData} />
         )
+
         rowData.push({
           floor: '',
           seen,
@@ -325,7 +336,7 @@ function Sent({ month, year }) {
       }
       setDues(duesData)
     }
-  }, [loading, data, error, table])
+  }, [loading, data, error, refetch])
 
   useEffect(() => {
     let optionsData = [
@@ -349,7 +360,11 @@ function Sent({ month, year }) {
   }
   // =============
 
-  const onStatusSelect = e => {}
+  const onStatusSelect = e => {
+    const value =
+      e.target.value === 'paid' ? ['settled'] : ['overdue', 'unpaid']
+    setStatus(value)
+  }
 
   // useEffect for useKeyPress
   useEffect(() => {
@@ -382,7 +397,11 @@ function Sent({ month, year }) {
 
   // setting limit in pagination
   const onLimitChange = e => {
-    setLimitPage(parseInt(e.target.value))
+    setLimitPage(parseInt(e.value))
+  }
+
+  const handleOkModal = () => {
+    setShowModal(show => !show)
   }
 
   return (
@@ -426,7 +445,13 @@ function Sent({ month, year }) {
             </div>
           </div>
         }
-        content={<Table rowNames={tableRowData} items={dues} />}
+        content={
+          loading ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={tableRowData} items={dues} />
+          )
+        }
       />
       {!loading && dues && (
         <Pagination
@@ -442,15 +467,17 @@ function Sent({ month, year }) {
         okText="Submit"
         visible={showModal}
         onClose={handleClearModal}
-        footer={<h1>Test</h1>}
+        footer={null}
+        onOk={handleOkModal}
+        onCancel={() => setShowModal(old => !old)}
       >
-        <div className="w-full">{modalContent}</div>
+        <div className="w-full px-5">{modalContent}</div>
       </Modal>
     </>
   )
 }
 
-Sent.propTypes = {
+Sent.prototype = {
   month: P.number.isRequired,
   year: P.number.isRequired
 }

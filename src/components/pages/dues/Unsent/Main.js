@@ -1,74 +1,26 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
 import FormSelect from '@app/components/globals/FormSelect'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
+import FileUpload from '@app/components/forms/form-fileupload'
 import Card from '@app/components/card'
+import PageLoader from '@app/components/page-loader'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Modal from '@app/components/modal'
-import { gql, useQuery } from '@apollo/client'
+import showToast from '@app/utils/toast'
+import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import useKeyPress from '@app/utils/useKeyPress'
+import * as Query from './Query.js'
+import axios from 'axios'
+import * as Mutation from './Mutation'
+import { FaCheck, FaExclamation } from 'react-icons/fa'
 
-const GET_UNSENT_DUES_QUERY = gql`
-  query getDuesPerUnit(
-    $unit: DuesPerUnitInput2
-    $filter: DuesPerUnitInput3
-    $dues: DuesPerUnitInput1
-    $offset: Int
-    $limit: Int
-  ) {
-    getDuesPerUnit(
-      unit: $unit
-      filter: $filter
-      limit: $limit
-      offset: $offset
-      dues: $dues
-    ) {
-      count
-      limit
-      offset
-      data {
-        floorNumber
-        name
-        unitType {
-          name
-        }
-        unitOwner {
-          user {
-            firstName
-            lastName
-          }
-        }
-      }
-    }
-  }
-`
-
-const GET_ALL_FLOORS = gql`
-  query getFloorNUmbers($buildingId: String!) {
-    getFloorNumbers(buildingId: $buildingId)
-  }
-`
-
-const GETDEUS_QUERY = gql`
-  query getDues($where: DuesQueryInput) {
-    getDues(where: $where) {
-      count {
-        all
-        seen
-        sent
-        units {
-          all
-          withResidents
-        }
-      }
-    }
-  }
-`
+const _ = require('lodash')
 
 const tableRowData = [
   {
@@ -101,7 +53,39 @@ const tableRowData = [
   }
 ]
 
-function Unsent({ month, year }) {
+const DueDate = ({ fieldData }) => {
+  const [selectedDate, setSelectedDate] = useState(null)
+
+  useEffect(() => {
+    if (fieldData.value.length === 0) {
+      setSelectedDate(null)
+    } else {
+      fieldData.value.forEach((val, index) => {
+        const data = fieldData.value[index]
+
+        if (Object.keys(data)[0] === 'all') {
+          setSelectedDate(data.all)
+        } else if (Object.keys(data)[0] === fieldData?.Name) {
+          setSelectedDate(data)
+        }
+      })
+    }
+  }, [fieldData])
+  return (
+    <DatePicker
+      rightIcon
+      date={selectedDate ? selectedDate[fieldData.Name] : null}
+      placeHolder="Date"
+      disabledPreviousDate={fieldData.minDate}
+      onChange={(value, event) => {
+        event.target = { type: 'text', value: value, name: fieldData.Name }
+        fieldData.ChangeHandler(event)
+      }}
+    />
+  )
+}
+
+function Unsent({ month, year, categoryID, buildingID, categoryName }) {
   // router
   // const router = useRouter()
 
@@ -109,7 +93,7 @@ function Unsent({ month, year }) {
   const [selectedFloor, setSelectedFloor] = useState('all')
   const [searchText, setSearchText] = useState(null)
   const [search, setSearch] = useState(null)
-  const [selectedDate, setSelectedDate] = useState(new Date())
+
   const [showModal, setShowModal] = useState(false)
   const [dues, setDues] = useState()
   const [floors, setFloors] = useState([])
@@ -120,21 +104,51 @@ function Unsent({ month, year }) {
   const [offsetPage, setOffsetPage] = useState(0)
   const [count, setCount] = useState({})
   const keyPressed = useKeyPress('Enter')
+  const [modalDate, setModalDate] = useState(null)
+  const [date, setDate] = useState(null)
+  const [amountValue, setAmountValue] = useState([
+    {
+      initial: null
+    }
+  ])
 
-  const [amountValue, setAmountValue] = useState()
+  const [isSent, setIsSent] = useState(false)
+  const [notSent, setNotSent] = useState(false)
+  const [loader, setLoader] = useState(false)
+  const [fileUploadedData, setFileUploadedData] = useState({})
+  const [datePerRow, setDatePerRow] = useState({})
+  const [sentLoading, setSentLoading] = useState(false)
+  const [period, setPeriod] = useState({
+    month: month,
+    year: year
+  })
+  const [title, setTitle] = useState(`${categoryName} ${month} - ${year}`)
+  const [amountPerRow, setAmountPerRow] = useState({})
+  const [perDate, setPerDate] = useState([])
+  const [companyIdPerRow, setCompanyIdPerRow] = useState({})
+  const [complexIDPerRow, setComplexIdPerRow] = useState({})
+  const [unitIdPerRow, setUnitIdPerRow] = useState({})
 
-  const temporaryBuildingID = '5d804d6543df5f4239e72911'
+  const [
+    createDues,
+    {
+      loading: loadingCreatingDues,
+      called: calledCreatingDues,
+      data: dataCreatingDues
+    }
+  ] = useMutation(Mutation.CREATE_DUES)
 
   // graphQLFetching
-  const { loading, data, error } = useQuery(GET_UNSENT_DUES_QUERY, {
+  const { loading, data, error } = useQuery(Query.GET_UNSENT_DUES_QUERY, {
     variables: {
       unit: {
-        buildingId: temporaryBuildingID,
+        buildingId: buildingID,
         search,
         floorNumber: selectedFloor
       },
       filter: { sent: false },
       dues: {
+        categoryId: categoryID,
         period: {
           month: month,
           year: year
@@ -149,18 +163,18 @@ function Unsent({ month, year }) {
     loading: loadingFloorNumbers,
     error: errorGetAllFloors,
     data: dataAllFloors
-  } = useQuery(GET_ALL_FLOORS, {
+  } = useQuery(Query.GET_ALL_FLOORS, {
     variables: {
-      buildingId: temporaryBuildingID
+      buildingId: buildingID
     }
   })
 
   const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
-    GETDEUS_QUERY,
+    Query.GETDEUS_QUERY,
     {
       variables: {
         where: {
-          buildingId: temporaryBuildingID,
+          buildingId: buildingID,
           sent: false
         }
       }
@@ -173,18 +187,144 @@ function Unsent({ month, year }) {
     }
   }, [duesLoading, duesData, duesError])
 
-  const onChangeOfAmount = e => {
-    setAmountValue(e.target.value)
+  useEffect(() => {
+    const today = new Date()
+    const formatTodate = `${month}-${String(today.getDate()).padStart(
+      2,
+      '0'
+    )}-${year}`
+    setDate(formatTodate)
+    setPerDate([])
+    setTitle(`${categoryName} ${month} - ${year}`)
+    setPeriod({
+      month,
+      year
+    })
+  }, [month, year])
+
+  const handleChangeDate = event => {
+    const value = event.target.value
+    const name = event.target.name
+    const id = name[name.length - 1]
+
+    const date = { [name]: value }
+    setPerDate(prevState => [...prevState, date])
+    setDatePerRow(prevState => ({
+      ...prevState,
+      [`form${id}`]: {
+        dueDate: value
+      }
+    }))
   }
 
-  const handleChangeDate = date => {
-    setSelectedDate(date)
+  const handleModalChangeDate = date => {
+    setModalDate(date)
+  }
+
+  const uploadApi = async (payload, name) => {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_UPLOAD_API,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
+    if (response) {
+      const imageData = response.data.map(item => {
+        return {
+          fileUrl: item.location,
+          fileType: item.mimetype
+        }
+      })
+
+      setFileUploadedData(prevState => ({ ...prevState, [name]: imageData[0] }))
+    }
+  }
+
+  const onChangeAmount = e => {
+    const name = e.target.name
+    setAmountValue(prevState => ({
+      ...prevState,
+      [name]: e.target.value
+    }))
+    const id = name[name.length - 1]
+    const amount = { amount: e.target.value }
+    const formName = [`form${id}`]
+    setAmountPerRow(prevData => ({ ...prevData, [formName]: { ...amount } }))
+  }
+
+  const handleFile = file => {
+    const formData = new FormData()
+    const name = file.target.name
+    const formName = `form${name[name.length - 1]}`
+    const fileData = file.target.files
+      ? file.target.files[0]
+      : file.dataTransfer.files[0]
+    setLoader(true)
+    if (file) {
+      formData.append('photos', fileData)
+      setLoader(false)
+    }
+    uploadApi(formData, formName)
+  }
+
+  useEffect(() => {
+    if (!loadingCreatingDues && calledCreatingDues && dataCreatingDues) {
+      setSentLoading(true)
+      if (
+        dataCreatingDues?.createDues?.processId &&
+        dataCreatingDues?.createDues?.processId !== ''
+      ) {
+        showToast('success', 'successfully submitted')
+        setIsSent(true)
+      } else {
+        setNotSent(true)
+      }
+    }
+  }, [loadingCreatingDues, calledCreatingDues, dataCreatingDues])
+
+  const submitForm = async e => {
+    e.preventDefault()
+    const name = e.target.name
+
+    try {
+      const data = {
+        amount: parseInt(amountPerRow[name]?.amount),
+        companyId: companyIdPerRow[name]?.companyID,
+        unitId: unitIdPerRow[name]?.unitID,
+        complexId: complexIDPerRow[name]?.complexID,
+        dueDate: datePerRow[name]?.dueDate,
+        buildingId: buildingID,
+        categoryId: categoryID,
+        sent: true,
+        title,
+        period: {
+          ...period
+        },
+        attachment: { ...fileUploadedData[name] }
+      }
+
+      console.log(data)
+
+      await createDues({
+        variables: {
+          data: data
+        }
+      })
+    } catch (e) {
+      showToast('warning', 'Submit Failed')
+      setNotSent(true)
+    }
   }
 
   // Hooks for formatting table row
   const useTableRows = rows => {
     const rowData = []
     let num = 0
+
     if (rows) {
       rows.forEach((row, index) => {
         if (num !== row.floorNumber) {
@@ -198,36 +338,64 @@ function Unsent({ month, year }) {
             blankrow: ''
           })
         }
+
         const unitName = row.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
         ${row?.unitOwner?.user?.lastName.charAt(0)}`
         const uploadFile = (
-          <Button
+          <FileUpload
+            label="Upload File"
+            name={`file${index}`}
+            getFile={handleFile}
+            loading={loader}
+            maxSize={5}
             key={index}
-            default
-            label="Choose File"
-            onClick={handleModal}
           />
         )
+
         const amount = (
           <FormInput
-            onChange={onChangeOfAmount}
-            name={'amount'}
+            onChange={onChangeAmount}
+            name={`amount${index}`}
             type="text"
             placeholder="0.0"
             key={index}
-            value={amountValue}
+            value={
+              amountValue[`amount${index}`]
+                ? amountValue[`amount${index}`]
+                : amountValue.initial
+            }
           />
         )
-        const sendButton = <Button default disabled label="Send" />
-        const dueDate = (
-          <DatePicker
-            disabledPreviousDate={new Date()}
-            date={selectedDate}
-            onChange={handleChangeDate}
-            key={index}
+        const isAmountEmpty = !!(
+          amountPerRow[`form${index}`] &&
+          amountPerRow[`form${index}`].amount !== ''
+        )
+        const isDueDateEmpty = !_.isEmpty(datePerRow[`form${index}`])
+        const isFileEmpty = !_.isEmpty(fileUploadedData[`form${index}`])
+
+        const sendButton = (
+          <Button
+            full
+            primary={!isSent}
+            success={isSent}
+            danger={notSent}
+            disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
+            label={isSent ? <FaCheck /> : notSent ? <FaExclamation /> : 'Send'}
+            name={`form${index}`}
+            onClick={e => submitForm(e)}
           />
         )
+
+        const fieldData = {
+          Name: `date${index}`,
+          ChangeHandler: handleChangeDate,
+          value: perDate,
+          minDate: date,
+          allDate: modalDate
+        }
+
+        const dueDate = <DueDate fieldData={fieldData} />
 
         rowData.push({
           blank: '',
@@ -241,6 +409,7 @@ function Unsent({ month, year }) {
         num = row.floorNumber
       })
     }
+
     return rowData
   }
 
@@ -248,6 +417,19 @@ function Unsent({ month, year }) {
 
   useEffect(() => {
     if (!loading && !error && data) {
+      const companyIDArray = {}
+      const complexIDArray = {}
+      const unitIDArray = {}
+      data?.getDuesPerUnit?.data.forEach((due, index) => {
+        companyIDArray[`form${index}`] = { companyID: due?.company?._id }
+        complexIDArray[`form${index}`] = { complexID: due?.complex?._id }
+        unitIDArray[`form${index}`] = { unitID: due?.unitOwner?.unit?._id }
+      })
+
+      setCompanyIdPerRow(companyIDArray)
+      setComplexIdPerRow(complexIDArray)
+      setUnitIdPerRow(unitIDArray)
+
       const duesTable = {
         count: data?.getDuesPerUnit.count || 0,
         limit: data?.getDuesPerUnit.limit || 0,
@@ -256,8 +438,19 @@ function Unsent({ month, year }) {
       }
       setDues(duesTable)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, data, error])
+  }, [
+    loading,
+    data,
+    error,
+    date,
+    perDate,
+    amountPerRow,
+    datePerRow,
+    fileUploadedData,
+    isSent,
+    sentLoading,
+    notSent
+  ])
 
   useEffect(() => {
     let optionsData = [
@@ -273,7 +466,13 @@ function Unsent({ month, year }) {
     }
 
     setFloors(optionsData)
-  }, [loadingFloorNumbers, dataAllFloors, errorGetAllFloors])
+  }, [
+    loadingFloorNumbers,
+    dataAllFloors,
+    errorGetAllFloors,
+    amountPerRow,
+    datePerRow
+  ])
 
   const handleModal = () => setShowModal(show => !show)
 
@@ -281,6 +480,13 @@ function Unsent({ month, year }) {
     handleModal()
   }
   const handleOkModal = () => {
+    const allDates = []
+    for (let i = 0; i < 10; i++) {
+      const key = `date${i}`
+      const date = { [key]: modalDate }
+      allDates.push(date)
+    }
+    setPerDate(allDates)
     handleCloseModal()
   }
 
@@ -318,6 +524,8 @@ function Unsent({ month, year }) {
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
+    setPerDate([])
+    setAmountValue([{ initial: '' }])
   }
 
   // setting limit in pagination
@@ -332,6 +540,7 @@ function Unsent({ month, year }) {
       <div className={styles.FormContainer}>
         <div className={styles.DueDateControl}>
           <Button
+            full
             primary
             label="Apply Due Dates to All Units"
             leftIcon={calendarIcon()}
@@ -370,7 +579,13 @@ function Unsent({ month, year }) {
             </div>
           </div>
         }
-        content={<Table rowNames={tableRowData} items={dues} />}
+        content={
+          loading ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={tableRowData} items={dues} />
+          )
+        }
       />
 
       {!loading && dues && (
@@ -389,11 +604,12 @@ function Unsent({ month, year }) {
         onCancel={handleCloseModal}
         onOk={handleOkModal}
       >
-        <div className="w-full flex flex-col">
+        <div className="w-full flex flex-col p-4">
           <DatePicker
-            disabledPreviousDate={new Date()}
-            date={selectedDate}
-            onChange={handleChangeDate}
+            rightIcon
+            disabledPreviousDate={date && date}
+            date={modalDate}
+            onChange={handleModalChangeDate}
             containerClassname={'flex w-full justify-center '}
           />
         </div>
@@ -402,9 +618,16 @@ function Unsent({ month, year }) {
   )
 }
 
+DueDate.propTypes = {
+  fieldData: P.object
+}
+
 Unsent.propTypes = {
   month: P.number.isRequired,
-  year: P.number.isRequired
+  year: P.number.isRequired,
+  categoryID: P.string.isRequired,
+  buildingID: P.string.isRequired,
+  categoryName: P.string.isRequired
 }
 
 export default Unsent
