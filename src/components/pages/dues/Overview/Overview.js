@@ -10,6 +10,7 @@ import * as Query from './Query'
 import { useQuery } from '@apollo/client'
 import P from 'prop-types'
 
+import ManageCategories from '../ManageCategories'
 import styles from './Overview.module.css'
 
 const data = {
@@ -77,6 +78,7 @@ function Overview({ complexID, complexName }) {
   const [tableData, setTableData] = useState({
     data: []
   })
+  const [optionsData, setOptionsData] = useState(null)
 
   const { loading, data, error, refetch } = useQuery(Query.GET_BUILDINS, {
     variables: {
@@ -89,13 +91,20 @@ function Overview({ complexID, complexName }) {
   useEffect(() => {
     if (!loading && !error && data) {
       const tableArray = []
+      const optionsArray = [{ label: 'All', value: null }]
       data?.getBuildings?.data.forEach((building, index) => {
         tableArray.push({ [`building${index}`]: building.name })
+        optionsArray.push({
+          label: building.name,
+          value: building._id
+        })
       })
 
       setTableData({
         data: tableArray || []
       })
+
+      setOptionsData(optionsArray)
     }
   }, [loading, data, error, refetch])
 
@@ -144,11 +153,13 @@ function Overview({ complexID, complexName }) {
                 />
               </div>
               <div className={styles.SelectControl}>
-                <FormSelect
-                  onChange={onStatusSelect}
-                  options={dummyOptions}
-                  classNames="mt-6"
-                />
+                {optionsData && (
+                  <FormSelect
+                    onChange={onStatusSelect}
+                    options={optionsData}
+                    classNames="mt-6"
+                  />
+                )}
               </div>
             </div>
             <div className={styles.ChartContainer}>
@@ -164,6 +175,9 @@ function Overview({ complexID, complexName }) {
                 content={<Bar data={data} />}
               />
             </div>
+          </Tabs.TabPanel>
+          <Tabs.TabPanel id="2">
+            <ManageCategories />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

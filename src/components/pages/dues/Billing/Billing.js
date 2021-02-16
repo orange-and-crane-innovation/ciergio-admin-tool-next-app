@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Tabs from '@app/components/tabs'
 import styles from './Billing.module.css'
 import DatePicker from '@app/components/forms/form-datepicker/'
@@ -6,7 +6,7 @@ import Unsent from './Unsent'
 import Sent from './Sent'
 import P from 'prop-types'
 
-function Billing({ categoryID, buildingID, categoryName, accountID, data }) {
+const Billing = ({ categoryID, buildingID, categoryName, accountID, data }) => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   // const [activeTab, setActiveTab] = useState(1)
   const [month, setMonth] = useState(new Date().getMonth() + 1)
@@ -93,8 +93,6 @@ function Billing({ categoryID, buildingID, categoryName, accountID, data }) {
   return <>{billingMemoTabs}</>
 }
 
-export default Billing
-
 Billing.protoTypes = {
   categoryID: P.string.isRequired,
   buildingID: P.string.isRequired,
@@ -102,3 +100,5 @@ Billing.protoTypes = {
   accountID: P.string.isRequired,
   data: P.array.isRequired
 }
+
+export default Billing
