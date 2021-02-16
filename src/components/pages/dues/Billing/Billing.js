@@ -6,7 +6,7 @@ import Unsent from './Unsent'
 import Sent from './Sent'
 import P from 'prop-types'
 
-function Billing({ category, account }) {
+function Billing({ categoryID, buildingID, categoryName, accountID, data }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
   // const [activeTab, setActiveTab] = useState(1)
   const [month, setMonth] = useState(new Date().getMonth() + 1)
@@ -29,14 +29,12 @@ function Billing({ category, account }) {
     setYear(handlingMonthOrYear(date))
   }
   const billingMemoTabs = React.useMemo(() => {
-    if (category) {
-      const { data } = category
-
+    if (categoryID && buildingID && categoryName && accountID && data) {
       return (
         <>
           {data
             ? data
-                .find(acc => acc.accountId === account._id)
+                .find(acc => acc.accountId === accountID)
                 ?.categories.map(category => {
                   return (
                     <Tabs defaultTab="1" key={category._id}>
@@ -65,18 +63,18 @@ function Billing({ category, account }) {
                                 <Unsent
                                   month={parseInt(month)}
                                   year={parseInt(year)}
-                                  categoryID={category._id}
-                                  buildingID={account?.building._id}
-                                  categoryName={category?.name}
+                                  categoryID={categoryID}
+                                  buildingID={buildingID}
+                                  categoryName={categoryName}
                                 />
                               </Tabs.TabPanel>
                               <Tabs.TabPanel id="2">
                                 <Sent
                                   month={parseInt(month)}
                                   year={parseInt(year)}
-                                  category={category._id}
-                                  buildingID={account?.building._id}
-                                  categoryName={category?.name}
+                                  categoryID={categoryID}
+                                  buildingID={buildingID}
+                                  categoryName={categoryName}
                                 />
                               </Tabs.TabPanel>
                             </Tabs.TabPanels>
@@ -90,7 +88,7 @@ function Billing({ category, account }) {
         </>
       )
     }
-  }, [category])
+  }, [categoryID, buildingID, categoryName, accountID])
 
   return <>{billingMemoTabs}</>
 }
@@ -98,6 +96,9 @@ function Billing({ category, account }) {
 export default Billing
 
 Billing.protoTypes = {
-  category: P.array.isRequired,
-  account: P.object.isRequired
+  categoryID: P.string.isRequired,
+  buildingID: P.string.isRequired,
+  categoryName: P.string.isRequired,
+  accountID: P.string.isRequired,
+  data: P.array.isRequired
 }

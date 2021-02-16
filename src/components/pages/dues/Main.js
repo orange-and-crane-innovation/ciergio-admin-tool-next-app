@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import * as Query from './Query'
 import { useQuery } from '@apollo/client'
-import styles from './main.module.css'
 
 import Billing from './Billing'
 import Overview from './Overview'
@@ -34,18 +33,27 @@ function Dues() {
   useEffect(() => {
     if (!loading && data) {
       setCategory(data?.getAllowedBillCategory)
+      console.log(account)
     }
   }, [loading, data, error, refetch])
 
   return (
-    <div className={styles.BillingContainer}>
-      <h1 className={styles.BillingHeader}>{account?.building?.name}</h1>
+    <>
       {account?.accountType === 'building_admin' ? (
-        <Billing category={category} account={account} />
+        <Billing
+          categoryID={category?.id}
+          buildingID={account?.building_id}
+          categoryName={category?.name}
+          accountID={account?._id}
+          data={category?.data}
+        />
       ) : (
-        <Overview complexID={account?.complex?._id} />
+        <Overview
+          complexID={account?.complex?._id}
+          complexName={account?.complex?.name}
+        />
       )}
-    </div>
+    </>
   )
 }
 

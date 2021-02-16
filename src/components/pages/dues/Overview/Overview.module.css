@@ -27,3 +27,9 @@
     @apply font-heading font-black;
     @apply text-base leading-7;
   }
+
+  .ComplexName {
+    @apply mb-5;
+    @apply font-heading font-black;
+    @apply text-neutral-dark text-3xl leading-10;
+  }

@@ -71,19 +71,12 @@ const dummyOptions = [
   }
 ]
 
-const dummyTableData = {
-  data: [
-    { building1: 'Building' },
-    { building2: 'Building 2' },
-    { building3: 'Building 3' },
-    { building4: 'Building 4' }
-  ]
-}
-
-function Overview({ complexID }) {
+function Overview({ complexID, complexName }) {
   const [selectedOption, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
-  const [tableData, setTableData] = useState()
+  const [tableData, setTableData] = useState({
+    data: []
+  })
 
   const { loading, data, error, refetch } = useQuery(Query.GET_BUILDINS, {
     variables: {
@@ -106,10 +99,6 @@ function Overview({ complexID }) {
     }
   }, [loading, data, error, refetch])
 
-  useEffect(() => {
-    console.log(tableData)
-  }, [tableData])
-
   const onStatusSelect = val => {
     setSelectedOption(val)
   }
@@ -120,6 +109,7 @@ function Overview({ complexID }) {
 
   return (
     <>
+      <h1 className={styles.ComplexName}>{complexName}</h1>
       <Tabs defaultTab="1">
         <Tabs.TabLabels>
           <Tabs.TabLabel id="1">Overview</Tabs.TabLabel>
@@ -136,8 +126,8 @@ function Overview({ complexID }) {
                   </div>
                 }
                 content={
-                  !loading && data ? (
-                    <Table items={tableData} />
+                  !loading && tableData.data.length > 0 ? (
+                    <Table items={tableData || []} />
                   ) : (
                     <PageLoader />
                   )
@@ -184,5 +174,6 @@ function Overview({ complexID }) {
 export default Overview
 
 Overview.propTypes = {
-  complexID: P.string.isRequired
+  complexID: P.string.isRequired,
+  complexName: P.string.isRequired
 }
