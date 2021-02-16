@@ -129,6 +129,14 @@ function Unsent({ month, year, categoryID, buildingID, categoryName }) {
   const [complexIDPerRow, setComplexIdPerRow] = useState({})
   const [unitIdPerRow, setUnitIdPerRow] = useState({})
 
+  useEffect(() => {
+    console.log({
+      category: categoryID,
+      building: buildingID,
+      catname: categoryName
+    })
+  }, [])
+
   const [
     createDues,
     {

@@ -1,4 +1,4 @@
-import Billing from '@app/components/pages/dues/Billing'
+import Billing from '@app/components/pages/dues/Main'
 
 export default function DuesBillingPage() {
   return <Billing />

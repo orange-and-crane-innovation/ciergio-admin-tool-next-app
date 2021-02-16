@@ -1,0 +1,16 @@
+
+    .BillingPeriodContainer {
+      @apply mb-5;
+      @apply flex items-start justify-between mt-6 flex-col md:w-1/5 md:flex-col;
+     
+    }
+  
+    .HeaderSmall {
+      @apply my-1;
+      @apply font-body;
+      @apply text-neutral-dark text-base leading-7;
+    }
+  
+
+  
+  
