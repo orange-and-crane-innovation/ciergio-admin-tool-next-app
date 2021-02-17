@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import P from 'prop-types'
 import rules from './rules'
 
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
@@ -32,6 +33,13 @@ const Can = ({ perform, yes, no }) => {
 
   return check(systemType, profile?.role, perform) ? yes : no
 }
+
+Can.propTypes = {
+  perform: P.string,
+  yes: P.oneOfType([P.element, P.node]),
+  no: P.oneOfType([P.element, P.node])
+}
+
 Can.defaultProps = {
   yes: null,
   no: null

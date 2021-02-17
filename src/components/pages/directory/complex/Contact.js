@@ -29,6 +29,7 @@ import {
   EDIT_CONTACT,
   DELETE_CONTACT
 } from '../queries'
+import Can from '@app/permissions/can'
 
 const validationSchema = yup.object().shape({
   name: yup.string().label('Contact Name').required(),
@@ -288,7 +289,16 @@ function Contact({ id }) {
             category: contact?.category.name,
             address: contact?.address?.formattedAddress,
             button: (
-              <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              <Can
+                perform="directory:contact:update"
+                yes={
+                  <Dropdown
+                    label={<AiOutlineEllipsis />}
+                    items={dropdownData}
+                  />
+                }
+                no={null}
+              />
             )
           }
         }) || []
@@ -313,12 +323,18 @@ function Contact({ id }) {
         <h1 className="font-bold text-base px-8 py-4">{`Directory (${contacts?.getContacts?.count})`}</h1>
 
         <div className="flex items-center">
-          <Button
-            default
-            leftIcon={<FaPlusCircle />}
-            label="Add Contact"
-            onClick={() => setShowModal(old => !old)}
-            className="my-4 mx-4"
+          <Can
+            perform="directory:create"
+            yes={
+              <Button
+                default
+                leftIcon={<FaPlusCircle />}
+                label="Add Contact"
+                onClick={() => setShowModal(old => !old)}
+                className="my-4 mx-4"
+              />
+            }
+            no={null}
           />
         </div>
       </div>
@@ -349,7 +365,6 @@ function Contact({ id }) {
         okButtonProps={{
           loading: creatingContact
         }}
-        width={550}
       >
         <div className="w-full p-4">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>

@@ -12,6 +12,7 @@ import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
+import Can from '@app/permissions/can'
 
 import ManageDirectory from './ManageDirectory'
 
@@ -167,7 +168,12 @@ function Directory() {
         return {
           name: c.name,
           dropdown: (
-            <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+            <Can
+              perform="directory:categories:update"
+              yes={
+                <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              }
+            />
           )
         }
       })
@@ -200,11 +206,16 @@ function Directory() {
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
             <div className="w-full flex items-center justify-end pt-4">
-              <Button
-                default
-                leftIcon={<FaPlusCircle />}
-                label="Add Category"
-                onClick={() => setShowModal('create', null)}
+              <Can
+                perform="directory:categories:create"
+                yes={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Add Category"
+                    onClick={() => setShowModal('create', null)}
+                  />
+                }
               />
             </div>
             <Card
