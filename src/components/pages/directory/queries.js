@@ -83,8 +83,12 @@ export const GET_CONTACT_CATEGORY = gql`
 `
 
 export const GET_CONTACTS = gql`
-  query getContactsByComplexId($complexId: String) {
-    getContacts(where: { complexId: $complexId, type: directory }) {
+  query getContactsByComplexId($complexId: String, $limit: Int, $offset: Int) {
+    getContacts(
+      where: { complexId: $complexId, type: directory }
+      limit: $limit
+      skip: $offset
+    ) {
       count
       limit
       data {

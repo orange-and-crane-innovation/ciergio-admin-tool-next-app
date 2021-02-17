@@ -126,13 +126,6 @@ function PrayerRequestsTable({ queryTemplate, status }) {
     removeAfterPrint: true
   })
 
-  const onPageClick = e => {
-    setCurrentPage(e)
-    setPageOffset(pageLimit * (e - 1))
-  }
-
-  const onLimitChange = limit => setPageLimit(Number(limit.value))
-
   const onCancel = () => setShowCreatePrayerModal(old => !old)
 
   const onSubmit = values => {
@@ -355,8 +348,10 @@ function PrayerRequestsTable({ queryTemplate, status }) {
             data={tableData}
             loading={loading}
             currentPage={currentPage}
-            onPageChange={onPageClick}
-            onPageLimitChange={onLimitChange}
+            pageLimit={pageLimit}
+            setCurrentPage={setCurrentPage}
+            setPageLimit={setPageLimit}
+            setPageOffset={setPageOffset}
           />
         }
         className="rounded-t-none"
