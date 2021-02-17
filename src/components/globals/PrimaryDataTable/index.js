@@ -7,9 +7,18 @@ function PrimaryDataTable({
   data,
   loading,
   currentPage,
-  onPageChange,
-  onPageLimitChange
+  setCurrentPage,
+  setPageOffset,
+  pageLimit,
+  setPageLimit
 }) {
+  const onPageClick = e => {
+    setCurrentPage(e)
+    setPageOffset(pageLimit * (e - 1))
+  }
+
+  const onLimitChange = limit => setPageLimit(Number(limit.value))
+
   return (
     <>
       <Table rowNames={columns} items={data} loading={loading} />
@@ -18,8 +27,8 @@ function PrimaryDataTable({
           <Pagination
             items={data}
             activePage={currentPage}
-            onPageClick={onPageChange}
-            onLimitChange={onPageLimitChange}
+            onPageClick={onPageClick}
+            onLimitChange={onLimitChange}
           />
         </div>
       )}
@@ -32,8 +41,10 @@ PrimaryDataTable.propTypes = {
   data: P.object.isRequired,
   loading: P.bool.isRequired,
   currentPage: P.number,
-  onPageChange: P.func,
-  onPageLimitChange: P.func
+  pageLimit: P.number,
+  setCurrentPage: P.func,
+  setPageOffset: P.func,
+  setPageLimit: P.func
 }
 
 export default PrimaryDataTable
