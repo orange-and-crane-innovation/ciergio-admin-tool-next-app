@@ -169,7 +169,7 @@ function Directory() {
           name: c.name,
           dropdown: (
             <Can
-              perform="directory:categories:update"
+              perform="directory:categories:update::delete"
               yes={
                 <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
               }

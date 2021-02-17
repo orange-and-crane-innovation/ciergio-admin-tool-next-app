@@ -290,7 +290,7 @@ function Contact({ id }) {
             address: contact?.address?.formattedAddress,
             button: (
               <Can
-                perform="directory:contact:update"
+                perform="directory:contact:update::delete"
                 yes={
                   <Dropdown
                     label={<AiOutlineEllipsis />}
