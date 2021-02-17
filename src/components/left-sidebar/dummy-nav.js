@@ -1,4 +1,4 @@
-const commonNavigation = [
+const navigation = [
   {
     title: 'Applications',
     items: [
@@ -9,6 +9,12 @@ const commonNavigation = [
         items: []
       },
       {
+        url: '/messages',
+        icon: 'ciergio-mail',
+        title: 'Messages',
+        items: []
+      },
+      {
         url: '/properties',
         icon: 'ciergio-organization',
         title: 'My Properties',
@@ -16,6 +22,16 @@ const commonNavigation = [
           {
             url: '/properties/company',
             title: 'My Company',
+            items: []
+          },
+          {
+            url: '/properties/complex',
+            title: 'My Complex',
+            items: []
+          },
+          {
+            url: '/properties/building',
+            title: 'My Building',
             items: []
           },
           {
@@ -70,7 +86,7 @@ const commonNavigation = [
         title: 'Bulletin Board',
         items: [
           {
-            url: '/posts',
+            url: '/posts/all',
             title: 'View All Posts',
             items: []
           },
@@ -133,76 +149,73 @@ const commonNavigation = [
         icon: 'ciergio-employees',
         title: 'My Members',
         items: []
-      }
-    ]
-  }
-]
-
-const homeNavigation = [
-  {
-    title: 'Applications',
-    items: [
-      ...commonNavigation[0].items,
-      ...[
-        {
-          url: '/maintenance',
-          icon: 'ciergio-maintenance',
-          title: 'Maintenance & Repairs',
-          items: []
-        },
-        {
-          url: '/dues',
-          icon: 'ciergio-dues',
-          title: 'My Dues',
-          items: [
-            {
-              url: '/dues/billing',
-              title: 'Billing',
-              items: []
-            }
-          ]
-        }
-      ]
-    ]
-  }
-]
-
-const prayNavigation = [
-  {
-    title: 'Applications',
-    items: [
-      ...commonNavigation[0].items,
-      ...[
-        {
-          url: '/prayer-requests',
-          icon: 'ciergio-prayer',
-          title: 'Prayer Requests',
-          items: []
-        },
-        {
-          url: '/donations',
-          icon: 'ciergio-donate',
-          title: 'Donations',
-          items: []
-        }
-      ]
-    ]
-  }
-]
-
-const circleNavigation = [
-  {
-    title: 'Applications',
-    items: [
-      ...commonNavigation[0].items,
+      },
+      {
+        url: '/maintenance',
+        icon: 'ciergio-maintenance',
+        title: 'Maintenance & Repairs',
+        items: []
+      },
+      {
+        url: '/dues',
+        icon: 'ciergio-dues',
+        title: 'My Dues',
+        items: [
+          {
+            url: '/dues/billing',
+            title: 'Billing',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/prayer-requests',
+        icon: 'ciergio-prayer',
+        title: 'Prayer Requests',
+        items: []
+      },
+      {
+        url: '/donations',
+        icon: 'ciergio-donate',
+        title: 'Donations',
+        items: []
+      },
       {
         url: '/qr-codes',
         icon: 'fa fa-qrcode',
         title: 'QR Codes',
-        items: []
+        items: [
+          {
+            url: '/qr-codes/posts',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/qr-codes/create',
+            title: 'Create Bulletin',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/attractions',
+        icon: 'ciergio-event',
+        title: 'Attractions and Events',
+        items: [
+          {
+            url: '/attractions/posts',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/attractions/create',
+            title: 'Create Bulletin',
+            items: []
+          }
+        ]
       }
     ]
   }
 ]
 
-export { homeNavigation, prayNavigation, circleNavigation }
+export default navigation
