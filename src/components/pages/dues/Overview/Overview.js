@@ -57,21 +57,6 @@ const data = {
   ]
 }
 
-const dummyOptions = [
-  {
-    label: 'All Status',
-    value: null
-  },
-  {
-    label: 'Paid',
-    value: 'paid'
-  },
-  {
-    label: 'Unpaid',
-    value: 'unpaid'
-  }
-]
-
 function Overview({ complexID, complexName }) {
   const [selectedOption, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
@@ -177,7 +162,7 @@ function Overview({ complexID, complexName }) {
             </div>
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <ManageCategories />
+            <ManageCategories complexID={complexID} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
