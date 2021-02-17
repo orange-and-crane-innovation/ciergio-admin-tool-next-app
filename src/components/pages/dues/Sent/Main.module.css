@@ -1,76 +1,69 @@
 .FormContainer {
-    @apply flex items-center justify-between mt-6 flex-col md:flex-row pb-8 px-8;
-  
-  
-    .HeaderSmall {
-      @apply my-5;
-      @apply font-body;
-      @apply text-neutral-dark text-base leading-7;
-    }
-  
-  
-   
-    .MainControl {
-      @apply flex items-center justify-between mt-6 flex-col md:flex-row;
-    }
-  
-    .StatusFloorControl {
-      @apply flex items-center justify-end w-full flex-col md:flex-row;
-  
-      & > * {
-        @apply mr-2;
-        @apply md:w-1/5;
-      }
-    }
-    
-    .SearchControl {
-      @apply relative w-full md:w-80 md:ml-4;
-  
-      .SearchControlIcon {
-        @apply absolute top-4 right-4;
-      }
-    }   
+  @apply flex items-center justify-between mt-6 flex-col md:flex-row pb-8 px-8;
+
+  .HeaderSmall {
+    @apply my-5;
+    @apply font-body;
+    @apply text-neutral-dark text-base leading-7;
   }
 
-  .ContentFlex {
-    @apply flex items-center justify-between;
+  .MainControl {
+    @apply flex items-center justify-between mt-6 flex-col md:flex-row;
+  }
 
-      .InfoViewText {
-          @apply flex items-center justify-end flex-col md:flex-row;
-          @apply text-gray-600;
-
-          & > * {
-              @apply text-base ml-2;
-          }
-      }
+  .StatusFloorControl {
+    @apply flex items-center justify-end w-full flex-col md:flex-row;
 
     & > * {
-        @apply text-base;
-    }
-
-    .BoldText {
-        @apply font-bold text-lg;
+      @apply mr-2;
+      @apply md:w-1/5;
     }
   }
-  .CardHeader {
-    @apply font-heading font-black;
-    @apply text-base leading-7;
-  }
 
-  .paid {
-    &:hover {
-      @apply cursor-not-allowed;
+  .SearchControl {
+    @apply relative w-full md:w-80 md:ml-4;
+
+    .SearchControlIcon {
+      @apply absolute top-4 right-4;
     }
   }
-  
-  .fileLink {
-    @apply text-blue-500 font-bold;
+}
 
-    &:hover{
-      @apply underline;
+.ContentFlex {
+  @apply flex items-center justify-between;
+
+  .InfoViewText {
+    @apply flex items-center justify-end flex-col md:flex-row;
+    @apply text-gray-600;
+
+    & > * {
+      @apply text-base ml-2;
     }
-   
   }
-  
 
-  
+  & > * {
+    @apply text-base;
+  }
+
+  .BoldText {
+    @apply font-bold text-lg;
+  }
+}
+.CardHeader {
+  @apply font-heading font-black;
+  @apply text-base leading-7;
+}
+
+.paid {
+  &:hover {
+    @apply cursor-not-allowed;
+  }
+}
+
+.fileLink {
+  @apply text-blue-500 font-bold;
+
+  &:hover {
+    @apply underline;
+  }
+}

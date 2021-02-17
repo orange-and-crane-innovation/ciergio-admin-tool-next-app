@@ -175,7 +175,7 @@ function Sent({ month, year }) {
   }, [duesLoading, duesData, duesError])
 
   const getData = async items => {
-    const data = {
+    const newData = {
       id: items.id,
       data: {
         amount: items.amount,
@@ -186,7 +186,7 @@ function Sent({ month, year }) {
 
     try {
       await updateDues({
-        variables: data
+        variables: newData
       })
     } catch (e) {
       console.log(e)
@@ -278,6 +278,7 @@ function Sent({ month, year }) {
             href={row?.dues[0]?.attachment?.fileUrl}
             className={styles.fileLink}
             target="_blank"
+            rel="noreferrer"
           >
             View File
           </a>
@@ -477,7 +478,7 @@ function Sent({ month, year }) {
   )
 }
 
-Sent.prototype = {
+Sent.propTypes = {
   month: P.number.isRequired,
   year: P.number.isRequired
 }

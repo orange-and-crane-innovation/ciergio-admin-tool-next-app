@@ -5,22 +5,19 @@ import { FaEllipsisH } from 'react-icons/fa'
 import { FiEdit2 } from 'react-icons/fi'
 
 const DropdownData = [
-	{
-		label: 'Edit Profile',
-		icon: <FiEdit2 />,
-		function: () => alert('clicked')
-	}
+  {
+    label: 'Edit Profile',
+    icon: <FiEdit2 />,
+    function: () => alert('clicked')
+  }
 ]
 
-function PageHeader({image, title, subtitle}) {
+function PageHeader({ image, title, subtitle }) {
   return (
     <div className={styles.PageHeaderContainer}>
       <div className="flex items-center">
         <div className={styles.PageHeaderLogo}>
-          <img
-            alt="logo"
-            src={image}
-          />
+          <img alt="logo" src={image} />
         </div>
 
         <div className={styles.PageHeaderTitle}>
@@ -38,6 +35,6 @@ function PageHeader({image, title, subtitle}) {
 PageHeader.propTypes = {
   image: P.string,
   title: P.string,
-  subtitle: P.string,
+  subtitle: P.string
 }
 export default PageHeader

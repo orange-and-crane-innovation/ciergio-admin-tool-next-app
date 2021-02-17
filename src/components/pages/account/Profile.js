@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-key */
 import React from 'react'
-import { useQuery, } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { FiMail, FiLock, FiUser } from 'react-icons/fi'
 
 import Card from '@app/components/card'
@@ -46,13 +46,15 @@ export const GET_PROFILE = gql`
 `
 
 function Profile() {
-  const {loading, data } = useQuery(GET_PROFILE, {
+  const { loading, data } = useQuery(GET_PROFILE, {
     fetchPolicy: 'cache-only'
   })
   if (loading) return <div>Loading...</div>
   const profile = data ? data.getProfile : {}
 
-  let account = profile.accounts.data.filter(account => account.active === true)
+  const account = profile.accounts.data.filter(
+    account => account.active === true
+  )
 
   return (
     <div className={styles.PageContainer}>

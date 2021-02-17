@@ -1,37 +1,37 @@
 .PageHeaderContainer {
-    @apply mb-4;
-    @apply flex items-center justify-between;
+  @apply mb-4;
+  @apply flex items-center justify-between;
 
-    .PageHeaderLogo {
-      @apply h-32 w-32 p-2;
-      @apply bg-white;
-      @apply shadow-md rounded-full;
+  .PageHeaderLogo {
+    @apply h-32 w-32 p-2;
+    @apply bg-white;
+    @apply shadow-md rounded-full;
 
-      & > img {
-        @apply object-contain object-center;
-        @apply h-full w-full;
-      }
+    & > img {
+      @apply object-contain object-center;
+      @apply h-full w-full;
     }
-
-    .PageHeaderTitle {
-      @apply mx-4;
-      @apply flex flex-col items-start;
-    }
-
-    .PageButton {
-      @apply bg-white;
-      @apply border border-neutral-200;
-      @apply rounded-md;
-    }
-    .PageHeader {
-        @apply mb-2;
-        @apply font-heading font-black;
-        @apply text-neutral-dark text-3xl leading-10;
-      }
-    
-      .PageHeaderSmall {
-        @apply mb-4;
-        @apply font-body;
-        @apply text-neutral-dark text-base leading-7;
-      }
   }
+
+  .PageHeaderTitle {
+    @apply mx-4;
+    @apply flex flex-col items-start;
+  }
+
+  .PageButton {
+    @apply bg-white;
+    @apply border border-neutral-200;
+    @apply rounded-md;
+  }
+  .PageHeader {
+    @apply mb-2;
+    @apply font-heading font-black;
+    @apply text-neutral-dark text-3xl leading-10;
+  }
+
+  .PageHeaderSmall {
+    @apply mb-4;
+    @apply font-body;
+    @apply text-neutral-dark text-base leading-7;
+  }
+}
