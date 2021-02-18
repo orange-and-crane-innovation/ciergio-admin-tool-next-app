@@ -88,6 +88,7 @@ export default function FileUpload({
             )}
             <a
               target="_blank"
+              rel="noreferrer"
               className={styles.fileUrl}
               style={{ direction: 'rtl', width: '200px' }}
               href={fileUrl}

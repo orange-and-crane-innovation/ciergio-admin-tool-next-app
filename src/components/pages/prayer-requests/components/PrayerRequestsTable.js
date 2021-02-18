@@ -12,6 +12,7 @@ import FormSelect from '@app/components/select'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import Can from '@app/permissions/can'
 
 import dayjs, { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
@@ -125,13 +126,6 @@ function PrayerRequestsTable({ queryTemplate, status }) {
     content: () => printRef.current,
     removeAfterPrint: true
   })
-
-  const onPageClick = e => {
-    setCurrentPage(e)
-    setPageOffset(pageLimit * (e - 1))
-  }
-
-  const onLimitChange = limit => setPageLimit(Number(limit.value))
 
   const onCancel = () => setShowCreatePrayerModal(old => !old)
 
@@ -320,33 +314,45 @@ function PrayerRequestsTable({ queryTemplate, status }) {
           </div>
         }
         actions={[
-          <Button
+          <Can
             key="print"
-            default
-            icon={<HiOutlinePrinter />}
-            className="mr-1 "
-            onClick={onPrintPreview}
-            disabled={loading}
+            perform="prayerrequests:print"
+            yes={
+              <Button
+                default
+                icon={<HiOutlinePrinter />}
+                className="mr-1 "
+                onClick={onPrintPreview}
+                disabled={loading}
+              />
+            }
           />,
-          <CSVLink
+          <Can
             key="download"
-            filename={'prayer_requests.csv'}
-            data={downloadData}
-          >
-            <Button
-              default
-              icon={<FiDownload />}
-              onClick={() => {}}
-              className="mr-1 "
-              disabled={loading}
-            />
-          </CSVLink>,
-          <Button
+            perform="prayerrequests:export"
+            yes={
+              <CSVLink filename={'prayer_requests.csv'} data={downloadData}>
+                <Button
+                  default
+                  icon={<FiDownload />}
+                  onClick={() => {}}
+                  className="mr-1 "
+                  disabled={loading}
+                />
+              </CSVLink>
+            }
+          />,
+          <Can
             key="add"
-            primary
-            label="Create Prayer Request"
-            leftIcon={<FaPlusCircle />}
-            onClick={() => setShowCreatePrayerModal(old => !old)}
+            perform="prayerrequests:create"
+            yes={
+              <Button
+                primary
+                label="Create Prayer Request"
+                leftIcon={<FaPlusCircle />}
+                onClick={() => setShowCreatePrayerModal(old => !old)}
+              />
+            }
           />
         ]}
         content={
@@ -355,8 +361,10 @@ function PrayerRequestsTable({ queryTemplate, status }) {
             data={tableData}
             loading={loading}
             currentPage={currentPage}
-            onPageChange={onPageClick}
-            onPageLimitChange={onLimitChange}
+            pageLimit={pageLimit}
+            setCurrentPage={setCurrentPage}
+            setPageLimit={setPageLimit}
+            setPageOffset={setPageOffset}
           />
         }
         className="rounded-t-none"

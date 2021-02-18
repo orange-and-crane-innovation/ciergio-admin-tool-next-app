@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import P from 'prop-types'
 import FormInput from '@app/components/forms/form-input'
 import DatePicker from '@app/components/forms/form-datepicker/'
@@ -163,5 +163,8 @@ UpdateBills.propTypes = {
   amount: P.number,
   dueDate: P.string,
   fileUrl: P.string,
-  form: P.object
+  form: P.object,
+  getData: P.func,
+  isClose: P.bool,
+  id: P.any
 }

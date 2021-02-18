@@ -5,11 +5,10 @@ import { Controller, useForm } from 'react-hook-form'
 import P from 'prop-types'
 import * as yup from 'yup'
 
-import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import Table from '@app/components/table'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
 import Dropdown from '@app/components/dropdown'
@@ -30,6 +29,7 @@ import {
   EDIT_CONTACT,
   DELETE_CONTACT
 } from '../queries'
+import Can from '@app/permissions/can'
 
 const validationSchema = yup.object().shape({
   name: yup.string().label('Contact Name').required(),
@@ -49,14 +49,30 @@ function Contact({ id }) {
     }
   })
 
+  const [showModal, setShowModal] = useState(false)
+  const [imageUrl, setImageUrl] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [selectedContact, setSelectedContact] = useState(undefined)
+  const [showEditContactModal, setShowEditContactModal] = useState(false)
+  const [showDeleteContactModal, setShowDeleteContactModal] = useState(false)
+  const [pageLimit, setPageLimit] = useState(10)
+  const [offset, setPageOffset] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+
   const { data: complexes } = useQuery(GET_COMPLEX, {
     variables: {
       id: id
     }
   })
-  const { data: contacts, refetch: refetchContacts } = useQuery(GET_CONTACTS, {
+  const {
+    data: contacts,
+    refetch: refetchContacts,
+    loading: loadingContacts
+  } = useQuery(GET_CONTACTS, {
     variables: {
-      complexId: id
+      complexId: id,
+      limit: pageLimit,
+      offset
     }
   })
   const { data: categories } = useQuery(GET_CONTACT_CATEGORY, {
@@ -92,13 +108,6 @@ function Contact({ id }) {
       }
     }
   )
-
-  const [showModal, setShowModal] = useState(false)
-  const [imageUrl, setImageUrl] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [selectedContact, setSelectedContact] = useState(undefined)
-  const [showEditContactModal, setShowEditContactModal] = useState(false)
-  const [showDeleteContactModal, setShowDeleteContactModal] = useState(false)
 
   const name = complexes?.getComplexes?.data[0]?.name || ''
   const companyId = complexes?.getComplexes?.data[0]?.company._id || ''
@@ -164,7 +173,7 @@ function Contact({ id }) {
 
   const handleEditContact = values => {
     const { category, name, contactNumber, address } = values
-    console.log('editing contact', values)
+
     const contactData = {
       name,
       logo: null,
@@ -280,7 +289,16 @@ function Contact({ id }) {
             category: contact?.category.name,
             address: contact?.address?.formattedAddress,
             button: (
-              <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              <Can
+                perform="directory:contact:update::delete"
+                yes={
+                  <Dropdown
+                    label={<AiOutlineEllipsis />}
+                    items={dropdownData}
+                  />
+                }
+                no={null}
+              />
             )
           }
         }) || []
@@ -302,28 +320,39 @@ function Contact({ id }) {
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title capitalize">{`${name} Directory`}</h1>
       <div className="flex items-center justify-between bg-white border rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Directory (${contacts?.getContacts?.data?.length})`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`Directory (${contacts?.getContacts?.count})`}</h1>
 
         <div className="flex items-center">
-          <Button
-            default
-            leftIcon={<FaPlusCircle />}
-            label="Add Contact"
-            onClick={() => setShowModal(old => !old)}
-            className="my-4 mx-4"
+          <Can
+            perform="directory:create"
+            yes={
+              <Button
+                default
+                leftIcon={<FaPlusCircle />}
+                label="Add Contact"
+                onClick={() => setShowModal(old => !old)}
+                className="my-4 mx-4"
+              />
+            }
+            no={null}
           />
         </div>
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={contactsData} />}
+        content={
+          <PrimaryDataTable
+            columns={columns}
+            data={contactsData}
+            loading={loadingContacts}
+            currentPage={currentPage}
+            pageLimit={pageLimit}
+            setCurrentPage={setCurrentPage}
+            setPageLimit={setPageLimit}
+            setPageOffset={setPageOffset}
+          />
+        }
         className="rounded-t-none"
-      />
-      <Pagination
-        items={contactsData}
-        activePage={1}
-        onPageClick={e => alert('Page ' + e)}
-        onLimitChange={e => alert('Show ' + e.target.value)}
       />
       <Modal
         title="Add a Contact"
@@ -336,7 +365,6 @@ function Contact({ id }) {
         okButtonProps={{
           loading: creatingContact
         }}
-        width={550}
       >
         <div className="w-full p-4">
           <h1 className="text-base font-bold mb-4">Contact Details</h1>

@@ -77,16 +77,16 @@ const dummyTableData = {
 }
 
 function Overview() {
-  const [loading, setLoading] = useState(false)
-  const [selectedOption, setSelectedOption] = useState()
+  const [loading] = useState(false)
+  const [, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
 
   const onStatusSelect = val => {
     setSelectedOption(val)
   }
 
-  const handleChangeDate = date => {
-    setDate(date)
+  const handleChangeDate = dt => {
+    setDate(dt)
   }
 
   return (

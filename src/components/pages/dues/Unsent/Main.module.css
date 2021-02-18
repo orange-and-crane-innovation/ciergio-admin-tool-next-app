@@ -1,15 +1,12 @@
 .FormContainer {
   @apply flex items-center justify-between mt-6 flex-col md:flex-row pb-8 px-8;
 
-
   .HeaderSmall {
     @apply my-5;
     @apply font-body;
     @apply text-neutral-dark text-base leading-7;
   }
 
-
- 
   .MainControl {
     @apply flex items-center justify-between mt-6 flex-col md:flex-row;
   }
@@ -25,7 +22,7 @@
       @apply mr-2;
     }
   }
-  
+
   .SearchControl {
     @apply relative w-full md:w-80 md:ml-4;
 
@@ -33,8 +30,6 @@
       @apply absolute top-4 right-4;
     }
   }
-
-
 }
 
 .ButtonForm {
@@ -42,29 +37,27 @@
 }
 
 .ContentFlex {
-  @apply flex items-center justify-between ;
-
+  @apply flex items-center justify-between;
 
   .InfoViewText {
     @apply flex items-center justify-end flex-col md:flex-row;
     @apply text-gray-600;
 
     & > * {
-        @apply text-base ml-2;
+      @apply text-base ml-2;
     }
-}
+  }
 
-& > * {
-  @apply text-base;
-}
+  & > * {
+    @apply text-base;
+  }
 
-.BoldText {
-  @apply font-bold;
-}
+  .BoldText {
+    @apply font-bold;
+  }
 }
 
 .CardHeader {
   @apply font-heading font-black;
   @apply text-base leading-7;
 }
-

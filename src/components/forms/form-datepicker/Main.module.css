@@ -1,83 +1,79 @@
 .FormDatePicker {
-    @apply w-full ;
+  @apply w-full;
 
-    .DatepickerHandler {
-      @apply w-full rounded-md border-gray-500 flex flex-row overflow-auto justify-between items-center bg-white m-0 px-0 py-1 placeholder-neutral-500;
-      border: 1px lightGrey solid !important;
- 
-      svg {
-        @apply text-gray-800 w-auto mr-3;
-      }
+  .DatepickerHandler {
+    @apply w-full rounded-md border-gray-500 flex flex-row overflow-auto justify-between items-center bg-white m-0 px-0 py-1 placeholder-neutral-500;
+    border: 1px lightGrey solid !important;
 
-      .inputClass {
-        @apply border-0 ml-3 cursor-pointer;
-      }
-
-      &:hover{
-        @apply cursor-auto;
-      
-      }
-
-      &:hover{
-        @apply cursor-pointer;
-      }
+    svg {
+      @apply text-gray-800 w-auto mr-3;
     }
-    
 
-  
+    .inputClass {
+      @apply border-0 ml-3 cursor-pointer;
+    }
+
     &:hover {
-      @apply border-neutral-500;
+      @apply cursor-auto;
     }
 
-    & span {  
-        @apply block mb-3 text-base text-gray-800;
-    }   
-  
-    &:active {
-      @apply outline-none;
-      @apply border-secondary-500;
-    }
-  
-    &:focus {
-      @apply outline-none;
-    }
-  
-    & label {
-      @apply block;
-  
-      & .formLabel {
-        @apply block mb-4;
-      }
-  
-      & span {
-        @apply text-neutral-dark font-body font-bold text-sm;
-      }
+    &:hover {
+      @apply cursor-pointer;
     }
   }
-  
-  .hasError {
-    & [type='text'],
-    & [type='password'] {
-      @apply border-red-500;
+
+  &:hover {
+    @apply border-neutral-500;
+  }
+
+  & span {
+    @apply block mb-3 text-base text-gray-800;
+  }
+
+  &:active {
+    @apply outline-none;
+    @apply border-secondary-500;
+  }
+
+  &:focus {
+    @apply outline-none;
+  }
+
+  & label {
+    @apply block;
+
+    & .formLabel {
+      @apply block mb-4;
     }
-  
-    &:hover {
-      @apply border-red-700;
-    }
-  
-    &:active {
-      @apply outline-none;
-      @apply border-red-700;
-    }
-  
-    &:focus {
-      @apply outline-none;
-    }
-  
-    & label {
-      & span {
-        @apply text-red-500;
-      }
+
+    & span {
+      @apply text-neutral-dark font-body font-bold text-sm;
     }
   }
-  
+}
+
+.hasError {
+  & [type='text'],
+  & [type='password'] {
+    @apply border-red-500;
+  }
+
+  &:hover {
+    @apply border-red-700;
+  }
+
+  &:active {
+    @apply outline-none;
+    @apply border-red-700;
+  }
+
+  &:focus {
+    @apply outline-none;
+  }
+
+  & label {
+    & span {
+      @apply text-red-500;
+    }
+  }
+}

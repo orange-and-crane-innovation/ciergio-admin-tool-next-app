@@ -1,37 +1,37 @@
 .PageContainer {
-    @apply pt-4 pb-8 px-8;
-    
-    .CardHeader {
-        @apply font-heading font-black;
-        @apply text-base leading-7;
-      }
+  @apply pt-4 pb-8 px-8;
 
-    .CardContentContainer {
-        @apply p-4;
-        @apply text-base;
-      }
-    
-      .CardSubContentContainer {
-        @apply my-4;
-        @apply flex items-center;
-    
-        & > span {
-          @apply mr-4;
-        }
-      }
-      .FlexCenterBetween {
-        @apply flex items-center justify-between;
-      }
-      .FlexCol {
-        @apply flex flex-col;
-      }
-    
-      .FlexCenterBetweenMarginY {
-        @apply my-4;
-        @apply flex items-center justify-between;
-      }
-    
-      .ContentTitle {
-        @apply font-bold text-neutral-500;
-      }
+  .CardHeader {
+    @apply font-heading font-black;
+    @apply text-base leading-7;
+  }
+
+  .CardContentContainer {
+    @apply p-4;
+    @apply text-base;
+  }
+
+  .CardSubContentContainer {
+    @apply my-4;
+    @apply flex items-center;
+
+    & > span {
+      @apply mr-4;
+    }
+  }
+  .FlexCenterBetween {
+    @apply flex items-center justify-between;
+  }
+  .FlexCol {
+    @apply flex flex-col;
+  }
+
+  .FlexCenterBetweenMarginY {
+    @apply my-4;
+    @apply flex items-center justify-between;
+  }
+
+  .ContentTitle {
+    @apply font-bold text-neutral-500;
+  }
 }

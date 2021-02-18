@@ -4,6 +4,7 @@ import Userinfo from './user-info'
 import MenuItem from './menu-item'
 import { useQuery } from '@apollo/client'
 import gql from 'graphql-tag'
+
 export const GET_PROFILE = gql`
   query {
     getProfile {

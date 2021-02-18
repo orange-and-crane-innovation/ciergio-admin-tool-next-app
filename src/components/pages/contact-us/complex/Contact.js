@@ -12,6 +12,7 @@ import Table from '@app/components/table'
 import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
+import Can from '@app/permissions/can'
 
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
@@ -240,7 +241,15 @@ function Contact({ id }) {
             name: contact.name,
             email: contact.email,
             button: (
-              <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              <Can
+                perform="contactus:update::delete"
+                yes={
+                  <Dropdown
+                    label={<AiOutlineEllipsis />}
+                    items={dropdownData}
+                  />
+                }
+              />
             )
           }
         }) || []
@@ -258,12 +267,17 @@ function Contact({ id }) {
         <h1 className="font-bold text-base px-8 py-4">{`Contacts (${contacts?.getContacts?.data?.length})`}</h1>
 
         <div className="flex items-center">
-          <Button
-            default
-            leftIcon={<FaPlusCircle />}
-            label="Add Contact"
-            onClick={() => setShowModal(old => !old)}
-            className="my-4 mx-4"
+          <Can
+            perform="contactus:create"
+            yes={
+              <Button
+                default
+                leftIcon={<FaPlusCircle />}
+                label="Add Contact"
+                onClick={() => setShowModal(old => !old)}
+                className="my-4 mx-4"
+              />
+            }
           />
         </div>
       </div>

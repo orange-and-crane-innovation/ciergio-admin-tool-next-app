@@ -120,7 +120,13 @@ const FormDatePicker = ({
   }, [blur])
 
   return (
-    <div className={containerClasses} onClick={openDate}>
+    <div
+      className={containerClasses}
+      onClick={openDate}
+      role="button"
+      tabIndex={0}
+      onKeyDown={() => {}}
+    >
       {renderLabel}
       {renderDatePicker}
       {renderError}
@@ -144,7 +150,11 @@ FormDatePicker.propTypes = {
   showMonthYearPicker: P.bool,
   datepickerprops: P.object,
   disabledPreviousDate: P.func,
-  date: P.instanceOf(Date)
+  date: P.instanceOf(Date),
+  name: P.string,
+  rightIcon: P.oneOfType([P.element, P.node]),
+  inputRef: P.object,
+  customPicker: P.any
 }
 
 FormDatePicker.defaultProps = {

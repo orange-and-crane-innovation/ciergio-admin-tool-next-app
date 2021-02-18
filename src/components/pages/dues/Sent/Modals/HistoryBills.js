@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import P from 'prop-types'
 import styles from './style.module.css'
 import { toFriendlyDate } from '@app/utils/date'
