@@ -7,10 +7,9 @@ import { useForm } from 'react-hook-form'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import Modal from '@app/components/modal'
-import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
 import SelectDropdown from '@app/components/select'
-import Pagination from '@app/components/pagination'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import { Card } from '@app/components/globals'
 
 import InviteStaffContent from './InviteStaffContent'
@@ -52,7 +51,7 @@ import {
   editStaffValidationSchema,
   inviteStaffValidationSchema
 } from './schema'
-import Empty from '../Empty'
+import Can from '@app/permissions/can'
 
 const columns = [
   {
@@ -294,13 +293,20 @@ function AllStaff() {
   }
 
   const handleOk = values => {
-    const { staffType, email, jobTitle, company, complex, building } = values
+    const {
+      staffType: staff,
+      email,
+      jobTitle,
+      company,
+      complex,
+      building
+    } = values
 
     const data = {
       email,
       jobTitle
     }
-    switch (staffType.value) {
+    switch (staff.value) {
       case BUILDING_ADMIN:
         addBuildingAdmin({
           variables: {
@@ -369,15 +375,6 @@ function AllStaff() {
         }
       }
     })
-  }
-
-  const onPageClick = e => {
-    setActivePage(e)
-    setSkipCount(e * limitPage)
-  }
-
-  const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
   }
 
   const assignments = useMemo(() => {
@@ -452,7 +449,7 @@ function AllStaff() {
                         user,
                         company
                       })
-                      handleShowModal('delete', _id)
+                      handleShowModal('delete')
                     }
                   }
                 ]
@@ -482,9 +479,14 @@ function AllStaff() {
                     <span className="capitalize">{company?.name || ''}</span>
                   ),
                   dropdown: (
-                    <Dropdown
-                      label={<AiOutlineEllipsis />}
-                      items={dropdownData}
+                    <Can
+                      perform="staff:view::update::delete"
+                      yes={
+                        <Dropdown
+                          label={<AiOutlineEllipsis />}
+                          items={dropdownData}
+                        />
+                      }
                     />
                   )
                 }
@@ -554,50 +556,57 @@ function AllStaff() {
           accounts?.getAccounts?.count || 0
         })`}</h1>
         <div className="flex items-center">
-          <Button
-            default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-            disabled
+          <Can
+            perform="staff:print"
+            yes={
+              <Button
+                default
+                icon={<HiOutlinePrinter />}
+                onClick={() => {}}
+                className="mr-4 mt-4"
+                disabled
+              />
+            }
           />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-            disabled
+          <Can
+            perform="staff:export"
+            yes={
+              <Button
+                default
+                icon={<FiDownload />}
+                onClick={() => {}}
+                className="mr-4 mt-4"
+                disabled
+              />
+            }
           />
-          <Button
-            default
-            leftIcon={<FaPlusCircle />}
-            label="Invite Staff"
-            onClick={() => handleShowModal('create')}
-            className="mr-4 mt-4"
+          <Can
+            perform="staff:invite"
+            yes={
+              <Button
+                default
+                leftIcon={<FaPlusCircle />}
+                label="Invite Staff"
+                onClick={() => handleShowModal('create')}
+                className="mr-4 mt-4"
+              />
+            }
           />
         </div>
       </div>
       <Card
         noPadding
         content={
-          <>
-            <Table
-              rowNames={columns}
-              items={staffData}
-              loading={loadingAccounts}
-              emptyText={<Empty />}
-            />
-            {!loadingAccounts && staffData && (
-              <div className="px-8">
-                <Pagination
-                  items={staffData}
-                  activePage={activePage}
-                  onPageClick={onPageClick}
-                  onLimitChange={onLimitChange}
-                />
-              </div>
-            )}
-          </>
+          <PrimaryDataTable
+            data={staffData}
+            columns={columns}
+            loading={loadingAccounts}
+            activePage={activePage}
+            pageLimit={limitPage}
+            setCurrentPage={setActivePage}
+            setPageOffset={setSkipCount}
+            setPageLimit={setLimitPage}
+          />
         }
       />
       <Modal
