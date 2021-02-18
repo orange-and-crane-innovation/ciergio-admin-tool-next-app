@@ -82,9 +82,9 @@ function NotificationsList() {
 
   const categoryOptions = useMemo(() => {
     if (CATEGORIES !== undefined) {
-      const cats = CATEGORIES?.category?.map(category => ({
-        label: category.name,
-        value: category._id
+      const cats = CATEGORIES?.category?.map(cat => ({
+        label: cat.name,
+        value: cat._id
       }))
       return [
         {

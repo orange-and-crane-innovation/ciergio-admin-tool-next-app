@@ -37,6 +37,7 @@ import {
   DELETE_NOTIFICATION
 } from '../queries'
 import PreviewModal from './PreviewModal'
+import Can from '@app/permissions/can'
 
 const getNotifDate = (type, notif) => {
   switch (type) {
@@ -383,9 +384,14 @@ function Notifications({
                 ),
                 category: notif?.category?.name || '--',
                 dropdown: (
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
+                  <Can
+                    perform="notifications:view::update"
+                    yes={
+                      <Dropdown
+                        label={<AiOutlineEllipsis />}
+                        items={dropdownData}
+                      />
+                    }
                   />
                 )
               }
@@ -525,13 +531,19 @@ function Notifications({
           </div>
         }
         actions={[
-          <Button
-            primary
-            leftIcon={<FaPlusCircle />}
-            label="Create Notifications"
-            onClick={goToCreate}
-            className="mr-4 mt-4"
-            key={`${type}-btn`}
+          <Can
+            key="create"
+            perform="notifications:create"
+            yes={
+              <Button
+                primary
+                leftIcon={<FaPlusCircle />}
+                label="Create Notifications"
+                onClick={goToCreate}
+                className="mr-4 mt-4"
+                key={`${type}-btn`}
+              />
+            }
           />
         ]}
         noPadding
