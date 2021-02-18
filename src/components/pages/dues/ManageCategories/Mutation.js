@@ -29,7 +29,7 @@ export const REMOVE_ALLOWED_CATEGORY = gql`
       categoryIds: $categoryIds
     ) {
       message
-      proccessId
+      processId
     }
   }
 `

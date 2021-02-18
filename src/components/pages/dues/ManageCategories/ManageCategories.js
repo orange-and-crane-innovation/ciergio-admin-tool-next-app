@@ -51,14 +51,21 @@ function ManageCategories({ complexID, accountType }) {
   const [allowedCategory, setAllowedCategory] = useState({
     data: []
   })
+  const [deleteCategoryModal, setDeleteCategoryModal] = useState(false)
+  const [deleteItemId, setDeleteItemId] = useState(null)
 
   useEffect(() => {
     console.log(accountType)
   }, [])
 
-  // const [deleteBillCategory] = useMutation(Mutation.REMOVE_ALLOWED_CATEGORY, {
-  //   onCompleted: () => {}
-  // })
+  const [
+    deleteBillCategory,
+    {
+      loading: loadingDeleteBillCategory,
+      called: calledDeleteBillCategory,
+      data: dataDeleteBillCategory
+    }
+  ] = useMutation(Mutation.REMOVE_ALLOWED_CATEGORY)
 
   const [
     addBillCategory,
@@ -99,7 +106,32 @@ function ManageCategories({ complexID, accountType }) {
     }
   }, [loadingAddCategory, calledAddBillCategory, dataAddBillCategory])
 
-  const onDeleteBill = () => {}
+  useEffect(() => {
+    if (
+      !loadingDeleteBillCategory &&
+      calledDeleteBillCategory &&
+      dataDeleteBillCategory
+    ) {
+      if (dataDeleteBillCategory?.removeBillCategory?.message === 'success') {
+        showToast('success', 'You have successfully removed a bill category')
+        setShowModal(false)
+        setDeleteCategoryModal(false)
+        setDeleteItemId(null)
+        refetchAllowedCategory()
+      }
+    }
+  }, [
+    loadingDeleteBillCategory,
+    calledDeleteBillCategory,
+    dataDeleteBillCategory
+  ])
+
+  const onDeleteBill = e => {
+    e.preventDefault()
+    setDeleteItemId(e.target.name)
+    setShowModal(show => !show)
+    setDeleteCategoryModal(true)
+  }
 
   useEffect(() => {
     if (
@@ -121,7 +153,9 @@ function ManageCategories({ complexID, accountType }) {
                 />
               ),
               delButton: (
-                <FaTrashAlt size="14" id={val._id} onClick={onDeleteBill} />
+                <button id="wew" name="wew" onClick={onDeleteBill}>
+                  <FaTrashAlt size="14" name={val._id} />
+                </button>
               )
             })
           })
@@ -157,18 +191,35 @@ function ManageCategories({ complexID, accountType }) {
   }
 
   const handleOkModal = async () => {
-    try {
-      if (selectedCategory || selectedCategory !== '') {
-        await addBillCategory({
-          variables: {
-            accountType: accountType,
-            accountId: complexID,
-            categoryIds: [selectedCategory]
-          }
-        })
+    if (!deleteCategoryModal) {
+      try {
+        if (selectedCategory || selectedCategory !== '') {
+          await addBillCategory({
+            variables: {
+              accountType: accountType,
+              accountId: complexID,
+              categoryIds: [selectedCategory]
+            }
+          })
+        }
+      } catch (error) {
+        console.log(error)
       }
-    } catch (error) {
-      console.log(error)
+    } else {
+      try {
+        if (deleteItemId || deleteItemId !== '') {
+          const del = await deleteBillCategory({
+            variables: {
+              accountType: accountType,
+              accountId: complexID,
+              categoryIds: [deleteItemId]
+            }
+          })
+          console.log(del)
+        }
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 
@@ -210,7 +261,7 @@ function ManageCategories({ complexID, accountType }) {
       </div>
 
       <Modal
-        title="Add Category"
+        title={deleteCategoryModal ? null : 'Add Category'}
         okText="Apply"
         visible={showModal}
         onClose={handleCloseModal}
@@ -218,12 +269,20 @@ function ManageCategories({ complexID, accountType }) {
         onOk={handleOkModal}
       >
         <div>
-          {
+          {deleteCategoryModal ? (
+            <div className="p-10">
+              <p className="text-gray-400 text-3xl">
+                Do you want to remove this category? Warning: This cannot be
+                undone and all existing and past dues for this category will
+                also be deleted.
+              </p>
+            </div>
+          ) : (
             <SelectInput
               categories={categories || []}
               selectChange={handleSelectChange}
             />
-          }
+          )}
         </div>
       </Modal>
     </>
