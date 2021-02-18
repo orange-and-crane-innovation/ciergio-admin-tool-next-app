@@ -4,13 +4,18 @@ import P from 'prop-types'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import { Card, Table, Action } from '@app/components/globals'
+import { Card } from '@app/components/globals'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
 
 import AddResidentModal from '../AddResidentModal'
+import Can from '@app/permissions/can'
+import Dropdown from '@app/components/dropdown'
+
+import { AiOutlineEllipsis } from 'react-icons/ai'
 
 const floors = [
   {
@@ -42,110 +47,136 @@ const accountTypes = [
   }
 ]
 
+const columns = [
+  {
+    Name: 'Unit #',
+    width: ''
+  },
+  {
+    Name: 'Resident Name',
+    width: ''
+  },
+  {
+    Name: 'Account Type',
+    width: ''
+  },
+  {
+    Name: 'invite',
+    width: ''
+  },
+  {
+    Name: '',
+    width: ''
+  }
+]
+
+const data = [
+  {
+    unit_number: 101,
+    resident_name: 'Brandie Lane',
+    contact_number: '09778562090',
+    account_type: 'Unit Owner',
+    active: true
+  },
+  {
+    unit_number: 101,
+    resident_name: 'Max Murphy',
+    contact_number: '09778562090',
+    account_type: 'Relative',
+    active: false
+  },
+  {
+    unit_number: 102,
+    resident_name: 'Ralph Bell',
+    contact_number: '09778562090',
+    account_type: 'Other',
+    active: false
+  },
+  {
+    unit_number: 103,
+    resident_name: 'Victoria Miles',
+    contact_number: '09778562090',
+    account_type: 'Unit Owner',
+    active: true
+  },
+  {
+    unit_number: 103,
+    resident_name: 'Wendy Jones',
+    contact_number: '09778562090',
+    account_type: 'Staff',
+    active: true
+  },
+  {
+    unit_number: 104,
+    resident_name: 'Judith Cooper',
+    contact_number: '09778562090',
+    account_type: 'Staff',
+    active: true
+  },
+  {
+    unit_number: 105,
+    resident_name: 'Wendy Jones',
+    contact_number: '09778562090',
+    account_type: 'Unit Owner',
+    active: true
+  },
+  {
+    unit_number: 105,
+    resident_name: 'Albert Howard',
+    contact_number: '09778562090',
+    account_type: 'Housemate',
+    active: true
+  },
+  {
+    unit_number: 105,
+    resident_name: 'Priscilla Richards',
+    contact_number: '09778562090',
+    account_type: 'Housemate',
+    active: false
+  }
+]
+
 function AllResidents() {
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState('')
-
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: 'Unit #',
-        accessor: 'unit_number'
-      },
-      {
-        Header: 'Resident Name',
-        accessor: row => row,
-        Cell: ResidentCell
-      },
-      {
-        Header: 'Account Type',
-        accessor: row => row,
-        Cell: ResidentType
-      },
-      {
-        id: 'invite',
-        accessor: row => row,
-        Cell: ResidentInviteButton
-      },
-      {
-        id: 'action',
-        accessor: row => row,
-        Cell: Action
-      }
-    ],
-    []
-  )
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageLimit, setPageLimit] = useState(10)
+  const [, setPageOffset] = useState(0)
 
   const residentsData = React.useMemo(
     () => ({
       count: 161,
       limit: 10,
       offset: 0,
-      data: [
-        {
-          unit_number: 101,
-          resident_name: 'Brandie Lane',
-          contact_number: '09778562090',
-          account_type: 'Unit Owner',
-          active: true
-        },
-        {
-          unit_number: 101,
-          resident_name: 'Max Murphy',
-          contact_number: '09778562090',
-          account_type: 'Relative',
-          active: false
-        },
-        {
-          unit_number: 102,
-          resident_name: 'Ralph Bell',
-          contact_number: '09778562090',
-          account_type: 'Other',
-          active: false
-        },
-        {
-          unit_number: 103,
-          resident_name: 'Victoria Miles',
-          contact_number: '09778562090',
-          account_type: 'Unit Owner',
-          active: true
-        },
-        {
-          unit_number: 103,
-          resident_name: 'Wendy Jones',
-          contact_number: '09778562090',
-          account_type: 'Staff',
-          active: true
-        },
-        {
-          unit_number: 104,
-          resident_name: 'Judith Cooper',
-          contact_number: '09778562090',
-          account_type: 'Staff',
-          active: true
-        },
-        {
-          unit_number: 105,
-          resident_name: 'Wendy Jones',
-          contact_number: '09778562090',
-          account_type: 'Unit Owner',
-          active: true
-        },
-        {
-          unit_number: 105,
-          resident_name: 'Albert Howard',
-          contact_number: '09778562090',
-          account_type: 'Housemate',
-          active: true
-        },
-        {
-          unit_number: 105,
-          resident_name: 'Priscilla Richards',
-          contact_number: '09778562090',
-          account_type: 'Housemate',
-          active: false
+      data: data.map(dt => {
+        const dropdownData = [
+          {
+            label: 'Resend Invite',
+            icon: <span className="ciergio-employees" />,
+            function: () => {}
+          },
+          {
+            label: 'Cancel Invite',
+            icon: <span className="ciergio-edit" />,
+            function: () => {}
+          }
+        ]
+
+        return {
+          unitNumber: dt.unit_number,
+          name: dt.resident_name,
+          type: dt.account_type,
+          invite: dt.invite,
+          dropdown: (
+            <Can
+              perform="residents:resend::cancel"
+              yes={
+                <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              }
+            />
+          )
         }
-      ]
+      })
     }),
     []
   )
@@ -183,29 +214,55 @@ function AllResidents() {
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
         <h1 className="font-bold text-base px-8 py-4">{`Residents`}</h1>
         <div className="flex items-center">
-          <Button
-            default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
+          <Can
+            perform="residents:print"
+            yes={
+              <Button
+                default
+                icon={<HiOutlinePrinter />}
+                onClick={() => {}}
+                className="mr-4 mt-4"
+              />
+            }
           />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
+          <Can
+            perform="residents:export"
+            yes={
+              <Button
+                default
+                icon={<FiDownload />}
+                onClick={() => {}}
+                className="mr-4 mt-4"
+              />
+            }
           />
-          <Button
-            default
-            leftIcon={<FaPlusCircle />}
-            label="Add Resident"
-            onClick={handleShowModal}
-            className="mr-4 mt-4"
+          <Can
+            perform="residents:create"
+            yes={
+              <Button
+                default
+                leftIcon={<FaPlusCircle />}
+                label="Add Resident"
+                onClick={handleShowModal}
+                className="mr-4 mt-4"
+              />
+            }
           />
         </div>
       </div>
       <Card
-        content={<Table columns={columns} payload={residentsData} pagination />}
+        content={
+          <PrimaryDataTable
+            columns={columns}
+            data={residentsData}
+            loading={false}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageLimit={pageLimit}
+            setPageLimit={setPageLimit}
+            setPageOffset={setPageOffset}
+          />
+        }
       />
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
     </section>
