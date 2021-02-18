@@ -105,6 +105,8 @@ const rules = {
         'notifications:update',
         'notifications:draft',
         'prayerrequests:create',
+        'prayerrequests:export',
+        'prayerrequests:print',
         'prayerrequests:view',
         'donations:view'
       ]
