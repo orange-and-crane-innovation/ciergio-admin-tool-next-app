@@ -210,17 +210,15 @@ function ManageCategories({ complexID }) {
         onOk={handleOkModal}
       >
         {!loading && data && (
-          <div className="w-full flex flex-col p-4">
-            <label htmlFor="category">Category Name</label>
+          <div>
             {categories && (
-              <div className="flex items-center justify-end w-full flex-col mw-full md:flex-row">
-                <FormSelect
-                  onChange={onCategorySelect}
-                  options={categories}
-                  classNames="mb-4"
-                  name="category"
-                />
-              </div>
+              <FormSelect
+                onChange={onCategorySelect}
+                options={categories}
+                label="Category Name"
+                classNames="w-full"
+                name="category"
+              />
             )}
           </div>
         )}
