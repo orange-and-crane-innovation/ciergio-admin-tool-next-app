@@ -57,7 +57,7 @@ const data = {
   ]
 }
 
-function Overview({ complexID, complexName }) {
+function Overview({ complexID, complexName, accountType }) {
   const [selectedOption, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
   const [tableData, setTableData] = useState({
@@ -162,7 +162,7 @@ function Overview({ complexID, complexName }) {
             </div>
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <ManageCategories complexID={complexID} />
+            <ManageCategories complexID={complexID} accountType={accountType} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
@@ -174,5 +174,6 @@ export default Overview
 
 Overview.propTypes = {
   complexID: P.string.isRequired,
-  complexName: P.string.isRequired
+  complexName: P.string.isRequired,
+  accountType: P.string.isRequired
 }

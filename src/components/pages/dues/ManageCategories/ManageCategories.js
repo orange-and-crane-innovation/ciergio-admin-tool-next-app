@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import Table from '@app/components/table'
 import Card from '@app/components/card'
 import Button from '@app/components/button'
@@ -6,64 +6,13 @@ import PageLoader from '@app/components/page-loader'
 import { FaPlusCircle, FaTrashAlt } from 'react-icons/fa'
 import Modal from '@app/components/modal'
 import FormSelect from '@app/components/globals/FormSelect'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import * as Query from './Query'
+import * as Mutation from './Mutation'
 import P from 'prop-types'
-import { BiLeftTopArrowCircle } from 'react-icons/bi'
+import showToast from '@app/utils/toast'
 
 const _ = require('lodash')
-
-const dummyTableData = {
-  data: [
-    {
-      data1: 'Category 1',
-      button: (
-        <Button default className="text-gray-400">
-          <FaTrashAlt size="14" />
-        </Button>
-      )
-    },
-    {
-      data2: 'Category 2',
-      button: (
-        <div className="text-gray-400">
-          <FaTrashAlt size="14" />
-        </div>
-      )
-    },
-    {
-      data3: 'Category 3',
-      button: (
-        <div className="text-gray-400">
-          <FaTrashAlt size="14" />
-        </div>
-      )
-    },
-    {
-      data4: 'Category 4',
-      button: (
-        <div className="text-gray-400">
-          <FaTrashAlt size="14" />
-        </div>
-      )
-    }
-  ]
-}
-
-const dummyOpttions = [
-  {
-    label: 'Option 1',
-    value: '1'
-  },
-  {
-    label: 'Option 2',
-    value: '2'
-  },
-  {
-    label: 'Option 3',
-    value: '3'
-  }
-]
 
 const ColorWithLabel = ({ color, name }) => {
   return (
@@ -80,14 +29,45 @@ const ColorWithLabel = ({ color, name }) => {
   )
 }
 
-function ManageCategories({ complexID }) {
-  const [onLoading, setOnLoading] = useState(false)
-  const [showModal, setShowModal] = useState(false)
+const SelectInput = ({ categories, selectChange }) => {
+  const onCategorySelect = selected => {
+    selectChange(selected.target.value)
+  }
+  return (
+    <FormSelect
+      onChange={onCategorySelect}
+      options={categories}
+      label="Category Name"
+      classNames="w-full"
+      name="category"
+    />
+  )
+}
+
+function ManageCategories({ complexID, accountType }) {
   const [selectedCategory, setSelectedCategory] = useState()
+  const [showModal, setShowModal] = useState(false)
   const [categories, setCategories] = useState()
   const [allowedCategory, setAllowedCategory] = useState({
     data: []
   })
+
+  useEffect(() => {
+    console.log(accountType)
+  }, [])
+
+  // const [deleteBillCategory] = useMutation(Mutation.REMOVE_ALLOWED_CATEGORY, {
+  //   onCompleted: () => {}
+  // })
+
+  const [
+    addBillCategory,
+    {
+      loading: loadingAddCategory,
+      called: calledAddBillCategory,
+      data: dataAddBillCategory
+    }
+  ] = useMutation(Mutation.SAVE_ALLOWED_CATEGORY)
 
   const { loading, data, error } = useQuery(Query.GET_CATEGORIES, {
     variables: {
@@ -98,7 +78,8 @@ function ManageCategories({ complexID }) {
   const {
     loading: loadingAllowedCategory,
     data: dataAllowedCategory,
-    error: errorAllowedCategory
+    error: errorAllowedCategory,
+    refetch: refetchAllowedCategory
   } = useQuery(Query.GET_ALLOWED_CATEGORIES, {
     variables: {
       where: {
@@ -107,6 +88,18 @@ function ManageCategories({ complexID }) {
       }
     }
   })
+
+  useEffect(() => {
+    if (!loadingAddCategory && calledAddBillCategory && dataAddBillCategory) {
+      if (dataAddBillCategory?.addBillCategory?.message === 'success') {
+        showToast('success', 'You have successfully added a bill category')
+        setShowModal(false)
+        refetchAllowedCategory()
+      }
+    }
+  }, [loadingAddCategory, calledAddBillCategory, dataAddBillCategory])
+
+  const onDeleteBill = () => {}
 
   useEffect(() => {
     if (
@@ -128,9 +121,7 @@ function ManageCategories({ complexID }) {
                 />
               ),
               delButton: (
-                <div className="text-gray-400">
-                  <FaTrashAlt size="14" />
-                </div>
+                <FaTrashAlt size="14" id={val._id} onClick={onDeleteBill} />
               )
             })
           })
@@ -141,7 +132,12 @@ function ManageCategories({ complexID }) {
         data: dataTable || []
       })
     }
-  }, [loadingAllowedCategory, dataAllowedCategory, errorAllowedCategory])
+  }, [
+    loadingAllowedCategory,
+    dataAllowedCategory,
+    errorAllowedCategory,
+    refetchAllowedCategory
+  ])
 
   useEffect(() => {
     if (!loading && !error && data) {
@@ -160,12 +156,24 @@ function ManageCategories({ complexID }) {
     setShowModal(false)
   }
 
-  const onCategorySelect = category => {
-    setSelectedCategory(category)
+  const handleOkModal = async () => {
+    try {
+      if (selectedCategory || selectedCategory !== '') {
+        await addBillCategory({
+          variables: {
+            accountType: accountType,
+            accountId: complexID,
+            categoryIds: [selectedCategory]
+          }
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  const handleOkModal = () => {
-    setShowModal(show => !show)
+  const handleSelectChange = category => {
+    setSelectedCategory(category)
   }
 
   return (
@@ -209,19 +217,14 @@ function ManageCategories({ complexID }) {
         onCancel={handleCloseModal}
         onOk={handleOkModal}
       >
-        {!loading && data && (
-          <div>
-            {categories && (
-              <FormSelect
-                onChange={onCategorySelect}
-                options={categories}
-                label="Category Name"
-                classNames="w-full"
-                name="category"
-              />
-            )}
-          </div>
-        )}
+        <div>
+          {
+            <SelectInput
+              categories={categories || []}
+              selectChange={handleSelectChange}
+            />
+          }
+        </div>
       </Modal>
     </>
   )
@@ -229,6 +232,20 @@ function ManageCategories({ complexID }) {
 
 export default ManageCategories
 
+ColorWithLabel.propTypes = {
+  name: P.string.isRequired,
+  color: P.string.isRequired
+}
+
+SelectInput.defaultProps = {
+  categories: []
+}
+SelectInput.propTypes = {
+  categories: P.array.isRequired,
+  selectChange: P.func.isRequired
+}
+
 ManageCategories.propTypes = {
-  complexID: P.string.isRequired
+  complexID: P.string.isRequired,
+  accountType: P.string.isRequired
 }

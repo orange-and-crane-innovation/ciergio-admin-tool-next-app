@@ -51,6 +51,11 @@ function Dues() {
         <Overview
           complexID={account?.complex?._id}
           complexName={account?.complex?.name}
+          accountType={
+            account.accountType !== '' &&
+            account.accountType &&
+            account.accountType.split('_')[0]
+          }
         />
       )}
     </>
