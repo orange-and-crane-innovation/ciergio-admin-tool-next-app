@@ -128,6 +128,8 @@ const PostComponent = () => {
   const [selectedBulk, setSelectedBulk] = useState()
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
 
   const tableRowData = [
     {
@@ -209,6 +211,7 @@ const PostComponent = () => {
 
   useEffect(() => {
     if (!loading && data) {
+      let isMine, checkbox
       const tableData = {
         count: data?.getAllPost.count || 0,
         limit: data?.getAllPost.limit || 0,
@@ -267,8 +270,18 @@ const PostComponent = () => {
               }
             }
 
-            return {
-              checkbox: (
+            if (
+              user._id === item.author._id ||
+              item.author.accountType === accountType ||
+              accountType === 'administrator' ||
+              (item.author.accountType !== 'administrator' &&
+                accountType === 'company_admin') ||
+              (item.author.accountType !== 'administrator' &&
+                item.author.accountType !== 'company_admin' &&
+                accountType === 'complex_admin')
+            ) {
+              isMine = true
+              checkbox = (
                 <Checkbox
                   primary
                   id={`checkbox-${item._id}`}
@@ -276,26 +289,35 @@ const PostComponent = () => {
                   data-id={item._id}
                   onChange={onCheck}
                 />
-              ),
+              )
+            } else {
+              isMine = false
+              checkbox = false
+            }
+
+            return {
+              checkbox: checkbox,
               title: (
                 <div className="flex flex-col">
                   {item.title}
-                  <div className="flex text-info-500 text-sm">
-                    <Link href={`/posts/view/${item._id}`}>
-                      <a className="mr-2 hover:underline">View</a>
-                    </Link>
-                    {` | `}
-                    <Link href={`/posts/edit/${item._id}`}>
-                      <a className="mx-2 hover:underline">Edit</a>
-                    </Link>
-                    {` | `}
-                    <span
-                      className="mx-2 cursor-pointer hover:underline"
-                      onClick={() => handleShowModal('delete', item._id)}
-                    >
-                      Move to Trash
-                    </span>
-                  </div>
+                  {isMine && (
+                    <div className="flex text-info-500 text-sm">
+                      <Link href={`/posts/view/${item._id}`}>
+                        <a className="mr-2 hover:underline">View</a>
+                      </Link>
+                      {` | `}
+                      <Link href={`/posts/edit/${item._id}`}>
+                        <a className="mx-2 hover:underline">Edit</a>
+                      </Link>
+                      {` | `}
+                      <span
+                        className="mx-2 cursor-pointer hover:underline"
+                        onClick={() => handleShowModal('delete', item._id)}
+                      >
+                        Move to Trash
+                      </span>
+                    </div>
+                  )}
                 </div>
               ),
               author: (
