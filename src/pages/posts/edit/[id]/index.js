@@ -1,4 +1,4 @@
-import EditPosts from '@app/components/pages/posts/edit'
+import EditPosts from '@app/components/pages/posts/Edit'
 
 function EditBulletinPage() {
   return <EditPosts />
