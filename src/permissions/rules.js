@@ -184,8 +184,6 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/properties/company',
-        '/properties/complex',
-        '/properties/building',
         '/properties/manage/unit-types',
         '/properties/manage/categories',
         '/staff/all-staff',
