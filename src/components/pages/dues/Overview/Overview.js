@@ -4,7 +4,7 @@ import PageLoader from '@app/components/page-loader'
 import Table from '@app/components/table'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import FormSelect from '@app/components/globals/FormSelect'
-import { Bar } from '@reactchartjs/react-chart.js'
+import { HorizontalBar } from '@reactchartjs/react-chart.js'
 import Tabs from '@app/components/tabs'
 import * as Query from './Query'
 import { useQuery } from '@apollo/client'
@@ -13,57 +13,30 @@ import P from 'prop-types'
 import ManageCategories from '../ManageCategories'
 import styles from './Overview.module.css'
 
-const data = {
-  labels: ['Sent', 'Seen'],
-  datasets: [
-    {
-      label: 'Sent',
-      data: [
-        'Jan',
-        'Feb',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'Aug',
-        'Sept',
-        'Oct',
-        'Nov',
-        'Decs'
-      ],
-      backgroundColor: ['rgb(238,52,12)'],
-      borderWidth: 1
-    },
-    {
-      label: 'Seen',
-      data: [
-        'Jan',
-        'Feb',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'Aug',
-        'Sept',
-        'Oct',
-        'Nov',
-        'Decs'
-      ],
-      backgroundColor: ['rgba(238,52,12,0.2)'],
-      borderWidth: 1
-    }
-  ]
-}
-
 function Overview({ complexID, complexName, accountType }) {
   const [selectedOption, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
   const [tableData, setTableData] = useState({
     data: []
   })
+  const [period, setPeriod] = useState({})
+  const [buildingIds, setBuildingIds] = useState()
   const [optionsData, setOptionsData] = useState(null)
+  const [chartData, setChartData] = useState({
+    labels: ['Monthly Amortization'],
+    datasets: [
+      {
+        label: 'Seen',
+        data: [0],
+        backgroundColor: 'rgb(238,52,12)'
+      },
+      {
+        label: 'Sent',
+        data: [0],
+        backgroundColor: 'rgb(200,52,12)'
+      }
+    ]
+  })
 
   const { loading, data, error, refetch } = useQuery(Query.GET_BUILDINS, {
     variables: {
@@ -73,18 +46,39 @@ function Overview({ complexID, complexName, accountType }) {
     }
   })
 
+  const {
+    loading: loadingBreakdown,
+    data: dataBreakdown,
+    error: errorBreakdown
+  } = useQuery(Query.GET_BUILDINS, {
+    variables: {
+      where: {
+        period: period,
+        buildingIds: buildingIds
+      }
+    }
+  })
+
+  useEffect(() => {
+    if (!loadingBreakdown && dataBreakdown && !errorBreakdown) {
+      console.log(dataBreakdown)
+    }
+  }, [loadingBreakdown, dataBreakdown, errorBreakdown])
+
   useEffect(() => {
     if (!loading && !error && data) {
       const tableArray = []
       const optionsArray = [{ label: 'All', value: null }]
+      const buildingIdsArray = []
       data?.getBuildings?.data.forEach((building, index) => {
-        tableArray.push({ [`building${index}`]: building.name })
+        tableArray.push({ [`${building._id}`]: building.name })
         optionsArray.push({
           label: building.name,
           value: building._id
         })
+        buildingIdsArray.push(building._id)
       })
-
+      setBuildingIds(buildingIdsArray)
       setTableData({
         data: tableArray || []
       })
@@ -97,8 +91,23 @@ function Overview({ complexID, complexName, accountType }) {
     setSelectedOption(val)
   }
 
-  const handleChangeDate = date => {
+  const handlingMonthOrYear = (date, type = 'year') => {
+    if (date instanceof Date) {
+      if (type === 'month') {
+        return new Date(date).getMonth() + 1
+      } else {
+        return new Date(date).getFullYear()
+      }
+    }
+    return new Date()
+  }
+
+  const handleDateChange = date => {
     setDate(date)
+    setPeriod({
+      month: handlingMonthOrYear(date, 'month'),
+      year: handlingMonthOrYear(date)
+    })
   }
 
   return (
@@ -133,7 +142,7 @@ function Overview({ complexID, complexName, accountType }) {
                 <DatePicker
                   rightIcon
                   selected={date}
-                  onChange={handleChangeDate}
+                  onChange={handleDateChange}
                   label={'Billing Period'}
                 />
               </div>
@@ -157,7 +166,7 @@ function Overview({ complexID, complexName, accountType }) {
                     </span>
                   </div>
                 }
-                content={<Bar data={data} />}
+                content={<HorizontalBar data={chartData} />}
               />
             </div>
           </Tabs.TabPanel>

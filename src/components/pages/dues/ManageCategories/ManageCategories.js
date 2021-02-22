@@ -128,6 +128,7 @@ function ManageCategories({ complexID, accountType }) {
 
   const onDeleteBill = e => {
     e.preventDefault()
+
     setDeleteItemId(e.target.name)
     setShowModal(show => !show)
     setDeleteCategoryModal(true)
@@ -140,6 +141,7 @@ function ManageCategories({ complexID, accountType }) {
       dataAllowedCategory
     ) {
       const dataTable = []
+
       _.forEach(
         dataAllowedCategory?.getAllowedBillCategory?.data,
         function (value) {
@@ -153,9 +155,11 @@ function ManageCategories({ complexID, accountType }) {
                 />
               ),
               delButton: (
-                <button id="wew" name="wew" onClick={onDeleteBill}>
-                  <FaTrashAlt size="14" name={val._id} />
-                </button>
+                <Button
+                  name={val._id}
+                  onClick={e => onDeleteBill(e)}
+                  label={<FaTrashAlt size="14" value="ad" name={val._id} />}
+                />
               )
             })
           })
@@ -208,14 +212,13 @@ function ManageCategories({ complexID, accountType }) {
     } else {
       try {
         if (deleteItemId || deleteItemId !== '') {
-          const del = await deleteBillCategory({
+          await deleteBillCategory({
             variables: {
               accountType: accountType,
               accountId: complexID,
               categoryIds: [deleteItemId]
             }
           })
-          console.log(del)
         }
       } catch (error) {
         console.log(error)
