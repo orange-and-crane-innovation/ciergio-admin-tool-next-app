@@ -58,6 +58,10 @@ a {
   @apply font-body text-primary-900 outline-none;
 }
 
+p {
+  margin: 0 0 10px !important;
+}
+
 .icon-spin {
   -webkit-animation: icon-spin 2s infinite linear;
   animation: icon-spin 2s infinite linear;
@@ -130,6 +134,14 @@ a {
   @apply mt-2 border-t-0 !important;
 }
 
+.rdw-colorpicker-modal {
+  height: 65px !important;
+}
+
+.rdw-colorpicker-modal-header {
+  display: none !important;
+}
+
 [data-reach-dialog-content] {
   @apply p-0 !important;
   @apply bg-transparent !important;
@@ -164,6 +176,14 @@ a {
   @apply object-center !important;
   height: 430px !important;
   max-height: 80vh !important;
+}
+
+.image-gallery-icon {
+  @apply pt-6 pb-4 !important;
+  &:hover {
+    @apply bg-black text-white !important;
+    @apply rounded;
+  }
 }
 
 /* END IMAGE SLIDER */
