@@ -74,12 +74,9 @@ const Component = ({
   }
 
   const handleSelectCompanyExcept = data => {
-    const selected = data.map(item => {
-      return item.value
-    })
     setSelectedCompanySpecific(null)
     setSelectedCompanyExcept(data)
-    onSelectCompanyExcept(selected)
+    onSelectCompanyExcept(data)
     onSelectCompanySpecific(null)
   }
 
@@ -88,12 +85,9 @@ const Component = ({
   }
 
   const handleSelectCompanySpecific = data => {
-    const selected = data.map(item => {
-      return item.value
-    })
     setSelectedCompanyExcept(null)
     setSelectedCompanySpecific(data)
-    onSelectCompanySpecific(selected)
+    onSelectCompanySpecific(data)
     onSelectCompanyExcept(null)
   }
 
@@ -102,12 +96,9 @@ const Component = ({
   }
 
   const handleSelectComplexExcept = data => {
-    const selected = data.map(item => {
-      return item.value
-    })
     setSelectedComplexSpecific(null)
     setSelectedComplexExcept(data)
-    onSelectComplexExcept(selected)
+    onSelectComplexExcept(data)
     onSelectComplexSpecific(null)
   }
 
@@ -116,17 +107,9 @@ const Component = ({
   }
 
   const handleSelectComplexSpecific = data => {
-    const selected = data.map(item => {
-      if (item.value) {
-        return item.value
-      } else {
-        return item
-      }
-    })
-
     setSelectedComplexExcept(null)
-    setSelectedComplexSpecific(selected)
-    onSelectComplexSpecific(selected)
+    setSelectedComplexSpecific(data)
+    onSelectComplexSpecific(data)
     onSelectComplexExcept(null)
   }
 
@@ -135,12 +118,9 @@ const Component = ({
   }
 
   const handleSelectBuildingExcept = data => {
-    const selected = data.map(item => {
-      return item.value
-    })
     setSelectedBuildingSpecific(null)
     setSelectedBuildingExcept(data)
-    onSelectBuildingExcept(selected)
+    onSelectBuildingExcept(data)
     onSelectBuildingSpecific(null)
   }
 
@@ -149,12 +129,9 @@ const Component = ({
   }
 
   const handleSelectBuildingSpecific = data => {
-    const selected = data.map(item => {
-      return item.value
-    })
     setSelectedBuildingExcept(null)
     setSelectedBuildingSpecific(data)
-    onSelectBuildingSpecific(selected)
+    onSelectBuildingSpecific(data)
     onSelectBuildingExcept(null)
   }
 
@@ -260,11 +237,13 @@ const Component = ({
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Companies</p>
                     <SelectCompany
+                      name="companyIds"
                       type="active"
                       userType={accountType}
                       onChange={handleSelectCompanyExcept}
                       onClear={handleClearCompanyExcept}
                       selected={selectedCompanyExcept}
+                      isMulti
                     />
                   </div>
                 )}
@@ -311,11 +290,13 @@ const Component = ({
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Companies</p>
                     <SelectCompany
+                      name="companyIds"
                       type="active"
                       userType={accountType}
                       onChange={handleSelectCompanySpecific}
                       onClear={handleClearCompanySpecific}
                       selected={selectedCompanySpecific}
+                      isMulti
                     />
                   </div>
                 )}
