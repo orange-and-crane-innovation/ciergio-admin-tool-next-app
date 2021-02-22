@@ -55,6 +55,7 @@
 
   .ContentLink {
     @apply font-bold hover:underline;
+    @apply cursor-pointer;
   }
 
   .CardContentContainer {

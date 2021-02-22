@@ -3,18 +3,25 @@ import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-// import axios from 'axios'
 
 import FormInput from '@app/components/forms/form-input'
 import FormAddress from '@app/components/forms/form-address'
-// import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
+import SelectCompany from '@app/components/globals/SelectCompany'
 
 const validationSchema = yup.object().shape({
-  name: yup.string().label('Company Name').nullable().trim().required(),
+  name: yup.string().label('Complex Name').nullable().trim().required(),
   location: yup.string().label('Location').nullable().trim().required(),
   email: yup.string().email().label('Email').nullable().trim().required(),
   jobtitle: yup.string().label('Job Title').nullable().trim().required()
+})
+
+const validationSchemaAdmin = yup.object().shape({
+  name: yup.string().label('Complex Name').nullable().trim().required(),
+  location: yup.string().label('Location').nullable().trim().required(),
+  email: yup.string().email().label('Email').nullable().trim().required(),
+  jobtitle: yup.string().label('Job Title').nullable().trim().required(),
+  company: yup.string().label('Company').nullable().trim().required()
 })
 
 const Component = ({
@@ -26,20 +33,22 @@ const Component = ({
   onSave,
   onCancel
 }) => {
-  // const [loadingUploader, setLoadingUploader] = useState(false)
-  // const [imageUrls, setImageUrls] = useState([])
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
 
   const { handleSubmit, control, errors, register, setValue } = useForm({
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(
+      accountType === 'administrator' ? validationSchemaAdmin : validationSchema
+    ),
     defaultValues: {
       name: '',
       location: '',
       address: '',
       email: '',
-      jobtitle: ''
+      jobtitle: '',
+      company: ''
     }
   })
-
   useEffect(() => {
     register({ name: 'address' })
     if (data) {
@@ -135,6 +144,26 @@ const Component = ({
             />
           )}
         />
+
+        {accountType === 'administrator' && (
+          <>
+            <div className="font-semibold mb-2">Company</div>
+            <Controller
+              name="company"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <SelectCompany
+                  name={name}
+                  type="active"
+                  userType={accountType}
+                  onChange={e => onChange(e.value)}
+                  selected={value}
+                  error={errors?.company?.message ?? null}
+                />
+              )}
+            />
+          </>
+        )}
       </div>
     </Modal>
   )

@@ -31,11 +31,11 @@ const Component = ({
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      id: '',
-      logo: '',
-      name: '',
-      location: '',
-      address: ''
+      id: data?._id ?? '',
+      logo: [data?.avatar] ?? [],
+      name: data?.name ?? '',
+      location: data?.address?.formattedAddress ?? '',
+      address: data?.address ?? ''
     }
   })
 
@@ -122,9 +122,9 @@ const Component = ({
       <div className="p-2 text-base font-body leading-7">
         <div className="flex items-center">
           <div>
-            <div className="font-black mb-2">Complex Logo</div>
+            <div className="font-black mb-2">Building Logo</div>
             <div className="text-md mb-2">
-              This is the image that appears on your complex profile. We
+              This is the image that appears on your building profile. We
               recommend using a logo with a transparent background.
             </div>
           </div>
@@ -142,8 +142,8 @@ const Component = ({
           {errors?.logo?.message ?? null}
         </div>
 
-        <div className="font-black mb-2 mt-10">About the Complex</div>
-        <div className="font-semibold mb-2">Name of Complex</div>
+        <div className="font-black mb-2 mt-10">About the Building</div>
+        <div className="font-semibold mb-2">Name of Building</div>
         <Controller
           name="name"
           control={control}
@@ -151,7 +151,7 @@ const Component = ({
             <FormInput
               id={name}
               name={name}
-              placeholder="Enter name of company"
+              placeholder="Enter name of building"
               value={value}
               error={errors?.name?.message ?? null}
               onChange={onChange}
@@ -167,7 +167,7 @@ const Component = ({
             <FormAddress
               id={name}
               name={name}
-              placeholder="Enter complex address"
+              placeholder="Enter building address"
               value={value}
               onChange={onChange}
               error={errors?.location?.message ?? null}

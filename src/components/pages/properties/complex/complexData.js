@@ -20,6 +20,7 @@ import HistoryPage from '../history'
 
 import CreateModal from '../components/building/createModal'
 import EditModal from '../components/building/editModal'
+import DeleteModal from '../components/building/deleteModal'
 import EditModalComplex from '../components/complex/editModal'
 
 import styles from './index.module.css'
@@ -108,18 +109,21 @@ const GET_BUILDINGS_QUERY = gql`
             }
           }
         }
+        residents {
+          count
+        }
       }
     }
   }
 `
 
 const CREATE_BUILDING_MUTATION = gql`
-  mutation createComplex(
-    $data: InputComplex
+  mutation createBuilding(
+    $data: InputBuilding
     $admin: InputAdmin
-    $buildingId: String
+    $complexId: String
   ) {
-    createComplex(data: $data, admin: $admin, buildingId: $companyId) {
+    createBuilding(data: $data, admin: $admin, complexId: $complexId) {
       _id
       processId
       message
@@ -128,8 +132,18 @@ const CREATE_BUILDING_MUTATION = gql`
 `
 
 const UPDATE_BUILDING_MUTATION = gql`
-  mutation updateComplex($data: InputUpdateBuilding, $buildingId: String) {
-    updateComplex(data: $data, buildingId: $buildingId) {
+  mutation updateBuilding($data: InputUpdateBuilding, $buildingId: String) {
+    updateBuilding(data: $data, buildingId: $buildingId) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
+const DELETE_BUILDING_MUTATION = gql`
+  mutation deleteBuilding($data: InputDeleteBuilding) {
+    deleteBuilding(data: $data) {
       _id
       processId
       message
@@ -184,7 +198,7 @@ const ComplexDataComponent = () => {
     variables: {
       where: {
         status: 'active',
-        companyId: router.query.id
+        complexId: router.query.id
       },
       limit: limitPage,
       skip: offsetPage
@@ -210,6 +224,16 @@ const ComplexDataComponent = () => {
       error: errorUpdate
     }
   ] = useMutation(UPDATE_BUILDING_MUTATION)
+
+  const [
+    deleteBuilding,
+    {
+      loading: loadingDelete,
+      called: calledDelete,
+      data: dataDelete,
+      error: errorDelete
+    }
+  ] = useMutation(DELETE_BUILDING_MUTATION)
 
   const [
     updateComplex,
@@ -286,7 +310,7 @@ const ComplexDataComponent = () => {
                 {
                   label: 'More Details',
                   icon: <FaInfoCircle />,
-                  function: () => alert('clicked')
+                  function: () => goToBuildingData(item?._id)
                 }
               ]
 
@@ -299,12 +323,12 @@ const ComplexDataComponent = () => {
                     {item?.name}
                   </span>
                 ),
-                buildingNo: item?.buildings?.count,
+                buildingNo: item?.residents?.count,
                 contact: item?.buildingAdministrators?.data[0] ? (
                   <div className="flex flex-col items-start">
                     <span>{`${item?.buildingAdministrators?.data[0]?.user?.firstName} ${item?.buildingAdministrators?.data[0]?.user?.lastName}`}</span>
                     <span className="text-neutral-500 text-sm">
-                      {item?.complexAdministrators?.data[0]?.user?.email}
+                      {item?.buildingAdministrators?.data[0]?.user?.email}
                     </span>
                   </div>
                 ) : (
@@ -349,6 +373,19 @@ const ComplexDataComponent = () => {
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate])
 
   useEffect(() => {
+    if (!loadingDelete) {
+      if (errorDelete) {
+        errorHandler(errorDelete)
+      }
+      if (calledDelete && dataDelete) {
+        showToast('success', 'You have successfully deleted a building.')
+        onCancel()
+        refetch()
+      }
+    }
+  }, [loadingDelete, calledDelete, dataDelete, errorDelete])
+
+  useEffect(() => {
     if (!loadingUpdateComplex) {
       if (errorUpdateComplex) {
         errorHandler(errorUpdateComplex)
@@ -367,7 +404,7 @@ const ComplexDataComponent = () => {
   ])
 
   const goToBuildingData = id => {
-    router.push(`/properties/building/${id}`)
+    router.push(`/properties/building/${id}/overview`)
   }
 
   const complexDropdownData = [
@@ -449,7 +486,7 @@ const ComplexDataComponent = () => {
     try {
       if (type === 'create') {
         const createData = {
-          companyId: router.query.id,
+          complexId: router.query.id,
           data: {
             name: data?.name,
             address: {
@@ -465,7 +502,7 @@ const ComplexDataComponent = () => {
         await createBuilding({ variables: createData })
       } else if (type === 'edit') {
         const updateData = {
-          complexId: data?.id,
+          buildingId: data?.id,
           data: {
             name: data.name,
             avatar: data?.logo[0],
@@ -476,6 +513,13 @@ const ComplexDataComponent = () => {
           }
         }
         await updateBuilding({ variables: updateData })
+      } else if (type === 'delete') {
+        const deleteData = {
+          data: {
+            buildingId: data?._id
+          }
+        }
+        await deleteBuilding({ variables: deleteData })
       } else if (type === 'edit_complex') {
         const updateData = {
           complexId: router.query.id,
@@ -510,6 +554,11 @@ const ComplexDataComponent = () => {
       }
       case 'edit': {
         setModalTitle('Edit Building')
+        setModalData(data)
+        break
+      }
+      case 'delete': {
+        setModalTitle('Delete Building')
         setModalData(data)
         break
       }
@@ -574,7 +623,7 @@ const ComplexDataComponent = () => {
               tinNo={complexProfile?.tinNumber}
               email={complexProfile?.email}
               contactNo={complexProfile?.contactNumber}
-              approvedBy={`${complexProfile?.complexAdministrators?.data[0]?.user?.firstName} ${complexProfile?.companyAdministrators?.data[0]?.user?.lastName}`}
+              approvedBy={`${complexProfile?.complexAdministrators?.data[0]?.user?.firstName} ${complexProfile?.complexAdministrators?.data[0]?.user?.lastName}`}
               onButtonClick={() =>
                 handleShowModal('edit_complex', complexProfile)
               }
@@ -603,6 +652,15 @@ const ComplexDataComponent = () => {
             data={modalData}
             isShown={showModal}
             onSave={e => onSubmit(modalType, e)}
+            onCancel={onCancel}
+          />
+        ) : modalType === 'delete' ? (
+          <DeleteModal
+            processType={modalType}
+            title={modalTitle}
+            data={modalData}
+            isShown={showModal}
+            onSave={() => onSubmit(modalType, modalData)}
             onCancel={onCancel}
           />
         ) : modalType === 'edit_complex' ? (
