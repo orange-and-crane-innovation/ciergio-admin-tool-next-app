@@ -6,6 +6,11 @@ const duration = require('dayjs/plugin/duration')
 dayjs.extend(LocalizedFormat)
 dayjs.extend(duration)
 
+export const toFriendlyISO = data => {
+  const dateObj = new Date(data)
+  return dateObj.toISOString()
+}
+
 export const toFriendlyDateTime = data => {
   let convertedDate = '-'
 
