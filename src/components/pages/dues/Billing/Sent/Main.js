@@ -158,7 +158,6 @@ function Sent({ month, year }) {
 
   useEffect(() => {
     if (!loadingUpdateDues && calledUpdateDues && dataUpdateDues) {
-      console.log(dataUpdateDues)
       if (dataUpdateDues?.updateDues?.message === 'success') {
         setShowModal(false)
 
