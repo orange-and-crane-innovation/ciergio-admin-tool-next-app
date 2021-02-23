@@ -34,14 +34,14 @@ const Component = ({
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      id: '',
-      logo: '',
-      name: '',
-      location: '',
-      address: '',
-      email: '',
-      contact: '',
-      tin: ''
+      id: data?._id ?? '',
+      logo: [data?.avatar] ?? [],
+      name: data?.name ?? '',
+      location: data?.address?.formattedAddress ?? '',
+      address: data?.address ?? '',
+      email: data?.email ?? '',
+      contact: data?.contactNumber ?? '',
+      tin: data?.tinNumber ?? ''
     }
   })
 

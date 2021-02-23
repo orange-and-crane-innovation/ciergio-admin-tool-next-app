@@ -3,15 +3,13 @@ import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-// import axios from 'axios'
 
 import FormInput from '@app/components/forms/form-input'
 import FormAddress from '@app/components/forms/form-address'
-// import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
 
 const validationSchema = yup.object().shape({
-  name: yup.string().label('Company Name').nullable().trim().required(),
+  name: yup.string().label('Building Name').nullable().trim().required(),
   location: yup.string().label('Location').nullable().trim().required(),
   email: yup.string().email().label('Email').nullable().trim().required(),
   jobtitle: yup.string().label('Job Title').nullable().trim().required()
@@ -26,9 +24,6 @@ const Component = ({
   onSave,
   onCancel
 }) => {
-  // const [loadingUploader, setLoadingUploader] = useState(false)
-  // const [imageUrls, setImageUrls] = useState([])
-
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -61,13 +56,13 @@ const Component = ({
       title={title}
       visible={isShown}
       onClose={onCancel}
-      okText={processType === 'create' ? 'Create Complex' : 'Save'}
+      okText={processType === 'create' ? 'Create Building' : 'Save'}
       onOk={handleSubmit(onSave)}
       onCancel={onCancel}
     >
       <div className="p-2 text-base font-body leading-7">
-        <div className="font-black mb-2">About the Complex</div>
-        <div className="font-semibold mb-2">Name of Complex</div>
+        <div className="font-black mb-2">About the Building</div>
+        <div className="font-semibold mb-2">Name of Building</div>
         <Controller
           name="name"
           control={control}
@@ -75,7 +70,7 @@ const Component = ({
             <FormInput
               id={name}
               name={name}
-              placeholder="Enter name of complex"
+              placeholder="Enter name of building"
               value={value}
               error={errors?.name?.message ?? null}
               onChange={onChange}
@@ -91,7 +86,7 @@ const Component = ({
             <FormAddress
               id={name}
               name={name}
-              placeholder="Enter complex address"
+              placeholder="Enter building address"
               value={value}
               onChange={onChange}
               error={errors?.location?.message ?? null}
@@ -100,8 +95,8 @@ const Component = ({
           )}
         />
 
-        <div className="font-black mb-2 mt-10">Client Details</div>
-        <div className="font-semibold mb-2">Complex Head</div>
+        <div className="font-black mb-2 mt-10">Point of Contact</div>
+        <div className="font-semibold mb-2">Property Manager</div>
         <div className="text-sm mb-2">
           Ciergio invite will be sent to this email
         </div>
@@ -120,7 +115,7 @@ const Component = ({
           )}
         />
 
-        <div className="font-semibold mb-2">Job Title of Complex Head</div>
+        <div className="font-semibold mb-2">Job Title of Point of Contact</div>
         <Controller
           name="jobtitle"
           control={control}

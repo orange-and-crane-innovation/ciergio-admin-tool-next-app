@@ -11,6 +11,8 @@ import FormInput from '@app/components/forms/form-input'
 import RadioBox from '@app/components/forms/form-radio'
 import Modal from '@app/components/modal'
 
+import { DATE } from '@app/utils'
+
 import 'react-datetime/css/react-datetime.css'
 
 const Component = ({
@@ -26,6 +28,7 @@ const Component = ({
   const [selectedPublishType, setSelectedPublishType] = useState(
     valuePublishType
   )
+  const [errorSelectedDate, setErrorSelectedDate] = useState()
 
   useEffect(() => {
     setSelectedPublishType(valuePublishType)
@@ -42,13 +45,28 @@ const Component = ({
     onSelectDateTime(e)
   }
 
+  useEffect(() => {
+    if (selectedDate) {
+      const isIn = moment(DATE.toFriendlyISO(selectedDate)).diff(
+        new Date(),
+        'minutes'
+      )
+
+      if (isIn < 5) {
+        setErrorSelectedDate('Requires at least 5 minutes')
+      } else {
+        setErrorSelectedDate(null)
+      }
+    }
+  }, [selectedDate])
+
   return (
     <Modal
       title="When do you want to publish this?"
       visible={isShown}
       onClose={onCancel}
       onCancel={onCancel}
-      onOk={onSave}
+      onOk={!errorSelectedDate ? onSave : null}
       okText="Save Publish Schedule"
     >
       <div className="text-base leading-7">
@@ -95,7 +113,7 @@ const Component = ({
                     You can create the post now then publish it at a later time.
                   </p>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <Datetime
                     renderInput={(props, openCalendar) => (
                       <>
@@ -128,6 +146,7 @@ const Component = ({
                             {...props}
                             name="time"
                             value={moment(selectedDate).format('h:mm A')}
+                            error={errorSelectedDate}
                             readOnly
                           />
                           <FiClock

@@ -16,9 +16,10 @@ import PageLoader from '@app/components/page-loader'
 
 import showToast from '@app/utils/toast'
 
-import CreateModal from '../components/company/createModal'
-import EditModal from '../components/company/editModal'
-import DeleteModal from '../components/company/deleteModal'
+import CreateModal from '../components/complex/createModal'
+import EditModal from '../components/complex/editModal'
+import DeleteModal from '../components/complex/deleteModal'
+import EditModalCompany from '../components/company/editModal'
 
 import styles from './index.module.css'
 
@@ -62,9 +63,68 @@ const GET_COMPANIES_QUERY = gql`
   }
 `
 
-const CREATE_COMPANY_MUTATION = gql`
-  mutation createCompany($data: InputCompany, $admin: InputAdmin) {
-    createCompany(data: $data, admin: $admin) {
+const GET_COMPLEXES_QUERY = gql`
+  query getComplexes($where: GetComplexesParams, $limit: Int, $skip: Int) {
+    getComplexes(where: $where, limit: $limit, skip: $skip) {
+      count
+      limit
+      skip
+      data {
+        _id
+        name
+        avatar
+        address {
+          formattedAddress
+          city
+        }
+        company {
+          name
+        }
+        complexAdministrators(limit: 1) {
+          data {
+            user {
+              _id
+              firstName
+              lastName
+              email
+            }
+          }
+        }
+        buildings {
+          count
+        }
+      }
+    }
+  }
+`
+
+const CREATE_COMPLEX_MUTATION = gql`
+  mutation createComplex(
+    $data: InputComplex
+    $admin: InputAdmin
+    $companyId: String
+  ) {
+    createComplex(data: $data, admin: $admin, companyId: $companyId) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
+const UPDATE_COMPLEX_MUTATION = gql`
+  mutation updateComplex($data: InputUpdateComplex, $complexId: String) {
+    updateComplex(data: $data, complexId: $complexId) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
+const DELETE_COMPLEX_MUTATION = gql`
+  mutation deleteComplex($data: InputDeleteComplex) {
+    deleteComplex(data: $data) {
       _id
       processId
       message
@@ -82,17 +142,7 @@ const UPDATE_COMPANY_MUTATION = gql`
   }
 `
 
-const DELETE_COMPANY_MUTATION = gql`
-  mutation deleteCompany($data: InputDeleteCompany) {
-    deleteCompany(data: $data) {
-      _id
-      processId
-      message
-    }
-  }
-`
-
-const CompanyDataComponent = () => {
+const ComplexDataComponent = () => {
   const router = useRouter()
   const [companies, setCompanies] = useState()
   const [companyProfile, setCompanyProfile] = useState()
@@ -105,26 +155,26 @@ const CompanyDataComponent = () => {
   const [modalData, setModalData] = useState()
   const profile = JSON.parse(localStorage.getItem('profile'))
 
-  const goToCompanyData = id => {
-    router.push(`/properties/company/${id}/overview`)
+  const goToComplexData = id => {
+    router.push(`/properties/complex/${id}/overview`)
   }
 
   const companyDropdownData = [
     {
       label: 'Edit Company',
       icon: <FiEdit2 />,
-      function: () => handleShowModal('edit', companyProfile)
+      function: () => handleShowModal('edit_company', companyProfile)
     }
   ]
 
   const tableRowNames = [
     {
-      name: 'Company Name',
+      name: 'Complex Name',
       width: '30%'
     },
     {
-      name: '# of Complex',
-      width: '15%'
+      name: 'Company Name',
+      width: '30%'
     },
     {
       name: '# of Buildings',
@@ -135,16 +185,12 @@ const CompanyDataComponent = () => {
       width: '20%'
     },
     {
-      name: 'Subscription',
-      width: '20%'
-    },
-    {
       name: '',
       width: ''
     }
   ]
 
-  const { loading, data, error, refetch } = useQuery(GET_COMPANIES_QUERY, {
+  const { loading, data, error, refetch } = useQuery(GET_COMPLEXES_QUERY, {
     enabled: false,
     variables: {
       where: {
@@ -172,34 +218,44 @@ const CompanyDataComponent = () => {
   })
 
   const [
-    createCompany,
+    createComplex,
     {
       loading: loadingCreate,
       called: calledCreate,
       data: dataCreate,
       error: errorCreate
     }
-  ] = useMutation(CREATE_COMPANY_MUTATION)
+  ] = useMutation(CREATE_COMPLEX_MUTATION)
 
   const [
-    updateCompany,
+    updateComplex,
     {
       loading: loadingUpdate,
       called: calledUpdate,
       data: dataUpdate,
       error: errorUpdate
     }
-  ] = useMutation(UPDATE_COMPANY_MUTATION)
+  ] = useMutation(UPDATE_COMPLEX_MUTATION)
 
   const [
-    deleteCompany,
+    deleteComplex,
     {
       loading: loadingDelete,
       called: calledDelete,
       data: dataDelete,
       error: errorDelete
     }
-  ] = useMutation(DELETE_COMPANY_MUTATION)
+  ] = useMutation(DELETE_COMPLEX_MUTATION)
+
+  const [
+    updateCompany,
+    {
+      loading: loadingUpdateCompany,
+      called: calledUpdateCompany,
+      data: dataUpdateCompany,
+      error: errorUpdateCompany
+    }
+  ] = useMutation(UPDATE_COMPANY_MUTATION)
 
   useEffect(() => {
     refetch()
@@ -212,26 +268,26 @@ const CompanyDataComponent = () => {
         errorHandler(error)
       } else if (data) {
         const tableData = {
-          count: data?.getCompanies.count || 0,
-          limit: data?.getCompanies.limit || 0,
-          offset: data?.getCompanies.skip || 0,
+          count: data?.getComplexes.count || 0,
+          limit: data?.getComplexes.limit || 0,
+          offset: data?.getComplexes.skip || 0,
           data:
-            data?.getCompanies?.data.map(item => {
+            data?.getComplexes?.data.map(item => {
               const dropdownData = [
                 {
-                  label: 'Edit Company',
+                  label: 'Edit Complex',
                   icon: <FiEdit2 />,
                   function: () => handleShowModal('edit', item)
                 },
                 {
-                  label: 'Delete Company',
+                  label: 'Delete Complex',
                   icon: <FiTrash2 />,
                   function: () => handleShowModal('delete', item)
                 },
                 {
                   label: 'More Details',
                   icon: <FaInfoCircle />,
-                  function: () => goToCompanyData(item?._id)
+                  function: () => goToComplexData(item?._id)
                 }
               ]
 
@@ -239,24 +295,23 @@ const CompanyDataComponent = () => {
                 name: (
                   <span
                     className={styles.ContentLink}
-                    onClick={() => goToCompanyData(item?._id)}
+                    onClick={() => goToComplexData(item?._id)}
                   >
                     {item?.name}
                   </span>
                 ),
-                complexNo: `${item?.complexes?.count} of ${item?.complexLimit}`,
-                buildingNo: `${item?.buildings?.count} of ${item?.buildingLimit}`,
-                contact: item?.companyAdministrators?.data[0] ? (
+                company: item?.company?.name,
+                buildingNo: item?.buildings?.count,
+                contact: item?.complexAdministrators?.data[0] ? (
                   <div className="flex flex-col items-start">
-                    <span>{`${item?.companyAdministrators?.data[0]?.user?.firstName} ${item?.companyAdministrators?.data[0]?.user?.lastName}`}</span>
+                    <span>{`${item?.complexAdministrators?.data[0]?.user?.firstName} ${item?.complexAdministrators?.data[0]?.user?.lastName}`}</span>
                     <span className="text-neutral-500 text-sm">
-                      {item?.companyAdministrators?.data[0]?.user?.email}
+                      {item?.complexAdministrators?.data[0]?.user?.email}
                     </span>
                   </div>
                 ) : (
                   'Not available'
                 ),
-                subscription: 'Not yet available',
                 button: (
                   <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                 )
@@ -285,7 +340,7 @@ const CompanyDataComponent = () => {
         errorHandler(errorCreate)
       }
       if (calledCreate && dataCreate) {
-        showToast('success', 'You have successfully created a company.')
+        showToast('success', 'You have successfully created a complex.')
         onCancel()
         refetch()
       }
@@ -298,7 +353,7 @@ const CompanyDataComponent = () => {
         errorHandler(errorCreate)
       }
       if (calledUpdate && dataUpdate) {
-        showToast('success', 'You have successfully updated a company.')
+        showToast('success', 'You have successfully updated a complex.')
         onCancel()
         refetch()
       }
@@ -311,12 +366,30 @@ const CompanyDataComponent = () => {
         errorHandler(errorDelete)
       }
       if (calledDelete && dataDelete) {
-        showToast('success', 'You have successfully deleted a company.')
+        showToast('success', 'You have successfully deleted a complex.')
         onCancel()
         refetch()
       }
     }
   }, [loadingDelete, calledDelete, dataDelete, errorDelete])
+
+  useEffect(() => {
+    if (!loadingUpdateCompany) {
+      if (errorUpdateCompany) {
+        errorHandler(errorUpdateCompany)
+      }
+      if (calledUpdateCompany && dataUpdateCompany) {
+        showToast('success', 'You have successfully updated a company.')
+        onCancel()
+        refetchProfile()
+      }
+    }
+  }, [
+    loadingUpdateCompany,
+    calledUpdateCompany,
+    dataUpdateCompany,
+    errorUpdateCompany
+  ])
 
   const errorHandler = data => {
     const errors = JSON.parse(JSON.stringify(data))
@@ -351,26 +424,43 @@ const CompanyDataComponent = () => {
     try {
       if (type === 'create') {
         const createData = {
+          companyId: router?.query?.id ?? data?.company?.value,
           data: {
             name: data?.name,
-            avatar: data?.logo[0]?.url,
             address: {
               formattedAddress: data?.address?.formattedAddress,
               city: data?.address?.city
-            },
-            complexLimit: data?.complexNo,
-            buildingLimit: data?.buildingNo,
-            domain: data?.domain
+            }
           },
           admin: {
             email: data?.email,
             jobTitle: data?.jobtitle
           }
         }
-        await createCompany({ variables: createData })
+        await createComplex({ variables: createData })
       } else if (type === 'edit') {
         const updateData = {
-          companyId: data?.id,
+          complexId: data?.id,
+          data: {
+            name: data.name,
+            avatar: data?.logo[0],
+            address: {
+              formattedAddress: data?.address?.formattedAddress,
+              city: data?.address?.city
+            }
+          }
+        }
+        await updateComplex({ variables: updateData })
+      } else if (type === 'delete') {
+        const deleteData = {
+          data: {
+            complexId: data?._id
+          }
+        }
+        await deleteComplex({ variables: deleteData })
+      } else if (type === 'edit_company') {
+        const updateData = {
+          companyId: router.query.id,
           data: {
             name: data.name,
             avatar: data?.logo[0],
@@ -379,18 +469,11 @@ const CompanyDataComponent = () => {
               city: data?.address?.city
             },
             email: data?.email,
-            contactNumber: data?.contact !== '' ? data?.contact : null,
-            tinNumber: data?.tin !== '' ? data?.tin : null
+            contactNumber: data?.contact,
+            tinNumber: data?.tin
           }
         }
         await updateCompany({ variables: updateData })
-      } else if (type === 'delete') {
-        const deleteData = {
-          data: {
-            companyId: data?._id
-          }
-        }
-        await deleteCompany({ variables: deleteData })
       }
     } catch (e) {
       console.log(e)
@@ -406,17 +489,17 @@ const CompanyDataComponent = () => {
 
     switch (type) {
       case 'create': {
-        setModalTitle('Add Company')
+        setModalTitle('Add Complex')
         setModalData(null)
         break
       }
       case 'edit': {
-        setModalTitle('Edit Company')
+        setModalTitle('Edit Complex')
         setModalData(data)
         break
       }
       case 'delete': {
-        setModalTitle('Delete Company')
+        setModalTitle('Delete Complex')
         setModalData(data)
         break
       }
@@ -433,7 +516,7 @@ const CompanyDataComponent = () => {
           </div>
           <div className={styles.PageHeaderTitle}>
             <h1 className={styles.PageHeader}>{companyProfile?.name ?? ''}</h1>
-            <h2 className={styles.PageHeaderSmall}>Company</h2>
+            <h2 className={styles.PageHeaderSmall}>Complex</h2>
           </div>
         </div>
 
@@ -444,7 +527,7 @@ const CompanyDataComponent = () => {
 
       <Tabs defaultTab="1">
         <Tabs.TabLabels>
-          <Tabs.TabLabel id="1">Companies</Tabs.TabLabel>
+          <Tabs.TabLabel id="1">Complexes</Tabs.TabLabel>
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
@@ -452,11 +535,11 @@ const CompanyDataComponent = () => {
               noPadding
               header={
                 <div className={styles.ContentFlex}>
-                  <span className={styles.CardHeader}>Companies</span>
+                  <span className={styles.CardHeader}>Complexes</span>
                   <Button
                     default
                     leftIcon={<FaPlusCircle />}
-                    label="Add Company"
+                    label="Add Complex"
                     onClick={() => handleShowModal('create')}
                   />
                 </div>
@@ -507,6 +590,15 @@ const CompanyDataComponent = () => {
                   onSave={() => onSubmit(modalType, modalData)}
                   onCancel={onCancel}
                 />
+              ) : modalType === 'edit_company' ? (
+                <EditModalCompany
+                  processType={modalType}
+                  title={modalTitle}
+                  data={modalData}
+                  isShown={showModal}
+                  onSave={e => onSubmit(modalType, e)}
+                  onCancel={onCancel}
+                />
               ) : null)}
           </Tabs.TabPanel>
         </Tabs.TabPanels>
@@ -515,4 +607,4 @@ const CompanyDataComponent = () => {
   )
 }
 
-export default CompanyDataComponent
+export default ComplexDataComponent

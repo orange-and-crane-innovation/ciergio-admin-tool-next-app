@@ -14,7 +14,7 @@ const SearchComponent = ({ images }) => {
         disabled={disabled}
         onClick={onClick}
       >
-        <ImCircleLeft className="text-4xl" />
+        <span className="text-6xl">&#10094;</span>
       </button>
     )
   }
@@ -26,7 +26,7 @@ const SearchComponent = ({ images }) => {
         disabled={disabled}
         onClick={onClick}
       >
-        <ImCircleRight className="text-4xl" />
+        <span className="text-6xl">&#10095;</span>
       </button>
     )
   }

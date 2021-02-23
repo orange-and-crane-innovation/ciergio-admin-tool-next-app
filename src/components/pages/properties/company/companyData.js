@@ -20,6 +20,7 @@ import SettingsPage from '../settings'
 
 import CreateModal from '../components/complex/createModal'
 import EditModal from '../components/complex/editModal'
+import DeleteModal from '../components/complex/deleteModal'
 import EditModalCompany from '../components/company/editModal'
 
 import styles from './index.module.css'
@@ -141,6 +142,16 @@ const CREATE_COMPLEX_MUTATION = gql`
 const UPDATE_COMPLEX_MUTATION = gql`
   mutation updateComplex($data: InputUpdateComplex, $complexId: String) {
     updateComplex(data: $data, complexId: $complexId) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
+const DELETE_COMPLEX_MUTATION = gql`
+  mutation deleteComplex($data: InputDeleteComplex) {
+    deleteComplex(data: $data) {
       _id
       processId
       message
@@ -273,6 +284,16 @@ const CompanyDataComponent = () => {
   ] = useMutation(UPDATE_COMPLEX_MUTATION)
 
   const [
+    deleteComplex,
+    {
+      loading: loadingDelete,
+      called: calledDelete,
+      data: dataDelete,
+      error: errorDelete
+    }
+  ] = useMutation(DELETE_COMPLEX_MUTATION)
+
+  const [
     updateCompany,
     {
       loading: loadingUpdateCompany,
@@ -347,7 +368,7 @@ const CompanyDataComponent = () => {
                 {
                   label: 'More Details',
                   icon: <FaInfoCircle />,
-                  function: () => alert('clicked')
+                  function: () => goToComplexData(item?._id)
                 }
               ]
 
@@ -408,6 +429,19 @@ const CompanyDataComponent = () => {
       }
     }
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate])
+
+  useEffect(() => {
+    if (!loadingDelete) {
+      if (errorDelete) {
+        errorHandler(errorDelete)
+      }
+      if (calledDelete && dataDelete) {
+        showToast('success', 'You have successfully deleted a complex.')
+        onCancel()
+        refetch()
+      }
+    }
+  }, [loadingDelete, calledDelete, dataDelete, errorDelete])
 
   useEffect(() => {
     if (!loadingUpdateCompany) {
@@ -487,6 +521,13 @@ const CompanyDataComponent = () => {
           }
         }
         await updateComplex({ variables: updateData })
+      } else if (type === 'delete') {
+        const deleteData = {
+          data: {
+            complexId: data?._id
+          }
+        }
+        await deleteComplex({ variables: deleteData })
       } else if (type === 'edit_company') {
         const updateData = {
           companyId: router.query.id,
@@ -524,6 +565,11 @@ const CompanyDataComponent = () => {
       }
       case 'edit': {
         setModalTitle('Edit Complex')
+        setModalData(data)
+        break
+      }
+      case 'delete': {
+        setModalTitle('Delete Complex')
         setModalData(data)
         break
       }
@@ -623,6 +669,15 @@ const CompanyDataComponent = () => {
             data={modalData}
             isShown={showModal}
             onSave={e => onSubmit(modalType, e)}
+            onCancel={onCancel}
+          />
+        ) : modalType === 'delete' ? (
+          <DeleteModal
+            processType={modalType}
+            title={modalTitle}
+            data={modalData}
+            isShown={showModal}
+            onSave={() => onSubmit(modalType, modalData)}
             onCancel={onCancel}
           />
         ) : modalType === 'edit_company' ? (
