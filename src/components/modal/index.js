@@ -31,61 +31,60 @@ function Component({
 
   return (
     <>
-      {transitions.map(
-        ({ item, key, props: styles }) =>
-          item && (
-            <AnimatedDialogOverlay
-              key={key}
-              style={{ zIndex: 100, opacity: 1, ...styles }}
+      {transitions.map(({ item, key, props: styles }) =>
+        item ? (
+          <AnimatedDialogOverlay
+            key={key}
+            style={{ zIndex: 100, opacity: 1, ...styles }}
+          >
+            <AnimatedDialogContent
+              aria-label="modal"
+              style={{
+                transform: styles.y.interpolate(
+                  value => `translate3d(0px, ${value}px, 0px)`
+                )
+              }}
             >
-              <AnimatedDialogContent
-                aria-label="modal"
+              <div
+                className="modal"
                 style={{
-                  transform: styles.y.interpolate(
-                    value => `translate3d(0px, ${value}px, 0px)`
-                  )
+                  width
                 }}
               >
-                <div
-                  className="modal"
-                  style={{
-                    width
-                  }}
-                >
-                  {title ? (
-                    <div className="modal-header">
-                      <div className="modal-title">
-                        <span>{title}</span>
-                      </div>
-                      <div className="modal-close-icon">
-                        <span
-                          className="ciergio-close p-4 hover:cursor-pointer relative top-0"
-                          onClick={onClose}
-                          onKeyDown={onClose}
-                          role="button"
-                          tabIndex={0}
-                        />
-                      </div>
+                {title ? (
+                  <div className="modal-header">
+                    <div className="modal-title">
+                      <span>{title}</span>
                     </div>
-                  ) : null}
-                  <div className="modal-content">
-                    {loading ? <Spinner /> : children}
-                  </div>
-                  {footer !== null ? (
-                    <div className="modal-footer">
-                      <Button default label={cancelText} onClick={onCancel} />
-                      <Button
-                        primary
-                        label={okText}
-                        onClick={onOk}
-                        {...okButtonProps}
+                    <div className="modal-close-icon">
+                      <span
+                        className="ciergio-close p-4 hover:cursor-pointer relative top-0"
+                        onClick={onClose}
+                        onKeyDown={onClose}
+                        role="button"
+                        tabIndex={0}
                       />
                     </div>
-                  ) : null}
+                  </div>
+                ) : null}
+                <div className="modal-content">
+                  {loading ? <Spinner /> : children}
                 </div>
-              </AnimatedDialogContent>
-            </AnimatedDialogOverlay>
-          )
+                {footer !== null ? (
+                  <div className="modal-footer">
+                    <Button default label={cancelText} onClick={onCancel} />
+                    <Button
+                      primary
+                      label={okText}
+                      onClick={onOk}
+                      {...okButtonProps}
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </AnimatedDialogContent>
+          </AnimatedDialogOverlay>
+        ) : null
       )}
     </>
   )

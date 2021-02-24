@@ -173,17 +173,17 @@ select:active {
 }
 
 /* MODAL */
-.modal-overlay {
+/* .modal-overlay {
   @apply flex justify-center items-center;
   @apply fixed z-50 overflow-auto;
   @apply bg-opacity-50 bg-gray-400 w-screen h-full top-0 left-0;
-}
+} */
 
 .modal {
   @apply bg-white w-11/12 flex-col flex rounded mb-8 lg:w-128;
-  @apply absolute;
-  @apply animate-drop;
-  top: -60%;
+  /* @apply absolute;
+  @apply animate-drop; */
+  /* top: -60%; */
 }
 
 .modal .modal-header {
