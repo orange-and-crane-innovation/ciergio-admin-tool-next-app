@@ -22,6 +22,13 @@ export const getConversations = gql`
             __typename
           }
           status
+          accountType
+          active
+          unit {
+            _id
+            name
+            __typename
+          }
           __typename
         }
         messages {

@@ -37,7 +37,7 @@ const Layout = ({ children }) => {
         data-background={'light'}
         data-navbar={'light'}
         data-left-sidebar={'light'}
-        className={`font-sans antialiased text-sm disable-scrollbars default-mode`}
+        className={`font-sans antialiased text-sm disable-scrollbars default-mode h-full`}
       >
         <div className="wrapper">
           <LeftSidebar

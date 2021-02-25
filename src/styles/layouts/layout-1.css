@@ -23,7 +23,7 @@
   [data-layout='layout-1'] {
     width: 100%;
     .wrapper {
-      @apply relative flex flex-row items-stretch;
+      @apply relative h-full flex flex-row items-stretch;
       .left-sidebar {
         @apply w-full;
         min-width: calc(theme('spacing.1') * 16);

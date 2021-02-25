@@ -1,70 +1,74 @@
 .messagesContainer {
-	@apply grid grid-cols-3 gap-0 -m-4;
+  @apply grid grid-cols-3 gap-0 -m-4;
 
-	.messagesListContainer {
-		@apply col-span-1 border-r border-b border-neutral-300 bg-white shadow-md;
-	}
+  .messagesListContainer {
+    @apply col-span-1 border-r border-b border-neutral-300 bg-white shadow-md;
+  }
 
-	.messagesListHeader {
-		@apply flex justify-between items-center px-4 py-2 border-b border-neutral-300 h-16 box-border;
-	}
+  .messagesListHeader {
+    @apply flex justify-between items-center px-4 py-2 border-b border-neutral-300 h-16 box-border;
+  }
 
-	.messagesButton {
-		@apply border bg-white w-10 h-10 flex items-center justify-center rounded mr-2
-	}
+  .messagesButton {
+    @apply border bg-white w-10 h-10 flex items-center justify-center rounded mr-2;
+  }
 
-	.pendingToggleContainer {
-		@apply w-full flex items-center justify-between p-4 border-b border-neutral-300;
+  .pendingToggleContainer {
+    @apply w-full flex items-center justify-between p-4 border-b border-neutral-300;
 
-		span {
-			font-size: 14px;
-		}
-	}
+    span {
+      font-size: 14px;
+    }
+  }
 
-	.messagesListItems {
-		@apply overflow-y-scroll;
-	}
+  .messagesListItems {
+    @apply overflow-y-scroll;
+  }
 
-	.messagePreviewItem {
-		height: 80px;
-		@apply flex p-4 border-b border-neutral-300 relative;
-	}
+  .messagePreviewItem {
+    height: 80px;
+    @apply flex p-4 border-b border-neutral-300 relative;
+  }
 
-	.messagesBoxContainer {
-		@apply col-span-2 border-b border-neutral-300 flex flex-col;
-	}
+  .messagePreviewItem:hover {
+	background-color: #feece4;
+	border-color: #feece4;
+  }
 
-	.messageBoxHeader {
-		@apply p-4 box-border shadow-sm bg-white h-16;
-		@apply flex items-center justify-between;
-	}
+  .messagesBoxContainer {
+    @apply col-span-2 border-b border-neutral-300 flex flex-col;
+  }
 
-	.messageBoxList {
-		@apply overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5;
-	}
+  .messageBoxHeader {
+    @apply p-4 box-border shadow-sm bg-white h-16;
+    @apply flex items-center justify-between;
+  }
 
-	.messageBoxInput {
-		@apply bg-white border border-neutral-300 h-14 box-border;
-		@apply grid grid-cols-12;
-	}
-	
+  .messageBoxList {
+    @apply overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5;
+  }
+
+  .messageBoxInput {
+    @apply bg-white border border-neutral-300 h-14 box-border;
+    @apply grid grid-cols-12;
+  }
 }
 
 .newMessageInput {
-	z-index: 1000;
-	@apply pt-8 mb-4 px-4 w-full relative;
+  z-index: 1000;
+  @apply pt-8 mb-4 px-4 w-full relative;
 }
 
 .newMessageAccountsList {
-	height: 550px;
-	@apply overflow-y-scroll;
+  height: 550px;
+  @apply overflow-y-scroll;
 }
 
 .newMessageUserItem {
-	@apply flex items-center p-4 box-border border-b border-neutral-300 cursor-pointer;
+  @apply flex items-center p-4 box-border border-b border-neutral-300 cursor-pointer;
 }
 
 .newMessageUserItem:hover {
-	background-color: #FEECE4;
-	border-color: #FEECE4;
+  background-color: #feece4;
+  border-color: #feece4;
 }

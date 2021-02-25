@@ -34,7 +34,7 @@ export default function Main() {
     {
       variables: {
         where: {
-          participants: [profile?._id],
+          // participants: [profile?._id],
           includeEmptyConversation: false,
           pending: showPendingMessages,
           type: convoType
@@ -73,10 +73,13 @@ export default function Main() {
   const handleMessagePreviewClick = str => setMessageTitle(str)
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
   const handleAccountClick = userid => {
-    console.log({ userid })
+    console.log('participants', userid, profile._id)
     createNewMessage({
       variables: {
-        data: {}
+        data: {
+          type: convoType,
+          participants: [userid, profile?._id]
+        }
       }
     })
     handleNewMessageModal()
