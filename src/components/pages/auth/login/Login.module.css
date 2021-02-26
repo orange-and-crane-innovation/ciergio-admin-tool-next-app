@@ -14,13 +14,19 @@
     }
 
     & .LoginCard {
-      @apply p-6 border rounded bg-white w-full mb-8;
+      @apply p-6 border rounded bg-white w-full mb-4;
 
       & .PlatformIconContainer {
-        @apply flex flex-1 flex-col justify-center items-center mb-8;
+        @apply flex flex-1 flex-col justify-center items-center mb-4;
 
-        & .PlatformIcon {
-          @apply object-contain h-16 w-16;
+        & .PlatformSubContainer {
+          @apply p-2 h-16 w-16 mb-2;
+          @apply border border-neutral-300;
+          @apply rounded-full;
+
+          & .PlatformIcon {
+            @apply object-contain h-16 w-16;
+          }
         }
       }
     }
@@ -60,6 +66,22 @@
           }
         }
       }
+    }
+
+    & .MiniFooter {
+      @apply p-4;
+      @apply flex items-center;
+      @apply text-neutral-500 font-semibold;
+
+      > :first-child {
+        @apply mr-2 mb-1;
+      }
+    }
+
+    & .PageLink {
+      @apply text-info-900;
+      @apply cursor-pointer;
+      @apply hover:underline;
     }
   }
 }
