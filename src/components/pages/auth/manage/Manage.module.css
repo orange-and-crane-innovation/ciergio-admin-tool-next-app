@@ -1,0 +1,96 @@
+.ManageAccount {
+  @apply p-8;
+  /* @apply flex justify-center items-center; */
+  height: inherit;
+
+  & .ManageAccountWrapper {
+    @apply flex flex-col items-center w-96;
+
+    & .LogoContainer {
+      @apply flex mb-8;
+
+      & .Logo {
+        @apply object-contain h-24;
+      }
+    }
+
+    & .ManageAccountCard {
+      @apply p-6 border rounded bg-white w-full mb-4;
+
+      h2 {
+        @apply mb-4;
+        @apply font-bold;
+      }
+
+      .ManageAccountUserWrapper {
+        @apply -mx-6;
+        @apply cursor-pointer;
+
+        > :first-child {
+          @apply border-t;
+        }
+
+        > div {
+          @apply border-b;
+        }
+      }
+    }
+
+    & .ManageAccountForm {
+      & h2 {
+        @apply font-heading text-base text-neutral-dark mb-2;
+      }
+
+      & p {
+        @apply mb-8 !important;
+      }
+
+      & .formControl {
+        @apply mb-8;
+
+        & label {
+          @apply block;
+
+          & .formLabel {
+            @apply block mb-4;
+          }
+
+          & span {
+            @apply text-neutral-dark font-body font-bold text-sm;
+          }
+        }
+      }
+
+      & .hasError {
+        & [type='text'],
+        & [type='password'] {
+          @apply border-red-500;
+        }
+
+        & label {
+          @apply block;
+
+          & span {
+            @apply text-red-500;
+          }
+        }
+      }
+    }
+
+    & .MiniFooter {
+      @apply p-4;
+      @apply flex items-center;
+      @apply text-neutral-500 font-semibold;
+
+      > :first-child {
+        @apply mr-2 mb-1;
+      }
+    }
+
+    & .PageLink {
+      @apply text-info-900;
+      @apply cursor-pointer;
+      @apply hover:underline;
+    }
+  }
+}
