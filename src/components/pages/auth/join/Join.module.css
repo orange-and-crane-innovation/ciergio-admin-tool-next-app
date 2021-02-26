@@ -1,0 +1,91 @@
+.Join {
+  height: inherit;
+  @apply flex justify-center items-center;
+
+  & .JoinWrapper {
+    @apply flex flex-col items-center w-128;
+
+    & .LogoContainer {
+      @apply flex mb-8;
+
+      & .Logo {
+        @apply object-contain h-24;
+      }
+    }
+
+    & .JoinCard {
+      @apply p-6 border rounded bg-white w-full mb-4;
+    }
+
+    & .JoinName {
+      @apply flex items-start;
+
+      > :first-child {
+        @apply mr-2;
+      }
+    }
+
+    & .JoinForm {
+      & h2 {
+        @apply font-heading text-base text-neutral-dark mb-2;
+      }
+
+      & p {
+        @apply mb-8 !important;
+      }
+
+      & .formControl {
+        @apply mb-8;
+
+        & label {
+          @apply block;
+
+          & .formLabel {
+            @apply block mb-4;
+          }
+
+          & span {
+            @apply text-neutral-dark font-body font-bold text-sm;
+          }
+        }
+      }
+
+      & .hasError {
+        & [type='text'],
+        & [type='password'] {
+          @apply border-red-500;
+        }
+
+        & label {
+          @apply block;
+
+          & span {
+            @apply text-red-500;
+          }
+        }
+      }
+    }
+
+    & .MiniFooter {
+      @apply p-4;
+      @apply flex items-center;
+      @apply text-neutral-500 font-semibold;
+
+      > :first-child {
+        @apply mr-2 mb-1;
+      }
+    }
+
+    & .PageLink {
+      @apply text-info-900;
+      @apply cursor-pointer;
+      @apply hover:underline;
+    }
+
+    & .PageError {
+      @apply p-4;
+      @apply text-white;
+      @apply bg-danger-500;
+    }
+  }
+}
