@@ -3,9 +3,10 @@
   @apply flex items-center justify-between;
 
   .PageHeaderLogo {
-    @apply h-32 w-32 p-2;
+    @apply h-32 w-32;
     @apply bg-white;
     @apply shadow-md rounded-full;
+    @apply overflow-auto;
 
     & > img {
       @apply object-contain object-center;

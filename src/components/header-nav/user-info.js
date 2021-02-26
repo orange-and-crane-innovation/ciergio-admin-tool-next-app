@@ -4,13 +4,17 @@ const Userinfo = ({ imgSrc, imgAlt, userName, userTitle, size }) => {
   const SIZES = {
     SM: 'small',
     MD: 'medium',
-    LG: 'large'
+    LG: 'large',
+    XL: 'x-large'
   }
+
   return (
     <>
       {/* Avatar */}
       <div className={`header-item-wrap avatar ${SIZES[size]}`}>
-        <img src={imgSrc} alt={imgAlt} />
+        <div className="image-wrap">
+          <img src={imgSrc} alt={imgAlt} />
+        </div>
       </div>
       {/* User info */}
       <div className={`header-item-wrap user-info ${SIZES[size]}`}>

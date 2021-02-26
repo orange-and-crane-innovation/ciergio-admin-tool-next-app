@@ -14,7 +14,7 @@ const validationSchema = yup.object().shape({
   logo: yup.array().label('Image').nullable(),
   name: yup.string().label('Company Name').nullable().trim().required(),
   location: yup.string().label('Location').nullable().trim().required(),
-  email: yup.string().email().label('Email').nullable().trim().required(),
+  email: yup.string().email().label('Email').nullable().trim(),
   contact: yup.string().label('Contact #').nullable().trim(),
   tin: yup.string().label('Tin #').nullable().trim()
 })
@@ -39,9 +39,9 @@ const Component = ({
       name: data?.name ?? '',
       location: data?.address?.formattedAddress ?? '',
       address: data?.address ?? '',
-      email: data?.email ?? '',
-      contact: data?.contactNumber ?? '',
-      tin: data?.tinNumber ?? ''
+      email: data?.email ?? null,
+      contact: data?.contactNumber ?? null,
+      tin: data?.tinNumber ?? null
     }
   })
 
@@ -55,9 +55,9 @@ const Component = ({
       setValue('name', data?.name ?? '')
       setValue('location', data?.address?.formattedAddress ?? '')
       setValue('address', data?.address ?? '')
-      setValue('email', data?.email ?? '')
-      setValue('contact', data?.contactNumber ?? '')
-      setValue('tin', data?.tinNumber ?? '')
+      setValue('email', data?.email ?? null)
+      setValue('contact', data?.contactNumber ?? null)
+      setValue('tin', data?.tinNumber ?? null)
       setImageUrls([data?.avatar])
     }
   }, [])
@@ -75,10 +75,7 @@ const Component = ({
 
     if (response.data) {
       const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
-        }
+        return item.location
       })
       setValue('logo', imageData)
     }
@@ -198,7 +195,7 @@ const Component = ({
               name={name}
               placeholder="Enter company email address"
               value={value}
-              error={errors?.domain?.message ?? null}
+              error={errors?.email?.message ?? null}
               onChange={onChange}
             />
           )}
@@ -216,7 +213,7 @@ const Component = ({
                   name={name}
                   placeholder="Enter contact #"
                   value={value}
-                  error={errors?.complexNo?.message ?? null}
+                  error={errors?.contact?.message ?? null}
                   onChange={onChange}
                 />
               )}
@@ -233,7 +230,7 @@ const Component = ({
                   name={name}
                   placeholder="Compnay TIN #"
                   value={value}
-                  error={errors?.buildingNo?.message ?? null}
+                  error={errors?.tin?.message ?? null}
                   onChange={onChange}
                 />
               )}

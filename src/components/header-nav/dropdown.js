@@ -1,55 +1,58 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useState, useEffect, useRef } from 'react'
+import { gql, useMutation } from '@apollo/client'
+import { useRouter } from 'next/router'
 import { FiChevronRight } from 'react-icons/fi'
 import Userinfo from './user-info'
 import MenuItem from './menu-item'
-import { useQuery } from '@apollo/client'
-import gql from 'graphql-tag'
 
-export const GET_PROFILE = gql`
-  query {
-    getProfile {
-      _id
-      email
-      avatar
-      firstName
-      lastName
-      birthDate
-      contactNo
-      jobTitle
-      status
-      address {
-        line1
-        line2
-        city
-        province
-        zipCode
-        country
-      }
-      createdAt
-      updatedAt
-      accounts {
-        count
-        limit
-        skip
-        data {
-          _id
-          accountType
-          active
-        }
-      }
+import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
+import showToast from '@app/utils/toast'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+
+const SWITCH_ACCOUNT_MUTATION = gql`
+  mutation switchAccount($data: InputSwitchAccount) {
+    switchAccount(data: $data) {
+      processId
+      message
+      slave
     }
   }
 `
 
 const Dropdown = () => {
+  const router = useRouter()
   const [hidden, setHidden] = useState(true)
-
-  const { data } = useQuery(GET_PROFILE, {
-    fetchPolicy: 'cache-only'
-  })
-  const profile = data ? data.getProfile : {}
+  const profile = JSON.parse(localStorage.getItem('profile'))
   const buttonRef = useRef(null)
   const dropdownRef = useRef(null)
+  const activeAccount = profile?.accounts?.data[0]
+
+  const [
+    switchAccount,
+    { loading, data, called, error }
+  ] = useMutation(SWITCH_ACCOUNT_MUTATION, { onError: _e => {} })
+
+  useEffect(() => {
+    if (loading) {
+      showToast('info', 'Switching Account...')
+    } else if (!loading) {
+      if (error) {
+        errorHandler(error)
+      }
+      if (called && data) {
+        showToast('success', 'Account switched successfully')
+        localStorage.setItem('keep', data?.switchAccount?.slave)
+        router.push('/dashboard')
+
+        const timer = setTimeout(() => {
+          router.reload()
+          clearInterval(timer)
+        }, 1000)
+      }
+    }
+  }, [loading, called, data, error])
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -72,6 +75,46 @@ const Dropdown = () => {
     setHidden(!hidden)
   }
 
+  const onSwitchAccount = id => {
+    switchAccount({
+      variables: {
+        data: {
+          accountId: id
+        }
+      }
+    })
+  }
+
+  const onLogout = () => {
+    localStorage.removeItem('keep')
+    localStorage.removeItem('profile')
+
+    const timer = setTimeout(() => {
+      router.reload()
+      clearInterval(timer)
+    }, 500)
+  }
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (message) {
+        showToast('danger', message)
+      }
+    }
+  }
+
   return (
     <>
       <div
@@ -85,7 +128,17 @@ const Dropdown = () => {
             <div className="dropdown-section">
               <div className="userinfo-wrap">
                 <Userinfo
-                  imgSrc={profile.avatar}
+                  imgSrc={
+                    profile?.avatar
+                      ? profile?.avatar
+                      : activeAccount.accountType === ACCOUNT_TYPES.SUP
+                      ? IMAGES.ADMIN_AVATAR
+                      : activeAccount.accountType === ACCOUNT_TYPES.COMPYAD
+                      ? IMAGES.COMPANY_AVATAR
+                      : activeAccount.accountType === ACCOUNT_TYPES.COMPXAD
+                      ? IMAGES.COMPLEX_AVATAR
+                      : IMAGES.DEFAULT_AVATAR
+                  }
                   imgAlt={'Logo'}
                   userName={`${profile.firstName} ${profile.lastName}`}
                   userTitle={profile.email}
@@ -118,23 +171,77 @@ const Dropdown = () => {
             <div className="dropdown-section">
               <div className="userinfo-wrap">
                 <Userinfo
-                  imgSrc={'../ciergio-icon.png'}
+                  size="XL"
+                  imgSrc={
+                    activeAccount?.accountType === ACCOUNT_TYPES.COMPYAD.value
+                      ? activeAccount?.company?.avatar ?? IMAGES.PROPERTY_AVATAR
+                      : activeAccount?.accountType ===
+                        ACCOUNT_TYPES.COMPXAD.value
+                      ? activeAccount?.complex?.avatar ?? IMAGES.PROPERTY_AVATAR
+                      : activeAccount?.accountType ===
+                        ACCOUNT_TYPES.BUIGAD.value
+                      ? activeAccount?.building?.avatar ??
+                        IMAGES.PROPERTY_AVATAR
+                      : activeAccount?.company?.avatar ?? IMAGES.PROPERTY_AVATAR
+                  }
                   imgAlt={'Logo'}
-                  userName={'Jose Lapez'}
-                  userTitle={'admin@orangeandcrane.com'}
+                  userName={
+                    activeAccount?.accountType === ACCOUNT_TYPES.COMPYAD.value
+                      ? activeAccount?.company?.name
+                      : activeAccount?.accountType ===
+                        ACCOUNT_TYPES.COMPXAD.value
+                      ? activeAccount?.complex?.name
+                      : activeAccount?.accountType ===
+                        ACCOUNT_TYPES.BUIGAD.value
+                      ? activeAccount?.building?.name
+                      : activeAccount?.company?.name
+                  }
+                  userTitle={getAccountTypeName(activeAccount?.accountType)}
                 />
               </div>
+
               <div className="section-title">Switch Accounts</div>
-              {/* use map to loop on existing account */}
-              <div className="userinfo-wrap button">
-                <Userinfo
-                  imgSrc={'../ciergio-icon.png'}
-                  imgAlt={'Logo'}
-                  userName={'Jose Lapez'}
-                  userTitle={'admin@orangeandcrane.com'}
-                  size={'SM'}
-                />
-              </div>
+              {profile?.accounts?.data?.map((item, index) => {
+                return (
+                  index !== 0 &&
+                  [
+                    ACCOUNT_TYPES.SUP.value,
+                    ACCOUNT_TYPES.COMPYAD.value,
+                    ACCOUNT_TYPES.COMPXAD.value,
+                    ACCOUNT_TYPES.BUIGAD.value
+                  ].includes(item?.accountType) && (
+                    <div
+                      key={index}
+                      className="userinfo-wrap button"
+                      onClick={() => onSwitchAccount(item?._id)}
+                    >
+                      <Userinfo
+                        imgSrc={
+                          item?.accountType === ACCOUNT_TYPES.COMPYAD.value
+                            ? item?.company?.avatar ?? IMAGES.PROPERTY_AVATAR
+                            : item?.accountType === ACCOUNT_TYPES.COMPXAD.value
+                            ? item?.complex?.avatar ?? IMAGES.PROPERTY_AVATAR
+                            : item?.accountType === ACCOUNT_TYPES.BUIGAD.value
+                            ? item?.building?.avatar ?? IMAGES.PROPERTY_AVATAR
+                            : item?.company?.avatar ?? IMAGES.PROPERTY_AVATAR
+                        }
+                        imgAlt={'Logo'}
+                        userName={
+                          item?.accountType === ACCOUNT_TYPES.COMPYAD.value
+                            ? item?.company?.name
+                            : item?.accountType === ACCOUNT_TYPES.COMPXAD.value
+                            ? item?.complex?.name
+                            : item?.accountType === ACCOUNT_TYPES.BUIGAD.value
+                            ? item?.building?.name
+                            : item?.company?.name
+                        }
+                        userTitle={getAccountTypeName(item?.accountType)}
+                        size={'SM'}
+                      />
+                    </div>
+                  )
+                )
+              })}
             </div>
 
             <div className="dropdown-section">
@@ -143,16 +250,14 @@ const Dropdown = () => {
 
             <div className="dropdown-section">
               <MenuItem
-                url={'/dashboard'}
+                url={'/auth/manage'}
                 icon={'ciergio-teams'}
                 title={'Manage Accounts'}
               />
               <MenuItem
                 icon={'ciergio-upload'}
                 iconClass={'arrow'}
-                onClick={() => {
-                  console.log('Trigger logout')
-                }}
+                onClick={() => onLogout()}
                 title={'Log out'}
               />
             </div>

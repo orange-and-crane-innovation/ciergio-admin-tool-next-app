@@ -27,7 +27,7 @@ const columns = [
 function Profile() {
   const { query } = useRouter()
   const { id } = query
-  console.log({ id })
+
   const { data: accounts } = useQuery(GET_ACCOUNT, {
     variables: {
       id

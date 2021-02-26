@@ -3,6 +3,8 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import * as GraphQLVar from './schema-varibles'
 
+import PageLoader from '@app/components/page-loader'
+
 const verifySession = gql`
     query {
       getProfile{
@@ -43,7 +45,7 @@ const withAuth = WrappedComponent => {
     }, [error, loading, router])
 
     if (loading || !loaded) {
-      return <div>Loading</div>
+      return <PageLoader />
     }
 
     return <WrappedComponent {...props} />

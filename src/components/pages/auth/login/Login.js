@@ -6,8 +6,11 @@ import * as yup from 'yup'
 
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import CiergioChurchIcon from '@app/assets/svg/ciergio-church-icon.svg'
+import CiergioHomeIcon from '@app/assets/svg/ciergio-home.svg'
+import CiergioPrayIcon from '@app/assets/svg/ciergio-pray.svg'
+import CiergioCircleIcon from '@app/assets/svg/ciergio-circle.svg'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
+import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
 import style from './Login.module.css'
 
 const validationSchema = yup.object().shape({
@@ -16,6 +19,9 @@ const validationSchema = yup.object().shape({
 })
 
 function Login({ onLoginSubmit, isSubmitting }) {
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  let systemName, systemLogo
+
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -24,18 +30,37 @@ function Login({ onLoginSubmit, isSubmitting }) {
     }
   })
 
+  switch (systemType) {
+    case 'home':
+      systemName = 'HOME'
+      systemLogo = <CiergioHomeIcon className={style.PlatformIcon} />
+      break
+
+    case 'pray':
+      systemName = 'PRAY'
+      systemLogo = <CiergioPrayIcon className={style.PlatformIcon} />
+      break
+
+    case 'circle':
+      systemName = 'CIRCLE'
+      systemLogo = <CiergioCircleIcon className={style.PlatformIcon} />
+      break
+  }
+
   return (
     <main className={style.Login}>
       <div className={style.LoginWrapper}>
         <div className={style.LogoContainer}>
-          <CiergioLogo className={style.Logo} />
+          {<CiergioLogo className={style.Logo} />}
         </div>
 
         <div className={style.LoginCard}>
-          <div className={style.PlatformIconContainer}>
-            <CiergioChurchIcon className={style.PlatformIcon} />
-            <span>Church</span>
-          </div>
+          {systemName && (
+            <div className={style.PlatformIconContainer}>
+              <span className={style.PlatformSubContainer}>{systemLogo}</span>
+              <span>{systemName}</span>
+            </div>
+          )}
 
           <form
             className={style.LoginForm}
@@ -76,6 +101,8 @@ function Login({ onLoginSubmit, isSubmitting }) {
               )}
             />
 
+            <br />
+
             <Button
               label="Login"
               type="submit"
@@ -85,7 +112,15 @@ function Login({ onLoginSubmit, isSubmitting }) {
             />
           </form>
         </div>
-        <Link href="/auth/forgot-password">I forgot my password</Link>
+
+        <div className={style.PageLink}>
+          <Link href="/auth/forgot-password">I forgot my password</Link>
+        </div>
+
+        <div className={style.MiniFooter}>
+          <span>Powered by </span>
+          <CiergioMiniLogo />
+        </div>
       </div>
     </main>
   )

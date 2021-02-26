@@ -6,6 +6,9 @@ import { FiMail, FiLock, FiUser } from 'react-icons/fi'
 import Card from '@app/components/card'
 import PageHeader from '@app/components/page-header'
 
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
+
 import styles from './Profile.module.css'
 import gql from 'graphql-tag'
 
@@ -59,7 +62,17 @@ function Profile() {
   return (
     <div className={styles.PageContainer}>
       <PageHeader
-        image={profile.avatar}
+        image={
+          profile?.avatar
+            ? profile?.avatar
+            : account[0].accountType === ACCOUNT_TYPES.SUP
+            ? IMAGES.ADMIN_AVATAR
+            : account[0].accountType === ACCOUNT_TYPES.COMPYAD
+            ? IMAGES.COMPANY_AVATAR
+            : account[0].accountType === ACCOUNT_TYPES.COMPXAD
+            ? IMAGES.COMPLEX_AVATAR
+            : IMAGES.DEFAULT_AVATAR
+        }
         title={`${profile.firstName} ${profile.lastName}`}
         subtitle={profile.email}
       />
@@ -68,7 +81,6 @@ function Profile() {
         header={
           <div className={styles.FlexCenterBetween}>
             <span className={styles.CardHeader}>About</span>
-            {/* <span>test</span> */}
           </div>
         }
         content={
@@ -79,7 +91,7 @@ function Profile() {
               </span>
               <div className={styles.FlexCol}>
                 <span className={styles.ContentTitle}>Account Type</span>
-                <span>{account[0].accountType}</span>
+                <span>{getAccountTypeName(account[0].accountType)}</span>
               </div>
             </div>
             <hr />

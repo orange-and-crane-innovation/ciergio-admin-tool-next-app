@@ -189,9 +189,6 @@ p {
 /* END IMAGE SLIDER */
 
 /* DATETIME PICKER */
-/*!
-* https://github.com/YouCanBookMe/react-datetime
-*/
 
 .rdt {
   @apply relative w-full mr-4;

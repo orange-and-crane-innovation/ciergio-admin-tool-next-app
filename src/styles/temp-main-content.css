@@ -180,10 +180,7 @@ select:active {
 }
 
 .modal {
-  @apply bg-white w-11/12 flex-col flex rounded mb-8 lg:w-128;
-  @apply absolute;
-  @apply animate-drop;
-  top: -60%;
+  @apply bg-white w-full m-auto flex-col flex rounded transition ease-in-out duration-700;
 }
 
 .modal .modal-header {
@@ -207,6 +204,7 @@ select:active {
 .modal .modal-footer button {
   margin-bottom: 0 !important;
 }
+
 /* CARD CONTENT TABLE */
 .card .content table {
   @apply w-full;
@@ -217,7 +215,9 @@ select:active {
 .card .content table td {
   @apply py-2 px-5;
 }
-
+.card .content table tbody tr {
+  @apply bg-neutral-100;
+}
 .card .content table tbody tr:nth-child(even) {
   @apply bg-white;
 }

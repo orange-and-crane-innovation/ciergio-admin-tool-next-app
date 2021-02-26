@@ -2,6 +2,8 @@ import { useQuery, gql } from '@apollo/client'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
+import PageLoader from '@app/components/page-loader'
+
 const verifySession = gql`
   query {
     getProfile {
@@ -67,7 +69,7 @@ const withGuest = WrappedComponent => {
     }, [data, loading, router])
 
     if (loading || !loaded) {
-      return <div>Loading</div>
+      return <PageLoader />
     }
 
     return <WrappedComponent {...props} />
