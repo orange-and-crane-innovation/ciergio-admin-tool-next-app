@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import Head from 'next/head'
-import withGuest from '@app/utils/withGuest'
+import withAuth from '@app/utils/withAuth'
 
 const Centered = ({ children }) => (
   <>
@@ -17,4 +17,4 @@ const Centered = ({ children }) => (
   </>
 )
 
-export default withGuest(Centered)
+export default withAuth(Centered)

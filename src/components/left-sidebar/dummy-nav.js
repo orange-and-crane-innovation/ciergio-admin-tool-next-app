@@ -86,7 +86,7 @@ const navigation = [
         title: 'Bulletin Board',
         items: [
           {
-            url: '/posts/all',
+            url: '/posts',
             title: 'View All Posts',
             items: []
           },

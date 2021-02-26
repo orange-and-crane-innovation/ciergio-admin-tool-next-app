@@ -5,6 +5,9 @@ import Dropdown from './dropdown'
 import { useQuery } from '@apollo/client'
 import gql from 'graphql-tag'
 
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
+
 export const GET_PROFILE = gql`
   query {
     getProfile {
@@ -47,10 +50,20 @@ const Navbar = ({ onToggle, isCollapsed }) => {
         <span className="ml-auto"></span>
 
         <Userinfo
-          imgSrc={profile.avatar}
+          imgSrc={
+            profile?.avatar
+              ? profile?.avatar
+              : account[0].accountType === ACCOUNT_TYPES.SUP
+              ? IMAGES.ADMIN_AVATAR
+              : account[0].accountType === ACCOUNT_TYPES.COMPYAD
+              ? IMAGES.COMPANY_AVATAR
+              : account[0].accountType === ACCOUNT_TYPES.COMPXAD
+              ? IMAGES.COMPLEX_AVATAR
+              : IMAGES.DEFAULT_AVATAR
+          }
           imgAlt={'Logo'}
           userName={`${profile.firstName} ${profile.lastName}`}
-          userTitle={account[0] ? account[0].accountType : '---'}
+          userTitle={getAccountTypeName(account[0]?.accountType)}
         />
         {/* User dropdown */}
         <div className="header-item-wrap user-dropdown">
