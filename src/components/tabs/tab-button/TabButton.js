@@ -4,7 +4,7 @@ import clsx from 'clsx'
 
 import styles from './TabButton.module.css'
 
-const TabButton = ({ label, icon, onClick, isSelected, isDisabled }) => {
+const TabButton = ({ id, label, icon, onClick, isSelected, isDisabled }) => {
   const tabClasses = useMemo(
     () =>
       clsx(styles.tabButton, {
@@ -15,7 +15,7 @@ const TabButton = ({ label, icon, onClick, isSelected, isDisabled }) => {
   )
 
   return (
-    <button className={tabClasses} onClick={onClick}>
+    <button id={id} className={tabClasses} onClick={onClick}>
       <span className="flex items-center">
         {icon && <span className="tab-icon">{icon}</span>}
         {label}
@@ -25,6 +25,7 @@ const TabButton = ({ label, icon, onClick, isSelected, isDisabled }) => {
 }
 
 TabButton.propTypes = {
+  id: PropTypes.string,
   label: PropTypes.string,
   icon: PropTypes.node,
   onClick: PropTypes.func,
