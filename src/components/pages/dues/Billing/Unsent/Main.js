@@ -129,6 +129,14 @@ function Unsent({ month, year, categoryID, buildingID, categoryName }) {
   const [complexIDPerRow, setComplexIdPerRow] = useState({})
   const [unitIdPerRow, setUnitIdPerRow] = useState({})
 
+  useEffect(() => {
+    console.log({
+      category: categoryID,
+      building: buildingID,
+      catname: categoryName
+    })
+  }, [])
+
   const [
     createDues,
     {
@@ -481,11 +489,14 @@ function Unsent({ month, year, categoryID, buildingID, categoryName }) {
   }
   const handleOkModal = () => {
     const allDates = []
-    for (let i = 0; i < 10; i++) {
+    const datePerRowArray = {}
+    for (let i = 0; i < limitPage; i++) {
       const key = `date${i}`
       const date = { [key]: modalDate }
+      datePerRowArray[`form${i}`] = { dueDate: modalDate }
       allDates.push(date)
     }
+    setDatePerRow(datePerRowArray)
     setPerDate(allDates)
     handleCloseModal()
   }
