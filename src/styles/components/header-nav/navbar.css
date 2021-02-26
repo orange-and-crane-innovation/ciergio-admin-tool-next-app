@@ -10,9 +10,19 @@
     }
     .header-item-wrap {
       @apply flex flex-col relative px-1;
-      img {
-        @apply p-2.5 h-16 rounded-full max-w-full;
+
+      .image-wrap {
+        @apply h-16 w-16;
+        @apply bg-white;
+        @apply border;
+        @apply rounded-full;
+
+        > img {
+          @apply h-full w-full rounded-full;
+          @apply object-contain object-center;
+        }
       }
+
       &.user-info {
         .user-info-name,
         .user-info-title {
@@ -23,7 +33,7 @@
           overflow: hidden;
         }
         .user-info-name {
-          @apply text-lg font-bold;
+          @apply text-lg font-semibold;
         }
         small {
           color: #9ca4b6;
@@ -33,17 +43,23 @@
       .user-dropdown {
       }
       &.small {
-        img {
-          @apply h-12;
-        }
-        &.user-info {
+        .image-wrap {
+          @apply h-12 w-12;
         }
       }
       &.medium {
-        img {
-          @apply h-14;
+        .image-wrap {
+          @apply h-14 w-14;
         }
-        &.user-info {
+      }
+      &.large {
+        .image-wrap {
+          @apply h-16 w-16;
+        }
+      }
+      &.x-large {
+        .image-wrap {
+          @apply h-24 w-24;
         }
       }
     }
