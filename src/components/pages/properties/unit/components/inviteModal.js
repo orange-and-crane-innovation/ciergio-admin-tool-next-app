@@ -34,7 +34,6 @@ const Component = ({
   })
 
   register({ name: 'id' })
-  console.log(errors?.email?.message)
   return (
     <Modal
       title={title}

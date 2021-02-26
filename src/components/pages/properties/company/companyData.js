@@ -187,7 +187,7 @@ const CompanyDataComponent = () => {
   }
 
   const goToHistoryData = () => {
-    router.push(`/properties/company/${router.query.id}/history`)
+    document.getElementById('history').click()
   }
 
   const companyDropdownData = [
@@ -465,7 +465,7 @@ const CompanyDataComponent = () => {
     const errors = JSON.parse(JSON.stringify(data))
 
     if (errors) {
-      const { graphQLErrors, networkError } = errors
+      const { graphQLErrors, networkError, message } = errors
       if (graphQLErrors)
         graphQLErrors.map(({ message, locations, path }) =>
           showToast('danger', message)
@@ -477,6 +477,10 @@ const CompanyDataComponent = () => {
         } else {
           showToast('danger', errors?.networkError?.result?.errors[0]?.message)
         }
+      }
+
+      if (message) {
+        showToast('danger', message)
       }
     }
   }

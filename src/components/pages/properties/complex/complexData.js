@@ -175,7 +175,7 @@ const ComplexDataComponent = () => {
   const [modalData, setModalData] = useState()
 
   const goToHistoryData = () => {
-    router.push(`/properties/complex/${router.query.id}/history`)
+    document.getElementById('history').click()
   }
 
   const {
@@ -466,7 +466,7 @@ const ComplexDataComponent = () => {
     const errors = JSON.parse(JSON.stringify(data))
 
     if (errors) {
-      const { graphQLErrors, networkError } = errors
+      const { graphQLErrors, networkError, message } = errors
       if (graphQLErrors)
         graphQLErrors.map(({ message, locations, path }) =>
           showToast('danger', message)
@@ -478,6 +478,10 @@ const ComplexDataComponent = () => {
         } else {
           showToast('danger', errors?.networkError?.result?.errors[0]?.message)
         }
+      }
+
+      if (message) {
+        showToast('danger', message)
       }
     }
   }

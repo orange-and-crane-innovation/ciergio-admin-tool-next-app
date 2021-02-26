@@ -89,10 +89,7 @@ const Component = ({
 
     if (response.data) {
       const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
-        }
+        return item.location
       })
       setValue('logo', imageData)
     }
