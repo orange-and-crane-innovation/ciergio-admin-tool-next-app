@@ -299,7 +299,7 @@ const PostComponent = () => {
               title: (
                 <div className="flex flex-col">
                   {item.title}
-                  {isMine && (
+                  {isMine ? (
                     <div className="flex text-info-500 text-sm">
                       <Link href={`/posts/view/${item._id}`}>
                         <a className="mr-2 hover:underline">View</a>
@@ -315,6 +315,12 @@ const PostComponent = () => {
                       >
                         Move to Trash
                       </span>
+                    </div>
+                  ) : (
+                    <div className="flex text-info-500 text-sm">
+                      <Link href={`/posts/view/${item._id}`}>
+                        <a className="mr-2 hover:underline">View</a>
+                      </Link>
                     </div>
                   )}
                 </div>
