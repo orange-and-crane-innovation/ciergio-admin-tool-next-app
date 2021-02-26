@@ -1,65 +1,39 @@
 import React, { useState, useEffect } from 'react'
-import * as Query from './Query'
+import * as Query from './Billing/Query'
 import { useQuery } from '@apollo/client'
 
 import Billing from './Billing'
 import Overview from './Overview'
+import { useRouter } from 'next/router'
 
 function Dues() {
+  const router = useRouter()
+  const { buildingID } = router.query
   const [account, setAccount] = useState('')
-  const [category, setCategory] = useState({})
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const [categories, setCategories] = useState([])
+
+  const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
+    variables: {
+      where: {
+        accountId: user?.accounts?.data[0]?.complex?._id,
+        accountType: 'complex'
+      },
+      limit: 100
+    }
+  })
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('profile'))
-    const active = user?.accounts?.data.find(acc => acc.active === true)
-
-    setAccount(active)
-  }, [])
-
-  const { loading, data, error, refetch } = useQuery(
-    Query.GET_ALLOWED_CATEGORY,
-    {
-      variables: {
-        where: {
-          accountId: account?._id,
-          accountType:
-            account?.accountType === 'building_admin' ? 'building' : 'complex'
-        },
-        limit: 100
-      }
-    }
-  )
+    router.push(
+      `/dues/billing/${buildingID}/${categories[0]?.categories[0]?._id}`
+    )
+  }, [buildingID, categories])
 
   useEffect(() => {
-    if (!loading && data) {
-      setCategory(data?.getAllowedBillCategory)
-      console.log(account)
+    if (!loading && data && !error) {
+      setCategories(data?.getAllowedBillCategory?.data)
     }
-  }, [loading, data, error, refetch])
-
-  return (
-    <>
-      {account?.accountType === 'building_admin' ? (
-        <Billing
-          categoryID={category?.id}
-          buildingID={account?.building_id}
-          categoryName={category?.name}
-          accountID={account?._id}
-          data={category?.data}
-        />
-      ) : (
-        <Overview
-          complexID={account?.complex?._id}
-          complexName={account?.complex?.name}
-          accountType={
-            account.accountType !== '' &&
-            account.accountType &&
-            account.accountType.split('_')[0]
-          }
-        />
-      )}
-    </>
-  )
+  }, [loading, data, error])
 }
 
 export default Dues

@@ -13,7 +13,7 @@ import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
 import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
-
+import { useRouter } from 'next/router'
 import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
 import HistoryBills from './Modals/HistoryBills'
@@ -77,6 +77,8 @@ const tableRowData = [
 ]
 
 function Sent({ month, year }) {
+  const router = useRouter()
+  const { buildingID, categoryID } = router.query
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
@@ -101,7 +103,7 @@ function Sent({ month, year }) {
     {
       variables: {
         unit: {
-          buildingId: '5d804d6543df5f4239e72911',
+          buildingId: buildingID,
           search: search,
           floorNumber: floorNumber
         },
@@ -127,7 +129,7 @@ function Sent({ month, year }) {
       variables: {
         where: {
           sent: true,
-          buildingId: '5d804d6543df5f4239e72911',
+          buildingId: buildingID,
           period: {
             month,
             year
@@ -143,7 +145,7 @@ function Sent({ month, year }) {
     data: dataAllFloors
   } = useQuery(Query.GET_ALL_FLOORS, {
     variables: {
-      buildingId: '5d804d6543df5f4239e72911'
+      buildingId: buildingID
     }
   })
 

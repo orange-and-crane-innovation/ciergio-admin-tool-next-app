@@ -19,6 +19,7 @@ import * as Query from './Query.js'
 import axios from 'axios'
 import * as Mutation from './Mutation'
 import { FaCheck, FaExclamation } from 'react-icons/fa'
+import { useRouter } from 'next/router'
 
 const _ = require('lodash')
 
@@ -85,10 +86,9 @@ const DueDate = ({ fieldData }) => {
   )
 }
 
-function Unsent({ month, year, categoryID, buildingID, categoryName }) {
-  // router
-  // const router = useRouter()
-
+function Unsent({ month, year }) {
+  const router = useRouter()
+  const { buildingID, categoryID } = router.query
   // components state
   const [selectedFloor, setSelectedFloor] = useState('all')
   const [searchText, setSearchText] = useState(null)
@@ -122,20 +122,12 @@ function Unsent({ month, year, categoryID, buildingID, categoryName }) {
     month: month,
     year: year
   })
-  const [title, setTitle] = useState(`${categoryName} ${month} - ${year}`)
+  const [title, setTitle] = useState(`Test Category ${month} - ${year}`)
   const [amountPerRow, setAmountPerRow] = useState({})
   const [perDate, setPerDate] = useState([])
   const [companyIdPerRow, setCompanyIdPerRow] = useState({})
   const [complexIDPerRow, setComplexIdPerRow] = useState({})
   const [unitIdPerRow, setUnitIdPerRow] = useState({})
-
-  useEffect(() => {
-    console.log({
-      category: categoryID,
-      building: buildingID,
-      catname: categoryName
-    })
-  }, [])
 
   const [
     createDues,
@@ -203,7 +195,7 @@ function Unsent({ month, year, categoryID, buildingID, categoryName }) {
     )}-${year}`
     setDate(formatTodate)
     setPerDate([])
-    setTitle(`${categoryName} ${month} - ${year}`)
+    setTitle(`Test ${month} - ${year}`)
     setPeriod({
       month,
       year
@@ -635,10 +627,7 @@ DueDate.propTypes = {
 
 Unsent.propTypes = {
   month: P.number.isRequired,
-  year: P.number.isRequired,
-  categoryID: P.string.isRequired,
-  buildingID: P.string.isRequired,
-  categoryName: P.string.isRequired
+  year: P.number.isRequired
 }
 
 export default Unsent
