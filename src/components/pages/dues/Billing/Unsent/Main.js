@@ -21,6 +21,8 @@ import * as Mutation from './Mutation'
 import { FaCheck, FaExclamation } from 'react-icons/fa'
 import { useRouter } from 'next/router'
 
+import Can from '@app/permissions/can'
+
 const _ = require('lodash')
 
 const tableRowData = [
@@ -375,15 +377,22 @@ function Unsent({ month, year }) {
         const isFileEmpty = !_.isEmpty(fileUploadedData[`form${index}`])
 
         const sendButton = (
-          <Button
-            full
-            primary={!isSent}
-            success={isSent}
-            danger={notSent}
-            disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
-            label={isSent ? <FaCheck /> : notSent ? <FaExclamation /> : 'Send'}
-            name={`form${index}`}
-            onClick={e => submitForm(e)}
+          <Can
+            perform="dues:create"
+            yes={
+              <Button
+                full
+                primary={!isSent}
+                success={isSent}
+                danger={notSent}
+                disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
+                label={
+                  isSent ? <FaCheck /> : notSent ? <FaExclamation /> : 'Send'
+                }
+                name={`form${index}`}
+                onClick={e => submitForm(e)}
+              />
+            }
           />
         )
 

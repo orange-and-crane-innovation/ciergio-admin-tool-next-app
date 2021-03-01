@@ -169,6 +169,46 @@ const rules = {
         'prayerrequests:view',
         'donations:view'
       ]
+    },
+    building_admin: {
+      allowedRoutes: [
+        '/messages',
+        '/residents',
+        '/posts',
+        '/prayer-requests',
+        '/forms',
+        '/directory',
+        '/contact-us',
+        '/notifications',
+        '/dues'
+      ],
+      allowedNestedRoutes: [
+        '/residents/all-residents',
+        '/residents/invites-requests',
+        '/posts/create',
+        '/posts',
+        '/forms/create',
+        '/forms',
+        '/notifications/all',
+        '/notifications/create',
+        '/dues/billing'
+      ],
+      actions: [
+        'residents:resend::cancel',
+        'residents:print',
+        'residents:create',
+        'bulletin:create',
+        'bulletin:update',
+        'bulletin:view',
+        'bulletin:delete',
+        'bulletin:update',
+        'bulletin:draft',
+        'bulletin:embed',
+        'dues:view',
+        'dues:create',
+        'dues:update',
+        'dues:delete'
+      ]
     }
   },
   home: {
@@ -398,6 +438,7 @@ const rules = {
         '/maintenance',
         '/dues',
         '/guest-and-deliveries',
+        '/receptionist',
         '/posts/create'
       ],
       allowedNestedRoutes: [
@@ -408,8 +449,14 @@ const rules = {
         '/residents/invites-requests',
         '/posts',
         '/posts/create',
+        '/forms/building',
+        '/dues/billing',
         '/notifications/list',
-        '/notifications/create'
+        '/notifications/create',
+        '/receptionist/visitors',
+        '/receptionist/deliveries',
+        '/receptionist/pick-ups',
+        '/receptionist/services'
       ],
       actions: [
         'messages:view',

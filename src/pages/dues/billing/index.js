@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import Billing from '@app/components/pages/dues'
 
 export default function DuesPage() {
   const router = useRouter()
@@ -16,5 +17,6 @@ export default function DuesPage() {
     const buildingID = user?.accounts?.data[0]?.building?._id
     router.push(`/dues/billing/${buildingID}`)
   }
-  return null
+
+  return <Billing />
 }

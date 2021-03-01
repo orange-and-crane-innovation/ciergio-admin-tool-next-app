@@ -22,6 +22,8 @@ import UpdateBills from './Modals/UpdateBills'
 import * as Query from './Query'
 import * as Mutation from './Mutation'
 
+import Can from '@app/permissions/can'
+
 const statusOptions = [
   {
     label: 'All Status',
@@ -451,7 +453,11 @@ function Sent({ month, year }) {
           loading ? (
             <PageLoader />
           ) : (
-            <Table rowNames={tableRowData} items={dues} />
+            <Can
+              perform="dues:view"
+              yes={<Table rowNames={tableRowData} items={dues} />}
+              no={<Table rowNames={tableRowData} items={{ dues: [] }} />}
+            />
           )
         }
       />

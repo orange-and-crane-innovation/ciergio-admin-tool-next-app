@@ -11,7 +11,7 @@ import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
 
-const Billing = ({ complexId }) => {
+const Billing = () => {
   const router = useRouter()
   const { buildingID } = router.query
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -20,6 +20,7 @@ const Billing = ({ complexId }) => {
   const [year, setYear] = useState(new Date().getFullYear())
   const [categories, setCategories] = useState([])
   const [building, setBuilding] = useState([])
+  const user = JSON.parse(localStorage.getItem('profile'))
 
   const handlingMonthOrYear = (date, type = 'year') => {
     if (date instanceof Date) {
@@ -35,8 +36,7 @@ const Billing = ({ complexId }) => {
   const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
     variables: {
       where: {
-        accountId: complexId,
-        accountType: 'complex'
+        accountType: 'building'
       },
       limit: 100
     }
@@ -67,6 +67,10 @@ const Billing = ({ complexId }) => {
       setCategories(data?.getAllowedBillCategory?.data)
     }
   }, [loading, data, error])
+
+  useEffect(() => {
+    console.log(categories)
+  }, [categories])
 
   const handleDateChange = date => {
     setSelectedDate(date)

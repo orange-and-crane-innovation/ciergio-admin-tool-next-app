@@ -3,10 +3,8 @@ import { useRouter } from 'next/router'
 import { gql, useQuery } from '@apollo/client'
 
 export default function DuesPage() {
-  alert('test')
   const router = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
-
   const accountType = user?.accounts?.data[0]?.accountType
 
   if (accountType === 'company_admin') {
@@ -19,4 +17,6 @@ export default function DuesPage() {
     const buildingID = user?.accounts?.data[0]?.building?._id
     router.push(`/dues/billing/${buildingID}`)
   }
+
+  return <Billing />
 }
