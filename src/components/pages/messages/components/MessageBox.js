@@ -9,7 +9,7 @@ import useWindowDimensions from '@app/utils/useWindowDimensions'
 import styles from '../messages.module.css'
 
 export default function MessageBox({
-  recipient,
+  participant,
   conversation,
   loading,
   currentUserid,
@@ -36,11 +36,11 @@ export default function MessageBox({
       : conversation?.data
   }, [conversation?.data])
   const user = useMemo(() => {
-    return recipient?.author?.user
-  }, [recipient?.author])
+    return participant?.participants?.data[1]?.user
+  }, [participant?.participants])
   const unitName = useMemo(() => {
-    return recipient?.author?.unit?.name
-  }, [recipient?.author?.unit])
+    return participant?.participants?.data[1]?.unit?.name
+  }, [participant?.participants])
   const name = `${user?.firstName} ${user?.lastName}`
 
   return (
@@ -56,7 +56,7 @@ export default function MessageBox({
         style={{ height: `calc(${height}px - 175px)` }}
       >
         {loading && messages?.length === 0 ? <Spinner /> : null}
-        {messages?.length > 0 ? (
+        {!loading && messages?.length > 0 ? (
           messages.map((item, index) => {
             const author = item.author.user
             const authorName = `${author?.firstName} ${author?.lastName}`
@@ -83,7 +83,7 @@ export default function MessageBox({
                       alt={authorName}
                       className={`${
                         isCurrentUserMessage ? 'ml-4 ' : 'mr-4 '
-                      }rounded-full`}
+                      }rounded-full h-8 w-8`}
                     />
                   </div>
                 ) : null}
@@ -106,7 +106,7 @@ export default function MessageBox({
           })
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <p>No messages yet.</p>
+            <p>No messages found.</p>
           </div>
         )}
       </div>
@@ -142,7 +142,7 @@ export default function MessageBox({
 }
 
 MessageBox.propTypes = {
-  recipient: P.object,
+  participant: P.object,
   conversation: P.object,
   loading: P.bool,
   currentUserid: P.number,

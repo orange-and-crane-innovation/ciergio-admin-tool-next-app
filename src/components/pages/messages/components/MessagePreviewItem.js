@@ -4,11 +4,13 @@ import styles from '../messages.module.css'
 
 export default function MessagePreviewItem({ onClick, data, isSelected }) {
   const author = data?.author?.user
+  const participant = data?.participants?.data[1]?.user
+  const participantName = `${participant?.firstName} ${participant?.lastName}`
   const authorName = `${author?.firstName} ${author?.lastName}`
-  const previewHead = `${author?.unit?.name || 'Unit 000'} - ${authorName}`
+  const previewHead = `${author?.unit?.name || 'Unit 000'} - ${participantName}`
   const newestMessage = data?.messages?.data[0]?.message
   const previewTextState = data?.selected ? 'font-normal' : 'font-bold'
-  const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
+  const defaultAvatarUri = `https://ui-avatars.com/api/?name=${participantName}&size=32`
 
   return (
     <div
@@ -22,19 +24,21 @@ export default function MessagePreviewItem({ onClick, data, isSelected }) {
     >
       <div className="mr-4">
         <img
-          src={author?.avatar || defaultAvatarUri}
+          src={participant?.avatar || defaultAvatarUri}
           alt={authorName}
           className="rounded-full h-8 w-8"
         />
       </div>
       <div>
-        <p className={previewTextState}>{previewHead}</p>
-        <p className={`${previewTextState} truncate`}>{newestMessage}</p>
+        <p className={`${previewTextState} capitalize`}>{previewHead}</p>
+        <p className={`${previewTextState} truncate`}>
+          {newestMessage ?? 'Start writing a message'}
+        </p>
       </div>
       <div className="absolute right-4 top-2 text-neutral-500">
         <span>{displayDateCreated(data?.updatedAt)}</span>
       </div>
-      {data?.selected || !isSelected ? (
+      {!data?.selected && !isSelected ? (
         <div className="w-3 h-3 bg-primary-500 rounded-full absolute right-4 bottom-10" />
       ) : null}
     </div>

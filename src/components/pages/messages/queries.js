@@ -12,6 +12,7 @@ export const getConversations = gql`
       skip
       data {
         _id
+        name
         author {
           _id
           user {
@@ -27,6 +28,26 @@ export const getConversations = gql`
           unit {
             _id
             name
+            __typename
+          }
+          __typename
+        }
+        participants(limit: 1) {
+          data {
+            _id
+            user {
+              _id
+              firstName
+              lastName
+              avatar
+              __typename
+            }
+            unit {
+              _id
+              name
+              __typename
+            }
+            accountType
             __typename
           }
           __typename

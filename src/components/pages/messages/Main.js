@@ -24,14 +24,19 @@ import {
 export default function Main() {
   const { height } = useWindowDimensions()
   const profile = JSON.parse(localStorage.getItem('profile'))
-  const accountId = profile?.accounts?.data[0]._id
+  const accountId = profile?.accounts?.data[0]?._id
   const [showPendingMessages, setShowPendingMessages] = useState(false)
   const [convoType, setConvoType] = useState(
     localStorage.getItem('convoType') || 'group'
   )
   const [showNewMessageModal, setShowNewMessageModal] = useState(false)
+  const [selectedConvo, setSelectedConvo] = useState(null)
 
-  const { data: convos, loading: loadingConvo } = useQuery(getConversations, {
+  const {
+    data: convos,
+    loading: loadingConvo,
+    refetch: refetchConversations
+  } = useQuery(getConversations, {
     variables: {
       where: {
         participants: [accountId],
@@ -42,42 +47,9 @@ export default function Main() {
     }
   })
   const [updateConvo] = useMutation(updateConversation)
-  const [sendNewMessage, { called: hasSentNewMessage }] = useMutation(
-    sendMessage,
-    {
-      onCompleted: () => {
-        refetchMessages({
-          variables: {
-            limit: 10,
-            skip: 0,
-            where: {
-              conversationId: selectedConvo?._id
-            }
-          }
-        })
-      }
-    }
-  )
-
-  const conversations = convos?.getConversations
-  const firstConvo = conversations?.data[0]
-  const [selectedConvo, setSelectedConvo] = useState(null)
-
-  useEffect(() => {
-    if (firstConvo) {
-      handleMessagePreviewClick(firstConvo)
-    }
-  }, [firstConvo])
-
-  useEffect(() => {
-    if (selectedConvo && !hasSentNewMessage) {
-      console.log('fetching messages after selecting convo')
-      updateConvo({
-        variables: {
-          convoId: selectedConvo?._id
-        }
-      })
-      fetchMessages({
+  const [sendNewMessage] = useMutation(sendMessage, {
+    onCompleted: () => {
+      refetchMessages({
         variables: {
           limit: 10,
           skip: 0,
@@ -87,7 +59,35 @@ export default function Main() {
         }
       })
     }
-  }, [selectedConvo, hasSentNewMessage])
+  })
+
+  const conversations = convos?.getConversations
+  const firstConvo = conversations?.data[0]
+
+  useEffect(() => {
+    if (firstConvo) {
+      handleMessagePreviewClick(firstConvo)
+    }
+  }, [firstConvo])
+
+  useEffect(() => {
+    if (selectedConvo) {
+      fetchMessages({
+        variables: {
+          limit: 10,
+          skip: 0,
+          where: {
+            conversationId: selectedConvo?._id
+          }
+        }
+      })
+      updateConvo({
+        variables: {
+          convoId: selectedConvo?._id
+        }
+      })
+    }
+  }, [selectedConvo])
 
   const [
     fetchAccounts,
@@ -96,13 +96,26 @@ export default function Main() {
   const [
     createNewConversation,
     { loading: creatingConversation }
-  ] = useMutation(createConversation)
+  ] = useMutation(createConversation, {
+    onCompleted: () => {
+      refetchConversations({
+        variables: {
+          where: {
+            participants: [accountId],
+            includeEmptyConversation: true,
+            pending: showPendingMessages,
+            type: convoType
+          }
+        }
+      })
+    }
+  })
   const [
     fetchMessages,
     { data: messages, loading: loadingMessages, refetch: refetchMessages }
   ] = useLazyQuery(getMessages)
-  const convoMessages = messages?.getMessages
 
+  const convoMessages = messages?.getMessages
   const dropdownData = [
     {
       label: 'Group',
@@ -131,11 +144,23 @@ export default function Main() {
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
 
   const handleAccountClick = userid => {
+    if (conversations?.data?.length > 0) {
+      const index = conversations?.data.findIndex(
+        convo => convo.participants.data[1].user._id === userid
+      )
+      const isExist = index !== -1
+      if (isExist) {
+        handleMessagePreviewClick(conversations?.data[index])
+        handleNewMessageModal()
+        return
+      }
+    }
+
     createNewConversation({
       variables: {
         data: {
           type: convoType,
-          participants: [userid, accountId]
+          participants: [userid]
         }
       }
     })
@@ -194,7 +219,9 @@ export default function Main() {
           style={{ height: `calc(${height}px - 180px)` }}
         >
           {loadingConvo || creatingConversation ? <Spinner /> : null}
-          {conversations?.count > 0 ? (
+          {!loadingConvo &&
+          !creatingConversation &&
+          conversations?.count > 0 ? (
             conversations.data.map(convo => (
               <MessagePreviewItem
                 key={convo._id}
@@ -211,7 +238,7 @@ export default function Main() {
         </div>
       </div>
       <MessageBox
-        recipient={selectedConvo}
+        participant={selectedConvo}
         conversation={convoMessages}
         loading={loadingMessages}
         onSubmitMessage={handleSubmitMessage}
