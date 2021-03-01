@@ -31,8 +31,8 @@
   }
 
   .messagePreviewItem:hover {
-	background-color: #feece4;
-	border-color: #feece4;
+    background-color: #feece4;
+	@apply border-r-2 border-b-0 border-primary-500;
   }
 
   .messagesBoxContainer {
@@ -45,7 +45,7 @@
   }
 
   .messageBoxList {
-    @apply overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5;
+    @apply overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5 flex flex-col;
   }
 
   .messageBoxInput {

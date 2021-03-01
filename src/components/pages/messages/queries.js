@@ -80,68 +80,73 @@ export const getConversations = gql`
   }
 `
 
-// export const getMessages = gql`
-//   query getMessages($where: GetMessagesParams, $limit: Int, $skip: Int) {
-//     getMessages(where: $where, limit: $limit, skip: $skip) {
-//       count
-//       limit
-//       skip
-//       data {
-//         _id
-//         message
-//         author {
-//           user {
-//             firstName
-//             lastName
-//             __typename
-//           }
-//           __typename
-//         }
-//         conversation {
-//           _id
-//           messages {
-//             count
-//             data {
-//               _id
-//               message
-//               __typename
-//             }
-//             __typename
-//           }
-//           participants {
-//             count
-//             data {
-//               _id
-//               user {
-//                 firstName
-//                 lastName
-//                 __typename
-//               }
-//               __typename
-//             }
-//             __typename
-//           }
-//           __typename
-//         }
-//         viewers {
-//           data {
-//             _id
-//             user {
-//               _id
-//               firstName
-//               lastName
-//               __typename
-//             }
-//             __typename
-//           }
-//           __typename
-//         }
-//         __typename
-//       }
-//       __typename
-//     }
-//   }
-// `
+export const getMessages = gql`
+  query getMessages($where: GetMessagesParams, $limit: Int, $skip: Int) {
+    getMessages(where: $where, limit: $limit, skip: $skip) {
+      count
+      limit
+      skip
+      data {
+        _id
+        message
+        author {
+          user {
+            _id
+            firstName
+            lastName
+            avatar
+            __typename
+          }
+          accountType
+          active
+          status
+          __typename
+        }
+        conversation {
+          _id
+          messages {
+            count
+            data {
+              _id
+              message
+              __typename
+            }
+            __typename
+          }
+          participants {
+            count
+            data {
+              _id
+              user {
+                firstName
+                lastName
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        viewers {
+          data {
+            _id
+            user {
+              _id
+              firstName
+              lastName
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+  }
+`
 
 export const getAccounts = gql`
   query getAccounts($where: GetAccountsParams, $limit: Int, $skip: Int) {
@@ -174,6 +179,30 @@ export const getAccounts = gql`
 export const createConversation = gql`
   mutation createConversation($data: InputCreateConversation) {
     createConversation(data: $data) {
+      _id
+      slave
+      message
+      processId
+      __typename
+    }
+  }
+`
+
+export const updateConversation = gql`
+  mutation updateConversations($convoId: String) {
+    updateSelectedConversation(conversationId: $convoId) {
+      _id
+      slave
+      message
+      processId
+      __typename
+    }
+  }
+`
+
+export const sendMessage = gql`
+  mutation sendMessage($data: InputCreateMessage, $convoId: String) {
+    createMessage(data: $data, conversationId: $convoId) {
       _id
       slave
       message

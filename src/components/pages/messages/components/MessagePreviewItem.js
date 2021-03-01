@@ -2,7 +2,7 @@ import P from 'prop-types'
 import { displayDateCreated } from '@app/utils/date'
 import styles from '../messages.module.css'
 
-export default function MessagePreviewItem({ onClick, data }) {
+export default function MessagePreviewItem({ onClick, data, isSelected }) {
   const author = data?.author?.user
   const authorName = `${author?.firstName} ${author?.lastName}`
   const previewHead = `${author?.unit?.name || 'Unit 000'} - ${authorName}`
@@ -15,8 +15,10 @@ export default function MessagePreviewItem({ onClick, data }) {
       role="button"
       tabIndex={0}
       onKeyDown={() => {}}
-      className={styles.messagePreviewItem}
-      onClick={() => onClick(authorName)}
+      className={`${styles.messagePreviewItem}${
+        isSelected ? ' bg-primary-50' : ' bg-white'
+      }`}
+      onClick={() => onClick(data)}
     >
       <div className="mr-4">
         <img
@@ -30,14 +32,17 @@ export default function MessagePreviewItem({ onClick, data }) {
         <p className={`${previewTextState} truncate`}>{newestMessage}</p>
       </div>
       <div className="absolute right-4 top-2 text-neutral-500">
-        <span>{displayDateCreated(data?.createdAt)}</span>
+        <span>{displayDateCreated(data?.updatedAt)}</span>
       </div>
-      <div className="w-3 h-3 bg-red-400 rounded-full absolute right-4 bottom-10" />
+      {data?.selected || !isSelected ? (
+        <div className="w-3 h-3 bg-primary-500 rounded-full absolute right-4 bottom-10" />
+      ) : null}
     </div>
   )
 }
 
 MessagePreviewItem.propTypes = {
   onClick: P.func,
-  data: P.object
+  data: P.object,
+  isSelected: P.bool
 }
