@@ -48,6 +48,19 @@
     @apply rounded;
     @apply shadow-md;
     min-width: 200px;
+    -webkit-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out;
+    transform: rotateX(90deg);
+    transform-origin: top;
+    opacity: 0;
+
+    &.open {
+      opacity: 1;
+      transform: rotateX(0deg);
+      transform-origin: top;
+      width: 100%;
+      border: none;
+    }
 
     & div {
       @apply block px-4 py-2;

@@ -9,12 +9,6 @@ const navigation = [
         items: []
       },
       {
-        url: '/messages',
-        icon: 'ciergio-mail',
-        title: 'Messages',
-        items: []
-      },
-      {
         url: '/properties',
         icon: 'ciergio-organization',
         title: 'My Properties',
@@ -22,21 +16,6 @@ const navigation = [
           {
             url: '/properties/company',
             title: 'My Company',
-            items: []
-          },
-          {
-            url: '/properties/complex',
-            title: 'My Complex',
-            items: []
-          },
-          {
-            url: '/properties/building',
-            title: 'My Building',
-            items: []
-          },
-          {
-            url: '/properties/manage/unit-types',
-            title: 'Manage Unit Types',
             items: []
           },
           {
@@ -81,6 +60,12 @@ const navigation = [
         ]
       },
       {
+        url: '/messages',
+        icon: 'ciergio-mail',
+        title: 'Messages',
+        items: []
+      },
+      {
         url: '/posts',
         icon: 'ciergio-bulletin',
         title: 'Bulletin Board',
@@ -96,6 +81,52 @@ const navigation = [
             items: []
           }
         ]
+      },
+      {
+        url: '/attractions',
+        icon: 'ciergio-event',
+        title: 'Attractions and Events',
+        items: [
+          {
+            url: '/attractions',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/attractions/create',
+            title: 'Create Bulletin',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/qr-codes',
+        icon: 'fa fa-qrcode',
+        title: 'QR Codes',
+        items: [
+          {
+            url: '/qr-codes/posts',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/qr-codes/create',
+            title: 'Create Bulletin',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/maintenance',
+        icon: 'ciergio-maintenance',
+        title: 'Maintenance & Repairs',
+        items: []
+      },
+      {
+        url: '/prayer-requests',
+        icon: 'ciergio-prayer',
+        title: 'Prayer Requests',
+        items: []
       },
       {
         url: '/forms',
@@ -114,7 +145,18 @@ const navigation = [
           }
         ]
       },
-
+      {
+        url: '/dues',
+        icon: 'ciergio-dues',
+        title: 'My Dues',
+        items: [
+          {
+            url: '/dues/billing',
+            title: 'Billing',
+            items: []
+          }
+        ]
+      },
       {
         url: '/directory',
         icon: 'ciergio-store',
@@ -151,68 +193,10 @@ const navigation = [
         items: []
       },
       {
-        url: '/maintenance',
-        icon: 'ciergio-maintenance',
-        title: 'Maintenance & Repairs',
-        items: []
-      },
-      {
-        url: '/dues',
-        icon: 'ciergio-dues',
-        title: 'My Dues',
-        items: [
-          {
-            url: '/dues/billing',
-            title: 'Billing',
-            items: []
-          }
-        ]
-      },
-      {
-        url: '/prayer-requests',
-        icon: 'ciergio-prayer',
-        title: 'Prayer Requests',
-        items: []
-      },
-      {
         url: '/donations',
         icon: 'ciergio-donate',
         title: 'Donations',
         items: []
-      },
-      {
-        url: '/qr-codes',
-        icon: 'fa fa-qrcode',
-        title: 'QR Codes',
-        items: [
-          {
-            url: '/qr-codes/posts',
-            title: 'View All Posts',
-            items: []
-          },
-          {
-            url: '/qr-codes/create',
-            title: 'Create Bulletin',
-            items: []
-          }
-        ]
-      },
-      {
-        url: '/attractions',
-        icon: 'ciergio-event',
-        title: 'Attractions and Events',
-        items: [
-          {
-            url: '/attractions/posts',
-            title: 'View All Posts',
-            items: []
-          },
-          {
-            url: '/attractions/create',
-            title: 'Create Bulletin',
-            items: []
-          }
-        ]
       }
     ]
   }
