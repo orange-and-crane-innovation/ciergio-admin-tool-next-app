@@ -18,7 +18,6 @@ import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
 import HistoryBills from './Modals/HistoryBills'
 import UpdateBills from './Modals/UpdateBills'
-
 import * as Query from './Query'
 import * as Mutation from './Mutation'
 
@@ -290,15 +289,9 @@ function Sent({ month, year }) {
         const status =
           row?.dues[0]?.status === 'overdue' ||
           row?.dues[0]?.status === 'unpaid' ? (
-            <Button
-              className={styles.paid}
-              disabled
-              full
-              label="Unpaid"
-              onClick={() => alert('unpaid')}
-            />
+            <Button className={styles.paid} disabled full label="Unpaid" />
           ) : (
-            <Button full onClick={() => alert('paid')} label="Paid" />
+            <Button full disabled onClick={() => alert('paid')} label="Paid" />
           )
         const seen = row?.dues[0]?.views.count ? <FaEye /> : null
         const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
@@ -306,7 +299,10 @@ function Sent({ month, year }) {
         const unitOwner = `${row?.unitOwner?.user?.lastName},
             ${row?.unitOwner?.user?.lastName.charAt(0)}`
         const dropDown = (
-          <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          <Can
+            perform="dues:view::update"
+            yes={<Dropdown label={<FaEllipsisH />} items={dropdownData} />}
+          />
         )
 
         rowData.push({

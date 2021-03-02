@@ -5,12 +5,9 @@ import DatePicker from '@app/components/forms/form-datepicker/'
 import Unsent from './Unsent'
 import Sent from './Sent'
 import P from 'prop-types'
-import { useQuery } from '@apollo/client'
-import * as Query from './Query'
 import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
-import { BsInfoCircle } from 'react-icons/bs'
 
 const Billing = ({ categoriesBiling, buildingName }) => {
   const router = useRouter()

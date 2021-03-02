@@ -65,6 +65,7 @@ function Overview({ complexID, complexName, accountType }) {
 
   useEffect(() => {
     if (!loadingBreakdown && dataBreakdown && !errorBreakdown) {
+      console.log('wewe')
       const dataChart = dataBreakdown?.getDueBreakdown2?.data.map(item => {
         return {
           sent: item.count.sentDues,
@@ -105,6 +106,7 @@ function Overview({ complexID, complexName, accountType }) {
         })
         buildingIdsArray.push(building._id)
       })
+      console.log(buildingIdsArray)
       setBuildingIds(buildingIdsArray)
       setTableData({
         data: tableArray || []

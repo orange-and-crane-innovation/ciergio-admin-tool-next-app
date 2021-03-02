@@ -52,7 +52,8 @@ const rules = {
         'notifications:update',
         'notifications:view',
         'notifications:delete',
-        'notifications:update',
+        'notifications:view::update',
+        'notifications:trash',
         'notifications:draft'
       ]
     },
@@ -66,8 +67,7 @@ const rules = {
         '/directory',
         '/contact-us',
         '/notifications',
-        '/donations',
-        'dues'
+        '/donations'
       ],
       allowedNestedRoutes: [
         '/residents/all-residents',
@@ -76,10 +76,8 @@ const rules = {
         '/posts',
         '/forms/create',
         '/forms',
-        '/notifications/all',
-        '/notifications/create',
-        '/dues/overview',
-        '/dues/manage-categories'
+        '/notifications/list',
+        '/notifications/create'
       ],
       actions: [
         'messages:view',
@@ -107,13 +105,19 @@ const rules = {
         'notifications:update',
         'notifications:view',
         'notifications:delete',
-        'notifications:update',
+        'notifications:view::update',
+        'notifications:trash',
         'notifications:draft',
         'prayerrequests:create',
         'prayerrequests:export',
         'prayerrequests:print',
         'prayerrequests:view',
-        'donations:view'
+        'donations:view',
+        'dues:view',
+        'dues:create',
+        'dues:update',
+        'dues:view::update',
+        'dues:delete'
       ]
     },
     complex_admin: {
@@ -136,7 +140,7 @@ const rules = {
         '/posts',
         '/forms/create',
         '/forms',
-        '/notifications/all',
+        '/notifications/list',
         '/notifications/create',
         '/dues/overview',
         '/dues/manage-categories'
@@ -167,11 +171,16 @@ const rules = {
         'notifications:update',
         'notifications:view',
         'notifications:delete',
-        'notifications:update',
+        'notifications:view::update',
+        'notifications:trash',
         'notifications:draft',
         'prayerrequests:create',
         'prayerrequests:view',
-        'donations:view'
+        'dues:view',
+        'dues:create',
+        'dues:update',
+        'dues:delete',
+        'dues:view::update'
       ]
     },
     building_admin: {
@@ -193,7 +202,7 @@ const rules = {
         '/posts',
         '/forms/create',
         '/forms',
-        '/notifications/all',
+        '/notifications/list',
         '/notifications/create',
         '/dues/billing'
       ],
@@ -212,6 +221,7 @@ const rules = {
         'dues:create',
         'dues:update',
         'dues:delete',
+        'dues:view::update',
         'forms:view',
         'forms:create'
       ]
@@ -277,7 +287,8 @@ const rules = {
         'notifications:update',
         'notifications:view',
         'notifications:delete',
-        'notifications:update',
+        'notifications:view::update',
+        'notifications:trash',
         'notifications:draft'
       ]
     },

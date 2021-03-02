@@ -18,8 +18,7 @@ function Dues() {
   const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
     variables: {
       where: {
-        accountId: buildingID,
-        accountType: 'complex'
+        accountType: 'building'
       },
       limit: 100
     }
