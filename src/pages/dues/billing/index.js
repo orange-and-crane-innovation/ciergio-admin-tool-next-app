@@ -4,7 +4,6 @@ import Billing from '@app/components/pages/dues'
 export default function DuesPage() {
   const router = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
-
   const accountType = user?.accounts?.data[0]?.accountType
 
   if (accountType === 'company_admin') {

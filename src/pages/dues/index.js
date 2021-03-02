@@ -1,6 +1,5 @@
 import Billing from '@app/components/pages/dues'
 import { useRouter } from 'next/router'
-import { gql, useQuery } from '@apollo/client'
 
 export default function DuesPage() {
   const router = useRouter()

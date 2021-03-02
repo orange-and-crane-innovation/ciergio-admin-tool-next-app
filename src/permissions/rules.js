@@ -135,7 +135,8 @@ const rules = {
         '/forms',
         '/notifications/all',
         '/notifications/create',
-        '/dues/overview'
+        '/dues/overview',
+        '/dues/manage-categories'
       ],
       actions: [
         'messages:view',
@@ -207,7 +208,9 @@ const rules = {
         'dues:view',
         'dues:create',
         'dues:update',
-        'dues:delete'
+        'dues:delete',
+        'forms:view',
+        'forms:create'
       ]
     }
   },
