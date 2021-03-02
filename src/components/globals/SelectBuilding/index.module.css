@@ -10,9 +10,3 @@
     @apply rounded-md;
   }
 }
-
-@screen lg {
-  .SelectCompanyContainer {
-    max-width: 260px;
-  }
-}

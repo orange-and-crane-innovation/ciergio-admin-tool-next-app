@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { useQuery, gql } from '@apollo/client'
+import { useLazyQuery, gql } from '@apollo/client'
 import PropTypes from 'prop-types'
 import { FaSpinner } from 'react-icons/fa'
 
 import FormSelect from '@app/components/forms/form-select'
+
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import styles from './index.module.css'
 
@@ -47,7 +49,6 @@ const GET_ALLLOWED_POST_CATEGORY_QUERY = gql`
 
 const SelectCategoryComponent = ({
   type,
-  userType,
   selected,
   error,
   disabled,
@@ -56,14 +57,16 @@ const SelectCategoryComponent = ({
   onClear
 }) => {
   const [lists, setLists] = useState()
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
+  const company = user?.accounts?.data[0]?.company?._id
 
-  const {
-    loading: loadingCategory,
-    data: dataCategory,
-    error: errorCategory,
-    refetch: refetchCategory
-  } = useQuery(GET_POST_CATEGORY_QUERY, {
+  const [
+    getCategories,
+    { loading: loadingCategory, data: dataCategory, error: errorCategory }
+  ] = useLazyQuery(GET_POST_CATEGORY_QUERY, {
     enabled: false,
+    fetchPolicy: 'network-only',
     variables: {
       where: {
         type: type
@@ -73,17 +76,24 @@ const SelectCategoryComponent = ({
     }
   })
 
-  const {
-    loading: loadingAllowedCategory,
-    data: dataAllowedCategory,
-    error: errorAllowedCategory,
-    refetch: refetchAllowedCategory
-  } = useQuery(GET_ALLLOWED_POST_CATEGORY_QUERY, {
+  const [
+    getAllowedCategories,
+    {
+      loading: loadingAllowedCategory,
+      data: dataAllowedCategory,
+      error: errorAllowedCategory
+    }
+  ] = useLazyQuery(GET_ALLLOWED_POST_CATEGORY_QUERY, {
     enabled: false,
+    fetchPolicy: 'network-only',
     variables: {
       where: {
+        settings: {
+          accountType: 'company',
+          accountId: company
+        },
         category: {
-          type: 'post'
+          type: type
         }
       },
       limit: 500,
@@ -92,26 +102,27 @@ const SelectCategoryComponent = ({
   })
 
   useEffect(() => {
-    if (userType === 'administrator') {
-      refetchCategory()
+    if (accountType === ACCOUNT_TYPES.SUP.value) {
+      getCategories()
     } else {
-      refetchAllowedCategory()
+      getAllowedCategories()
     }
-  }, [userType, refetchCategory, refetchAllowedCategory])
+  }, [])
 
   useEffect(() => {
     if (
       (!loadingCategory || !loadingAllowedCategory) &&
       (dataCategory || dataAllowedCategory)
     ) {
-      const dataLists = dataCategory?.getPostCategory?.category.map(
-        (item, index) => {
-          return {
-            value: item._id,
-            label: item.name
-          }
+      const data =
+        dataCategory?.getPostCategory?.category ||
+        dataAllowedCategory?.getAllowedPostCategory?.data[0]?.categories
+      const dataLists = data?.map((item, index) => {
+        return {
+          value: item._id,
+          label: item.name
         }
-      )
+      })
       setLists(dataLists)
     }
   }, [
@@ -153,7 +164,6 @@ const SelectCategoryComponent = ({
 
 SelectCategoryComponent.propTypes = {
   type: PropTypes.string,
-  userType: PropTypes.string,
   selected: PropTypes.string,
   error: PropTypes.string,
   disabled: PropTypes.bool,
