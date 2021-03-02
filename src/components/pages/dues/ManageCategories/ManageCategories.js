@@ -254,8 +254,11 @@ function ManageCategories({ complexID, accountType }) {
             </div>
           }
           content={
-            !loadingAllowedCategory && allowedCategory.data.length > 0 ? (
-              <Table items={allowedCategory || []} />
+            !loadingAllowedCategory ? (
+              <Table
+                items={allowedCategory || []}
+                emptyText="No Categories added"
+              />
             ) : (
               <PageLoader />
             )

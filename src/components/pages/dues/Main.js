@@ -3,29 +3,32 @@ import * as Query from './Billing/Query'
 import { useQuery } from '@apollo/client'
 
 import Billing from './Billing'
-import Overview from './Overview'
 import { useRouter } from 'next/router'
 
 function Dues() {
   const router = useRouter()
   const { buildingID } = router.query
 
-  const user = JSON.parse(localStorage.getItem('profile'))
   const [categories, setCategories] = useState([])
 
   const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
     variables: {
       where: {
-        accountType: 'building'
+        accountId: buildingID,
+        accountType: 'complex'
       },
       limit: 100
     }
   })
 
   useEffect(() => {
-    router.push(
-      `/dues/billing/${buildingID}/${categories[0]?.categories[0]?._id}`
-    )
+    if (categories?.categories) {
+      router.push(
+        `/dues/billing/${buildingID}/${categories[0]?.categories[0]?._id}`
+      )
+    } else {
+      router.push(`/dues/billing/${buildingID}}`)
+    }
   }, [buildingID, categories])
 
   useEffect(() => {
@@ -34,10 +37,6 @@ function Dues() {
       setCategories(data?.getAllowedBillCategory?.data)
     }
   }, [loading, data, error])
-
-  useEffect(() => {
-    console.log(categories[0]?.categories)
-  }, [categories])
 
   return <></>
 }

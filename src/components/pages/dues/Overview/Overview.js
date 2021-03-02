@@ -1,137 +1,253 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Card from '@app/components/card'
 import PageLoader from '@app/components/page-loader'
 import Table from '@app/components/table'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import FormSelect from '@app/components/globals/FormSelect'
-import { Bar } from '@reactchartjs/react-chart.js'
-
+import { HorizontalBar } from '@reactchartjs/react-chart.js'
+import Tabs from '@app/components/tabs'
+import * as Query from './Query'
+import { useQuery } from '@apollo/client'
+import P from 'prop-types'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
+import ManageCategories from '../ManageCategories'
 import styles from './Overview.module.css'
 
-const data = {
-  labels: ['Sent', 'Seen'],
-  datasets: [
-    {
-      label: 'Sent',
-      data: [
-        'Jan',
-        'Feb',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'Aug',
-        'Sept',
-        'Oct',
-        'Nov',
-        'Decs'
-      ],
-      backgroundColor: ['rgb(238,52,12)'],
-      borderWidth: 1
-    },
-    {
-      label: 'Seen',
-      data: [
-        'Jan',
-        'Feb',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'Aug',
-        'Sept',
-        'Oct',
-        'Nov',
-        'Decs'
-      ],
-      backgroundColor: ['rgba(238,52,12,0.2)'],
-      borderWidth: 1
-    }
-  ]
-}
+function Overview({ complexID, complexName, accountType }) {
+  const router = useRouter()
 
-const dummyOptions = [
-  {
-    label: 'All Status',
-    value: null
-  },
-  {
-    label: 'Paid',
-    value: 'paid'
-  },
-  {
-    label: 'Unpaid',
-    value: 'unpaid'
-  }
-]
-
-const dummyTableData = {
-  data: [
-    { building1: 'Building' },
-    { building2: 'Building 2' },
-    { building3: 'Building 3' },
-    { building4: 'Building 4' }
-  ]
-}
-
-function Overview() {
-  const [loading] = useState(false)
-  const [, setSelectedOption] = useState()
+  const [selectedOption, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
+
+  const [tableData, setTableData] = useState({
+    data: []
+  })
+  const [period, setPeriod] = useState({})
+  const [buildingIds, setBuildingIds] = useState()
+  const [optionsData, setOptionsData] = useState(null)
+  const [chartData, setChartData] = useState({
+    labels: ['Monthly Amortization'],
+    datasets: [
+      {
+        label: 'Seen',
+        data: [0],
+        backgroundColor: 'rgb(238,52,12)'
+      },
+      {
+        label: 'Sent',
+        data: [0],
+        backgroundColor: 'rgb(200,52,12)'
+      }
+    ]
+  })
+
+  const { loading, data, error, refetch } = useQuery(Query.GET_BUILDINS, {
+    variables: {
+      where: {
+        complexId: complexID || null
+      }
+    }
+  })
+
+  const {
+    loading: loadingBreakdown,
+    data: dataBreakdown,
+    error: errorBreakdown
+  } = useQuery(Query.GET_BREAKDOWN, {
+    variables: {
+      where: {
+        period: period,
+        buildingIds: buildingIds
+      }
+    }
+  })
+
+  useEffect(() => {
+    if (!loadingBreakdown && dataBreakdown && !errorBreakdown) {
+      const dataChart = dataBreakdown?.getDueBreakdown2?.data.map(item => {
+        return {
+          sent: item.count.sentDues,
+          seen: item.count.uniqueSentViews
+        }
+      })
+
+      if (dataChart[0]) {
+        setChartData(prevChartData => ({
+          ...prevChartData,
+          datasets: [
+            {
+              label: 'Seen',
+              data: [dataChart[0].sent],
+              backgroundColor: 'rgb(238,52,12)'
+            },
+            {
+              label: 'Sent',
+              data: [dataChart[0].seen],
+              backgroundColor: 'rgb(238,52,12)'
+            }
+          ]
+        }))
+      }
+    }
+  }, [loadingBreakdown, dataBreakdown, errorBreakdown])
+
+  useEffect(() => {
+    if (!loading && !error && data) {
+      const tableArray = []
+      const optionsArray = [{ label: 'All', value: null }]
+      const buildingIdsArray = []
+      data?.getBuildings?.data.forEach((building, index) => {
+        tableArray.push({ [`${building._id}`]: building.name })
+        optionsArray.push({
+          label: building.name,
+          value: building._id
+        })
+        buildingIdsArray.push(building._id)
+      })
+      setBuildingIds(buildingIdsArray)
+      setTableData({
+        data: tableArray || []
+      })
+
+      setOptionsData(optionsArray)
+    }
+  }, [loading, data, error, refetch])
 
   const onStatusSelect = val => {
     setSelectedOption(val)
   }
 
-  const handleChangeDate = dt => {
-    setDate(dt)
+  const handlingMonthOrYear = (date, type = 'year') => {
+    if (date instanceof Date) {
+      if (type === 'month') {
+        return new Date(date).getMonth() + 1
+      } else {
+        return new Date(date).getFullYear()
+      }
+    }
+    return new Date()
   }
 
-  return (
-    <>
-      <div className={styles.tableContainer}>
-        <Card
-          noPadding
-          header={
-            <div className={styles.ContentFlex}>
-              <span className={styles.CardHeader}>Buildings</span>
-            </div>
-          }
-          content={loading ? <PageLoader /> : <Table items={dummyTableData} />}
-        />
-      </div>
-      <div className={styles.FormContainer}>
-        <div className={styles.DateController}>
-          <DatePicker
-            rightIcon
-            selected={date}
-            onChange={handleChangeDate}
-            label={'Billing Period'}
-          />
-        </div>
-        <div className={styles.SelectControl}>
-          <FormSelect
-            onChange={onStatusSelect}
-            options={dummyOptions}
-            classNames="mt-6"
-          />
-        </div>
-      </div>
-      <div className={styles.ChartContainer}>
-        <Card
-          noPadding
-          header={
-            <div className={styles.ContentFlex}>
-              <span className={styles.CardHeader}>Sent vs Seen Bills</span>
-            </div>
-          }
-          content={<Bar data={data} />}
-        />
-      </div>
-    </>
-  )
+  const handleDateChange = date => {
+    setDate(date)
+    setPeriod({
+      month: handlingMonthOrYear(date, 'month'),
+      year: handlingMonthOrYear(date)
+    })
+  }
+
+  const rowClicked = data => {
+    const buildingID = Object.keys(data)
+    router.push(`/dues/billing/${buildingID[0]}`)
+  }
+
+  const tabs = useMemo(() => {
+    return (
+      <>
+        <h1 className={styles.ComplexName}>{complexName}</h1>
+        <Tabs
+          defaultTab={router.pathname === '/dues/manage-categories' ? '2' : '1'}
+        >
+          <Tabs.TabLabels>
+            <Tabs.TabLabel id="1">
+              <Link href="/dues/overview">
+                <a>Overview</a>
+              </Link>
+            </Tabs.TabLabel>
+            <Tabs.TabLabel id="2">
+              <Link href="/dues/manage-categories">
+                <a>Manage Categories</a>
+              </Link>
+            </Tabs.TabLabel>
+          </Tabs.TabLabels>
+          <Tabs.TabPanels>
+            <Tabs.TabPanel id="1">
+              <div className={styles.tableContainer}>
+                <Card
+                  noPadding
+                  header={
+                    <div className={styles.ContentFlex}>
+                      <span className={styles.CardHeader}>Buildings</span>
+                    </div>
+                  }
+                  content={
+                    !loading && tableData.data.length > 0 ? (
+                      <Table
+                        items={tableData || []}
+                        emptyText="No Buildings"
+                        onRowClick={rowClicked}
+                      />
+                    ) : (
+                      <PageLoader />
+                    )
+                  }
+                />
+              </div>
+              <div className={styles.FormContainer}>
+                <div className={styles.DateController}>
+                  <DatePicker
+                    rightIcon
+                    selected={date}
+                    onChange={handleDateChange}
+                    label={'Billing Period'}
+                  />
+                </div>
+                <div className={styles.SelectControl}>
+                  {optionsData && (
+                    <FormSelect
+                      onChange={onStatusSelect}
+                      options={optionsData}
+                      classNames="mt-6"
+                    />
+                  )}
+                </div>
+              </div>
+              <div className={styles.ChartContainer}>
+                <Card
+                  noPadding
+                  header={
+                    <div className={styles.ContentFlex}>
+                      <span className={styles.CardHeader}>
+                        Sent vs Seen Bills
+                      </span>
+                    </div>
+                  }
+                  content={<HorizontalBar data={chartData} />}
+                />
+              </div>
+            </Tabs.TabPanel>
+            <Tabs.TabPanel id="2">
+              <ManageCategories
+                complexID={complexID}
+                accountType={accountType}
+              />
+            </Tabs.TabPanel>
+          </Tabs.TabPanels>
+        </Tabs>
+      </>
+    )
+  }, [
+    router,
+    complexID,
+    accountType,
+    onStatusSelect,
+    optionsData,
+    handleDateChange,
+    date,
+    loading,
+    tableData,
+    complexName,
+    rowClicked
+  ])
+
+  return <>{tabs}</>
 }
 
 export default Overview
+
+Overview.propTypes = {
+  complexID: P.string.isRequired,
+  complexName: P.string.isRequired,
+  accountType: P.string.isRequired
+}
