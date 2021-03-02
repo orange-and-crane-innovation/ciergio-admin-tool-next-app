@@ -14,6 +14,8 @@ const getAccountTypeName = data => {
       ? ACCOUNT_TYPES.RECEP.name
       : data === ACCOUNT_TYPES.UNIT.value
       ? ACCOUNT_TYPES.UNIT.name
+      : data === ACCOUNT_TYPES.RES.value
+      ? ACCOUNT_TYPES.RES.name
       : data === ACCOUNT_TYPES.MEM.value
       ? ACCOUNT_TYPES.MEM.name
       : 'Unknown User Type'
