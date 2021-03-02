@@ -7,6 +7,7 @@ import useWindowDimensions from '@app/utils/useWindowDimensions'
 import MessagePreviewItem from './components/MessagePreviewItem'
 import MessageBox from './components/MessageBox'
 import NewMessageModal from './components/NewMessageModal'
+import useDebounce from '@app/utils/useDebounce'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { GoSettings } from 'react-icons/go'
 import { FiEdit } from 'react-icons/fi'
@@ -33,6 +34,25 @@ export default function Main() {
   )
   const [showNewMessageModal, setShowNewMessageModal] = useState(false)
   const [selectedConvo, setSelectedConvo] = useState(null)
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500)
+
+  useEffect(() => {
+    fetchAccounts({
+      variables: {
+        where: {
+          accountTypes: [
+            'company_admin',
+            'complex_admin',
+            'resident',
+            'member'
+          ],
+          companyId,
+          search: debouncedSearch
+        }
+      }
+    })
+  }, [debouncedSearch])
 
   const {
     data: convos,
@@ -188,6 +208,10 @@ export default function Main() {
     })
   }
 
+  const handleSearchAccounts = text => {
+    setSearch(text)
+  }
+
   return (
     <section
       className={styles.messagesContainer}
@@ -263,6 +287,8 @@ export default function Main() {
         onSelectUser={handleAccountClick}
         loadingUsers={loadingAccounts}
         users={accounts?.getAccounts?.data || []}
+        onSearchChange={handleSearchAccounts}
+        searchText={search}
       />
     </section>
   )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import P from 'prop-types'
 import Modal from '@app/components/globals/Modal'
 import FormInput from '@app/components/forms/form-input'
@@ -11,15 +11,24 @@ export default function NewMessageModal({
   onCancel,
   onSelectUser,
   users,
-  loadingUsers
+  loadingUsers,
+  onSearchChange
 }) {
   const [searchText, setSearchText] = useState('')
   const units = users?.map((user, index) => user?.unit?.name || `Unit-${index}`)
+
+  useEffect(() => {
+    onSearchChange(searchText)
+  }, [searchText])
+
   return (
     <Modal
       title="New Message"
       open={visible}
-      onShowModal={onCancel}
+      onShowModal={() => {
+        setSearchText('')
+        onCancel()
+      }}
       footer={null}
       width={454}
     >
@@ -28,13 +37,7 @@ export default function NewMessageModal({
           name="search"
           placeholder="Search"
           inputClassName="pr-8"
-          onChange={e => {
-            if (e.target.value !== '') {
-              setSearchText(e.target.value)
-            } else {
-              setSearchText(null)
-            }
-          }}
+          onChange={e => setSearchText(e.target.value)}
           value={searchText}
         />
         <span className="absolute top-11 right-8">
@@ -44,7 +47,7 @@ export default function NewMessageModal({
               tabIndex={0}
               onKeyDown={() => {}}
               className="ciergio-close cursor-pointer"
-              onClick={() => {}}
+              onClick={() => setSearchText('')}
             />
           ) : (
             <FiSearch />
@@ -54,9 +57,9 @@ export default function NewMessageModal({
       <div className={styles.newMessageAccountsList}>
         {loadingUsers ? <Spinner /> : null}
         {!loadingUsers &&
-          units.map(unit => {
+          units.map((unit, index) => {
             return (
-              <div key={unit._id}>
+              <div key={index} className="p-2">
                 <p>{unit.name}</p>
                 {users?.length > 0 && !loadingUsers
                   ? users.map(user => {
@@ -125,5 +128,7 @@ NewMessageModal.propTypes = {
   onCancel: P.func,
   onSelectUser: P.func,
   users: P.array,
-  loadingUsers: P.bool
+  loadingUsers: P.bool,
+  onSearchChange: P.func,
+  searchText: P.string
 }

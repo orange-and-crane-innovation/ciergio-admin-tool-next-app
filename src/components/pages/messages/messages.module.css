@@ -27,7 +27,7 @@
 
   .messagePreviewItem {
     height: 80px;
-    border-bottom-color: #DEE1E9;
+    border-bottom-color: #dee1e9;
     @apply flex p-4 relative border-b;
   }
 
