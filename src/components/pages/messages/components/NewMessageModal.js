@@ -13,6 +13,7 @@ export default function NewMessageModal({
   loadingUsers
 }) {
   const [searchText, setSearchText] = useState('')
+  const units = users?.map((user, index) => user?.unit?.name || `Unit-${index}`)
   return (
     <Modal
       title="New Message"
@@ -51,11 +52,26 @@ export default function NewMessageModal({
         </span>
       </div>
       <div className={styles.newMessageAccountsList}>
-        {users?.length > 0 && !loadingUsers
-          ? users.map(user => (
-              <User key={user._id} data={user} handleClick={onSelectUser} />
-            ))
-          : null}
+        {units.map(unit => {
+          return (
+            <div key={unit._id}>
+              <p>{unit.name}</p>
+              {users?.length > 0 && !loadingUsers
+                ? users.map(user => {
+                    if (user?.unit?._id !== unit._id) return null
+
+                    return (
+                      <User
+                        key={user._id}
+                        data={user}
+                        handleClick={onSelectUser}
+                      />
+                    )
+                  })
+                : null}
+            </div>
+          )
+        })}
       </div>
     </Modal>
   )

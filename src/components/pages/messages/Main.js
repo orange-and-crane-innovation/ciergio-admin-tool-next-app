@@ -18,13 +18,15 @@ import {
   getAccounts,
   getConversations,
   sendMessage,
-  updateConversation
+  updateConversation,
+  seenMessage
 } from './queries'
 
 export default function Main() {
   const { height } = useWindowDimensions()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountId = profile?.accounts?.data[0]?._id
+  const companyId = profile?.accounts?.data[0]?.company?._id
   const [showPendingMessages, setShowPendingMessages] = useState(false)
   const [convoType, setConvoType] = useState(
     localStorage.getItem('convoType') || 'group'
@@ -60,6 +62,7 @@ export default function Main() {
       })
     }
   })
+  const [seenNewMessage] = useMutation(seenMessage)
 
   const conversations = convos?.getConversations
   const firstConvo = conversations?.data[0]
@@ -72,6 +75,13 @@ export default function Main() {
 
   useEffect(() => {
     if (selectedConvo) {
+      if (selectedConvo?.messages?.data[0]?._id) {
+        seenNewMessage({
+          variables: {
+            messageId: selectedConvo?.messages?.data[0]?._id
+          }
+        })
+      }
       fetchMessages({
         variables: {
           limit: 10,
@@ -195,11 +205,13 @@ export default function Main() {
               onClick={() => {
                 fetchAccounts({
                   variables: {
-                    limit: 100,
-                    skip: 0,
-                    accountTypes: ['company_admin', 'complex_admin', 'member'],
-                    companyId: '5f290f7d0dcafc0ba70e0721',
-                    status: 'active'
+                    accountTypes: [
+                      'company_admin',
+                      'complex_admin',
+                      'resident',
+                      'member'
+                    ],
+                    companyId
                   }
                 })
                 handleNewMessageModal()

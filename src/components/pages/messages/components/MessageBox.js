@@ -61,9 +61,10 @@ export default function MessageBox({
             const author = item.author.user
             const authorName = `${author?.firstName} ${author?.lastName}`
             const accountType = item?.author?.accountType.replace('_', ' ')
-            const isCurrentUserMessage = parseInt(author._id) === currentUserid
+            const isCurrentUserMessage =
+              parseInt(item.author._id) === currentUserid
             const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
-
+            console.log({ isCurrentUserMessage })
             return (
               <div
                 key={item._id}
@@ -74,7 +75,9 @@ export default function MessageBox({
                 {messages[index - 1]?.author.user._id !== author._id ? (
                   <div
                     className={`capitalize flex items-center ${
-                      isCurrentUserMessage ? 'justify-end ' : 'justify-start '
+                      isCurrentUserMessage
+                        ? 'justify-end '
+                        : 'flex-row-reverse justify-start '
                     }`}
                   >
                     <span className="block mr-">{`${accountType} - ${authorName}`}</span>

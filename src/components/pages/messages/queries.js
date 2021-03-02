@@ -59,6 +59,7 @@ export const getConversations = gql`
             _id
             author {
               user {
+                _id
                 firstName
                 lastName
                 __typename
@@ -170,8 +171,8 @@ export const getMessages = gql`
 `
 
 export const getAccounts = gql`
-  query getAccounts($where: GetAccountsParams, $limit: Int, $skip: Int) {
-    getAccounts(where: $where, limit: $limit, skip: $skip) {
+  query getAccounts($where: GetAccountsParams) {
+    getAccounts(where: $where) {
       data {
         _id
         active
@@ -224,6 +225,18 @@ export const updateConversation = gql`
 export const sendMessage = gql`
   mutation sendMessage($data: InputCreateMessage, $convoId: String) {
     createMessage(data: $data, conversationId: $convoId) {
+      _id
+      slave
+      message
+      processId
+      __typename
+    }
+  }
+`
+
+export const seenMessage = gql`
+  mutation seenMessage($messageId: String) {
+    seenMessage(messageId: $messageId) {
       _id
       slave
       message
