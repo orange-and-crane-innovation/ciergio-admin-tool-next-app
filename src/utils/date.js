@@ -35,6 +35,18 @@ export const toFriendlyDate = data => {
   return convertedDate
 }
 
+export const toFriendlyShortDate = data => {
+  let convertedDate = '-'
+
+  if (data) {
+    const dateObj = new Date(data)
+    const dayObj = dayjs(dateObj)
+    convertedDate = dayObj.format('MMM. DD, YYYY')
+  }
+
+  return convertedDate
+}
+
 export const toFriendlyTime = data => {
   let convertedDate = '-'
 
