@@ -15,6 +15,7 @@ import Pagination from '@app/components/pagination'
 import PageLoader from '@app/components/page-loader'
 
 import showToast from '@app/utils/toast'
+import { IMAGES } from '@app/constants'
 
 import CreateModal from '../components/company/createModal'
 import EditModal from '../components/company/editModal'
@@ -328,15 +329,15 @@ const CompanyDataComponent = () => {
           showToast('danger', message)
         )
 
-      if (networkError) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }
@@ -433,7 +434,10 @@ const CompanyDataComponent = () => {
       <div className={styles.PageHeaderContainer}>
         <div className="flex items-center">
           <div className={styles.PageHeaderLogo}>
-            <img alt="logo" src={companyProfile?.avatar ?? ''} />
+            <img
+              alt="logo"
+              src={companyProfile?.avatar ?? IMAGES.PROPERTY_AVATAR}
+            />
           </div>
           <div className={styles.PageHeaderTitle}>
             <h1 className={styles.PageHeader}>{companyProfile?.name ?? ''}</h1>
