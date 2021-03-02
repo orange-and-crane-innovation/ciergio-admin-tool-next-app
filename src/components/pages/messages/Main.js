@@ -240,11 +240,12 @@ export default function Main() {
                 onClick={handleMessagePreviewClick}
                 data={convo}
                 isSelected={selectedConvo?._id === convo._id}
+                currentUserid={parseInt(profile?._id)}
               />
             ))
           ) : (
             <div className="h-full flex items-center justify-center">
-              <p>No conversations yet.</p>
+              <p>No conversations found.</p>
             </div>
           )}
         </div>
@@ -254,7 +255,7 @@ export default function Main() {
         conversation={convoMessages}
         loading={loadingMessages}
         onSubmitMessage={handleSubmitMessage}
-        currentUserid={parseInt(accountId)}
+        currentUserid={parseInt(profile?._id)}
       />
       <NewMessageModal
         visible={showNewMessageModal}

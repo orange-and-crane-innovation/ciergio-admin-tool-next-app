@@ -27,12 +27,12 @@
 
   .messagePreviewItem {
     height: 80px;
-    @apply flex p-4 border-b border-neutral-300 relative;
+    border-bottom-color: #DEE1E9;
+    @apply flex p-4 relative border-b;
   }
 
   .messagePreviewItem:hover {
-    background-color: #feece4;
-    @apply border-r-2 border-b-0 border-primary-500;
+    @apply bg-primary-50 border-r-2 border-b-0 border-primary-500;
   }
 
   .messagesBoxContainer {

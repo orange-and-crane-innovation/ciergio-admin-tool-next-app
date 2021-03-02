@@ -2,14 +2,23 @@ import P from 'prop-types'
 import { displayDateCreated } from '@app/utils/date'
 import styles from '../messages.module.css'
 
-export default function MessagePreviewItem({ onClick, data, isSelected }) {
+export default function MessagePreviewItem({
+  onClick,
+  data,
+  isSelected,
+  currentUserid
+}) {
   const author = data?.author?.user
   const participant = data?.participants?.data[1]?.user
   const participantName = `${participant?.firstName} ${participant?.lastName}`
   const authorName = `${author?.firstName} ${author?.lastName}`
   const previewHead = `${author?.unit?.name || 'Unit 000'} - ${participantName}`
   const newestMessage = data?.messages?.data[0]?.message
-  const previewTextState = data?.selected ? 'font-normal' : 'font-bold'
+  const isSeen =
+    data?.messages?.viewers?.data?.findIndex(
+      viewer => parseInt(viewer?.user?._id) === currentUserid
+    ) !== -1
+  const previewTextState = isSeen ? 'font-normal' : 'font-bold'
   const defaultAvatarUri = `https://ui-avatars.com/api/?name=${participantName}&size=32`
 
   return (
@@ -18,7 +27,9 @@ export default function MessagePreviewItem({ onClick, data, isSelected }) {
       tabIndex={0}
       onKeyDown={() => {}}
       className={`${styles.messagePreviewItem}${
-        isSelected ? ' bg-primary-50' : ' bg-white'
+        isSelected
+          ? ' bg-primary-50 border-r-2 border-primary-500 '
+          : ' bg-white'
       }`}
       onClick={() => onClick(data)}
     >
@@ -38,7 +49,7 @@ export default function MessagePreviewItem({ onClick, data, isSelected }) {
       <div className="absolute right-4 top-2 text-neutral-500">
         <span>{displayDateCreated(data?.updatedAt)}</span>
       </div>
-      {!data?.selected && !isSelected ? (
+      {!isSeen && !isSelected ? (
         <div className="w-3 h-3 bg-primary-500 rounded-full absolute right-4 bottom-10" />
       ) : null}
     </div>
@@ -48,5 +59,6 @@ export default function MessagePreviewItem({ onClick, data, isSelected }) {
 MessagePreviewItem.propTypes = {
   onClick: P.func,
   data: P.object,
-  isSelected: P.bool
+  isSelected: P.bool,
+  currentUserid: P.number
 }

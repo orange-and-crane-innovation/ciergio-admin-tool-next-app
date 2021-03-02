@@ -35,9 +35,11 @@ export default function MessageBox({
       ? [...conversation?.data]?.reverse()
       : conversation?.data
   }, [conversation?.data])
+
   const user = useMemo(() => {
     return participant?.participants?.data[1]?.user
   }, [participant?.participants])
+
   const unitName = useMemo(() => {
     return participant?.participants?.data[1]?.unit?.name
   }, [participant?.participants])
@@ -46,9 +48,11 @@ export default function MessageBox({
   return (
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
-        <h2 className="font-bold text text-base">{`${
-          unitName || 'Unit 000'
-        } - ${name}`}</h2>
+        {name ? (
+          <h2 className="font-bold text text-base">{`${
+            unitName || 'Unit 000'
+          } - ${name}`}</h2>
+        ) : null}
         <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
       </div>
       <div
@@ -61,10 +65,9 @@ export default function MessageBox({
             const author = item.author.user
             const authorName = `${author?.firstName} ${author?.lastName}`
             const accountType = item?.author?.accountType.replace('_', ' ')
-            const isCurrentUserMessage =
-              parseInt(item.author._id) === currentUserid
+            const isCurrentUserMessage = parseInt(author._id) === currentUserid
             const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
-            console.log({ isCurrentUserMessage })
+
             return (
               <div
                 key={item._id}
