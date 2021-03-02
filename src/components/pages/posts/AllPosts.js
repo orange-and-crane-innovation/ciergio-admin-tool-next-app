@@ -603,7 +603,6 @@ const PostComponent = () => {
           <SelectCategory
             placeholder="Filter Category"
             type="post"
-            userType="administrator"
             onChange={onCategorySelect}
             onClear={onClearCategory}
             selected={selectedCategory}

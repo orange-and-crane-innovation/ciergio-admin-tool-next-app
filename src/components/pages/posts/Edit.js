@@ -898,7 +898,6 @@ const CreatePosts = () => {
                       <SelectCategory
                         placeholder="Select a Category"
                         type="post"
-                        userType="administrator"
                         onChange={e => {
                           onChange(e.value)
                           onCategorySelect(e)
