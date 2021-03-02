@@ -12,15 +12,14 @@ import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
 import { BsInfoCircle } from 'react-icons/bs'
 
-const Billing = () => {
+const Billing = ({ categoriesBiling, buildingName }) => {
   const router = useRouter()
   const { buildingID } = router.query
   const [selectedDate, setSelectedDate] = useState(new Date())
   // const [activeTab, setActiveTab] = useState(1)
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [year, setYear] = useState(new Date().getFullYear())
-  const [categories, setCategories] = useState([])
-  const [building, setBuilding] = useState([])
+
   const user = JSON.parse(localStorage.getItem('profile'))
 
   const handlingMonthOrYear = (date, type = 'year') => {
@@ -34,42 +33,6 @@ const Billing = () => {
     return new Date()
   }
 
-  const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
-    variables: {
-      where: {
-        accountId: buildingID,
-        accountType: 'building'
-      },
-      limit: 100
-    }
-  })
-
-  const {
-    loading: loadingBuilding,
-    data: dataBuilding,
-    error: errorBuilding
-  } = useQuery(Query.GET_BUILDINS, {
-    variables: {
-      where: {
-        _id: buildingID,
-        status: 'active'
-      },
-      limit: 100
-    }
-  })
-
-  useEffect(() => {
-    if (!loadingBuilding && dataBuilding) {
-      setBuilding(dataBuilding)
-    }
-  }, [loadingBuilding, dataBuilding, errorBuilding])
-
-  useEffect(() => {
-    if (!loading && data && !error) {
-      setCategories(data?.getAllowedBillCategory?.data)
-    }
-  }, [loading, data, error])
-
   const handleDateChange = date => {
     setSelectedDate(date)
     setMonth(handlingMonthOrYear(date, 'month'))
@@ -78,86 +41,67 @@ const Billing = () => {
 
   return (
     <>
-      {categories && categories.length > 0 ? (
-        <>
-          <div className={styles.PageHeaderTitle}>
-            <h1 className={styles.PageHeader}>
-              {user?.accounts?.data[0]?.building?.name}
-            </h1>
-          </div>
-          <Tabs defaultTab="1">
-            <Tabs.TabLabels>
-              <Tabs.TabLabel id="1">
-                {categories.map((category, index) => {
-                  return (
-                    <>
-                      <Tabs.TabLabel id={index + 1}>
-                        <Link
-                          href={`/dues/billing/${buildingID}/${category?.categories[0]?._id}`}
-                        >
-                          <a>{category?.categories[0]?.name}</a>
-                        </Link>
-                      </Tabs.TabLabel>
-                    </>
-                  )
-                })}
-              </Tabs.TabLabel>
-            </Tabs.TabLabels>
+      <div className={styles.PageHeaderTitle}>
+        <h1 className={styles.PageHeader}>
+          {buildingName || user?.accounts?.data[0]?.building?.name}
+        </h1>
+      </div>
+      <Tabs defaultTab="1">
+        <Tabs.TabLabels>
+          <Tabs.TabLabel id="1">
+            {categoriesBiling &&
+              categoriesBiling.map((category, index) => {
+                return (
+                  <>
+                    <Tabs.TabLabel id={index + 1}>
+                      <Link
+                        href={`/dues/billing/${buildingID}/${category._id}`}
+                      >
+                        <a>{category.name}</a>
+                      </Link>
+                    </Tabs.TabLabel>
+                  </>
+                )
+              })}
+          </Tabs.TabLabel>
+        </Tabs.TabLabels>
 
-            <Tabs.TabPanels>
-              <Tabs.TabPanel id="1">
-                <div className={styles.BillingPeriodContainer}>
-                  <DatePicker
-                    date={selectedDate}
-                    onChange={handleDateChange}
-                    label={'Billing Period'}
-                    showMonthYearPicker
-                    rightIcon
-                  />
-                </div>
+        <Tabs.TabPanels>
+          <Tabs.TabPanel id="1">
+            <div className={styles.BillingPeriodContainer}>
+              <DatePicker
+                date={selectedDate}
+                onChange={handleDateChange}
+                label={'Billing Period'}
+                showMonthYearPicker
+                rightIcon
+              />
+            </div>
 
-                <Tabs defaultTab="1">
-                  <Tabs.TabLabels>
-                    <Tabs.TabLabel id="1">Unsent</Tabs.TabLabel>
-                    <Tabs.TabLabel id="2">Sent</Tabs.TabLabel>
-                  </Tabs.TabLabels>
-                  <Tabs.TabPanels>
-                    <Tabs.TabPanel id="1">
-                      <Unsent month={parseInt(month)} year={parseInt(year)} />
-                    </Tabs.TabPanel>
-                    <Tabs.TabPanel id="2">
-                      <Sent month={parseInt(month)} year={parseInt(year)} />
-                    </Tabs.TabPanel>
-                  </Tabs.TabPanels>
-                </Tabs>
-              </Tabs.TabPanel>
-            </Tabs.TabPanels>
-          </Tabs>
-        </>
-      ) : (
-        <div className="w-full h-full flex justify-center items-center content-center">
-          <div className="w-1/4 flex-col justify-center items-center content-center text-center">
-            <BsInfoCircle
-              size="100"
-              className="w-full text-center"
-              fill="rgb(238,52,12)"
-            />
-            <h3 className="text-5xl">
-              Billing has not been setup. Please contact your administrator
-            </h3>
-          </div>
-        </div>
-      )}
+            <Tabs defaultTab="1">
+              <Tabs.TabLabels>
+                <Tabs.TabLabel id="1">Unsent</Tabs.TabLabel>
+                <Tabs.TabLabel id="2">Sent</Tabs.TabLabel>
+              </Tabs.TabLabels>
+              <Tabs.TabPanels>
+                <Tabs.TabPanel id="1">
+                  <Unsent month={parseInt(month)} year={parseInt(year)} />
+                </Tabs.TabPanel>
+                <Tabs.TabPanel id="2">
+                  <Sent month={parseInt(month)} year={parseInt(year)} />
+                </Tabs.TabPanel>
+              </Tabs.TabPanels>
+            </Tabs>
+          </Tabs.TabPanel>
+        </Tabs.TabPanels>
+      </Tabs>
     </>
   )
 }
 
 Billing.protoTypes = {
-  categoryID: P.string.isRequired,
-  buildingID: P.string.isRequired,
-  categoryName: P.string.isRequired,
-  accountID: P.string.isRequired,
-  data: P.array.isRequired
+  categoriesBiling: P.array.isRequired,
+  buildingName: P.array.isRequired
 }
 
 export default Billing

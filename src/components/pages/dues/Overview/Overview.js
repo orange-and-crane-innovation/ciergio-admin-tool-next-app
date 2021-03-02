@@ -188,6 +188,8 @@ function Overview({ complexID, complexName, accountType }) {
                 <div className={styles.DateController}>
                   <DatePicker
                     rightIcon
+                    peekNextMonth
+                    showMonthYearPicker
                     selected={date}
                     onChange={handleDateChange}
                     label={'Billing Period'}
@@ -247,7 +249,7 @@ function Overview({ complexID, complexName, accountType }) {
 export default Overview
 
 Overview.propTypes = {
-  complexID: P.string.isRequired,
-  complexName: P.string.isRequired,
-  accountType: P.string.isRequired
+  complexID: P.string,
+  complexName: P.string,
+  accountType: P.string
 }

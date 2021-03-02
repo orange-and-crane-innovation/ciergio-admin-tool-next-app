@@ -66,7 +66,8 @@ const rules = {
         '/directory',
         '/contact-us',
         '/notifications',
-        '/donations'
+        '/donations',
+        'dues'
       ],
       allowedNestedRoutes: [
         '/residents/all-residents',
@@ -76,7 +77,9 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/all',
-        '/notifications/create'
+        '/notifications/create',
+        '/dues/overview',
+        '/dues/manage-categories'
       ],
       actions: [
         'messages:view',
