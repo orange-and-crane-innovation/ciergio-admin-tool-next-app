@@ -4,6 +4,8 @@ import Dropdown from '@app/components/dropdown'
 import { FaEllipsisH } from 'react-icons/fa'
 import { FiEdit2 } from 'react-icons/fi'
 
+import { IMAGES } from '@app/constants'
+
 const DropdownData = [
   {
     label: 'Edit Profile',
@@ -17,7 +19,7 @@ function PageHeader({ image, title, subtitle }) {
     <div className={styles.PageHeaderContainer}>
       <div className="flex items-center">
         <div className={styles.PageHeaderLogo}>
-          <img alt="logo" src={image} />
+          <img alt="logo" src={image ?? IMAGES.PROPERTY_AVATAR} />
         </div>
 
         <div className={styles.PageHeaderTitle}>
