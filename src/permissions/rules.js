@@ -2,6 +2,8 @@ const rules = {
   pray: {
     administrator: {
       allowedRoutes: [
+        '/properties',
+        '/staff',
         '/messages',
         '/residents',
         '/posts',
@@ -11,6 +13,11 @@ const rules = {
         '/notifications'
       ],
       allowedNestedRoutes: [
+        '/properties/company',
+        '/properties/manage/unit-types',
+        '/properties/manage/categories',
+        '/staff/all-staff',
+        '/staff/pending-invites',
         '/residents/all-residents',
         '/residents/invites-requests',
         '/posts/create',
@@ -59,7 +66,6 @@ const rules = {
     company_admin: {
       allowedRoutes: [
         '/messages',
-        '/residents',
         '/posts',
         '/prayer-requests',
         '/forms',
@@ -69,22 +75,17 @@ const rules = {
         '/donations'
       ],
       allowedNestedRoutes: [
-        '/residents/all-residents',
-        '/residents/invites-requests',
         '/posts/create',
         '/posts',
         '/forms/create',
         '/forms',
+        '/notifications/list',
         '/notifications/all',
         '/notifications/create'
       ],
       actions: [
         'messages:view',
         'messages:create',
-        'residents:view',
-        'residents:create',
-        'residents:update',
-        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -132,6 +133,7 @@ const rules = {
         '/posts',
         '/forms/create',
         '/forms',
+        '/notifications/list',
         '/notifications/all',
         '/notifications/create'
       ],
