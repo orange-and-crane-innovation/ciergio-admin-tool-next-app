@@ -77,7 +77,7 @@ export default function MessageBox({
                     className={`capitalize flex items-center ${
                       isCurrentUserMessage
                         ? 'justify-end '
-                        : 'flex-row-reverse justify-start '
+                        : 'flex-row-reverse justify-end '
                     }`}
                   >
                     <span className="block mr-">{`${accountType} - ${authorName}`}</span>
@@ -94,11 +94,13 @@ export default function MessageBox({
                   className={`${
                     isCurrentUserMessage
                       ? 'bg-primary-500 text-white '
-                      : 'bg-white '
+                      : 'bg-white float-right '
                   }py-2 px-3 border-none w-11/12 rounded shadow-none h-16 relative`}
                 >
                   <p className="font-sm">{item.message}</p>
-                  {index === messages.length - 1 && item.status === 'seen' ? (
+                  {index === messages.length - 1 &&
+                  isCurrentUserMessage &&
+                  (item.status === 'seen' || item.viewers.length > 0) ? (
                     <div className="absolute right-4 bottom-2">
                       <BsCheckAll className="w-5 h-5" />
                     </div>
