@@ -19,6 +19,7 @@ import FormTextArea from '@app/components/forms/form-textarea'
 import Button from '@app/components/button'
 import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
+import PageLoader from '@app/components/page-loader'
 
 import VideoPlayer from '@app/components/globals/VideoPlayer'
 import SelectCategory from '@app/components/globals/SelectCategory'
@@ -46,10 +47,10 @@ const validationSchema = yup.object().shape({
     .label('Title')
     .nullable()
     .trim()
-    .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
+    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
-  images: yup.array().label('Image').nullable().required(),
+  images: yup.array().label('Image').nullable(),
   category: yup.string().label('Category').nullable().required()
 })
 
@@ -58,7 +59,7 @@ const validationSchemaDraft = yup.object().shape({
     .string()
     .nullable()
     .trim()
-    .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
+    .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
   content: yup.mixed().nullable(),
   category: yup.string().nullable()
 })
@@ -72,7 +73,7 @@ const CreatePosts = () => {
   const [videoUrl, setVideoUrl] = useState()
   const [videoError, setVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
-  const [inputMaxLength] = useState(65)
+  const [inputMaxLength] = useState(120)
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
@@ -92,9 +93,9 @@ const CreatePosts = () => {
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
-  // const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
-  // const user = JSON.parse(localStorage.getItem('profile'))
-  // const accountType = user?.accounts?.data[0]?.accountType
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
 
   const [
     createPost,
@@ -283,22 +284,34 @@ const CreatePosts = () => {
         createData.publishedAt = selectedPublishDateTime
       }
       if (selectedCompanySpecific) {
-        createData.audienceExpanse = { companyIds: selectedCompanySpecific }
+        createData.audienceExpanse = {
+          companyIds: selectedCompanySpecific.map(item => item.value)
+        }
       }
       if (selectedCompanyExcept) {
-        createData.audienceExceptions = { companyIds: selectedCompanyExcept }
+        createData.audienceExceptions = {
+          companyIds: selectedCompanyExcept.map(item => item.value)
+        }
       }
       if (selectedComplexSpecific) {
-        createData.audienceExpanse = { complexIds: selectedComplexSpecific }
+        createData.audienceExpanse = {
+          complexIds: selectedComplexSpecific.map(item => item.value)
+        }
       }
       if (selectedComplexExcept) {
-        createData.audienceExceptions = { complexIds: selectedComplexExcept }
+        createData.audienceExceptions = {
+          complexIds: selectedComplexExcept.map(item => item.value)
+        }
       }
       if (selectedBuildingSpecific) {
-        createData.audienceExpanse = { buildingIds: selectedBuildingSpecific }
+        createData.audienceExpanse = {
+          buildingIds: selectedBuildingSpecific.map(item => item.value)
+        }
       }
       if (selectedBuildingExcept) {
-        createData.audienceExceptions = { buildingIds: selectedBuildingExcept }
+        createData.audienceExceptions = {
+          buildingIds: selectedBuildingExcept.map(item => item.value)
+        }
       }
       createPost({ variables: { data: createData } })
     }
@@ -329,7 +342,6 @@ const CreatePosts = () => {
   }
 
   const onSelectComplexSpecific = data => {
-    console.log(data)
     setSelectedComplexSpecific(data)
   }
 
@@ -413,330 +425,345 @@ const CreatePosts = () => {
   }
 
   return (
-    <div className={style.CreatePostContainer}>
-      <h1 className={style.CreatePostHeader}>Create a Post</h1>
-      <form>
-        <Card
-          header={<span className={style.CardHeader}>Featured Media</span>}
-          content={
-            <div className={style.CreateContentContainer}>
-              <UploaderImage
-                name="image"
-                multiple
-                maxImages={maxImages}
-                images={imageUrls}
-                loading={loading}
-                error={errors?.images?.message ?? null}
-                onUploadImage={onUploadImage}
-                onRemoveImage={onRemoveImage}
-              />
-            </div>
-          }
-        />
-
-        <Card
-          content={
-            <div className={style.CreateContentContainer}>
-              <h2 className={style.CreatePostHeaderSmall}>Title</h2>
-              <div className={style.CreatePostSubContent}>
-                <div className={style.CreatePostSubContentGrow}>
-                  <Controller
-                    name="title"
-                    control={control}
-                    render={({ name, value, onChange }) => (
-                      <FormInput
-                        inputClassName={style.CreatePostInputCustom}
-                        type="text"
-                        name={name}
-                        value={value}
-                        placeholder="What's the title of your bulletin post?"
-                        maxLength={inputMaxLength}
-                        count={textCount}
-                        error={errors?.title?.message ?? null}
-                        onChange={e => {
-                          onChange(e)
-                          onCountChar(e)
-                        }}
-                      />
-                    )}
-                  />
-                </div>
-                <div className={style.CreatePostCounter}>
-                  {textCount}/{inputMaxLength}
-                </div>
+    <>
+      {loadingCreate && <PageLoader fullPage />}
+      <div className={style.CreatePostContainer}>
+        <h1 className={style.CreatePostHeader}>Create a Post</h1>
+        <form>
+          <Card
+            header={<span className={style.CardHeader}>Featured Media</span>}
+            content={
+              <div className={style.CreateContentContainer}>
+                <UploaderImage
+                  name="image"
+                  multiple
+                  maxImages={maxImages}
+                  images={imageUrls}
+                  loading={loading}
+                  error={errors?.images?.message ?? null}
+                  onUploadImage={onUploadImage}
+                  onRemoveImage={onRemoveImage}
+                />
               </div>
-              <h2 className={style.CreatePostHeaderSmall}>Content</h2>
-              <Controller
-                name="content"
-                control={control}
-                render={({ name, value, onChange }) => (
-                  <FormTextArea
-                    options={['link', 'history']}
-                    placeholder="Write your text here"
-                    value={value}
-                    error={errors?.content?.message ?? null}
-                    onChange={onChange}
-                  />
-                )}
-              />
-            </div>
-          }
-        />
+            }
+          />
 
-        <Card
-          header={<span className={style.CardHeader}>Embed Video</span>}
-          content={
-            <div className={style.CreateContentContainer}>
-              <h2 className={style.CreatePostVideoHeader}>
-                Include a video in your bulletin post by linking a YouTube or
-                Facebook video.
-              </h2>
-              <div className={style.CreatePostCardContent}>
-                <div className={style.CreatePostVideoInput}>Video Link</div>
-                <div className={style.CreatePostVideoInputContent}>
-                  <div className="flex-grow">
+          <Card
+            content={
+              <div className={style.CreateContentContainer}>
+                <h2 className={style.CreatePostHeaderSmall}>Title</h2>
+                <div className={style.CreatePostSubContent}>
+                  <div className={style.CreatePostSubContentGrow}>
                     <Controller
-                      name="video"
+                      name="title"
                       control={control}
                       render={({ name, value, onChange }) => (
                         <FormInput
+                          inputClassName={style.CreatePostInputCustom}
+                          type="text"
                           name={name}
-                          placeholder="Add Youtube link here"
-                          value={videoUrl}
-                          error={errors?.video?.message ?? null}
-                          onBlur={onCountChar}
+                          value={value}
+                          placeholder="What's the title of your bulletin post?"
+                          maxLength={inputMaxLength}
+                          count={textCount}
+                          error={errors?.title?.message ?? null}
                           onChange={e => {
                             onChange(e)
-                            onVideoChange(e)
+                            onCountChar(e)
                           }}
                         />
                       )}
                     />
                   </div>
-                  <FaTimes
-                    className={`${style.CreatePostVideoButtonClose} ${
-                      videoUrl ? 'visible' : 'invisible'
-                    }  `}
-                    onClick={onVideoClear}
-                  />
-                  <FaSpinner
-                    className={`${style.CreatePostVideoLoading} icon-spin ${
-                      videoLoading ? 'visible' : 'invisible'
-                    }  `}
-                  />
+                  <div className={style.CreatePostCounter}>
+                    {textCount}/{inputMaxLength}
+                  </div>
                 </div>
-              </div>
-              {videoUrl && !videoError && (
-                <VideoPlayer
-                  url={videoUrl}
-                  onError={onVideoError}
-                  onReady={onVideoReady}
-                />
-              )}
-
-              {videoError && <p className={style.TextError}>{videoError}</p>}
-            </div>
-          }
-        />
-
-        <Card
-          header={<span className={style.CardHeader}>Category</span>}
-          content={
-            <div className={style.CreateContentContainer}>
-              <div className={style.CreatePostCardContent}>
+                <h2 className={style.CreatePostHeaderSmall}>Content</h2>
                 <Controller
-                  name="category"
+                  name="content"
                   control={control}
                   render={({ name, value, onChange }) => (
-                    <SelectCategory
-                      placeholder="Select a Category"
-                      type="post"
-                      userType="administrator"
-                      onChange={e => {
-                        onChange(e.value)
-                        onCategorySelect(e)
-                      }}
-                      onClear={onClearCategory}
-                      error={errors?.category?.message ?? null}
-                      selected={selectedCategory}
+                    <FormTextArea
+                      options={[
+                        'inline',
+                        'list',
+                        'link',
+                        'colorPicker',
+                        'history'
+                      ]}
+                      placeholder="Write your text here"
+                      value={value}
+                      error={errors?.content?.message ?? null}
+                      onChange={onChange}
                     />
                   )}
                 />
               </div>
-            </div>
-          }
-        />
-
-        <Card
-          header={<span className={style.CardHeader}>Publish Details</span>}
-          content={
-            <div className={style.CreateContentContainer}>
-              <div className={style.CreatePostPublishContent}>
-                <div className={style.CreatePostPublishSubContent}>
-                  <span>
-                    Status: <strong>New</strong>
-                  </span>
-                  <span className="flex flex-col">
-                    <div>
-                      Audience:
-                      <strong>
-                        {selectedAudienceType === 'allExcept'
-                          ? ' All those registered except: '
-                          : selectedAudienceType === 'specific'
-                          ? ' Only show to those selected: '
-                          : ' All those registered '}
-                      </strong>
-                      {selectedAudienceType === 'all' && (
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowAudienceModal}
-                        >
-                          Edit
-                        </span>
-                      )}
-                    </div>
-
-                    {(selectedAudienceType === 'allExcept' ||
-                      selectedAudienceType === 'specific') && (
-                      <div className="ml-20">
-                        <strong>
-                          {selectedCompanyExcept && (
-                            <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
-                          )}
-                          {selectedCompanySpecific && (
-                            <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
-                          )}
-                          {selectedComplexExcept && (
-                            <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
-                          )}
-                          {selectedComplexSpecific && (
-                            <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
-                          )}
-                          {selectedBuildingExcept && (
-                            <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
-                          )}
-                          {selectedBuildingSpecific && (
-                            <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
-                          )}
-                        </strong>
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowAudienceModal}
-                        >
-                          Edit
-                        </span>
-                      </div>
-                    )}
-                  </span>
-                </div>
-
-                <div className={style.CreatePostPublishMarginContainer}>
-                  Publish:
-                  <strong>
-                    {selectedPublishTimeType === 'later'
-                      ? ` Scheduled, ${moment(selectedPublishDateTime).format(
-                          'MMM DD, YYYY - hh:mm A'
-                        )} `
-                      : ' Immediately '}
-                  </strong>
-                  <span
-                    className={style.CreatePostLink}
-                    onClick={handleShowPublishTimeModal}
-                  >
-                    Edit
-                  </span>
-                </div>
-                <span />
-              </div>
-            </div>
-          }
-        />
-
-        <div className={style.CreatePostFooter}>
-          <Button
-            default
-            type="button"
-            label="Save as Draft"
-            className={style.CreatePostFooterButton}
-            onMouseDown={() => onUpdateStatus('draft')}
-            onClick={handleSubmit(e => {
-              onSubmit(e, 'draft')
-            })}
+            }
           />
-          <span>
+
+          <Card
+            header={<span className={style.CardHeader}>Embed Video</span>}
+            content={
+              <div className={style.CreateContentContainer}>
+                <h2 className={style.CreatePostVideoHeader}>
+                  Include a video in your bulletin post by linking a YouTube or
+                  Facebook video.
+                </h2>
+                <div className={style.CreatePostCardContent}>
+                  <div className={style.CreatePostVideoInput}>Video Link</div>
+                  <div className={style.CreatePostVideoInputContent}>
+                    <div className="flex-grow">
+                      <Controller
+                        name="video"
+                        control={control}
+                        render={({ name, value, onChange }) => (
+                          <FormInput
+                            name={name}
+                            placeholder="Add Youtube link here"
+                            value={videoUrl}
+                            error={errors?.video?.message ?? null}
+                            onBlur={onCountChar}
+                            onChange={e => {
+                              onChange(e)
+                              onVideoChange(e)
+                            }}
+                          />
+                        )}
+                      />
+                    </div>
+                    <FaTimes
+                      className={`${style.CreatePostVideoButtonClose} ${
+                        videoUrl ? 'visible' : 'invisible'
+                      }  `}
+                      onClick={onVideoClear}
+                    />
+                    <FaSpinner
+                      className={`${style.CreatePostVideoLoading} icon-spin ${
+                        videoLoading ? 'visible' : 'invisible'
+                      }  `}
+                    />
+                  </div>
+                </div>
+                {videoUrl && !videoError && (
+                  <VideoPlayer
+                    url={videoUrl}
+                    onError={onVideoError}
+                    onReady={onVideoReady}
+                  />
+                )}
+
+                {videoError && <p className={style.TextError}>{videoError}</p>}
+              </div>
+            }
+          />
+
+          <Card
+            header={<span className={style.CardHeader}>Category</span>}
+            content={
+              <div className={style.CreateContentContainer}>
+                <div className={style.CreatePostCardContent}>
+                  <Controller
+                    name="category"
+                    control={control}
+                    render={({ name, value, onChange }) => (
+                      <SelectCategory
+                        placeholder="Select a Category"
+                        type="post"
+                        userType="administrator"
+                        onChange={e => {
+                          onChange(e.value)
+                          onCategorySelect(e)
+                        }}
+                        onClear={onClearCategory}
+                        error={errors?.category?.message ?? null}
+                        selected={selectedCategory}
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+            }
+          />
+
+          <Card
+            header={<span className={style.CardHeader}>Publish Details</span>}
+            content={
+              <div className={style.CreateContentContainer}>
+                <div className={style.CreatePostPublishContent}>
+                  <div className={style.CreatePostPublishSubContent}>
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Status: </span>
+                      <strong>New</strong>
+                    </span>
+                    <span className="flex flex-col">
+                      <div className="flex">
+                        <span className={style.CreatePostSection}>
+                          Audience:{' '}
+                        </span>
+                        <span className="mr-2">
+                          <strong>
+                            {selectedAudienceType === 'allExcept'
+                              ? ' All those registered except'
+                              : selectedAudienceType === 'specific'
+                              ? ' Only show to those selected'
+                              : ' All those registered'}
+                          </strong>
+                        </span>
+                        {(systemType !== 'pray' ||
+                          (systemType === 'pray' &&
+                            accountType !== 'complex_admin')) && (
+                          <span
+                            className={style.CreatePostLink}
+                            onClick={handleShowAudienceModal}
+                          >
+                            Edit
+                          </span>
+                        )}
+                      </div>
+
+                      {(selectedAudienceType === 'allExcept' ||
+                        selectedAudienceType === 'specific') && (
+                        <div className="flex">
+                          <span className={style.CreatePostSection} />
+                          <span>
+                            <strong>
+                              {selectedCompanyExcept && (
+                                <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                              )}
+                              {selectedCompanySpecific && (
+                                <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+                              )}
+                              {selectedComplexExcept && (
+                                <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                              )}
+                              {selectedComplexSpecific && (
+                                <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                              )}
+                              {selectedBuildingExcept && (
+                                <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                              )}
+                              {selectedBuildingSpecific && (
+                                <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                              )}
+                            </strong>
+                          </span>
+                        </div>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className={style.CreatePostPublishMarginContainer}>
+                    <span style={{ minWidth: '65px' }}>Publish: </span>
+                    <span className="mr-2">
+                      <strong>
+                        {selectedPublishTimeType === 'later'
+                          ? ` Scheduled, ${moment(
+                              selectedPublishDateTime
+                            ).format('MMM DD, YYYY - hh:mm A')} `
+                          : ' Immediately'}
+                      </strong>
+                    </span>
+                    <span
+                      className={style.CreatePostLink}
+                      onClick={handleShowPublishTimeModal}
+                    >
+                      Edit
+                    </span>
+                  </div>
+                  <span />
+                </div>
+              </div>
+            }
+          />
+
+          <div className={style.CreatePostFooter}>
             <Button
               default
               type="button"
-              label="Preview"
+              label="Save as Draft"
               className={style.CreatePostFooterButton}
               onMouseDown={() => onUpdateStatus('draft')}
               onClick={handleSubmit(e => {
-                handleShowModal('preview')
+                onSubmit(e, 'draft')
               })}
             />
-            <Button
-              type="button"
-              label="Publish Post"
-              primary
-              onMouseDown={() => onUpdateStatus('active')}
-              onClick={handleSubmit(e => {
-                onSubmit(e, 'active')
-              })}
-            />
-          </span>
-        </div>
-      </form>
+            <span>
+              <Button
+                default
+                type="button"
+                label="Preview"
+                className={style.CreatePostFooterButton}
+                onMouseDown={() => onUpdateStatus('draft')}
+                onClick={handleSubmit(e => {
+                  handleShowModal('preview')
+                })}
+              />
+              <Button
+                type="button"
+                label="Publish Post"
+                primary
+                onMouseDown={() => onUpdateStatus('active')}
+                onClick={handleSubmit(e => {
+                  onSubmit(e, 'active')
+                })}
+              />
+            </span>
+          </div>
+        </form>
 
-      <AudienceModal
-        onSelectAudienceType={onSelectType}
-        onSelectCompanyExcept={onSelectCompanyExcept}
-        onSelectCompanySpecific={onSelectCompanySpecific}
-        onSelectComplexExcept={onSelectComplexExcept}
-        onSelectComplexSpecific={onSelectComplexSpecific}
-        onSelectBuildingExcept={onSelectBuildingExcept}
-        onSelectBuildingSpecific={onSelectBuildingSpecific}
-        onSave={onSaveAudience}
-        onCancel={onCancelAudience}
-        onClose={onCancelAudience}
-        isShown={showAudienceModal}
-        valueAudienceType={selectedAudienceType}
-        valueCompanyExcept={selectedCompanyExcept}
-        valueCompanySpecific={selectedCompanySpecific}
-        valueComplexExcept={selectedComplexExcept}
-        valueComplexSpecific={selectedComplexSpecific}
-        valueBuildingExcept={selectedBuildingExcept}
-        valueBuildingSpecific={selectedBuildingSpecific}
-      />
+        <AudienceModal
+          onSelectAudienceType={onSelectType}
+          onSelectCompanyExcept={onSelectCompanyExcept}
+          onSelectCompanySpecific={onSelectCompanySpecific}
+          onSelectComplexExcept={onSelectComplexExcept}
+          onSelectComplexSpecific={onSelectComplexSpecific}
+          onSelectBuildingExcept={onSelectBuildingExcept}
+          onSelectBuildingSpecific={onSelectBuildingSpecific}
+          onSave={onSaveAudience}
+          onCancel={onCancelAudience}
+          onClose={onCancelAudience}
+          isShown={showAudienceModal}
+          valueAudienceType={selectedAudienceType}
+          valueCompanyExcept={selectedCompanyExcept}
+          valueCompanySpecific={selectedCompanySpecific}
+          valueComplexExcept={selectedComplexExcept}
+          valueComplexSpecific={selectedComplexSpecific}
+          valueBuildingExcept={selectedBuildingExcept}
+          valueBuildingSpecific={selectedBuildingSpecific}
+        />
 
-      <PublishTimeModal
-        onSelectType={onSelectPublishTimeType}
-        onSelectDateTime={onSelectPublishDateTime}
-        onSave={onSavePublishTime}
-        onCancel={onCancelPublishTime}
-        onClose={onCancelPublishTime}
-        isShown={showPublishTimeModal}
-        valuePublishType={selectedPublishTimeType}
-        valueDateTime={selectedPublishDateTime}
-      />
+        <PublishTimeModal
+          onSelectType={onSelectPublishTimeType}
+          onSelectDateTime={onSelectPublishDateTime}
+          onSave={onSavePublishTime}
+          onCancel={onCancelPublishTime}
+          onClose={onCancelPublishTime}
+          isShown={showPublishTimeModal}
+          valuePublishType={selectedPublishTimeType}
+          valueDateTime={selectedPublishDateTime}
+        />
 
-      <Modal
-        title={modalTitle}
-        visible={showModal}
-        onClose={handleClearModal}
-        footer={modalFooter}
-        okText={
-          modalType === 'draft'
-            ? 'Yes, move to trash'
-            : modalType === 'preview'
-            ? 'Save & Continue'
-            : 'Yes'
-        }
-        onOk={() => (modalType === 'preview' ? onPreviewPost() : null)}
-        onCancel={() => setShowModal(old => !old)}
-      >
-        <div className="w-full">{modalContent}</div>
-      </Modal>
-    </div>
+        <Modal
+          title={modalTitle}
+          visible={showModal}
+          onClose={handleClearModal}
+          footer={modalFooter}
+          okText={
+            modalType === 'draft'
+              ? 'Yes, move to trash'
+              : modalType === 'preview'
+              ? 'Save & Continue'
+              : 'Yes'
+          }
+          onOk={() => (modalType === 'preview' ? onPreviewPost() : null)}
+          onCancel={() => setShowModal(old => !old)}
+        >
+          <div className="w-full">{modalContent}</div>
+        </Modal>
+      </div>
+    </>
   )
 }
 

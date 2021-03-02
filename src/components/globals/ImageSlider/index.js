@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import ImageGallery from 'react-image-gallery'
 import 'react-image-gallery/styles/css/image-gallery.css'
-import { ImCircleLeft, ImCircleRight } from 'react-icons/im'
 
 import styles from './index.module.css'
 
@@ -14,7 +13,7 @@ const SearchComponent = ({ images }) => {
         disabled={disabled}
         onClick={onClick}
       >
-        <ImCircleLeft className="text-4xl" />
+        <span className="text-6xl">&#10094;</span>
       </button>
     )
   }
@@ -26,7 +25,7 @@ const SearchComponent = ({ images }) => {
         disabled={disabled}
         onClick={onClick}
       >
-        <ImCircleRight className="text-4xl" />
+        <span className="text-6xl">&#10095;</span>
       </button>
     )
   }

@@ -22,12 +22,14 @@ const GET_COMPANIES_QUERY = gql`
 `
 
 const SelectCategoryComponent = ({
+  name,
   type,
   userType,
   selected,
   error,
   onChange,
-  onClear
+  onClear,
+  isMulti
 }) => {
   const [lists, setLists] = useState()
 
@@ -69,27 +71,34 @@ const SelectCategoryComponent = ({
   return (
     <div className={styles.SelectCompanyContainer}>
       <FormSelect
-        name="companyIds"
+        name={name}
         placeholder={'Select a Company'}
         valueholder="Company"
         noOptionsMessage={() => 'No item found.'}
         defaultValue={selected}
         options={lists || []}
+        error={error}
         onChange={onChange}
         onClear={onClear}
-        isMulti={true}
+        isMulti={isMulti}
       />
     </div>
   )
 }
 
+SelectCategoryComponent.defaultProps = {
+  name: 'companyIds'
+}
+
 SelectCategoryComponent.propTypes = {
+  name: PropTypes.string,
   type: PropTypes.string,
   userType: PropTypes.string,
   selected: PropTypes.any,
   error: PropTypes.string,
   onChange: PropTypes.func,
-  onClear: PropTypes.func
+  onClear: PropTypes.func,
+  isMulti: PropTypes.bool
 }
 
 export default SelectCategoryComponent

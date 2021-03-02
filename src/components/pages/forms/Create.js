@@ -16,6 +16,7 @@ import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
 import Button from '@app/components/button'
 import Uploader from '@app/components/uploader'
+import PageLoader from '@app/components/page-loader'
 
 import showToast from '@app/utils/toast'
 
@@ -210,22 +211,34 @@ const CreatePosts = () => {
         createData.publishedAt = selectedPublishDateTime
       }
       if (selectedCompanySpecific) {
-        createData.audienceExpanse = { companyIds: selectedCompanySpecific }
+        createData.audienceExpanse = {
+          companyIds: selectedCompanySpecific.map(item => item.value)
+        }
       }
       if (selectedCompanyExcept) {
-        createData.audienceExceptions = { companyIds: selectedCompanyExcept }
+        createData.audienceExceptions = {
+          companyIds: selectedCompanyExcept.map(item => item.value)
+        }
       }
       if (selectedComplexSpecific) {
-        createData.audienceExpanse = { complexIds: selectedComplexSpecific }
+        createData.audienceExpanse = {
+          complexIds: selectedComplexSpecific.map(item => item.value)
+        }
       }
       if (selectedComplexExcept) {
-        createData.audienceExceptions = { complexIds: selectedComplexExcept }
+        createData.audienceExceptions = {
+          complexIds: selectedComplexExcept.map(item => item.value)
+        }
       }
       if (selectedBuildingSpecific) {
-        createData.audienceExpanse = { buildingIds: selectedBuildingSpecific }
+        createData.audienceExpanse = {
+          buildingIds: selectedBuildingSpecific.map(item => item.value)
+        }
       }
       if (selectedBuildingExcept) {
-        createData.audienceExceptions = { buildingIds: selectedBuildingExcept }
+        createData.audienceExceptions = {
+          buildingIds: selectedBuildingExcept.map(item => item.value)
+        }
       }
       createPost({ variables: { data: createData } })
     }
@@ -315,234 +328,237 @@ const CreatePosts = () => {
   }
 
   return (
-    <div className={style.CreatePostContainer}>
-      <h1 className={style.CreatePostHeader}>Upload a Form</h1>
-      <form>
-        <Card
-          content={
-            <div className={style.CreateContentContainer}>
-              <h2 className={style.CreatePostHeaderSmall}>Title</h2>
-              <div className={style.CreatePostSubContent}>
-                <div className={style.CreatePostSubContentGrow}>
-                  <Controller
-                    name="title"
-                    control={control}
-                    render={({ name, value, onChange }) => (
-                      <FormInput
-                        inputClassName={style.CreatePostInputCustom}
-                        type="text"
-                        name={name}
-                        value={value}
-                        placeholder="What's the title of your download form?"
-                        maxLength={inputMaxLength}
-                        count={textCount}
-                        error={errors?.title?.message ?? null}
-                        onChange={e => {
-                          onChange(e)
-                          onCountChar(e)
-                        }}
-                      />
-                    )}
-                  />
-                </div>
-                <div className={style.CreatePostCounter}>
-                  {textCount}/{inputMaxLength}
-                </div>
-              </div>
-              <h2 className={style.CreatePostHeaderSmall}>Description</h2>
-              <Controller
-                name="content"
-                control={control}
-                render={({ name, value, onChange }) => (
-                  <FormTextArea
-                    maxLength={500}
-                    options={['history']}
-                    placeholder="(Optional) You may add additional notes here"
-                    withCounter
-                    value={value}
-                    error={errors?.content?.message ?? null}
-                    onChange={onChange}
-                  />
-                )}
-              />
-            </div>
-          }
-        />
-
-        <Card
-          header={<span className={style.CardHeader}>Files</span>}
-          content={
-            <div className={style.CreateContentContainer}>
-              <p>You may upload PDFs or DOCs with max file size of 1.5MB.</p>
-              <p>Maximum of 3 files only.</p>
-              <br />
-              <Uploader
-                multiple
-                files={files}
-                fileUrls={fileUrls}
-                loading={loading}
-                error={errors?.embeddedFiles?.message ?? null}
-                maxFiles={maxFiles}
-                accept=".pdf, .doc, .docx"
-                onUpload={onUploadFile}
-                onRemove={onRemoveFile}
-              />
-            </div>
-          }
-        />
-
-        <Card
-          header={<span className={style.CardHeader}>Publish Details</span>}
-          content={
-            <div className={style.CreateContentContainer}>
-              <div className={style.CreatePostPublishContent}>
-                <div className={style.CreatePostPublishSubContent}>
-                  <span>
-                    Status: <strong>New</strong>
-                  </span>
-                  <span className="flex flex-col">
-                    <div>
-                      Audience:
-                      <strong>
-                        {selectedAudienceType === 'allExcept'
-                          ? ' All those registered except: '
-                          : selectedAudienceType === 'specific'
-                          ? ' Only show to those selected: '
-                          : ' All those registered '}
-                      </strong>
-                      {selectedAudienceType === 'all' && (
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowAudienceModal}
-                        >
-                          Edit
-                        </span>
+    <>
+      {loadingCreate && <PageLoader fullPage />}
+      <div className={style.CreatePostContainer}>
+        <h1 className={style.CreatePostHeader}>Upload a Form</h1>
+        <form>
+          <Card
+            content={
+              <div className={style.CreateContentContainer}>
+                <h2 className={style.CreatePostHeaderSmall}>Title</h2>
+                <div className={style.CreatePostSubContent}>
+                  <div className={style.CreatePostSubContentGrow}>
+                    <Controller
+                      name="title"
+                      control={control}
+                      render={({ name, value, onChange }) => (
+                        <FormInput
+                          inputClassName={style.CreatePostInputCustom}
+                          type="text"
+                          name={name}
+                          value={value}
+                          placeholder="What's the title of your download form?"
+                          maxLength={inputMaxLength}
+                          count={textCount}
+                          error={errors?.title?.message ?? null}
+                          onChange={e => {
+                            onChange(e)
+                            onCountChar(e)
+                          }}
+                        />
                       )}
-                    </div>
-
-                    {(selectedAudienceType === 'allExcept' ||
-                      selectedAudienceType === 'specific') && (
-                      <div className="ml-20">
-                        <strong>
-                          {selectedCompanyExcept && (
-                            <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
-                          )}
-                          {selectedCompanySpecific && (
-                            <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
-                          )}
-                          {selectedComplexExcept && (
-                            <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
-                          )}
-                          {selectedComplexSpecific && (
-                            <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
-                          )}
-                          {selectedBuildingExcept && (
-                            <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
-                          )}
-                          {selectedBuildingSpecific && (
-                            <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
-                          )}
-                        </strong>
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowAudienceModal}
-                        >
-                          Edit
-                        </span>
-                      </div>
-                    )}
-                  </span>
+                    />
+                  </div>
+                  <div className={style.CreatePostCounter}>
+                    {textCount}/{inputMaxLength}
+                  </div>
                 </div>
-
-                <div className={style.CreatePostPublishMarginContainer}>
-                  Publish:
-                  <strong>
-                    {selectedPublishTimeType === 'later'
-                      ? ` Scheduled, ${moment(selectedPublishDateTime).format(
-                          'MMM DD, YYYY - hh:mm A'
-                        )} `
-                      : ' Immediately '}
-                  </strong>
-                  <span
-                    className={style.CreatePostLink}
-                    onClick={handleShowPublishTimeModal}
-                  >
-                    Edit
-                  </span>
-                </div>
-                <span />
+                <h2 className={style.CreatePostHeaderSmall}>Description</h2>
+                <Controller
+                  name="content"
+                  control={control}
+                  render={({ name, value, onChange }) => (
+                    <FormTextArea
+                      maxLength={500}
+                      options={['history']}
+                      placeholder="(Optional) You may add additional notes here"
+                      withCounter
+                      value={value}
+                      error={errors?.content?.message ?? null}
+                      onChange={onChange}
+                    />
+                  )}
+                />
               </div>
-            </div>
-          }
-        />
-
-        <div className={style.CreatePostFooter}>
-          <Button
-            default
-            type="button"
-            label="Save as Draft"
-            className={style.CreatePostFooterButton}
-            onMouseDown={() => onUpdateStatus('draft')}
-            onClick={handleSubmit(e => {
-              onSubmit(e, 'draft')
-            })}
+            }
           />
-          <span>
+
+          <Card
+            header={<span className={style.CardHeader}>Files</span>}
+            content={
+              <div className={style.CreateContentContainer}>
+                <p>You may upload PDFs or DOCs with max file size of 1.5MB.</p>
+                <p>Maximum of 3 files only.</p>
+                <br />
+                <Uploader
+                  multiple
+                  files={files}
+                  fileUrls={fileUrls}
+                  loading={loading}
+                  error={errors?.embeddedFiles?.message ?? null}
+                  maxFiles={maxFiles}
+                  accept=".pdf, .doc, .docx"
+                  onUpload={onUploadFile}
+                  onRemove={onRemoveFile}
+                />
+              </div>
+            }
+          />
+
+          <Card
+            header={<span className={style.CardHeader}>Publish Details</span>}
+            content={
+              <div className={style.CreateContentContainer}>
+                <div className={style.CreatePostPublishContent}>
+                  <div className={style.CreatePostPublishSubContent}>
+                    <span>
+                      Status: <strong>New</strong>
+                    </span>
+                    <span className="flex flex-col">
+                      <div>
+                        Audience:
+                        <strong>
+                          {selectedAudienceType === 'allExcept'
+                            ? ' All those registered except: '
+                            : selectedAudienceType === 'specific'
+                            ? ' Only show to those selected: '
+                            : ' All those registered '}
+                        </strong>
+                        {selectedAudienceType === 'all' && (
+                          <span
+                            className={style.CreatePostLink}
+                            onClick={handleShowAudienceModal}
+                          >
+                            Edit
+                          </span>
+                        )}
+                      </div>
+
+                      {(selectedAudienceType === 'allExcept' ||
+                        selectedAudienceType === 'specific') && (
+                        <div className="ml-20">
+                          <strong>
+                            {selectedCompanyExcept && (
+                              <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                            )}
+                            {selectedCompanySpecific && (
+                              <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+                            )}
+                            {selectedComplexExcept && (
+                              <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                            )}
+                            {selectedComplexSpecific && (
+                              <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                            )}
+                            {selectedBuildingExcept && (
+                              <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                            )}
+                            {selectedBuildingSpecific && (
+                              <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                            )}
+                          </strong>
+                          <span
+                            className={style.CreatePostLink}
+                            onClick={handleShowAudienceModal}
+                          >
+                            Edit
+                          </span>
+                        </div>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className={style.CreatePostPublishMarginContainer}>
+                    Publish:
+                    <strong>
+                      {selectedPublishTimeType === 'later'
+                        ? ` Scheduled, ${moment(selectedPublishDateTime).format(
+                            'MMM DD, YYYY - hh:mm A'
+                          )} `
+                        : ' Immediately '}
+                    </strong>
+                    <span
+                      className={style.CreatePostLink}
+                      onClick={handleShowPublishTimeModal}
+                    >
+                      Edit
+                    </span>
+                  </div>
+                  <span />
+                </div>
+              </div>
+            }
+          />
+
+          <div className={style.CreatePostFooter}>
             <Button
               default
               type="button"
-              label="Preview"
+              label="Save as Draft"
               className={style.CreatePostFooterButton}
               onMouseDown={() => onUpdateStatus('draft')}
               onClick={handleSubmit(e => {
                 onSubmit(e, 'draft')
               })}
             />
-            <Button
-              type="button"
-              label="Publish Post"
-              primary
-              onMouseDown={() => onUpdateStatus('active')}
-              onClick={handleSubmit(e => {
-                onSubmit(e, 'active')
-              })}
-            />
-          </span>
-        </div>
-      </form>
+            <span>
+              <Button
+                default
+                type="button"
+                label="Preview"
+                className={style.CreatePostFooterButton}
+                onMouseDown={() => onUpdateStatus('draft')}
+                onClick={handleSubmit(e => {
+                  onSubmit(e, 'draft')
+                })}
+              />
+              <Button
+                type="button"
+                label="Publish Post"
+                primary
+                onMouseDown={() => onUpdateStatus('active')}
+                onClick={handleSubmit(e => {
+                  onSubmit(e, 'active')
+                })}
+              />
+            </span>
+          </div>
+        </form>
 
-      <AudienceModal
-        onSelectAudienceType={onSelectType}
-        onSelectCompanyExcept={onSelectCompanyExcept}
-        onSelectCompanySpecific={onSelectCompanySpecific}
-        onSelectComplexExcept={onSelectComplexExcept}
-        onSelectComplexSpecific={onSelectComplexSpecific}
-        onSelectBuildingExcept={onSelectBuildingExcept}
-        onSelectBuildingSpecific={onSelectBuildingSpecific}
-        onSave={onSaveAudience}
-        onCancel={onCancelAudience}
-        onClose={onCancelAudience}
-        isShown={showAudienceModal}
-        valueAudienceType={selectedAudienceType}
-        valueCompanyExcept={selectedCompanyExcept}
-        valueCompanySpecific={selectedCompanySpecific}
-        valueComplexExcept={selectedComplexExcept}
-        valueComplexSpecific={selectedComplexSpecific}
-        valueBuildingExcept={selectedBuildingExcept}
-        valueBuildingSpecific={selectedBuildingSpecific}
-      />
+        <AudienceModal
+          onSelectAudienceType={onSelectType}
+          onSelectCompanyExcept={onSelectCompanyExcept}
+          onSelectCompanySpecific={onSelectCompanySpecific}
+          onSelectComplexExcept={onSelectComplexExcept}
+          onSelectComplexSpecific={onSelectComplexSpecific}
+          onSelectBuildingExcept={onSelectBuildingExcept}
+          onSelectBuildingSpecific={onSelectBuildingSpecific}
+          onSave={onSaveAudience}
+          onCancel={onCancelAudience}
+          onClose={onCancelAudience}
+          isShown={showAudienceModal}
+          valueAudienceType={selectedAudienceType}
+          valueCompanyExcept={selectedCompanyExcept}
+          valueCompanySpecific={selectedCompanySpecific}
+          valueComplexExcept={selectedComplexExcept}
+          valueComplexSpecific={selectedComplexSpecific}
+          valueBuildingExcept={selectedBuildingExcept}
+          valueBuildingSpecific={selectedBuildingSpecific}
+        />
 
-      <PublishTimeModal
-        onSelectType={onSelectPublishTimeType}
-        onSelectDateTime={onSelectPublishDateTime}
-        onSave={onSavePublishTime}
-        onCancel={onCancelPublishTime}
-        onClose={onCancelPublishTime}
-        isShown={showPublishTimeModal}
-        valuePublishType={selectedPublishTimeType}
-        valueDateTime={selectedPublishDateTime}
-      />
-    </div>
+        <PublishTimeModal
+          onSelectType={onSelectPublishTimeType}
+          onSelectDateTime={onSelectPublishDateTime}
+          onSave={onSavePublishTime}
+          onCancel={onCancelPublishTime}
+          onClose={onCancelPublishTime}
+          isShown={showPublishTimeModal}
+          valuePublishType={selectedPublishTimeType}
+          valueDateTime={selectedPublishDateTime}
+        />
+      </div>
+    </>
   )
 }
 

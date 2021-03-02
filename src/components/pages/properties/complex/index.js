@@ -1,6 +1,6 @@
 import React from 'react'
 
-import ComplexListsPage from './complexData'
+import ComplexListsPage from './complexLists'
 
 const ComplexDataComponent = () => {
   return <ComplexListsPage />

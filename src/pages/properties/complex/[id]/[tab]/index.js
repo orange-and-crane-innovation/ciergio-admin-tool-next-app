@@ -1,4 +1,4 @@
-import ComplexDataComponent from '@app/components/pages/properties/complex'
+import ComplexDataComponent from '@app/components/pages/properties/complex/complexData'
 
 function ComplexSinglePropertiesPage() {
   return <ComplexDataComponent />

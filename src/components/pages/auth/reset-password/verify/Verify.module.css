@@ -1,8 +1,8 @@
-.Login {
+.Verify {
   height: inherit;
   @apply flex justify-center items-center;
 
-  & .LoginWrapper {
+  & .VerifyWrapper {
     @apply flex flex-col items-center w-96;
 
     & .LogoContainer {
@@ -13,21 +13,17 @@
       }
     }
 
-    & .LoginCard {
-      @apply p-6 border rounded bg-white w-full mb-8;
-
-      & .PlatformIconContainer {
-        @apply flex flex-1 flex-col justify-center items-center mb-8;
-
-        & .PlatformIcon {
-          @apply object-contain h-16 w-16;
-        }
-      }
+    & .VerifyCard {
+      @apply p-6 border rounded bg-white w-full mb-4;
     }
 
-    & .LoginForm {
+    & .VerifyForm {
       & h2 {
-        @apply font-heading text-base text-neutral-dark mb-8;
+        @apply font-heading text-base text-neutral-dark mb-2;
+      }
+
+      & p {
+        @apply mb-8 !important;
       }
 
       & .formControl {
@@ -59,6 +55,16 @@
             @apply text-red-500;
           }
         }
+      }
+    }
+
+    & .MiniFooter {
+      @apply p-4;
+      @apply flex items-center;
+      @apply text-neutral-500 font-semibold;
+
+      > :first-child {
+        @apply mr-2 mb-1;
       }
     }
   }

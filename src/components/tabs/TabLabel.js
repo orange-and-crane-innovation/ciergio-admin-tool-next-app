@@ -11,6 +11,7 @@ const TabLabel = ({ id, activeId, children, handleClick }) => {
   return (
     <li className="-mb-px mr-1">
       <TabButton
+        id={id}
         label={children}
         onClick={selectTab}
         isSelected={activeId === id}

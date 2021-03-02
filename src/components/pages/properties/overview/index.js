@@ -23,6 +23,12 @@ const CompanyOverviewComponent = ({
   historyHeader,
   historyData,
   historyLoading,
+  units,
+  unitsLoading,
+  residents,
+  residentsLoading,
+  vacants,
+  vacantsLoading,
   activePage,
   onPageClick,
   onLimitChange,
@@ -57,7 +63,11 @@ const CompanyOverviewComponent = ({
             content={
               <>
                 <div className="text-base">Total Units</div>
-                <div className="text-5xl">20</div>
+                {unitsLoading ? (
+                  <PageLoader />
+                ) : (
+                  <div className="text-5xl">{units?.count}</div>
+                )}
               </>
             }
           />
@@ -67,7 +77,11 @@ const CompanyOverviewComponent = ({
             content={
               <>
                 <div className="text-base">Registered Residents</div>
-                <div className="text-5xl">14</div>
+                {residentsLoading ? (
+                  <PageLoader />
+                ) : (
+                  <div className="text-5xl">{residents?.count}</div>
+                )}
               </>
             }
           />
@@ -77,7 +91,11 @@ const CompanyOverviewComponent = ({
             content={
               <>
                 <div className="text-base">Vacant Units</div>
-                <div className="text-5xl">7</div>
+                {vacantsLoading ? (
+                  <PageLoader />
+                ) : (
+                  <div className="text-5xl">{vacants?.count}</div>
+                )}
               </>
             }
           />
@@ -86,8 +104,9 @@ const CompanyOverviewComponent = ({
 
       <div className={styles.PageSubContainer}>
         <div className={styles.PageSubContainer2}>
-          {((systemType !== 'PRAY' && type === 'complex') ||
-            type === 'company') && (
+          {((systemType !== 'pray' && type === 'complex') ||
+            type === 'company' ||
+            type === 'building') && (
             <>
               <Card
                 noPadding
@@ -227,14 +246,20 @@ CompanyOverviewComponent.propTypes = {
   propertyHeader: P.array.isRequired,
   propertyData: P.object,
   propertyLoading: P.bool,
-  historyHeader: P.array.isRequired,
+  historyHeader: P.array,
   historyData: P.object,
   historyLoading: P.bool,
+  units: P.object,
+  unitsLoading: P.bool,
+  residents: P.object,
+  residentsLoading: P.bool,
+  vacants: P.object,
+  vacantsLoading: P.bool,
   activePage: P.number.isRequired,
   onPageClick: P.func.isRequired,
   onLimitChange: P.func.isRequired,
-  onCreateButtonClick: P.func.isRequired,
-  onHistoryButtonClick: P.func.isRequired,
+  onCreateButtonClick: P.func,
+  onHistoryButtonClick: P.func,
   onUnitButtonClick: P.func
 }
 

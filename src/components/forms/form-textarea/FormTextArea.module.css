@@ -4,7 +4,8 @@
   .FormTextAreaSubContainer {
     @apply border;
     @apply rounded-md;
-    min-height: 8rem;
+    @apply overflow-auto;
+    min-height: 24rem;
     max-height: 32rem;
   }
 

@@ -31,11 +31,11 @@ const Component = ({
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      id: '',
-      logo: '',
-      name: '',
-      location: '',
-      address: ''
+      id: data?._id ?? '',
+      logo: [data?.avatar] ?? [],
+      name: data?.name ?? '',
+      location: data?.address?.formattedAddress ?? '',
+      address: data?.address ?? ''
     }
   })
 
@@ -151,7 +151,7 @@ const Component = ({
             <FormInput
               id={name}
               name={name}
-              placeholder="Enter name of company"
+              placeholder="Enter name of complex"
               value={value}
               error={errors?.name?.message ?? null}
               onChange={onChange}

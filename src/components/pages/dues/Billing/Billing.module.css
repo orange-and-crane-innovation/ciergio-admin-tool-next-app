@@ -1,0 +1,8 @@
+
+  .BillingPeriodContainer {
+    @apply mb-5;
+    @apply flex items-start justify-between mt-6 flex-col md:w-1/5 md:flex-col;
+  }
+
+  
+  

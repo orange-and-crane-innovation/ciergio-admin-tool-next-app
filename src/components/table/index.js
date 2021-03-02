@@ -26,20 +26,16 @@ const Table = ({
     <div className={styles.tableContainer}>
       <table className={styles.tableControl}>
         <thead className={styles.tableHeader}>
-          {custom ? (
-            customHeader
-          ) : (
-            <tr>
-              {rowNames &&
-                rowNames.map((item, index) => {
-                  return (
-                    <th key={index} width={item.width}>
-                      {item.name}
-                    </th>
-                  )
-                })}
-            </tr>
-          )}
+          <tr>
+            {rowNames &&
+              rowNames.map((item, index) => {
+                return (
+                  <th key={index} width={item.width}>
+                    {item.name}
+                  </th>
+                )
+              })}
+          </tr>
         </thead>
         <tbody className={styles.tableBody}>
           {custom
@@ -72,11 +68,11 @@ const Table = ({
                 )
               })}
 
-          {!custom && listItem.length === 0 && (
+          {listItem.length === 0 && (customBody?.length === 0 || !customBody) && (
             <tr>
               <td
                 className="border px-8 py-4 text-center"
-                colSpan={rowNames.length}
+                colSpan={rowNames?.length}
               >
                 {emptyText || 'No data'}
               </td>

@@ -17,10 +17,9 @@ function Component({
         <select
           type={type || 'text'}
           placeholder={placeholder || ''}
-          className="input"
+          className="input w-full"
           onChange={onChange}
         >
-          {placeholder ? <option value="all">{placeholder}</option> : null}
           {options.map(({ label, value }) => (
             <option key={label} value={value}>
               {label}

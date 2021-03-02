@@ -1,0 +1,87 @@
+.Login {
+  height: inherit;
+  @apply flex justify-center items-center;
+
+  & .LoginWrapper {
+    @apply flex flex-col items-center w-96;
+
+    & .LogoContainer {
+      @apply flex mb-8;
+
+      & .Logo {
+        @apply object-contain h-24;
+      }
+    }
+
+    & .LoginCard {
+      @apply p-6 border rounded bg-white w-full mb-4;
+
+      & .PlatformIconContainer {
+        @apply flex flex-1 flex-col justify-center items-center mb-4;
+
+        & .PlatformSubContainer {
+          @apply p-2 h-16 w-16 mb-2;
+          @apply border border-neutral-300;
+          @apply rounded-full;
+
+          & .PlatformIcon {
+            @apply object-contain h-16 w-16;
+          }
+        }
+      }
+    }
+
+    & .LoginForm {
+      & h2 {
+        @apply font-heading text-base text-neutral-dark mb-8;
+      }
+
+      & .formControl {
+        @apply mb-8;
+
+        & label {
+          @apply block;
+
+          & .formLabel {
+            @apply block mb-4;
+          }
+
+          & span {
+            @apply text-neutral-dark font-body font-bold text-sm;
+          }
+        }
+      }
+
+      & .hasError {
+        & [type='text'],
+        & [type='password'] {
+          @apply border-red-500;
+        }
+
+        & label {
+          @apply block;
+
+          & span {
+            @apply text-red-500;
+          }
+        }
+      }
+    }
+
+    & .MiniFooter {
+      @apply p-4;
+      @apply flex items-center;
+      @apply text-neutral-500 font-semibold;
+
+      > :first-child {
+        @apply mr-2 mb-1;
+      }
+    }
+
+    & .PageLink {
+      @apply text-info-900;
+      @apply cursor-pointer;
+      @apply hover:underline;
+    }
+  }
+}
