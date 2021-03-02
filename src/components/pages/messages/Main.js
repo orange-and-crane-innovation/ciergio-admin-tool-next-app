@@ -62,7 +62,7 @@ export default function Main() {
     variables: {
       where: {
         participants: [accountId],
-        includeEmptyConversation: true,
+        includeEmptyConversation: false,
         pending: showPendingMessages,
         type: convoType
       }
