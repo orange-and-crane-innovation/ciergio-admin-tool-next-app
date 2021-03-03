@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
+import axios from 'axios'
 import Dropdown from '@app/components/dropdown'
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
@@ -8,6 +9,7 @@ import MessagePreviewItem from './components/MessagePreviewItem'
 import MessageBox from './components/MessageBox'
 import NewMessageModal from './components/NewMessageModal'
 import useDebounce from '@app/utils/useDebounce'
+import showToast from '@app/utils/toast'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { GoSettings } from 'react-icons/go'
 import { FiEdit } from 'react-icons/fi'
@@ -35,6 +37,10 @@ export default function Main() {
   const [showNewMessageModal, setShowNewMessageModal] = useState(false)
   const [selectedConvo, setSelectedConvo] = useState(null)
   const [search, setSearch] = useState('')
+  const [uploadedAttachments, setUploadedAttachments] = useState(null)
+  const [attachmentURLs, setAttachmentURLs] = useState([])
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
+  const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
 
   useEffect(() => {
@@ -202,7 +208,15 @@ export default function Main() {
       variables: {
         convoId: selectedConvo?._id,
         data: {
-          message
+          message,
+          attachments:
+            uploadedAttachments?.length > 0
+              ? [...uploadedAttachments].map(({ url, filename, type }) => ({
+                  url,
+                  type,
+                  filename
+                }))
+              : []
         }
       }
     })
@@ -210,6 +224,65 @@ export default function Main() {
 
   const handleSearchAccounts = text => {
     setSearch(text)
+  }
+
+  const uploadApi = async payload => {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_UPLOAD_API,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
+    if (response.data) {
+      const data = response.data.map(item => {
+        return {
+          url: item.location,
+          type: item.mimetype,
+          filename: item.originalname,
+          size: item.size
+        }
+      })
+
+      setUploadedAttachments(old => [...old, ...data])
+    }
+  }
+
+  const onRemoveAttachment = e => {
+    const data = uploadedAttachments?.filter(item => {
+      return item.url !== e.target.dataset.id
+    })
+    setUploadedAttachments(data)
+  }
+
+  const onUploadAttachment = e => {
+    const files = e.target?.files || e.dataTransfer.files
+    const formData = new FormData()
+    const fileList = []
+
+    if (files) {
+      if (files.length > maxAttachments) {
+        showToast('info', `Maximum of ${maxAttachments} attachments only`)
+      } else {
+        setIsUploadingAttachment(true)
+        for (const file of files) {
+          const reader = new FileReader()
+
+          reader.onloadend = () => {
+            setAttachmentURLs(imageUrls => [...imageUrls, reader.result])
+            setIsUploadingAttachment(false)
+          }
+          reader.readAsDataURL(file)
+
+          formData.append('photos', file)
+          fileList.push(file)
+        }
+        uploadApi(formData)
+      }
+    }
   }
 
   return (
@@ -280,6 +353,11 @@ export default function Main() {
         loading={loadingMessages}
         onSubmitMessage={handleSubmitMessage}
         currentUserid={parseInt(profile?._id)}
+        onUpload={onUploadAttachment}
+        onRemove={onRemoveAttachment}
+        loadingAttachment={isUploadingAttachment}
+        attachments={uploadedAttachments}
+        attachmentURLs={attachmentURLs}
       />
       <NewMessageModal
         visible={showNewMessageModal}

@@ -2,10 +2,11 @@ import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import Dropdown from '@app/components/dropdown'
 import Spinner from '@app/components/spinner'
+import useWindowDimensions from '@app/utils/useWindowDimensions'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { FiImage } from 'react-icons/fi'
+import { FaSpinner } from 'react-icons/fa'
 import { BsCheckAll } from 'react-icons/bs'
-import useWindowDimensions from '@app/utils/useWindowDimensions'
 import styles from '../messages.module.css'
 
 export default function MessageBox({
@@ -13,10 +14,15 @@ export default function MessageBox({
   conversation,
   loading,
   currentUserid,
-  onSubmitMessage
+  onSubmitMessage,
+  onUpload,
+  attachments,
+  onRemove
 }) {
   const [messageText, setMessageText] = useState('')
+  const [isOver, setIsOver] = useState(false)
   const { height } = useWindowDimensions()
+
   const dropdownData = [
     {
       label: 'Group',
@@ -29,6 +35,9 @@ export default function MessageBox({
       function: () => {}
     }
   ]
+  const containerClass = isOver
+    ? `${styles.uploaderContainer} ${styles.over}`
+    : styles.uploaderContainer
 
   const messages = useMemo(() => {
     return Array.isArray(conversation?.data)
@@ -45,6 +54,41 @@ export default function MessageBox({
   }, [participant?.participants])
   const name = `${user?.firstName} ${user?.lastName}`
 
+  const handleChange = () => {
+    document.getElementById('attachment').click()
+  }
+
+  const handleDragOver = e => {
+    e.preventDefault()
+    setIsOver(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsOver(false)
+  }
+
+  const handleOnDrop = e => {
+    e.preventDefault()
+    setIsOver(false)
+    onUpload(e)
+  }
+
+  const handleRemove = () => {
+    setIsOver(false)
+  }
+
+  const getAttachmentSize = file => {
+    const size = file.size
+    if (size === 0) return '0 Bytes'
+
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    const i = Math.floor(Math.log(size) / Math.log(k))
+
+    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
   return (
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
@@ -57,7 +101,11 @@ export default function MessageBox({
       </div>
       <div
         className={styles.messageBoxList}
-        style={{ height: `calc(${height}px - 175px)` }}
+        style={{
+          height: `calc(${height}px - ${
+            attachments?.length > 0 ? '217' : '175'
+          }px)`
+        }}
       >
         {loading && messages?.length === 0 ? <Spinner /> : null}
         {!loading && messages?.length > 0 ? (
@@ -118,6 +166,35 @@ export default function MessageBox({
           </div>
         )}
       </div>
+      {attachments?.length ? (
+        <div className={styles.messageAttachmentsContainer}>
+          {attachments.map((attachment, index) => (
+            <div className={styles.messageAttachment} key={index}>
+              <div className={styles.messageAttachmentName}>
+                {attachment.filename}
+              </div>
+              <div className="font-normal text-neutral-600">
+                ({getAttachmentSize(attachment)})
+              </div>
+              <button
+                className={styles.uploaderButton}
+                data-name={attachment?.filename}
+                data-id={attachment.url}
+                onClick={e => {
+                  handleRemove()
+                  onRemove(e)
+                }}
+              >
+                <span
+                  className="ciergio-close"
+                  data-name={attachment?.filename}
+                  data-id={attachment.url}
+                />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
       <div className={styles.messageBoxInput}>
         <div className="col-span-1 flex items-center justify-center">
           <img
@@ -142,7 +219,32 @@ export default function MessageBox({
           />
         </div>
         <div className="col-span-1 flex items-center justify-center">
-          <FiImage className="w-4 h-4 cursor-pointer" />
+          <div className={containerClass}>
+            <input
+              className="hidden"
+              type="file"
+              id="attachment"
+              name="attachment"
+              multiple
+              onChange={onUpload}
+              accept="image/jpg, image/jpeg, image/png, .pdf, .doc, .docx"
+            />
+            <div
+              role="button"
+              tabIndex={0}
+              onKeyDown={() => {}}
+              onClick={handleChange}
+              onDrop={handleOnDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+              {loading ? (
+                <FaSpinner className="icon-spin" />
+              ) : (
+                <FiImage className="w-4 h-4 cursor-pointer" />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -154,5 +256,9 @@ MessageBox.propTypes = {
   conversation: P.object,
   loading: P.bool,
   currentUserid: P.number,
-  onSubmitMessage: P.func
+  onSubmitMessage: P.func,
+  attachmentURLs: P.array,
+  onUpload: P.func,
+  onRemove: P.func,
+  attachments: P.array
 }

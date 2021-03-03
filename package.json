@@ -45,6 +45,7 @@
     "postcss-custom-properties": "^10.0.0",
     "postcss-nesting": "^7.0.1",
     "react": "17.0.1",
+    "react-csv": "^2.0.3",
     "react-datepicker": "^3.4.1",
     "react-datetime": "^3.0.4",
     "react-dnd": "^11.1.3",
