@@ -36,6 +36,7 @@ const rules = {
         'bulletin:embed',
         'forms:view',
         'forms:create',
+        'forms:update::trash',
         'directory:contact:view',
         'directory:contact:update',
         'directory:contact:create',
@@ -95,6 +96,8 @@ const rules = {
         'bulletin:embed',
         'forms:view',
         'forms:create',
+        'forms:draft',
+        'forms:update::trash',
         'directory:create',
         'directory:view',
         'directory:update',
@@ -161,6 +164,8 @@ const rules = {
         'bulletin:embed',
         'forms:view',
         'forms:create',
+        'forms:draft',
+        'forms:update::trash',
         'directory:create',
         'directory:view',
         'directory:update',
@@ -223,7 +228,10 @@ const rules = {
         'dues:delete',
         'dues:view::update',
         'forms:view',
-        'forms:create'
+        'forms:create',
+        'forms:draft',
+        'forms:update::trash',
+        'forms:restore::delete'
       ]
     }
   },

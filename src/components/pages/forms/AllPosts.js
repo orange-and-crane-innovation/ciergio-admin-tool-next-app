@@ -318,7 +318,14 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              button: (
+                <Can
+                  perform="forms:view"
+                  yes={
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  }
+                />
+              )
             }
           }) || null
       }

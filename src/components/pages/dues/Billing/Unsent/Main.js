@@ -343,7 +343,7 @@ function Unsent({ month, year }) {
 
         const unitName = row.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
-        ${row?.unitOwner?.user?.lastName.charAt(0)}`
+        ${row?.unitOwner?.user?.lastName}`
         const uploadFile = (
           <FileUpload
             label="Upload File"

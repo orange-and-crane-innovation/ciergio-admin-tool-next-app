@@ -297,7 +297,7 @@ function Sent({ month, year }) {
         const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
         const unitName = row?.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
-            ${row?.unitOwner?.user?.lastName.charAt(0)}`
+            ${row?.unitOwner?.user?.lastName}`
         const dropDown = (
           <Can
             perform="dues:view::update"

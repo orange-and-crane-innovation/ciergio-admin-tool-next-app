@@ -17,7 +17,7 @@ import FormTextArea from '@app/components/forms/form-textarea'
 import Button from '@app/components/button'
 import Uploader from '@app/components/uploader'
 import PageLoader from '@app/components/page-loader'
-
+import Can from '@app/permissions/can'
 import showToast from '@app/utils/toast'
 
 import AudienceModal from './components/AudienceModal'
@@ -503,24 +503,46 @@ const CreatePosts = () => {
               })}
             />
             <span>
-              <Button
-                default
-                type="button"
-                label="Preview"
-                className={style.CreatePostFooterButton}
-                onMouseDown={() => onUpdateStatus('draft')}
-                onClick={handleSubmit(e => {
-                  onSubmit(e, 'draft')
-                })}
+              <Can
+                perform="forms:draft"
+                yes={
+                  <Button
+                    default
+                    type="button"
+                    label="Preview"
+                    className={style.CreatePostFooterButton}
+                    onMouseDown={() => onUpdateStatus('draft')}
+                    onClick={handleSubmit(e => {
+                      onSubmit(e, 'draft')
+                    })}
+                  />
+                }
+                no={
+                  <Button
+                    default
+                    type="button"
+                    label="Preview"
+                    className={style.CreatePostFooterButton}
+                    disabled
+                  />
+                }
               />
-              <Button
-                type="button"
-                label="Publish Post"
-                primary
-                onMouseDown={() => onUpdateStatus('active')}
-                onClick={handleSubmit(e => {
-                  onSubmit(e, 'active')
-                })}
+              <Can
+                perform="forms:create"
+                yes={
+                  <Button
+                    type="button"
+                    label="Publish Post"
+                    primary
+                    onMouseDown={() => onUpdateStatus('active')}
+                    onClick={handleSubmit(e => {
+                      onSubmit(e, 'active')
+                    })}
+                  />
+                }
+                no={
+                  <Button type="button" label="Publish Post" primary disabled />
+                }
               />
             </span>
           </div>
