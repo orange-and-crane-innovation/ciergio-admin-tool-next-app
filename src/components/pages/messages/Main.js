@@ -216,7 +216,7 @@ export default function Main() {
                   type,
                   filename
                 }))
-              : []
+              : null
         }
       }
     })
