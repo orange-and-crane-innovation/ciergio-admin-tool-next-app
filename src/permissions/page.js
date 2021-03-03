@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
-
+import NotFound from '@app/pages/404'
 import check from './check'
 
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
-const Can = ({ perform, yes, no }) => {
+const Page = ({ route, page }) => {
   const [user] = useState(
     JSON.parse(localStorage.getItem('profile')) || undefined
   )
@@ -17,18 +17,12 @@ const Can = ({ perform, yes, no }) => {
     [user]
   )
 
-  return check(systemType, profile?.role, perform) ? yes : no
+  return check(systemType, profile?.role, route) ? page : <NotFound />
 }
 
-Can.propTypes = {
-  perform: P.string,
-  yes: P.oneOfType([P.element, P.node]),
-  no: P.oneOfType([P.element, P.node])
+Page.propTypes = {
+  route: P.string,
+  page: P.oneOfType([P.element, P.node])
 }
 
-Can.defaultProps = {
-  yes: null,
-  no: null
-}
-
-export default Can
+export default Page

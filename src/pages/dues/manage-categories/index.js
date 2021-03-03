@@ -1,4 +1,5 @@
 import ManageCategories from '@app/components/pages/dues/Overview'
+import Page from '@app/permissions/page'
 
 export default function Categories() {
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -6,10 +7,15 @@ export default function Categories() {
   const complexName = user?.accounts?.data[0]?.complex?.name
 
   return (
-    <ManageCategories
-      complexID={complexID}
-      accountType="complex"
-      complexName={complexName}
+    <Page
+      route="/dues"
+      page={
+        <ManageCategories
+          complexID={complexID}
+          accountType="complex"
+          complexName={complexName}
+        />
+      }
     />
   )
 }

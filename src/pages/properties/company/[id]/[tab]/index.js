@@ -1,7 +1,8 @@
 import CompanyDataComponent from '@app/components/pages/properties/company/companyData'
+import Page from '@app/permissions/page'
 
 function CompanySinglePropertiesPage() {
-  return <CompanyDataComponent />
+  return <Page route="/properties" page={<CompanyDataComponent />} />
 }
 
 export default CompanySinglePropertiesPage

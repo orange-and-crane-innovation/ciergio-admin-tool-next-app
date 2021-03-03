@@ -1,7 +1,8 @@
 import NotificationsList from '@app/components/pages/notifications/list'
+import Page from '@app/permissions/page'
 
 function NotificationsListPage() {
-  return <NotificationsList />
+  return <Page route="/notifications" page={<NotificationsList />} />
 }
 
 export default NotificationsListPage

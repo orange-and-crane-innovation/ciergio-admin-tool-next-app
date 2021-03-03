@@ -1,12 +1,22 @@
 import Overview from '@app/components/pages/dues/Overview'
-import { useRouter } from 'next/router'
 
-export default function DuesBillingPage() {
-  const router = useRouter()
+import Page from '@app/permissions/page'
+
+export default function OverviewPage() {
   const user = JSON.parse(localStorage.getItem('profile'))
-  const accountType = user?.accounts?.data[0]?.accountType
-
   const complexID = user?.accounts?.data[0]?.complex?._id
+  const complexName = user?.accounts?.data[0]?.complex?.name
 
-  return <Overview complexID={complexID} />
+  return (
+    <Page
+      route="/dues"
+      page={
+        <Overview
+          complexID={complexID}
+          accountType="complex"
+          complexName={complexName}
+        />
+      }
+    />
+  )
 }

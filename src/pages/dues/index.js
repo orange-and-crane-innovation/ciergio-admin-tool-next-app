@@ -1,19 +1,6 @@
-import Overview from '@app/components/pages/dues/Overview'
+import Dues from '@app/components/pages/dues/'
+import Page from '@app/permissions/page'
 
-export default function OverviewPage() {
-  const user = JSON.parse(localStorage.getItem('profile'))
-  const complexID = user?.accounts?.data[0]?.complex?._id
-  const complexName = user?.accounts?.data[0]?.complex?.name
-
-  return (
-    <>
-      {complexID && complexName && (
-        <Overview
-          complexID={complexID}
-          accountType="complex"
-          complexName={complexName}
-        />
-      )}
-    </>
-  )
+export default function DuesPage() {
+  return <Page route="/dues" page={<Dues />} />
 }

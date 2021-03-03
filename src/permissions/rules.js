@@ -60,14 +60,16 @@ const rules = {
     },
     company_admin: {
       allowedRoutes: [
-        '/messages',
+        '/staff',
         '/residents',
+        '/messages',
         '/posts',
-        '/prayer-requests',
+        '/maintenance',
         '/forms',
         '/directory',
         '/contact-us',
         '/notifications',
+        '/prayer-requests',
         '/donations'
       ],
       allowedNestedRoutes: [
@@ -115,26 +117,23 @@ const rules = {
         'prayerrequests:export',
         'prayerrequests:print',
         'prayerrequests:view',
-        'donations:view',
-        'dues:view',
-        'dues:create',
-        'dues:update',
-        'dues:view::update',
-        'dues:delete'
+        'donations:view'
       ]
     },
     complex_admin: {
       allowedRoutes: [
-        '/messages',
+        '/staff',
         '/residents',
+        '/messages',
         '/posts',
-        '/prayer-requests',
+        '/maintenance',
         '/forms',
+        '/dues',
         '/directory',
         '/contact-us',
         '/notifications',
-        '/donations',
-        '/dues'
+        '/prayer-requests',
+        '/donations'
       ],
       allowedNestedRoutes: [
         '/residents/all-residents',
@@ -190,15 +189,17 @@ const rules = {
     },
     building_admin: {
       allowedRoutes: [
-        '/messages',
+        '/staff',
         '/residents',
+        '/messages',
         '/posts',
-        '/prayer-requests',
+        '/maintenance',
         '/forms',
+        '/dues',
         '/directory',
         '/contact-us',
         '/notifications',
-        '/dues'
+        '/prayer-requests'
       ],
       allowedNestedRoutes: [
         '/residents/all-residents',
@@ -212,9 +213,12 @@ const rules = {
         '/dues/billing'
       ],
       actions: [
-        'residents:resend::cancel',
-        'residents:print',
+        'messages:view',
+        'messages:create',
+        'residents:view',
         'residents:create',
+        'residents:update',
+        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -222,16 +226,30 @@ const rules = {
         'bulletin:update',
         'bulletin:draft',
         'bulletin:embed',
-        'dues:view',
-        'dues:create',
-        'dues:update',
-        'dues:delete',
-        'dues:view::update',
         'forms:view',
         'forms:create',
         'forms:draft',
         'forms:update::trash',
-        'forms:restore::delete'
+        'directory:create',
+        'directory:view',
+        'directory:update',
+        'contactus:create',
+        'contactus:view',
+        'contactus:update',
+        'notifications:create',
+        'notifications:update',
+        'notifications:view',
+        'notifications:delete',
+        'notifications:view::update',
+        'notifications:trash',
+        'notifications:draft',
+        'prayerrequests:create',
+        'prayerrequests:view',
+        'dues:view',
+        'dues:create',
+        'dues:update',
+        'dues:delete',
+        'dues:view::update'
       ]
     }
   },
