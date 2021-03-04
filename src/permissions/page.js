@@ -1,9 +1,25 @@
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import NotFound from '@app/pages/404'
-import check from './check'
+
+import rules from './rules'
 
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+
+const check = (type, role, action) => {
+  const permissions = rules[type][role].allowedRoutes
+
+  if (!permissions) {
+    console.log("ERROR: one of the provided params don't exist!")
+    return false
+  }
+
+  if (permissions.includes(action)) {
+    return true
+  }
+
+  return false
+}
 
 const Page = ({ route, page }) => {
   const [user] = useState(
