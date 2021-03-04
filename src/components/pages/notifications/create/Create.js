@@ -231,7 +231,7 @@ function CreateNotification() {
   }, [categories?.getPostCategory])
 
   return (
-    <section className="content-wrap pt-4 pb-8 px-8">
+    <section className="content-wrap">
       <h1 className="content-title">Create a Notification</h1>
       <form>
         <div className="flex justify-between">
@@ -357,15 +357,15 @@ function CreateNotification() {
                 </div>
               }
             />
-            <div className="w-full flex justify-end">
-              <div className="w-3/4 flex justify-end">
+            <div className="w-full grid grid-cols-6">
+              <div className="col-span-3 col-start-4 col-end-7 flex justify-end">
                 <Button
                   default
                   label="Save as Draft"
                   onClick={() => {
                     handleSubmit(e => onSubmit(e, 'draft'))
                   }}
-                  className="w-1/5 mr-4"
+                  className="mr-4"
                 />
                 <Button
                   default
@@ -373,12 +373,11 @@ function CreateNotification() {
                   onClick={() => {
                     handleSubmit(e => onSubmit(e, 'preview'))
                   }}
-                  className="w-1/5 mr-4"
+                  className=" mr-4"
                 />
                 <Button
                   primary
                   label="Publish"
-                  className="w-1/5"
                   onClick={() => {
                     handleSubmit(e => onSubmit(e, 'active'))
                   }}
