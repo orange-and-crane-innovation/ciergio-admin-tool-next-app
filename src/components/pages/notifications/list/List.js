@@ -76,17 +76,10 @@ function NotificationsList() {
 
   const categoryOptions = useMemo(() => {
     if (CATEGORIES !== undefined) {
-      const cats = CATEGORIES?.category?.map(cat => ({
+      return CATEGORIES?.category?.map(cat => ({
         label: cat.name,
         value: cat._id
       }))
-      return [
-        {
-          label: 'All',
-          value: null
-        },
-        ...cats
-      ]
     }
 
     return []
@@ -128,6 +121,8 @@ function NotificationsList() {
               onChange={category => setCategory(category.value)}
               onClear={() => setCategory(null)}
               placeholder="Filter category"
+              className="mr-4"
+              isClearable
             />
             <Search
               name="search"
