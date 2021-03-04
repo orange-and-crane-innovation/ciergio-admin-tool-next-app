@@ -212,7 +212,6 @@ function CreateNotification() {
     setLoading(false)
     setImageUrls([])
     setFileUploadedData([])
-    // setTextCount(0)
     setShowAudienceModal(false)
     setShowPublishTimeModal(false)
     setSelectedAudienceType('all')
@@ -335,7 +334,7 @@ function CreateNotification() {
               title={<h1 className="text-base font-bold ">Publish Details</h1>}
               content={
                 <div className="flex items-start w-full border-t pt-2">
-                  <div className="w-1/2 mb-4 p-4 border-b">
+                  <div className="w-1/2 mb-4 p-4">
                     <div className="mb-2">
                       <span>Status:</span>{' '}
                       <span className="font-bold ml-5">New</span>

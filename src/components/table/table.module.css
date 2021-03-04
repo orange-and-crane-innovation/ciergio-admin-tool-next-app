@@ -32,10 +32,6 @@
     .tableBody {
       @apply font-body font-normal;
 
-      tr:nth-child(even) {
-        @apply bg-neutral-100;
-      }
-
       td {
         @apply px-8 py-4 max-w-lg;
         @apply border-b;
