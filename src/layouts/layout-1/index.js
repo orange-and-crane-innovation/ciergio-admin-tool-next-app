@@ -48,7 +48,9 @@ const Layout = ({ children }) => {
           />
           <div className="main w-full bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white">
             <HeaderNav onToggle={handleCollapse} isCollapsed={collapsed} />
-            <div className="w-full p-4">{children}</div>
+            <div className="w-full p-4 h-full overflow-y-scroll">
+              {children}
+            </div>
           </div>
         </div>
       </div>
