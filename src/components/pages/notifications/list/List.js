@@ -2,12 +2,10 @@ import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import Tabs from '@app/components/tabs'
 import FormSelect from '@app/components/forms/form-select'
-import FormInput from '@app/components/forms/form-input'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import useDebounce from '@app/utils/useDebounce'
 import Notification from '../components/Notification'
 import StatCards from '../components/StatCards'
-import { FaSearch, FaTimes } from 'react-icons/fa'
 import { bulkOptions, UPCOMING, PUBLISHED, DRAFT, TRASHED } from '../constants'
 import {
   GET_ALL_UPCOMING_NOTIFICATIONS,
@@ -17,6 +15,7 @@ import {
   BULK_UPDATE_MUTATION,
   GET_POST_CATEGORIES
 } from '../queries'
+import Search from '@app/components/globals/SearchControl'
 
 const tabs = [
   {
@@ -47,7 +46,7 @@ function NotificationsList() {
   const [category, setCategory] = useState(null)
   const [selectedData, setSelectedData] = useState([])
 
-  const debouncedSearchText = useDebounce(searchText, 700)
+  const debouncedSearchText = useDebounce(searchText, 500)
 
   const { data: categories } = useQuery(GET_POST_CATEGORIES)
 
@@ -126,31 +125,16 @@ function NotificationsList() {
             <FormSelect
               options={categoryOptions}
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={category => setCategory(category.value)}
               onClear={() => setCategory(null)}
+              placeholder="Filter category"
             />
-            <div className="w-full md:w-120 md:ml-2 relative">
-              <FormInput
-                name="search"
-                placeholder="Search by title"
-                inputClassName="pr-8"
-                onChange={e => {
-                  if (e.target.value !== '') {
-                    setSearchtext(e.target.value)
-                  } else {
-                    setSearchtext(null)
-                  }
-                }}
-                value={searchText}
-              />
-              <span className="absolute top-4 right-4">
-                {searchText ? (
-                  <FaTimes className="cursor-pointer" onClick={() => {}} />
-                ) : (
-                  <FaSearch />
-                )}
-              </span>
-            </div>
+            <Search
+              name="search"
+              placeholder="Search by title"
+              onChange={e => setSearchtext(e.target.value)}
+              value={searchText}
+            />
           </div>
         </div>
         <TabPanels>

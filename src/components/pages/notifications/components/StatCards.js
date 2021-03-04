@@ -11,7 +11,7 @@ export default function StatCards() {
             <GiAlarmClock className="h-8 w-8 text-white" />
           </div>
           <div className={styles.statCardContent}>
-            <h2 className="font-medium">Notifications Today</h2>
+            <h2 className="font-medium text-sm">Notifications Today</h2>
             <p className="text-2xl font-bold">43</p>
           </div>
         </div>
@@ -20,7 +20,7 @@ export default function StatCards() {
             <GoWatch className="h-8 w-8 text-white" />
           </div>
           <div className={styles.statCardContent}>
-            <h2 className="font-medium">Notifications This Week</h2>
+            <h2 className="font-medium text-sm">Notifications This Week</h2>
             <p className="text-2xl font-bold">107</p>
           </div>
         </div>
