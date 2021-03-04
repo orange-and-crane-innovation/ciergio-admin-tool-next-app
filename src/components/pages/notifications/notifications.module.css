@@ -1,0 +1,8 @@
+.statCards {
+	@apply grid-cols-4 mb-8;
+
+	.statCardIconContainer {
+		width: 29%;
+		@apply bg-black flex justify-center items-center;
+	}
+}

@@ -1,19 +1,14 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
-
 import Tabs from '@app/components/tabs'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import SelectBulk from '@app/components/globals/SelectBulk'
-
 import useDebounce from '@app/utils/useDebounce'
-
 import Notification from '../components/Notification'
-
+import StatCards from '../components/StatCards'
 import { FaSearch, FaTimes } from 'react-icons/fa'
-
 import { bulkOptions, UPCOMING, PUBLISHED, DRAFT, TRASHED } from '../constants'
-
 import {
   GET_ALL_UPCOMING_NOTIFICATIONS,
   GET_ALL_PUBLISHED_NOTIFICATIONS,
@@ -103,7 +98,7 @@ function NotificationsList() {
       <h1 className="content-title">
         Orange and Crane Innovations Inc. Notifications
       </h1>
-
+      <StatCards />
       <Tabs defaultTab={UPCOMING}>
         <TabLabels>
           {tabs.map(({ type }) => {
