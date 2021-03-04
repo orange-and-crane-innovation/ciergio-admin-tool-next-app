@@ -68,7 +68,15 @@ function CreateNotification() {
     content: ''
   })
 
-  const { handleSubmit, control, reset, errors, register, setValue } = useForm({
+  const {
+    handleSubmit,
+    control,
+    reset,
+    errors,
+    register,
+    setValue,
+    getValues
+  } = useForm({
     resolver: yupResolver(
       selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
     ),
@@ -123,6 +131,7 @@ function CreateNotification() {
   }
 
   const onSubmit = (data, status) => {
+    console.log({ data, status })
     if (status === 'preview') {
       setPreviewData({
         primaryMedia: fileUploadedData,
@@ -185,7 +194,7 @@ function CreateNotification() {
           fileList.push(file)
         }
         setValue('images', fileList)
-        console.log({ formData })
+
         uploadApi(formData)
       }
     }
@@ -366,7 +375,7 @@ function CreateNotification() {
                   default
                   label="Preview"
                   onClick={() => {
-                    handleSubmit(e => onSubmit(e, 'preview'))
+                    onSubmit(getValues(), 'draft')
                   }}
                   className=" mr-4"
                 />
@@ -374,7 +383,7 @@ function CreateNotification() {
                   primary
                   label="Publish"
                   onClick={() => {
-                    handleSubmit(e => onSubmit(e, 'active'))
+                    onSubmit(getValues(), 'active')
                   }}
                 />
               </div>
