@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useMutation, useQuery } from '@apollo/client'
+import axios from '@app/utils/axios'
 
 import { Card } from '@app/components/globals'
 import FormInput from '@app/components/forms/form-input'
@@ -107,13 +108,7 @@ function CreateNotification() {
   }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
 
   const uploadApi = async payload => {
-    const response = await fetch(process.env.NEXT_PUBLIC_UPLOAD_API, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    const response = await axios.post('/', payload)
 
     if (response.data) {
       const imageData = response.data.map(item => {
@@ -190,7 +185,7 @@ function CreateNotification() {
           fileList.push(file)
         }
         setValue('images', fileList)
-
+        console.log({ formData })
         uploadApi(formData)
       }
     }
