@@ -53,11 +53,11 @@ const Navbar = ({ onToggle, isCollapsed }) => {
           imgSrc={
             profile?.avatar
               ? profile?.avatar
-              : account[0].accountType === ACCOUNT_TYPES.SUP
+              : account[0]?.accountType === ACCOUNT_TYPES.SUP
               ? IMAGES.ADMIN_AVATAR
-              : account[0].accountType === ACCOUNT_TYPES.COMPYAD
+              : account[0]?.accountType === ACCOUNT_TYPES.COMPYAD
               ? IMAGES.COMPANY_AVATAR
-              : account[0].accountType === ACCOUNT_TYPES.COMPXAD
+              : account[0]?.accountType === ACCOUNT_TYPES.COMPXAD
               ? IMAGES.COMPLEX_AVATAR
               : IMAGES.DEFAULT_AVATAR
           }

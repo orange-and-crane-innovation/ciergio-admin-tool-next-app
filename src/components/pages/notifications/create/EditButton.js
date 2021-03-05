@@ -7,7 +7,7 @@ function EditButton({ handleClick }) {
       role="button"
       tabIndex={0}
       onKeyDown={() => {}}
-      className="text-blue-700"
+      className="text-blue-700 block ml-2"
     >
       Edit
     </span>

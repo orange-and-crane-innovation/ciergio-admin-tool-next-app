@@ -43,7 +43,7 @@ const InputSelect = ({
   }
 
   return (
-    <div className={styles.FormSelectContainer}>
+    <div className={`${styles.FormSelectContainer} ${className}`}>
       {description || null}
       <Select
         styles={{

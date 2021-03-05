@@ -1,0 +1,62 @@
+.toggle {
+  touch-action: pan-x;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: transparent;
+  @apply inline-block relative cursor-pointer bg-transparent border-0 p-0;
+
+  & .toggleInput {
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    width: 1px;
+    @apply border-0 overflow-hidden p-0 absolute;
+  }
+
+  .toggleCheck,
+  .toggleUncheck {
+    @apply absolute mt-auto mb-auto top-0 bottom-0 opacity-0 transition-opacity duration-200 ease-in;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    line-height: 0;
+  }
+
+  .toggleCheck {
+    @apply left-2;
+  }
+
+  .toggleUncheck {
+    right: 10px;
+    @apply opacity-100;
+  }
+
+  .toggleCheck span,
+  .toggleUncheck span {
+    @apply relative flex justify-center items-center;
+    height: 10px;
+    width: 10px;
+  }
+
+  .toggleContainer {
+    height: 24px;
+    @apply w-10 p-0 rounded-full transition-all ease-in duration-200;
+  }
+
+  .toggleCircle {
+    @apply absolute transition-all ease-in duration-200;
+    @apply border border-neutral-300 rounded-full;
+    @apply box-border bg-white;
+    @apply flex items-center justify-center;
+    top: 1px;
+    width: 22px;
+    height: 22px;
+  }
+
+  .toggleDisabled {
+    @apply cursor-not-allowed opacity-50 transition-opacity duration-200 ease-in;
+  }
+}

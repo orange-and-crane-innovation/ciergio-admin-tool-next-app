@@ -173,11 +173,11 @@ select:active {
 }
 
 /* MODAL */
-.modal-overlay {
+/* .modal-overlay {
   @apply flex justify-center items-center;
   @apply fixed z-50 overflow-auto;
   @apply bg-opacity-50 bg-gray-400 w-screen h-full top-0 left-0;
-}
+} */
 
 .modal {
   @apply bg-white w-full m-auto flex-col flex rounded transition ease-in-out duration-700;

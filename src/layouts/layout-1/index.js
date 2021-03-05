@@ -37,7 +37,7 @@ const Layout = ({ children }) => {
         data-background={'light'}
         data-navbar={'light'}
         data-left-sidebar={'light'}
-        className={`font-sans antialiased text-sm disable-scrollbars default-mode`}
+        className={`font-sans antialiased text-sm disable-scrollbars default-mode h-full`}
       >
         <div className="wrapper">
           <LeftSidebar
@@ -48,7 +48,9 @@ const Layout = ({ children }) => {
           />
           <div className="main w-full bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white">
             <HeaderNav onToggle={handleCollapse} isCollapsed={collapsed} />
-            <div className="min-h-screen w-full p-4">{children}</div>
+            <div className="w-full p-4 h-full overflow-y-scroll">
+              {children}
+            </div>
           </div>
         </div>
       </div>

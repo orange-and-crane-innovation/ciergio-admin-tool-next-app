@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
-
+import React, { useState } from 'react'
 import styles from './Billing.module.css'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Unsent from './Unsent'
@@ -96,7 +95,12 @@ const Billing = ({ categoriesBiling, buildingName }) => {
   )
 }
 
-Billing.protoTypes = {
+Billing.propTypes = {
+  categoryID: P.string.isRequired,
+  buildingID: P.string.isRequired,
+  categoryName: P.string.isRequired,
+  accountID: P.string.isRequired,
+  data: P.array.isRequired,
   categoriesBiling: P.array.isRequired,
   buildingName: P.array.isRequired
 }

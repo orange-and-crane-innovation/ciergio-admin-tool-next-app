@@ -28,7 +28,7 @@ function InviteStaffContent({
               <SelectDropdown
                 name={name}
                 value={value}
-                onChange={onChange}
+                onChange={type => onChange(type.value)}
                 options={staffRoles}
                 placeholder="Enter staff type"
                 error={errors?.staffType?.message}

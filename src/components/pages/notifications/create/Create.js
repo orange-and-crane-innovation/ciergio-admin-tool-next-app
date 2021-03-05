@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useMutation, useQuery } from '@apollo/client'
+import axios from '@app/utils/axios'
 
 import { Card } from '@app/components/globals'
 import FormInput from '@app/components/forms/form-input'
@@ -69,7 +70,7 @@ function CreateNotification() {
     content: ''
   })
 
-  const { handleSubmit, control, reset, errors, register, setValue } = useForm({
+  const { control, reset, errors, register, setValue, getValues } = useForm({
     resolver: yupResolver(
       selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
     ),
@@ -109,13 +110,7 @@ function CreateNotification() {
   }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
 
   const uploadApi = async payload => {
-    const response = await fetch(process.env.NEXT_PUBLIC_UPLOAD_API, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    const response = await axios.post('/', payload)
 
     if (response.data) {
       const imageData = response.data.map(item => {
@@ -130,6 +125,7 @@ function CreateNotification() {
   }
 
   const onSubmit = (data, status) => {
+    console.log({ data, status })
     if (status === 'preview') {
       setPreviewData({
         primaryMedia: fileUploadedData,
@@ -210,7 +206,6 @@ function CreateNotification() {
     setLoading(false)
     setImageUrls([])
     setFileUploadedData([])
-    // setTextCount(0)
     setShowAudienceModal(false)
     setShowPublishTimeModal(false)
     setSelectedAudienceType('all')
@@ -233,7 +228,7 @@ function CreateNotification() {
   }, [categories?.getPostCategory])
 
   return (
-    <section className="content-wrap pt-4 pb-8 px-8">
+    <section className="content-wrap">
       <h1 className="content-title">Create a Notification</h1>
       <form>
         <div className="flex justify-between">
@@ -333,7 +328,7 @@ function CreateNotification() {
               title={<h1 className="text-base font-bold ">Publish Details</h1>}
               content={
                 <div className="flex items-start w-full border-t pt-2">
-                  <div className="w-1/2 mb-4 p-4 border-b">
+                  <div className="w-1/2 mb-4 p-4">
                     <div className="mb-2">
                       <span>Status:</span>{' '}
                       <span className="font-bold ml-5">New</span>
@@ -359,8 +354,8 @@ function CreateNotification() {
                 </div>
               }
             />
-            <div className="w-full flex justify-end">
-              <div className="w-3/4 flex justify-end">
+            <div className="w-full grid grid-cols-6">
+              <div className="col-span-3 col-start-4 col-end-7 flex justify-end">
                 <Can
                   perform="notifications:draft"
                   yes={
@@ -368,7 +363,7 @@ function CreateNotification() {
                       default
                       label="Save as Draft"
                       onClick={() => {
-                        handleSubmit(e => onSubmit(e, 'draft'))
+                        onSubmit(getValues(), 'draft')
                       }}
                       className="w-1/5 mr-4"
                     />
@@ -389,7 +384,7 @@ function CreateNotification() {
                       default
                       label="Preview"
                       onClick={() => {
-                        handleSubmit(e => onSubmit(e, 'preview'))
+                        onSubmit(getValues(), 'preview')
                       }}
                       className="w-1/5 mr-4"
                     />
@@ -412,7 +407,7 @@ function CreateNotification() {
                       label="Publish"
                       className="w-1/5"
                       onClick={() => {
-                        handleSubmit(e => onSubmit(e, 'active'))
+                        onSubmit(getValues(), 'active')
                       }}
                     />
                   }
