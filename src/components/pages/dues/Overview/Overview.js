@@ -17,7 +17,7 @@ import styles from './Overview.module.css'
 function Overview({ complexID, complexName, accountType }) {
   const router = useRouter()
 
-  const [selectedOption, setSelectedOption] = useState()
+  const [, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
 
   const [tableData, setTableData] = useState({

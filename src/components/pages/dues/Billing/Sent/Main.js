@@ -79,7 +79,7 @@ const tableRowData = [
 
 function Sent({ month, year }) {
   const router = useRouter()
-  const { buildingID, categoryID } = router.query
+  const { buildingID } = router.query
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)

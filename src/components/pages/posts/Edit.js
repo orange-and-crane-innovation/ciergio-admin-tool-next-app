@@ -705,24 +705,24 @@ const CreatePosts = () => {
     handleShowPublishTimeModal()
   }
 
-  const resetForm = () => {
-    setLoading(false)
-    setImageUrls([])
-    setImageUploadedData([])
-    setVideoUrl(null)
-    setVideoError(null)
-    setVideoLoading(false)
-    setTextCount(0)
-    setShowAudienceModal(false)
-    setShowPublishTimeModal(false)
-    setSelectedCategory(null)
-    setSelectedAudienceType('all')
-    setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
-    setSelectedPublishTimeType('now')
-    setSelectedPublishDateTime(null)
-    setSelectedStatus('active')
-  }
+  // const resetForm = () => {
+  //   setLoading(false)
+  //   setImageUrls([])
+  //   setImageUploadedData([])
+  //   setVideoUrl(null)
+  //   setVideoError(null)
+  //   setVideoLoading(false)
+  //   setTextCount(0)
+  //   setShowAudienceModal(false)
+  //   setShowPublishTimeModal(false)
+  //   setSelectedCategory(null)
+  //   setSelectedAudienceType('all')
+  //   setSelectedCompanyExcept(null)
+  //   setSelectedCompanySpecific(null)
+  //   setSelectedPublishTimeType('now')
+  //   setSelectedPublishDateTime(null)
+  //   setSelectedStatus('active')
+  // }
 
   const onUpdateStatus = data => {
     setSelectedStatus(data)

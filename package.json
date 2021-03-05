@@ -57,6 +57,7 @@
     "react-icons": "^4.1.0",
     "react-image-gallery": "^1.0.8",
     "react-js-pagination": "^3.0.3",
+    "react-modal": "^3.12.1",
     "react-password-strength-bar": "^0.3.2",
     "react-player": "^2.7.2",
     "react-select": "^3.2.0",

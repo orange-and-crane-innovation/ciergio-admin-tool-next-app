@@ -3,7 +3,6 @@ const rules = {
     administrator: {
       allowedRoutes: [
         '/messages',
-        '/residents',
         '/posts',
         '/forms',
         '/directory',
@@ -11,8 +10,6 @@ const rules = {
         '/notifications'
       ],
       allowedNestedRoutes: [
-        '/residents/all-residents',
-        '/residents/invites-requests',
         '/posts/create',
         '/posts',
         '/forms/create',
@@ -23,10 +20,6 @@ const rules = {
       actions: [
         'messages:view',
         'messages:create',
-        'residents:view',
-        'residents:create',
-        'residents:update',
-        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -61,7 +54,6 @@ const rules = {
     company_admin: {
       allowedRoutes: [
         '/staff',
-        '/residents',
         '/messages',
         '/posts',
         '/maintenance',
@@ -73,8 +65,6 @@ const rules = {
         '/donations'
       ],
       allowedNestedRoutes: [
-        '/residents/all-residents',
-        '/residents/invites-requests',
         '/posts/create',
         '/posts',
         '/forms/create',
@@ -85,10 +75,6 @@ const rules = {
       actions: [
         'messages:view',
         'messages:create',
-        'residents:view',
-        'residents:create',
-        'residents:update',
-        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -123,7 +109,6 @@ const rules = {
     complex_admin: {
       allowedRoutes: [
         '/staff',
-        '/residents',
         '/messages',
         '/posts',
         '/maintenance',
@@ -136,8 +121,6 @@ const rules = {
         '/donations'
       ],
       allowedNestedRoutes: [
-        '/residents/all-residents',
-        '/residents/invites-requests',
         '/posts/create',
         '/posts',
         '/forms/create',
@@ -151,9 +134,6 @@ const rules = {
         'messages:view',
         'messages:create',
         'residents:view',
-        'residents:create',
-        'residents:update',
-        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -257,6 +237,7 @@ const rules = {
     administrator: {
       allowedRoutes: [
         '/properties',
+        '/maintenance',
         '/staff',
         '/messages',
         '/residents',

@@ -1,18 +1,15 @@
+.BillingPeriodContainer {
+  @apply mb-5;
+  @apply flex items-start justify-between mt-6 flex-col md:w-1/5 md:flex-col;
+}
 
-  .BillingPeriodContainer {
-    @apply mb-5;
-    @apply flex items-start justify-between mt-6 flex-col md:w-1/5 md:flex-col;
-  }
+.PageHeaderTitle {
+  @apply mx-4;
+  @apply flex flex-col items-start;
+}
 
-  .PageHeaderTitle {
-    @apply mx-4;
-    @apply flex flex-col items-start;
-  }
-
-  
 .PageHeader {
   @apply mb-2;
   @apply font-heading font-black;
   @apply text-neutral-dark text-3xl leading-10;
 }
-  

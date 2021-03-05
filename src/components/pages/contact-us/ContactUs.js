@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 import Link from 'next/link'
-import Can from '@app/permissions/can'
 import { Card, Tabs } from '@app/components/globals'
 import Table from '@app/components/table'
 
