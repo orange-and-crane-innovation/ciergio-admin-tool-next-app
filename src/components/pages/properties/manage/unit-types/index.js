@@ -198,15 +198,15 @@ const UnitTypeComponent = () => {
           showToast('danger', message)
         )
 
-      if (networkError) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }

@@ -11,7 +11,7 @@ import Dropdown from '@app/components/dropdown'
 
 import showToast from '@app/utils/toast'
 import { DATE } from '@app/utils'
-import { HISTORY_MESSAGES } from '@app/constants'
+import { HISTORY_MESSAGES, IMAGES } from '@app/constants'
 
 import OverviewPage from '../overview'
 import AboutPage from '../about'
@@ -46,6 +46,7 @@ const GET_COMPANIES_QUERY = gql`
         }
         companyAdministrators(limit: 1) {
           data {
+            _id
             user {
               _id
               firstName
@@ -106,6 +107,10 @@ const GET_COMPLEXES_QUERY = gql`
         address {
           formattedAddress
           city
+        }
+        company {
+          name
+          avatar
         }
         buildings {
           count
@@ -471,15 +476,15 @@ const CompanyDataComponent = () => {
           showToast('danger', message)
         )
 
-      if (networkError) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }
@@ -591,7 +596,10 @@ const CompanyDataComponent = () => {
       <div className={styles.PageHeaderContainer}>
         <div className="flex items-center">
           <div className={styles.PageHeaderLogo}>
-            <img alt="logo" src={companyProfile?.avatar ?? ''} />
+            <img
+              alt="logo"
+              src={companyProfile?.avatar ?? IMAGES.PROPERTY_AVATAR}
+            />
           </div>
 
           <div className={styles.PageHeaderTitle}>
@@ -635,11 +643,17 @@ const CompanyDataComponent = () => {
             {(companyProfile && (
               <AboutPage
                 type="company"
-                address={companyProfile?.address?.formattedAddress}
-                tinNo={companyProfile?.tinNumber}
-                email={companyProfile?.email}
-                contactNo={companyProfile?.contactNumber}
-                approvedBy={`${companyProfile?.companyAdministrators?.data[0]?.user?.firstName} ${companyProfile?.companyAdministrators?.data[0]?.user?.lastName}`}
+                address={companyProfile?.address?.formattedAddress ?? ''}
+                tinNo={companyProfile?.tinNumber ?? ''}
+                email={companyProfile?.email ?? ''}
+                contactNo={companyProfile?.contactNumber ?? ''}
+                approvedBy={`${
+                  companyProfile?.companyAdministrators?.data[0]?.user
+                    ?.firstName ?? ''
+                } ${
+                  companyProfile?.companyAdministrators?.data[0]?.user
+                    ?.lastName ?? ''
+                }`}
                 onButtonClick={() =>
                   handleShowModal('edit_company', companyProfile)
                 }

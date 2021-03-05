@@ -64,11 +64,15 @@ function VerifyPage() {
           showToast('danger', message)
         )
 
-      if (networkError) {
+      if (networkError?.result?.errors) {
         showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }

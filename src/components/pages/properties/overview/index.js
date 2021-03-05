@@ -11,9 +11,11 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import PageLoader from '@app/components/page-loader'
 
+import { DATE } from '@app/utils'
+
 import styles from './index.module.css'
 
-const CompanyOverviewComponent = ({
+const OverviewComponent = ({
   type,
   title,
   companyProfile,
@@ -51,6 +53,18 @@ const CompanyOverviewComponent = ({
     case 'complex':
       buttonCreateLabel = 'Add Building'
       break
+    case 'unit':
+      buttonCreateLabel = 'Create Extension Account'
+      break
+  }
+
+  const getOrdinalSuffix = data => {
+    const dataNum = parseInt(data)
+    const ordinalNum =
+      ['st', 'nd', 'rd'][
+        (((((dataNum < 0 ? -dataNum : dataNum) + 90) % 100) - 10) % 10) - 1
+      ] || 'th'
+    return dataNum + ordinalNum + ' Floor'
   }
 
   return (
@@ -106,7 +120,8 @@ const CompanyOverviewComponent = ({
         <div className={styles.PageSubContainer2}>
           {((systemType !== 'pray' && type === 'complex') ||
             type === 'company' ||
-            type === 'building') && (
+            type === 'building' ||
+            type === 'unit') && (
             <>
               <Card
                 noPadding
@@ -147,7 +162,7 @@ const CompanyOverviewComponent = ({
                   ) : null
                 }
               />
-              {propertyData && (
+              {propertyData && propertyData?.length > 10 && (
                 <Pagination
                   items={propertyData}
                   activePage={activePage}
@@ -158,7 +173,7 @@ const CompanyOverviewComponent = ({
             </>
           )}
 
-          {type !== 'building' && (
+          {type !== 'building' && type !== 'unit' && (
             <Card
               noPadding
               header={
@@ -234,16 +249,77 @@ const CompanyOverviewComponent = ({
             />
           </div>
         )}
+
+        {type === 'unit' && (
+          <div className={styles.PageSubContainer3}>
+            <Card
+              noPadding
+              header={
+                <div className={styles.ContentFlex}>
+                  <span className={styles.CardHeader}>Unit Details</span>
+                </div>
+              }
+              content={
+                unitsLoading ? (
+                  <PageLoader />
+                ) : (
+                  <div className={styles.FlexCol}>
+                    <div className={styles.FlexColPadding}>
+                      <span className={styles.ContentTextNormal}>
+                        Building Name
+                      </span>
+                      <span className={styles.ContentSubTextNormal}>
+                        {units?.building?.name}
+                      </span>
+                    </div>
+                    <div className={styles.FlexColPadding}>
+                      <span className={styles.ContentTextNormal}>
+                        Floor Number
+                      </span>
+                      <span className={styles.ContentSubTextNormal}>
+                        {getOrdinalSuffix(units?.floorNumber)}
+                      </span>
+                    </div>
+                    <div className={styles.FlexColPadding}>
+                      <span className={styles.ContentTextNormal}>
+                        Unit Type
+                      </span>
+                      <span className={styles.ContentSubTextNormal}>
+                        {units?.unitType?.name}
+                      </span>
+                    </div>
+                    <div className={styles.FlexColPadding}>
+                      <span className={styles.ContentTextNormal}>
+                        Unit Size (sqm)
+                      </span>
+                      <span className={styles.ContentSubTextNormal}>
+                        {units?.unitSize}
+                      </span>
+                    </div>
+                    <div className={styles.FlexColPadding}>
+                      <span className={styles.ContentTextNormal}>
+                        Date Created
+                      </span>
+                      <span className={styles.ContentSubTextNormal}>
+                        {DATE.toFriendlyDate(units?.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                )
+              }
+            />
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-CompanyOverviewComponent.propTypes = {
+OverviewComponent.propTypes = {
   type: P.string.isRequired,
   title: P.string.isRequired,
   companyProfile: P.object,
-  propertyHeader: P.array.isRequired,
+  propertyHeader: P.array,
   propertyData: P.object,
   propertyLoading: P.bool,
   historyHeader: P.array,
@@ -263,4 +339,4 @@ CompanyOverviewComponent.propTypes = {
   onUnitButtonClick: P.func
 }
 
-export default CompanyOverviewComponent
+export default OverviewComponent

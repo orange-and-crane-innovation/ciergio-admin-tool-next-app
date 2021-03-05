@@ -2,6 +2,8 @@ const rules = {
   pray: {
     administrator: {
       allowedRoutes: [
+        '/properties',
+        '/staff',
         '/messages',
         '/posts',
         '/forms',
@@ -10,6 +12,13 @@ const rules = {
         '/notifications'
       ],
       allowedNestedRoutes: [
+        '/properties/company',
+        '/properties/manage/unit-types',
+        '/properties/manage/categories',
+        '/staff/all-staff',
+        '/staff/pending-invites',
+        '/residents/all-residents',
+        '/residents/invites-requests',
         '/posts/create',
         '/posts',
         '/forms/create',
@@ -70,6 +79,7 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
+        '/notifications/all',
         '/notifications/create'
       ],
       actions: [
@@ -126,6 +136,7 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
+        '/notifications/all',
         '/notifications/create',
         '/dues/overview',
         '/dues/manage-categories'
@@ -544,7 +555,7 @@ const rules = {
     administrator: {
       allowedRoutes: [
         '/messages',
-        '/attractions',
+        '/attractions-events',
         '/qr-codes',
         '/forms',
         '/directory',
@@ -552,8 +563,8 @@ const rules = {
         '/notifications'
       ],
       allowedNestedRoutes: [
-        '/attractions/create',
-        '/attractions/posts',
+        '/attractions-events/create',
+        '/attractions-events/posts',
         '/qr-codes/create',
         '/qr-codes/posts',
         '/forms/create',
@@ -605,7 +616,7 @@ const rules = {
     company_admin: {
       allowedRoutes: [
         '/messages',
-        '/attractions',
+        '/attractions-events',
         '/qr-codes',
         '/forms',
         '/directory',
@@ -613,8 +624,8 @@ const rules = {
         '/notifications'
       ],
       allowedNestedRoutes: [
-        '/attractions/create',
-        '/attractions/posts',
+        '/attractions-events/create',
+        '/attractions-events/posts',
         '/qr-codes/create',
         '/qr-codes/posts',
         '/forms/create',
@@ -666,7 +677,7 @@ const rules = {
     complex_admin: {
       allowedRoutes: [
         '/messages',
-        '/attractions',
+        '/attractions-events',
         '/qr-codes',
         '/forms',
         '/directory',
@@ -674,8 +685,8 @@ const rules = {
         '/notifications'
       ],
       allowedNestedRoutes: [
-        '/attractions/create',
-        '/attractions/posts',
+        '/attractions-events/create',
+        '/attractions-events/posts',
         '/qr-codes/create',
         '/qr-codes/posts',
         '/forms/create',

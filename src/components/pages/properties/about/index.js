@@ -10,7 +10,7 @@ import Button from '@app/components/button'
 
 import styles from './index.module.css'
 
-const CompanyAboutComponent = ({
+const AboutComponent = ({
   type,
   address,
   tinNo,
@@ -114,7 +114,7 @@ const CompanyAboutComponent = ({
   )
 }
 
-CompanyAboutComponent.defaultProps = {
+AboutComponent.defaultProps = {
   address: 'Not available',
   tinNo: 'Not available',
   email: 'Not available',
@@ -122,7 +122,7 @@ CompanyAboutComponent.defaultProps = {
   approvedBy: 'Not available'
 }
 
-CompanyAboutComponent.propTypes = {
+AboutComponent.propTypes = {
   type: P.string.isRequired,
   address: P.string.isRequired,
   tinNo: P.string.isRequired,
@@ -132,4 +132,4 @@ CompanyAboutComponent.propTypes = {
   onButtonClick: P.func.isRequired
 }
 
-export default CompanyAboutComponent
+export default AboutComponent

@@ -9,32 +9,17 @@ import FormSelect from '@app/components/forms/form-select'
 import Modal from '@app/components/modal'
 
 const validationSchema = yup.object().shape({
-  floorNo: yup
-    .number()
-    .required()
-    .positive('Floor number must be greater than zero')
-    .integer()
-    .label('Floor number')
-    .typeError('Floor number must be a number')
-    .nullable(),
-  unitName: yup.string().label('Unit number').nullable().required(),
-  unitType: yup.string().ensure().label('Unit Type').required(),
-  unitSize: yup
-    .number()
-    .positive('Floor Area must be greater than zero')
-    .label('Floor Area')
-    .typeError('Floor Area must be a number')
-    .nullable()
-    .required(),
-  email: yup.string().email().label('Email').nullable().trim()
+  firstName: yup.string().label('First Name').nullable().required(),
+  lastName: yup.string().label('Last Name').nullable().required(),
+  email: yup.string().email().label('Email').nullable().trim().required(),
+  relation: yup.string().ensure().label('Relationship').required()
 })
 
 const Component = ({
-  processType,
   title,
   data,
   loading,
-  unitTypes,
+  relationshipTypes,
   isShown,
   onSave,
   onCancel
@@ -42,11 +27,10 @@ const Component = ({
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      floorNo: '',
-      unitName: '',
-      unitType: '',
-      unitSize: '',
-      email: null
+      firstName: '',
+      lastName: '',
+      email: null,
+      relation: ''
     }
   })
 
@@ -55,86 +39,59 @@ const Component = ({
       title={title}
       visible={isShown}
       onClose={onCancel}
-      okText={processType === 'create' ? 'Create Unit' : 'Save'}
+      okText="Send Request"
       onOk={handleSubmit(onSave)}
       onCancel={onCancel}
     >
       <div className="p-2 text-base font-body leading-7">
-        <div className="mb-2">
-          You are adding a unit for <strong>{data?.name}</strong> in
-          <strong> {data?.complex?.name}</strong>
-        </div>
-
-        <div className="flex flex-col mt-8 md:flex-row">
-          <span className="mr-2">
-            <div className="font-semibold mb-2">Floor Number</div>
-            <Controller
-              name="floorNo"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  id={name}
-                  name={name}
-                  placeholder="Enter Floor Number"
-                  value={value}
-                  error={errors?.floorNo?.message ?? null}
-                  onChange={onChange}
-                />
-              )}
+        <div className="font-black mb-2">Unit Details</div>
+        <div className="font-semibold mb-2">Unit Number</div>
+        <Controller
+          name="unitName"
+          control={control}
+          render={({ name, value, onChange }) => (
+            <FormInput
+              id={name}
+              name={name}
+              placeholder="Enter Unit Number"
+              value={data?.name}
+              error={errors?.unitName?.message ?? null}
+              onChange={onChange}
             />
-          </span>
-          <span>
-            <div className="font-semibold mb-2">Unit Number</div>
-            <Controller
-              name="unitName"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  id={name}
-                  name={name}
-                  placeholder="Enter Unit Number"
-                  value={value}
-                  error={errors?.unitName?.message ?? null}
-                  onChange={onChange}
-                />
-              )}
-            />
-          </span>
-        </div>
+          )}
+        />
 
+        <div className="font-black mt-8 mb-2">About the Resident</div>
         <div className="flex flex-col md:flex-row">
           <span className="mr-2 w-full md:w-1/2">
-            <div className="font-semibold mb-2">Unit Type</div>
+            <div className="font-semibold mb-2">First Name</div>
             <Controller
-              name="unitType"
+              name="firstName"
               control={control}
               render={({ name, value, onChange }) => (
-                <FormSelect
+                <FormInput
                   id={name}
                   name={name}
-                  options={unitTypes}
-                  onChange={e => {
-                    onChange(e.value)
-                  }}
+                  placeholder="Enter resident first name"
                   value={value}
-                  error={errors?.unitType?.message ?? null}
-                  isClearable
+                  error={errors?.firstName?.message ?? null}
+                  onChange={onChange}
                 />
               )}
             />
           </span>
           <span className="w-full md:w-1/2">
-            <div className="font-semibold mb-2">Floor Area</div>
+            <div className="font-semibold mb-2">Last Name</div>
             <Controller
-              name="unitSize"
+              name="lastName"
               control={control}
               render={({ name, value, onChange }) => (
                 <FormInput
                   id={name}
                   name={name}
-                  placeholder="Enter Floor Area"
+                  placeholder="Enter resident last name"
                   value={value}
-                  error={errors?.unitSize?.message ?? null}
+                  error={errors?.lastName?.message ?? null}
                   onChange={onChange}
                 />
               )}
@@ -142,11 +99,7 @@ const Component = ({
           </span>
         </div>
 
-        <div className="font-black mb-2 mt-8">Resident</div>
-        <div className="font-semibold mb-2">Unit Owner (optional)</div>
-        <div className="mb-2 text-sm">
-          Ciergio invite will be sent to this email
-        </div>
+        <div className="font-semibold mb-2">Email Address</div>
         <Controller
           name="email"
           control={control}
@@ -161,17 +114,35 @@ const Component = ({
             />
           )}
         />
+
+        <div className="font-semibold mb-2">Relationship</div>
+        <Controller
+          name="relation"
+          control={control}
+          render={({ name, value, onChange }) => (
+            <FormSelect
+              id={name}
+              name={name}
+              options={relationshipTypes}
+              onChange={e => {
+                onChange(e.value)
+              }}
+              value={value}
+              error={errors?.relation?.message ?? null}
+              isClearable
+            />
+          )}
+        />
       </div>
     </Modal>
   )
 }
 
 Component.propTypes = {
-  processType: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   data: PropTypes.object,
   loading: PropTypes.bool,
-  unitTypes: PropTypes.array,
+  relationshipTypes: PropTypes.array,
   isShown: PropTypes.bool.isRequired,
   onSave: PropTypes.func,
   onCancel: PropTypes.func

@@ -9,10 +9,11 @@ import Tabs from '@app/components/tabs'
 import Dropdown from '@app/components/dropdown'
 
 import showToast from '@app/utils/toast'
+import { IMAGES } from '@app/constants'
 
 import OverviewPage from '../overview'
 import HistoryPage from '../history'
-import UnitPage from '../unit'
+import UnitDirectoryPage from '../unit-directory'
 
 import EditModalBuilding from '../components/building/editModal'
 
@@ -81,6 +82,11 @@ const GET_BUILDINGS_QUERY = gql`
         }
         complex {
           name
+          avatar
+          company {
+            name
+            avatar
+          }
         }
       }
     }
@@ -318,15 +324,15 @@ const BuildingDataComponent = () => {
           showToast('danger', message)
         )
 
-      if (networkError) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }
@@ -432,9 +438,15 @@ const BuildingDataComponent = () => {
       <div className={styles.PageHeaderContainer}>
         <div className="flex items-center">
           <div className={styles.PageHeaderLogo}>
-            {buildingProfile?.avatar && (
-              <img alt="logo" src={buildingProfile?.avatar ?? ''} />
-            )}
+            <img
+              alt="logo"
+              src={
+                buildingProfile?.avatar ??
+                buildingProfile?.complex?.avatar ??
+                buildingProfile?.complex?.company?.avatar ??
+                IMAGES.PROPERTY_AVATAR
+              }
+            />
           </div>
 
           <div className={styles.PageHeaderTitle}>
@@ -475,7 +487,7 @@ const BuildingDataComponent = () => {
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="unit-directory">
-            <UnitPage title="Units" profile={buildingProfile} />
+            <UnitDirectoryPage title="Units" profile={buildingProfile} />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="history">
             <HistoryPage type="building" header={tableRowHistoryData} />

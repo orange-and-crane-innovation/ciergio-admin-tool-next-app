@@ -194,7 +194,7 @@ const CategoriesComponent = () => {
           showToast('danger', message)
         )
 
-      if (networkError) {
+      if (networkError?.result?.errors) {
         if (networkError?.result?.errors[0]?.code === 4000) {
           showToast('danger', 'Category name already exists')
         } else {
@@ -202,7 +202,11 @@ const CategoriesComponent = () => {
         }
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }

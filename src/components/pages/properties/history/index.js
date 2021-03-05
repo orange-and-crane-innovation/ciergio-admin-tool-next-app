@@ -126,6 +126,43 @@ const GET_BUILDING_HISTORY_QUERY = gql`
   }
 `
 
+const GET_UNIT_HISTORY_QUERY = gql`
+  query getUnitHistory($where: GetUnitHistoryParams, $limit: Int, $skip: Int) {
+    getUnitHistory(where: $where, limit: $limit, skip: $skip) {
+      count
+      limit
+      skip
+      data {
+        date
+        action
+        data
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+        building {
+          _id
+          name
+        }
+        company {
+          _id
+          name
+        }
+        complex {
+          _id
+          name
+        }
+        unit {
+          _id
+          name
+        }
+      }
+    }
+  }
+`
+
 const HistoryComponent = ({ type, header }) => {
   const router = useRouter()
   const [history, setHistory] = useState()
@@ -145,10 +182,18 @@ const HistoryComponent = ({ type, header }) => {
         complexId: router.query.id
       }
       break
-    default:
+    case 'building':
       where = {
         buildingId: router.query.id
       }
+      break
+    case 'unit':
+      where = {
+        unitId: router.query.id
+      }
+      break
+    default:
+      where = null
       break
   }
 
@@ -157,7 +202,11 @@ const HistoryComponent = ({ type, header }) => {
       ? GET_COMPANY_HISTORY_QUERY
       : type === 'complex'
       ? GET_COMPLEX_HISTORY_QUERY
-      : GET_BUILDING_HISTORY_QUERY,
+      : type === 'building'
+      ? GET_BUILDING_HISTORY_QUERY
+      : type === 'unit'
+      ? GET_UNIT_HISTORY_QUERY
+      : GET_COMPANY_HISTORY_QUERY,
     {
       enabled: false,
       variables: {
@@ -186,8 +235,14 @@ const HistoryComponent = ({ type, header }) => {
           case 'complex':
             finalData = data?.getComplexHistory
             break
-          default:
+          case 'building':
             finalData = data?.getBuildingHistory
+            break
+          case 'unit':
+            finalData = data?.getUnitHistory
+            break
+          default:
+            finalData = data?.getCompanyHistory
             break
         }
 
@@ -206,10 +261,11 @@ const HistoryComponent = ({ type, header }) => {
               return {
                 date: DATE.toFriendlyDateTime(item?.date),
                 user: author,
-                property:
-                  item?.building?.name ??
-                  item?.complex?.name ??
-                  item?.company?.name,
+                property: item?.unit
+                  ? `Unit ${item?.unit?.name}`
+                  : item?.building?.name ??
+                    item?.complex?.name ??
+                    item?.company?.name,
                 activity:
                   (HISTORY_MESSAGES[item.action] &&
                     HISTORY_MESSAGES[item.action](activity)) ||
@@ -242,15 +298,15 @@ const HistoryComponent = ({ type, header }) => {
           showToast('danger', message)
         )
 
-      if (networkError) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }

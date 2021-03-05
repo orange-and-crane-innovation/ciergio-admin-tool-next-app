@@ -65,7 +65,7 @@ const validationSchemaDraft = yup.object().shape({
 })
 
 const CreatePosts = () => {
-  const { push } = useRouter()
+  const { push, pathname } = useRouter()
   const [loading, setLoading] = useState(false)
   const [maxImages] = useState(3)
   const [imageUrls, setImageUrls] = useState([])
@@ -151,7 +151,11 @@ const CreatePosts = () => {
   }
 
   const goToBulletinPageLists = () => {
-    push('/posts/')
+    if (pathname === '/attractions-events/create') {
+      push('/attractions-events')
+    } else {
+      push('/posts')
+    }
   }
 
   const handleShowModal = type => {
@@ -576,7 +580,6 @@ const CreatePosts = () => {
                       <SelectCategory
                         placeholder="Select a Category"
                         type="post"
-                        userType="administrator"
                         onChange={e => {
                           onChange(e.value)
                           onCategorySelect(e)

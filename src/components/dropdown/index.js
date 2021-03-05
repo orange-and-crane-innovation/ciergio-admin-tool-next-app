@@ -36,7 +36,7 @@ const Dropdown = ({ label, items }) => {
       >
         <div className={styles.dropdownControlContainer}>{label}</div>
       </button>
-      <div className={`${styles.dropdownContent} ${!isOpen && 'hidden'}`}>
+      <div className={`${styles.dropdownContent} ${isOpen && styles.open}`}>
         {items.map((item, index) => {
           return (
             <div

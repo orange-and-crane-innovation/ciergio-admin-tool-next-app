@@ -12,7 +12,7 @@ import Dropdown from '@app/components/dropdown'
 
 import showToast from '@app/utils/toast'
 import { DATE } from '@app/utils'
-import { HISTORY_MESSAGES } from '@app/constants'
+import { HISTORY_MESSAGES, IMAGES } from '@app/constants'
 
 import OverviewPage from '../overview'
 import AboutPage from '../about'
@@ -48,6 +48,10 @@ const GET_COMPLEXES_QUERY = gql`
               email
             }
           }
+        }
+        company {
+          name
+          avatar
         }
         buildings {
           count
@@ -472,15 +476,15 @@ const ComplexDataComponent = () => {
           showToast('danger', message)
         )
 
-      if (networkError) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
-      if (message) {
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
         showToast('danger', message)
       }
     }
@@ -580,9 +584,14 @@ const ComplexDataComponent = () => {
       <div className={styles.PageHeaderContainer}>
         <div className="flex items-center">
           <div className={styles.PageHeaderLogo}>
-            {complexProfile?.avatar && (
-              <img alt="logo" src={complexProfile?.avatar ?? ''} />
-            )}
+            <img
+              alt="logo"
+              src={
+                complexProfile?.avatar ??
+                complexProfile?.company?.avatar ??
+                IMAGES.PROPERTY_AVATAR
+              }
+            />
           </div>
 
           <div className={styles.PageHeaderTitle}>
@@ -623,11 +632,17 @@ const ComplexDataComponent = () => {
           <Tabs.TabPanel id="about">
             <AboutPage
               type="complex"
-              address={complexProfile?.address?.formattedAddress}
-              tinNo={complexProfile?.tinNumber}
-              email={complexProfile?.email}
-              contactNo={complexProfile?.contactNumber}
-              approvedBy={`${complexProfile?.complexAdministrators?.data[0]?.user?.firstName} ${complexProfile?.complexAdministrators?.data[0]?.user?.lastName}`}
+              address={complexProfile?.address?.formattedAddress ?? ''}
+              tinNo={complexProfile?.tinNumber ?? ''}
+              email={complexProfile?.email ?? ''}
+              contactNo={complexProfile?.contactNumber ?? ''}
+              approvedBy={`${
+                complexProfile?.complexAdministrators?.data[0]?.user
+                  ?.firstName ?? ''
+              } ${
+                complexProfile?.complexAdministrators?.data[0]?.user
+                  ?.lastName ?? ''
+              }`}
               onButtonClick={() =>
                 handleShowModal('edit_complex', complexProfile)
               }
