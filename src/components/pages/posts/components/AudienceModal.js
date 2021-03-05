@@ -240,6 +240,7 @@ const Component = ({
                       name="companyIds"
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Company"
                       onChange={handleSelectCompanyExcept}
                       onClear={handleClearCompanyExcept}
                       selected={selectedCompanyExcept}

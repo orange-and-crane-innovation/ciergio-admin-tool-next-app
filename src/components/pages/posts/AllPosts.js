@@ -437,7 +437,11 @@ const PostComponent = () => {
   }
 
   const goToCreatePage = () => {
-    router.push('posts/create')
+    if (router.pathname === '/attractions-events') {
+      router.push('/attractions-events/create')
+    } else {
+      router.push('posts/create')
+    }
   }
 
   const onPageClick = e => {

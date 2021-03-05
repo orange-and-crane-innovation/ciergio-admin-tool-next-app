@@ -156,6 +156,7 @@ const Component = ({
                   name={name}
                   type="active"
                   userType={accountType}
+                  placeholder="Select a Company"
                   onChange={e => onChange(e.value)}
                   selected={value}
                   error={errors?.company?.message ?? null}

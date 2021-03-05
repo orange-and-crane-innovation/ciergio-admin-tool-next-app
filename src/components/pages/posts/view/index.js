@@ -16,7 +16,7 @@ import showToast from '@app/utils/toast'
 
 import NotifCard from '../components/NotifCard'
 
-// import styles from './index.module.css'
+import styles from './index.module.css'
 
 const GET_POST_QUERY = gql`
   query getAllPost($where: AllPostInput) {
@@ -112,13 +112,13 @@ const Component = () => {
     )
   } else if (!loading && post) {
     return (
-      <div className="flex justify-center font-body font-normal text-base leading-6">
-        <div className="p-4 w-full lg:max-w-screen-md">
-          <div className="font-heading mb-4">
-            <div className="font-black text-neutral-500">
+      <div className={styles.PageContainer}>
+        <div className={styles.PageSubContainer}>
+          <div className={styles.PageHeader}>
+            <div className={styles.HeaderCategory}>
               {post.category.toUpperCase()}
             </div>
-            <div className="font-black text-4xl leading-10">{post.title}</div>
+            <div className={styles.HeaderTitle}>{post.title}</div>
           </div>
           <div className="mb-4">
             <ImageSlider images={post.images} />
@@ -131,7 +131,6 @@ const Component = () => {
               <VideoPlayer url={post.videos} />
             </div>
           )}
-
           <div className="mb-6">{ReactHtmlParser(post.content)}</div>
         </div>
       </div>

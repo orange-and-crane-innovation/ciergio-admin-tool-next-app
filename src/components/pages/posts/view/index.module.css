@@ -1,0 +1,21 @@
+.PageContainer {
+  @apply flex items-start w-full lg:min-w-3xl lg:max-w-screen-md;
+  @apply font-body font-normal text-base leading-6;
+
+  .PageSubContainer {
+    @apply p-4;
+
+    .PageHeader {
+      @apply mb-4;
+      @apply font-heading;
+
+      .HeaderCategory {
+        @apply font-black text-neutral-500;
+      }
+
+      .HeaderTitle {
+        @apply font-black text-4xl leading-10;
+      }
+    }
+  }
+}
