@@ -58,6 +58,7 @@ const InputSelect = ({
         placeholder={placeholder}
         options={options}
         noOptionsMessage={() => 'No item found.'}
+        value={value}
         defaultValue={defaultValue}
         disabled={disabled}
         components={
