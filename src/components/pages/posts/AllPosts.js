@@ -29,7 +29,7 @@ import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SearchControl from '@app/components/globals/SearchControl'
-
+import Can from '@app/permissions/can'
 import styles from './Main.module.css'
 
 const bulkOptions = [
@@ -309,19 +309,29 @@ const PostComponent = () => {
                         <a className="mx-2 hover:underline">Edit</a>
                       </Link>
                       {` | `}
-                      <span
-                        className="mx-2 cursor-pointer hover:underline"
-                        onClick={() => handleShowModal('delete', item._id)}
-                      >
-                        Move to Trash
-                      </span>
+                      <Can
+                        perform="bulletin:delete"
+                        yes={
+                          <span
+                            className="mx-2 cursor-pointer hover:underline"
+                            onClick={() => handleShowModal('delete', item._id)}
+                          >
+                            Move to Trash
+                          </span>
+                        }
+                      />
                     </div>
                   ) : (
-                    <div className="flex text-info-500 text-sm">
-                      <Link href={`/posts/view/${item._id}`}>
-                        <a className="mr-2 hover:underline">View</a>
-                      </Link>
-                    </div>
+                    <Can
+                      perform="bulletin:view"
+                      yes={
+                        <div className="flex text-info-500 text-sm">
+                          <Link href={`/posts/view/${item._id}`}>
+                            <a className="mr-2 hover:underline">View</a>
+                          </Link>
+                        </div>
+                      }
+                    />
                   )}
                 </div>
               ),
@@ -342,7 +352,14 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              button: (
+                <Can
+                  perform="bulletin:view"
+                  yes={
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  }
+                />
+              )
             }
           }) || null
       }
@@ -651,17 +668,44 @@ const PostComponent = () => {
                 </>
               ) : (
                 <>
-                  <Button
-                    default
-                    label="Reorder"
-                    onClick={() => setReorder(prevState => !prevState)}
-                    className="mr-4"
+                  <Can
+                    perform="bulletin:view"
+                    yes={
+                      <Button
+                        default
+                        label="Reorder"
+                        onClick={() => setReorder(prevState => !prevState)}
+                        className="mr-4"
+                      />
+                    }
+                    no={
+                      <Button
+                        default
+                        disabled
+                        label="Reorder"
+                        className="mr-4"
+                      />
+                    }
                   />
-                  <Button
-                    default
-                    leftIcon={<FaPlusCircle />}
-                    label="Create Post"
-                    onClick={goToCreatePage}
+
+                  <Can
+                    perform="bulletin:create"
+                    yes={
+                      <Button
+                        default
+                        leftIcon={<FaPlusCircle />}
+                        label="Create Post"
+                        onClick={goToCreatePage}
+                      />
+                    }
+                    no={
+                      <Button
+                        disabled
+                        default
+                        leftIcon={<FaPlusCircle />}
+                        label="Create Post"
+                      />
+                    }
                   />
                 </>
               )}

@@ -22,6 +22,8 @@ import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import { GET_CONTACTS, BULK_UPDATE_MUTATION } from '../queries'
 
+import Can from '@app/permissions/can'
+
 const bulkOptions = [
   {
     label: '',
@@ -255,7 +257,15 @@ function ContactUs() {
             name: item.name,
             email: item.email,
             button: (
-              <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              <Can
+                perform="contactus:update::delete"
+                yes={
+                  <Dropdown
+                    label={<AiOutlineEllipsis />}
+                    items={dropdownData}
+                  />
+                }
+              />
             )
           }
         }) || []
@@ -368,11 +378,24 @@ function ContactUs() {
                 onClick={() => setReorder(old => !old)}
                 className="mr-4"
               />
-              <Button
-                default
-                leftIcon={<FaPlusCircle />}
-                label="Add Contact"
-                onClick={handleShowModal}
+              <Can
+                perform="contactus:create"
+                yes={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Add Contact"
+                    onClick={handleShowModal}
+                  />
+                }
+                no={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Add Contact"
+                    disabled
+                  />
+                }
               />
             </>
           )}

@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
+import NotFound from '@app/pages/404'
 
 import rules from './rules'
 
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
 const check = (type, role, action) => {
-  const permissions = rules[type][role].actions
+  const permissions = rules[type][role].allowedRoutes
 
   if (!permissions) {
     console.log("ERROR: one of the provided params don't exist!")
@@ -20,7 +21,7 @@ const check = (type, role, action) => {
   return false
 }
 
-const Can = ({ perform, yes, no }) => {
+const Page = ({ route, page }) => {
   const [user] = useState(
     JSON.parse(localStorage.getItem('profile')) || undefined
   )
@@ -32,18 +33,12 @@ const Can = ({ perform, yes, no }) => {
     [user]
   )
 
-  return check(systemType, profile?.role, perform) ? yes : no
+  return check(systemType, profile?.role, route) ? page : <NotFound />
 }
 
-Can.propTypes = {
-  perform: P.string,
-  yes: P.oneOfType([P.element, P.node]),
-  no: P.oneOfType([P.element, P.node])
+Page.propTypes = {
+  route: P.string,
+  page: P.oneOfType([P.element, P.node])
 }
 
-Can.defaultProps = {
-  yes: null,
-  no: null
-}
-
-export default Can
+export default Page

@@ -193,6 +193,40 @@ const navigation = [
         items: []
       },
       {
+        url: '/maintenance',
+        icon: 'ciergio-maintenance',
+        title: 'Maintenance & Repairs',
+        items: []
+      },
+      {
+        url: '/dues',
+        icon: 'ciergio-dues',
+        title: 'My Dues',
+        items: [
+          {
+            url: '/dues/billing',
+            title: 'Billing',
+            items: []
+          },
+          {
+            url: '/dues/overview',
+            title: 'Overview',
+            items: []
+          },
+          {
+            url: '/dues/manage-categories',
+            title: 'Manage Categories',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/prayer-requests',
+        icon: 'ciergio-prayer',
+        title: 'Prayer Requests',
+        items: []
+      },
+      {
         url: '/donations',
         icon: 'ciergio-donate',
         title: 'Donations',

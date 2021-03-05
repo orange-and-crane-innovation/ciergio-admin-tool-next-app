@@ -68,6 +68,7 @@ const FormDatePicker = ({
     return (
       <div className={styles.DatepickerHandler}>
         <DatePicker
+          showYearDropdown
           id={id}
           name={name}
           selected={date}

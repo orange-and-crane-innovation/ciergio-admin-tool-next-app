@@ -28,7 +28,7 @@ import showToast from '@app/utils/toast'
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
-
+import Can from '@app/permissions/can'
 import style from './Create.module.css'
 
 const UPDATE_POST_MUTATION = gql`
@@ -1008,25 +1008,53 @@ const CreatePosts = () => {
 
           <div className={style.CreatePostFooter}>
             <span>
-              <Button
-                default
-                type="button"
-                label="Move to Trash"
-                className={style.CreatePostFooterButton}
-                onMouseDown={() => onUpdateStatus('draft')}
-                onClick={handleSubmit(e => {
-                  handleShowModal('delete')
-                })}
+              <Can
+                perform="bulletin:delete"
+                yes={
+                  <Button
+                    default
+                    type="button"
+                    label="Move to Trash"
+                    className={style.CreatePostFooterButton}
+                    onMouseDown={() => onUpdateStatus('draft')}
+                    onClick={handleSubmit(e => {
+                      handleShowModal('delete')
+                    })}
+                  />
+                }
+                no={
+                  <Button
+                    default
+                    disabled
+                    type="button"
+                    label="Move to Trash"
+                    className={style.CreatePostFooterButton}
+                  />
+                }
               />
-              <Button
-                default
-                type="button"
-                label="Save as Draft"
-                className={style.CreatePostFooterButton}
-                onMouseDown={() => onUpdateStatus('draft')}
-                onClick={handleSubmit(e => {
-                  onSubmit(e, 'draft')
-                })}
+              <Can
+                perform="bulletin:draft"
+                yes={
+                  <Button
+                    default
+                    type="button"
+                    label="Save as Draft"
+                    className={style.CreatePostFooterButton}
+                    onMouseDown={() => onUpdateStatus('draft')}
+                    onClick={handleSubmit(e => {
+                      onSubmit(e, 'draft')
+                    })}
+                  />
+                }
+                no={
+                  <Button
+                    default
+                    disabled
+                    type="button"
+                    label="Save as Draft"
+                    className={style.CreatePostFooterButton}
+                  />
+                }
               />
             </span>
 

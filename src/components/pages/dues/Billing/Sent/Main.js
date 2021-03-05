@@ -13,14 +13,15 @@ import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
 import { useQuery, useMutation } from '@apollo/client'
 import P from 'prop-types'
 import { toFriendlyDate } from '@app/utils/date'
-
+import { useRouter } from 'next/router'
 import Modal from '@app/components/modal'
 import useKeyPress from '@app/utils/useKeyPress'
 import HistoryBills from './Modals/HistoryBills'
 import UpdateBills from './Modals/UpdateBills'
-
 import * as Query from './Query'
 import * as Mutation from './Mutation'
+
+import Can from '@app/permissions/can'
 
 const statusOptions = [
   {
@@ -77,6 +78,8 @@ const tableRowData = [
 ]
 
 function Sent({ month, year }) {
+  const router = useRouter()
+  const { buildingID, categoryID } = router.query
   const [limitPage, setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
@@ -101,7 +104,7 @@ function Sent({ month, year }) {
     {
       variables: {
         unit: {
-          buildingId: '5d804d6543df5f4239e72911',
+          buildingId: buildingID,
           search: search,
           floorNumber: floorNumber
         },
@@ -127,7 +130,7 @@ function Sent({ month, year }) {
       variables: {
         where: {
           sent: true,
-          buildingId: '5d804d6543df5f4239e72911',
+          buildingId: buildingID,
           period: {
             month,
             year
@@ -143,7 +146,7 @@ function Sent({ month, year }) {
     data: dataAllFloors
   } = useQuery(Query.GET_ALL_FLOORS, {
     variables: {
-      buildingId: '5d804d6543df5f4239e72911'
+      buildingId: buildingID
     }
   })
 
@@ -286,23 +289,20 @@ function Sent({ month, year }) {
         const status =
           row?.dues[0]?.status === 'overdue' ||
           row?.dues[0]?.status === 'unpaid' ? (
-            <Button
-              className={styles.paid}
-              disabled
-              full
-              label="Unpaid"
-              onClick={() => alert('unpaid')}
-            />
+            <Button className={styles.paid} disabled full label="Unpaid" />
           ) : (
-            <Button full onClick={() => alert('paid')} label="Paid" />
+            <Button full disabled onClick={() => alert('paid')} label="Paid" />
           )
         const seen = row?.dues[0]?.views.count ? <FaEye /> : null
         const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
         const unitName = row?.name
         const unitOwner = `${row?.unitOwner?.user?.lastName},
-            ${row?.unitOwner?.user?.lastName.charAt(0)}`
+            ${row?.unitOwner?.user?.lastName}`
         const dropDown = (
-          <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          <Can
+            perform="dues:view::update"
+            yes={<Dropdown label={<FaEllipsisH />} items={dropdownData} />}
+          />
         )
 
         rowData.push({
@@ -449,7 +449,11 @@ function Sent({ month, year }) {
           loading ? (
             <PageLoader />
           ) : (
-            <Table rowNames={tableRowData} items={dues} />
+            <Can
+              perform="dues:view"
+              yes={<Table rowNames={tableRowData} items={dues} />}
+              no={<Table rowNames={tableRowData} items={{ dues: [] }} />}
+            />
           )
         }
       />
