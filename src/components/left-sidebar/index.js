@@ -11,7 +11,7 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
   const rule = rules[systemType][userRole]
   const allowedRoutes = rule?.allowedRoutes || []
   const allowedNestedRoutes = rule?.allowedNestedRoutes || []
-  console.log(allowedNestedRoutes)
+  console.log({ systemType, userRole, allowedRoutes })
   return (
     <div className="left-sidebar left-sidebar-1">
       <Logo show={true} onToggle={onToggle} isCollapsed={isCollapsed} />
@@ -56,14 +56,12 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
                             </li>
                           )
                         }
-
                         return null
                       })}
                     </ul>
                   </li>
                 )
               }
-
               return null
             })}
           </ul>
