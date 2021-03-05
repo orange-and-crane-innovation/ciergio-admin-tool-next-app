@@ -365,7 +365,7 @@ function CreateNotification() {
                       onClick={() => {
                         onSubmit(getValues(), 'draft')
                       }}
-                      className="w-1/5 mr-4"
+                      className="mr-4"
                     />
                   }
                   no={
@@ -373,7 +373,7 @@ function CreateNotification() {
                       default
                       label="Save as Draft"
                       disabled
-                      className="w-1/5 mr-4"
+                      className="mr-4"
                     />
                   }
                 />
@@ -386,16 +386,11 @@ function CreateNotification() {
                       onClick={() => {
                         onSubmit(getValues(), 'preview')
                       }}
-                      className="w-1/5 mr-4"
+                      className="mr-4"
                     />
                   }
                   no={
-                    <Button
-                      default
-                      label="Preview"
-                      disabled
-                      className="w-1/5 mr-4"
-                    />
+                    <Button default label="Preview" disabled className="mr-4" />
                   }
                 />
 
@@ -405,20 +400,12 @@ function CreateNotification() {
                     <Button
                       primary
                       label="Publish"
-                      className="w-1/5"
                       onClick={() => {
                         onSubmit(getValues(), 'active')
                       }}
                     />
                   }
-                  no={
-                    <Button
-                      primary
-                      disabled
-                      label="Publish"
-                      className="w-1/5"
-                    />
-                  }
+                  no={<Button primary disabled label="Publish" />}
                 />
               </div>
             </div>
