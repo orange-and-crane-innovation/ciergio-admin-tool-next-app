@@ -15,7 +15,7 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
 import Modal from '@app/components/modal'
-
+import Can from '@app/permissions/can'
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
 
@@ -292,21 +292,26 @@ const PostComponent = () => {
                 <div className="flex flex-col">
                   {item.title}
                   {isMine && (
-                    <div className="flex text-info-500 text-sm">
-                      <span
-                        className="mr-2 cursor-pointer hover:underline"
-                        onClick={() => handleShowModal('draft', item._id)}
-                      >
-                        Restore
-                      </span>
-                      {` | `}
-                      <span
-                        className="mx-2 cursor-pointer hover:underline"
-                        onClick={() => handleShowModal('delete', item._id)}
-                      >
-                        Permanently Delete
-                      </span>
-                    </div>
+                    <Can
+                      perform="forms:restore::delete"
+                      yes={
+                        <div className="flex text-info-500 text-sm">
+                          <span
+                            className="mr-2 cursor-pointer hover:underline"
+                            onClick={() => handleShowModal('draft', item._id)}
+                          >
+                            Restore
+                          </span>
+                          {` | `}
+                          <span
+                            className="mx-2 cursor-pointer hover:underline"
+                            onClick={() => handleShowModal('delete', item._id)}
+                          >
+                            Permanently Delete
+                          </span>
+                        </div>
+                      }
+                    />
                   )}
                 </div>
               ),
@@ -326,7 +331,14 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              button: (
+                <Can
+                  perform="forms:view"
+                  yes={
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  }
+                />
+              )
             }
           }) || null
       }

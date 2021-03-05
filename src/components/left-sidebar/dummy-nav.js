@@ -165,6 +165,16 @@ const navigation = [
             url: '/dues/billing',
             title: 'Billing',
             items: []
+          },
+          {
+            url: '/dues/overview',
+            title: 'Overview',
+            items: []
+          },
+          {
+            url: '/dues/manage-categories',
+            title: 'Manage Categories',
+            items: []
           }
         ]
       },

@@ -1,5 +1,6 @@
-import Billing from '@app/components/pages/dues'
+import Dues from '@app/components/pages/dues/'
+import Page from '@app/permissions/page'
 
 export default function DuesPage() {
-  return <Billing />
+  return <Page route="/dues" page={<Dues />} />
 }

@@ -29,7 +29,7 @@ import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SelectStatus from '@app/components/globals/SelectStatus'
 import SearchControl from '@app/components/globals/SearchControl'
-
+import Can from '@app/permissions/can'
 import styles from './Main.module.css'
 
 const bulkOptions = [
@@ -620,11 +620,16 @@ const PostComponent = () => {
             onClear={onClearCategory}
             selected={selectedCategory}
           />
-          <SearchControl
-            placeholder="Search by title"
-            searchText={searchText}
-            onSearch={onSearch}
-            onClearSearch={onClearSearch}
+          <Can
+            perform="bulletin:view"
+            yes={
+              <SearchControl
+                placeholder="Search by title"
+                searchText={searchText}
+                onSearch={onSearch}
+                onClearSearch={onClearSearch}
+              />
+            }
           />
         </div>
       </div>
@@ -640,11 +645,25 @@ const PostComponent = () => {
             </span>
 
             <div className={styles.ContentFlex}>
-              <Button
-                default
-                leftIcon={<FaPlusCircle />}
-                label="Create Post"
-                onClick={goToCreatePage}
+              <Can
+                perform="bulletin:create"
+                yes={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Create Post"
+                    onClick={goToCreatePage}
+                  />
+                }
+                no={
+                  <Button
+                    disabled
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Create Post"
+                    onClick={goToCreatePage}
+                  />
+                }
               />
             </div>
           </div>

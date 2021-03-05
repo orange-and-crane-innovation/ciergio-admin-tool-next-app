@@ -1,1 +1,1 @@
-export { default } from './Billing.js'
+export { default } from './Main.js'

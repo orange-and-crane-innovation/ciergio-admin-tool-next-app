@@ -1,62 +1,85 @@
 import React, { useState, useEffect } from 'react'
-import * as Query from './Query'
+import * as Query from './Billing/Query'
 import { useQuery } from '@apollo/client'
 
 import Billing from './Billing'
-import Overview from './Overview'
+import { useRouter } from 'next/router'
+import { BsInfoCircle } from 'react-icons/bs'
+
+const _ = require('lodash')
 
 function Dues() {
-  const [account, setAccount] = useState('')
-  const [category, setCategory] = useState({})
+  const router = useRouter()
+  const { buildingID } = router.query
+
+  const [categories, setCategories] = useState([])
+  const [building, setBuilding] = useState([])
+
+  const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
+    variables: {
+      where: {
+        accountType: 'building'
+      },
+      limit: 100
+    }
+  })
+
+  const {
+    loading: loadingBuilding,
+    data: dataBuilding,
+    error: errorBuilding
+  } = useQuery(Query.GET_BUILDINS, {
+    variables: {
+      where: {
+        _id: buildingID,
+        status: 'active'
+      },
+      limit: 100
+    }
+  })
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('profile'))
-    const active = user?.accounts?.data.find(acc => acc.active === true)
-
-    setAccount(active)
-  }, [])
-
-  const { loading, data, error, refetch } = useQuery(
-    Query.GET_ALLOWED_CATEGORY,
-    {
-      variables: {
-        where: {
-          accountId: account?._id,
-          accountType:
-            account?.accountType === 'building_admin' ? 'building' : 'complex'
-        },
-        limit: 100
-      }
+    if (!_.isEmpty(categories) && !_.isEmpty(building)) {
+      router.push(`/dues/billing/${buildingID}/${categories[0]._id}`)
     }
-  )
+  }, [categories, building, buildingID])
 
   useEffect(() => {
-    if (!loading && data) {
-      setCategory(data?.getAllowedBillCategory)
-      console.log(account)
+    if (!loadingBuilding && dataBuilding) {
+      setBuilding(dataBuilding?.getBuildings?.data)
     }
-  }, [loading, data, error, refetch])
+  }, [loadingBuilding, dataBuilding, errorBuilding])
+
+  useEffect(() => {
+    if (!loading && data && !error) {
+      const catgry = data?.getAllowedBillCategory?.data.map(category => {
+        return category.categories
+      })
+
+      setCategories(...catgry)
+    }
+  }, [loading, data, error])
 
   return (
     <>
-      {account?.accountType === 'building_admin' ? (
+      {!_.isEmpty(categories) && !_.isEmpty(building) ? (
         <Billing
-          categoryID={category?.id}
-          buildingID={account?.building_id}
-          categoryName={category?.name}
-          accountID={account?._id}
-          data={category?.data}
+          categoriesBiling={categories}
+          buildingName={building[0].name}
         />
       ) : (
-        <Overview
-          complexID={account?.complex?._id}
-          complexName={account?.complex?.name}
-          accountType={
-            account.accountType !== '' &&
-            account.accountType &&
-            account.accountType.split('_')[0]
-          }
-        />
+        <div className="w-full h-full flex justify-center items-center content-center">
+          <div className="w-1/4 flex-col justify-center items-center content-center text-center">
+            <BsInfoCircle
+              size="100"
+              className="w-full text-center"
+              fill="rgb(238,52,12)"
+            />
+            <h3 className="text-5xl">
+              Billing has not been setup. Please contact your administrator
+            </h3>
+          </div>
+        </div>
       )}
     </>
   )
