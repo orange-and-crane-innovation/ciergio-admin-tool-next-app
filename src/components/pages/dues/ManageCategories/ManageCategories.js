@@ -11,6 +11,7 @@ import * as Query from './Query'
 import * as Mutation from './Mutation'
 import P from 'prop-types'
 import showToast from '@app/utils/toast'
+import Can from '@app/permissions/can'
 
 const _ = require('lodash')
 
@@ -155,10 +156,15 @@ function ManageCategories({ complexID, accountType }) {
                 />
               ),
               delButton: (
-                <Button
-                  name={val._id}
-                  onClick={e => onDeleteBill(e)}
-                  label={<FaTrashAlt size="14" value="ad" name={val._id} />}
+                <Can
+                  perform="dues:delete"
+                  yes={
+                    <Button
+                      name={val._id}
+                      onClick={e => onDeleteBill(e)}
+                      label={<FaTrashAlt size="14" value="ad" name={val._id} />}
+                    />
+                  }
                 />
               )
             })
@@ -243,19 +249,36 @@ function ManageCategories({ complexID, accountType }) {
             <div className="flex items-center justify-between">
               <span className="font-heading font-black">Categories</span>
               <div className="flex items-center justify-end flex-col md:flex-row">
-                <Button
-                  full
-                  primary
-                  onClick={e => setShowModal(show => !show)}
-                  label="Add Category"
-                  leftIcon={<FaPlusCircle size="13" />}
+                <Can
+                  perform="dues:create"
+                  yes={
+                    <Button
+                      full
+                      primary
+                      onClick={e => setShowModal(show => !show)}
+                      label="Add Category"
+                      leftIcon={<FaPlusCircle size="13" />}
+                    />
+                  }
+                  no={
+                    <Button
+                      full
+                      primary
+                      disabled
+                      label="Add Category"
+                      leftIcon={<FaPlusCircle size="13" />}
+                    />
+                  }
                 />
               </div>
             </div>
           }
           content={
-            !loadingAllowedCategory && allowedCategory.data.length > 0 ? (
-              <Table items={allowedCategory || []} />
+            !loadingAllowedCategory ? (
+              <Table
+                items={allowedCategory || []}
+                emptyText="No Categories added"
+              />
             ) : (
               <PageLoader />
             )

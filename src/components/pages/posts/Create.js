@@ -29,7 +29,7 @@ import showToast from '@app/utils/toast'
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
-
+import Can from '@app/permissions/can'
 import style from './Create.module.css'
 
 const CREATE_POST_MUTATION = gql`
@@ -515,22 +515,27 @@ const CreatePosts = () => {
                   <div className={style.CreatePostVideoInput}>Video Link</div>
                   <div className={style.CreatePostVideoInputContent}>
                     <div className="flex-grow">
-                      <Controller
-                        name="video"
-                        control={control}
-                        render={({ name, value, onChange }) => (
-                          <FormInput
-                            name={name}
-                            placeholder="Add Youtube link here"
-                            value={videoUrl}
-                            error={errors?.video?.message ?? null}
-                            onBlur={onCountChar}
-                            onChange={e => {
-                              onChange(e)
-                              onVideoChange(e)
-                            }}
+                      <Can
+                        perform="bulletin:embed"
+                        yes={
+                          <Controller
+                            name="video"
+                            control={control}
+                            render={({ name, value, onChange }) => (
+                              <FormInput
+                                name={name}
+                                placeholder="Add Youtube link here"
+                                value={videoUrl}
+                                error={errors?.video?.message ?? null}
+                                onBlur={onCountChar}
+                                onChange={e => {
+                                  onChange(e)
+                                  onVideoChange(e)
+                                }}
+                              />
+                            )}
                           />
-                        )}
+                        }
                       />
                     </div>
                     <FaTimes
@@ -679,15 +684,29 @@ const CreatePosts = () => {
           />
 
           <div className={style.CreatePostFooter}>
-            <Button
-              default
-              type="button"
-              label="Save as Draft"
-              className={style.CreatePostFooterButton}
-              onMouseDown={() => onUpdateStatus('draft')}
-              onClick={handleSubmit(e => {
-                onSubmit(e, 'draft')
-              })}
+            <Can
+              perform="bulletin:draft"
+              yes={
+                <Button
+                  default
+                  type="button"
+                  label="Save as Draft"
+                  className={style.CreatePostFooterButton}
+                  onMouseDown={() => onUpdateStatus('draft')}
+                  onClick={handleSubmit(e => {
+                    onSubmit(e, 'draft')
+                  })}
+                />
+              }
+              no={
+                <Button
+                  disabled
+                  default
+                  type="button"
+                  label="Save as Draft"
+                  className={style.CreatePostFooterButton}
+                />
+              }
             />
             <span>
               <Button
@@ -700,6 +719,7 @@ const CreatePosts = () => {
                   handleShowModal('preview')
                 })}
               />
+
               <Button
                 type="button"
                 label="Publish Post"

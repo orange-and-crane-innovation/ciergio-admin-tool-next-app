@@ -21,6 +21,8 @@ import PreviewModal from '../components/PreviewModal'
 import AudienceType from './AudienceType'
 import PublishType from './PublishType'
 
+import Can from '@app/permissions/can'
+
 const validationSchema = yup.object().shape({
   title: yup
     .string()
@@ -68,15 +70,7 @@ function CreateNotification() {
     content: ''
   })
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    errors,
-    register,
-    setValue,
-    getValues
-  } = useForm({
+  const { control, reset, errors, register, setValue, getValues } = useForm({
     resolver: yupResolver(
       selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
     ),
@@ -362,28 +356,69 @@ function CreateNotification() {
             />
             <div className="w-full grid grid-cols-6">
               <div className="col-span-3 col-start-4 col-end-7 flex justify-end">
-                <Button
-                  default
-                  label="Save as Draft"
-                  onClick={() => {
-                    handleSubmit(e => onSubmit(e, 'draft'))
-                  }}
-                  className="mr-4"
+                <Can
+                  perform="notifications:draft"
+                  yes={
+                    <Button
+                      default
+                      label="Save as Draft"
+                      onClick={() => {
+                        onSubmit(getValues(), 'draft')
+                      }}
+                      className="w-1/5 mr-4"
+                    />
+                  }
+                  no={
+                    <Button
+                      default
+                      label="Save as Draft"
+                      disabled
+                      className="w-1/5 mr-4"
+                    />
+                  }
                 />
-                <Button
-                  default
-                  label="Preview"
-                  onClick={() => {
-                    onSubmit(getValues(), 'draft')
-                  }}
-                  className=" mr-4"
+                <Can
+                  perform="notifications:view"
+                  yes={
+                    <Button
+                      default
+                      label="Preview"
+                      onClick={() => {
+                        onSubmit(getValues(), 'preview')
+                      }}
+                      className="w-1/5 mr-4"
+                    />
+                  }
+                  no={
+                    <Button
+                      default
+                      label="Preview"
+                      disabled
+                      className="w-1/5 mr-4"
+                    />
+                  }
                 />
-                <Button
-                  primary
-                  label="Publish"
-                  onClick={() => {
-                    onSubmit(getValues(), 'active')
-                  }}
+
+                <Can
+                  perform="notifications:create"
+                  yes={
+                    <Button
+                      primary
+                      label="Publish"
+                      className="w-1/5"
+                      onClick={() => {
+                        onSubmit(getValues(), 'active')
+                      }}
+                    />
+                  }
+                  no={
+                    <Button
+                      primary
+                      disabled
+                      label="Publish"
+                      className="w-1/5"
+                    />
+                  }
                 />
               </div>
             </div>

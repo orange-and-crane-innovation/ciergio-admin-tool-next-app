@@ -1,16 +1,23 @@
 import React, { useState } from 'react'
-import Tabs from '@app/components/tabs'
+
 import styles from './Billing.module.css'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Unsent from './Unsent'
 import Sent from './Sent'
 import P from 'prop-types'
+import Link from 'next/link'
+import Tabs from '@app/components/tabs'
+import { useRouter } from 'next/router'
 
-const Billing = ({ categoryID, buildingID, categoryName, accountID, data }) => {
+const Billing = ({ categoriesBiling, buildingName }) => {
+  const router = useRouter()
+  const { buildingID } = router.query
   const [selectedDate, setSelectedDate] = useState(new Date())
   // const [activeTab, setActiveTab] = useState(1)
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [year, setYear] = useState(new Date().getFullYear())
+
+  const user = JSON.parse(localStorage.getItem('profile'))
 
   const handlingMonthOrYear = (date, type = 'year') => {
     if (date instanceof Date) {
@@ -28,69 +35,65 @@ const Billing = ({ categoryID, buildingID, categoryName, accountID, data }) => {
     setMonth(handlingMonthOrYear(date, 'month'))
     setYear(handlingMonthOrYear(date))
   }
-  const billingMemoTabs = React.useMemo(() => {
-    if (categoryID && buildingID && categoryName && accountID && data) {
-      return (
-        <>
-          {data
-            ? data
-                .find(acc => acc.accountId === accountID)
-                ?.categories.map(category => {
-                  return (
-                    <Tabs defaultTab="1" key={category._id}>
-                      <Tabs.TabLabels>
-                        <Tabs.TabLabel id="1">{category.name}</Tabs.TabLabel>
-                      </Tabs.TabLabels>
-                      <Tabs.TabPanels>
-                        <Tabs.TabPanel id="1">
-                          <div className={styles.BillingPeriodContainer}>
-                            <DatePicker
-                              date={selectedDate}
-                              onChange={handleDateChange}
-                              label={'Billing Period'}
-                              showMonthYearPicker
-                              rightIcon
-                            />
-                          </div>
 
-                          <Tabs defaultTab="1">
-                            <Tabs.TabLabels>
-                              <Tabs.TabLabel id="1">Unsent</Tabs.TabLabel>
-                              <Tabs.TabLabel id="2">Sent</Tabs.TabLabel>
-                            </Tabs.TabLabels>
-                            <Tabs.TabPanels>
-                              <Tabs.TabPanel id="1">
-                                <Unsent
-                                  month={parseInt(month)}
-                                  year={parseInt(year)}
-                                  categoryID={categoryID}
-                                  buildingID={buildingID}
-                                  categoryName={categoryName}
-                                />
-                              </Tabs.TabPanel>
-                              <Tabs.TabPanel id="2">
-                                <Sent
-                                  month={parseInt(month)}
-                                  year={parseInt(year)}
-                                  categoryID={categoryID}
-                                  buildingID={buildingID}
-                                  categoryName={categoryName}
-                                />
-                              </Tabs.TabPanel>
-                            </Tabs.TabPanels>
-                          </Tabs>
-                        </Tabs.TabPanel>
-                      </Tabs.TabPanels>
-                    </Tabs>
-                  )
-                })
-            : null}
-        </>
-      )
-    }
-  }, [categoryID, buildingID, categoryName, accountID])
+  return (
+    <>
+      <div className={styles.PageHeaderTitle}>
+        <h1 className={styles.PageHeader}>
+          {buildingName || user?.accounts?.data[0]?.building?.name}
+        </h1>
+      </div>
+      <Tabs defaultTab="1">
+        <Tabs.TabLabels>
+          <Tabs.TabLabel id="1">
+            {categoriesBiling &&
+              categoriesBiling.map((category, index) => {
+                return (
+                  <>
+                    <Tabs.TabLabel id={index + 1}>
+                      <Link
+                        href={`/dues/billing/${buildingID}/${category._id}`}
+                      >
+                        <a>{category.name}</a>
+                      </Link>
+                    </Tabs.TabLabel>
+                  </>
+                )
+              })}
+          </Tabs.TabLabel>
+        </Tabs.TabLabels>
 
-  return <>{billingMemoTabs}</>
+        <Tabs.TabPanels>
+          <Tabs.TabPanel id="1">
+            <div className={styles.BillingPeriodContainer}>
+              <DatePicker
+                date={selectedDate}
+                onChange={handleDateChange}
+                label={'Billing Period'}
+                showMonthYearPicker
+                rightIcon
+              />
+            </div>
+
+            <Tabs defaultTab="1">
+              <Tabs.TabLabels>
+                <Tabs.TabLabel id="1">Unsent</Tabs.TabLabel>
+                <Tabs.TabLabel id="2">Sent</Tabs.TabLabel>
+              </Tabs.TabLabels>
+              <Tabs.TabPanels>
+                <Tabs.TabPanel id="1">
+                  <Unsent month={parseInt(month)} year={parseInt(year)} />
+                </Tabs.TabPanel>
+                <Tabs.TabPanel id="2">
+                  <Sent month={parseInt(month)} year={parseInt(year)} />
+                </Tabs.TabPanel>
+              </Tabs.TabPanels>
+            </Tabs>
+          </Tabs.TabPanel>
+        </Tabs.TabPanels>
+      </Tabs>
+    </>
+  )
 }
 
 Billing.propTypes = {
@@ -98,7 +101,9 @@ Billing.propTypes = {
   buildingID: P.string.isRequired,
   categoryName: P.string.isRequired,
   accountID: P.string.isRequired,
-  data: P.array.isRequired
+  data: P.array.isRequired,
+  categoriesBiling: P.array.isRequired,
+  buildingName: P.array.isRequired
 }
 
 export default Billing

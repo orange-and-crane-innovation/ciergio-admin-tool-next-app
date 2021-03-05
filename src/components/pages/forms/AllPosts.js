@@ -27,6 +27,7 @@ import UpdateCard from './components/UpdateCard'
 import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SearchControl from '@app/components/globals/SearchControl'
+import Can from '@app/permissions/can'
 
 import styles from './Main.module.css'
 
@@ -317,7 +318,14 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              button: (
+                <Can
+                  perform="forms:view"
+                  yes={
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  }
+                />
+              )
             }
           }) || null
       }
@@ -578,11 +586,24 @@ const PostComponent = () => {
             </span>
 
             <div className={styles.ContentFlex}>
-              <Button
-                default
-                leftIcon={<FaPlusCircle />}
-                label="Upload Form"
-                onClick={goToCreatePage}
+              <Can
+                perform="forms:create"
+                yes={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Upload Form"
+                    onClick={goToCreatePage}
+                  />
+                }
+                no={
+                  <Button
+                    default
+                    disabled
+                    leftIcon={<FaPlusCircle />}
+                    label="Upload Form"
+                  />
+                }
               />
             </div>
           </div>

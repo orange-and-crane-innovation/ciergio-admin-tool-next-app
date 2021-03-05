@@ -21,6 +21,7 @@ import Modal from '@app/components/modal'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
+import Can from '@app/permissions/can'
 
 import ViewsCard from './components/ViewsCard'
 import UpdateCard from './components/UpdateCard'
@@ -295,18 +296,23 @@ const PostComponent = () => {
                 <div className="flex flex-col">
                   {item.title}
                   {isMine && (
-                    <div className="flex text-info-500 text-sm">
-                      <Link href={`/forms/edit/${item._id}`}>
-                        <a className="mr-2 hover:underline">Edit</a>
-                      </Link>
-                      {` | `}
-                      <span
-                        className="mx-2 cursor-pointer hover:underline"
-                        onClick={() => handleShowModal('delete', item._id)}
-                      >
-                        Move to Trash
-                      </span>
-                    </div>
+                    <Can
+                      perform="forms:update::trash"
+                      yes={
+                        <div className="flex text-info-500 text-sm">
+                          <Link href={`/forms/edit/${item._id}`}>
+                            <a className="mr-2 hover:underline">Edit</a>
+                          </Link>
+                          {` | `}
+                          <span
+                            className="mx-2 cursor-pointer hover:underline"
+                            onClick={() => handleShowModal('delete', item._id)}
+                          >
+                            Move to Trash
+                          </span>
+                        </div>
+                      }
+                    />
                   )}
                 </div>
               ),
@@ -326,7 +332,14 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              button: (
+                <Can
+                  perform="forms:view"
+                  yes={
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  }
+                />
+              )
             }
           }) || null
       }
@@ -606,11 +619,24 @@ const PostComponent = () => {
             </span>
 
             <div className={styles.ContentFlex}>
-              <Button
-                default
-                leftIcon={<FaPlusCircle />}
-                label="Upload Form"
-                onClick={goToCreatePage}
+              <Can
+                perform="forms:create"
+                yes={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Upload Form"
+                    onClick={goToCreatePage}
+                  />
+                }
+                no={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Upload Form"
+                    disabled
+                  />
+                }
               />
             </div>
           </div>

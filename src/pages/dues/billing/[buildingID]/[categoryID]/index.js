@@ -1,4 +1,4 @@
-import Billing from '@app/components/pages/dues/Billing'
+import Billing from '@app/components/pages/dues/'
 
 export default function DynamicUnsentPage() {
   return <Billing />

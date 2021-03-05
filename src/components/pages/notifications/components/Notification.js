@@ -352,33 +352,43 @@ function Notifications({
                   <div>
                     <p className="text-base">{notif.title}</p>
                     <p className="text-sm">
-                      <span
-                        className="text-blue-600 cursor-pointer"
-                        onClick={() => {
-                          setSelectedNotifId(notif._id)
-                          setPreviewNotification(old => !old)
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={() => {}}
-                      >
-                        View
-                      </span>{' '}
+                      <Can
+                        perform="notifications:view"
+                        yes={
+                          <span
+                            className="text-blue-600 cursor-pointer"
+                            onClick={() => {
+                              setSelectedNotifId(notif._id)
+                              setPreviewNotification(old => !old)
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={() => {}}
+                          >
+                            View
+                          </span>
+                        }
+                      />{' '}
                       |{' '}
-                      <span
-                        className="text-red-600 cursor-pointer"
-                        onClick={() => {
-                          setSelectedNotif(notif)
-                          setShowTrashModal(old => !old)
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={() => {}}
-                      >
-                        {type === TRASHED
-                          ? 'Delete Permanent'
-                          : 'Move to Trash'}
-                      </span>
+                      <Can
+                        perform="notifications:trash"
+                        yes={
+                          <span
+                            className="text-red-600 cursor-pointer"
+                            onClick={() => {
+                              setSelectedNotif(notif)
+                              setShowTrashModal(old => !old)
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={() => {}}
+                          >
+                            {type === TRASHED
+                              ? 'Delete Permanent'
+                              : 'Move to Trash'}
+                          </span>
+                        }
+                      />
                     </p>
                   </div>
                 ),
@@ -542,6 +552,16 @@ function Notifications({
                 onClick={goToCreate}
                 className="mr-4 mt-4"
                 key={`${type}-btn`}
+              />
+            }
+            no={
+              <Button
+                primary
+                leftIcon={<FaPlusCircle />}
+                label="Create Notifications"
+                className="mr-4 mt-4"
+                key={`${type}-btn`}
+                disabled
               />
             }
           />

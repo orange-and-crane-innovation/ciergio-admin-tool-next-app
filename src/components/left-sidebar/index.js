@@ -11,7 +11,7 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
   const rule = rules[systemType][userRole]
   const allowedRoutes = rule?.allowedRoutes || []
   const allowedNestedRoutes = rule?.allowedNestedRoutes || []
-
+  console.log(allowedNestedRoutes)
   return (
     <div className="left-sidebar left-sidebar-1">
       <Logo show={true} onToggle={onToggle} isCollapsed={isCollapsed} />

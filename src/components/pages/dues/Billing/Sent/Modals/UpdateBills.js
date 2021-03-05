@@ -7,6 +7,8 @@ import Modal from '@app/components/modal'
 import Button from '@app/components/button'
 import axios from 'axios'
 
+import Can from '@app/permissions/can'
+
 export default function UpdateBills({
   amount,
   dueDate,
@@ -129,12 +131,24 @@ export default function UpdateBills({
           )}
         </div>
 
-        <Button default label="Cancel" onClick={() => alert('clicked')} />
-        <Button
-          primary
-          label="Submit"
-          onClick={() => setConfirmationModal(show => !show)}
-        />
+        <div className="w-full flex flex-row justify-between mt-4">
+          <Button
+            default
+            label="Cancel"
+            onClick={() => setConfirmationModal(false)}
+          />
+          <Can
+            perform="dues:update"
+            yes={
+              <Button
+                primary
+                label="Submit"
+                onClick={() => setConfirmationModal(show => !show)}
+              />
+            }
+            no={<Button primary disabled label="Submit" />}
+          />
+        </div>
       </form>
 
       <Modal
