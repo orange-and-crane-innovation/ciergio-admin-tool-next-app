@@ -97,7 +97,7 @@ const Pagination = ({ items, activePage, onPageClick, onLimitChange }) => {
 
       <div className={styles.paginationLimitContainer}>
         <FormSelect
-          defaultValue={limitOptions.filter(item => item.value === limit)}
+          value={limitOptions.filter(item => item.value === limit)}
           options={limitOptions}
           onChange={onLimitChange}
           noCloseIcon
