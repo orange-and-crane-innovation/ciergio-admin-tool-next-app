@@ -8,6 +8,7 @@ import * as yup from 'yup'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
+import FormAddress from '@app/components/forms/form-address'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
@@ -39,7 +40,7 @@ const validationSchema = yup.object().shape({
 })
 
 function Contact({ id }) {
-  const { handleSubmit, control, errors, reset } = useForm({
+  const { handleSubmit, control, errors, reset, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       name: '',
@@ -241,6 +242,11 @@ function Contact({ id }) {
     []
   )
 
+  const getMapValue = e => {
+    setValue('location', e?.address?.formattedAddress)
+    setValue('address', e?.address)
+  }
+
   const contactsData = useMemo(() => {
     return {
       count: contacts?.getContacts?.count || 0,
@@ -429,13 +435,14 @@ function Contact({ id }) {
               name="address"
               control={control}
               render={({ name, value, onChange }) => (
-                <FormInput
+                <FormAddress
                   label="Contact Address"
                   placeholder="(optional) Enter contact address"
                   name={name}
                   onChange={onChange}
                   value={value}
-                  errors={errors?.contact_address?.message}
+                  error={errors?.contact_address?.message}
+                  getValue={getMapValue}
                 />
               )}
             />
