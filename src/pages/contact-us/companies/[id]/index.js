@@ -6,7 +6,7 @@ function CompanyPage() {
   const router = useRouter()
   const { id } = router.query
 
-  return <Page perform="contactus:view" yes={<Company id={id} />} />
+  return <Page route="/contact-us" page={<Company id={id} />} />
 }
 
 export default CompanyPage
