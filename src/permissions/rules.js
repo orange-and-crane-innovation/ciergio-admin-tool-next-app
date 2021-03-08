@@ -2,6 +2,7 @@ const rules = {
   pray: {
     administrator: {
       allowedRoutes: [
+        '/dashboard',
         '/properties',
         '/staff',
         '/messages',
@@ -62,10 +63,9 @@ const rules = {
     },
     company_admin: {
       allowedRoutes: [
-        '/staff',
+        '/dashboard',
         '/messages',
         '/posts',
-        '/maintenance',
         '/forms',
         '/directory',
         '/contact-us',
@@ -118,12 +118,10 @@ const rules = {
     },
     complex_admin: {
       allowedRoutes: [
-        '/staff',
+        '/dashboard',
         '/messages',
         '/posts',
-        '/maintenance',
         '/forms',
-        '/dues',
         '/directory',
         '/contact-us',
         '/notifications',
@@ -137,9 +135,7 @@ const rules = {
         '/forms',
         '/notifications/list',
         '/notifications/all',
-        '/notifications/create',
-        '/dues/overview',
-        '/dues/manage-categories'
+        '/notifications/create'
       ],
       actions: [
         'messages:view',
@@ -178,38 +174,28 @@ const rules = {
         'dues:view::update'
       ]
     },
-    building_admin: {
+    member: {
       allowedRoutes: [
-        '/staff',
-        '/residents',
-        '/messages',
+        '/dashboard',
         '/posts',
         '/maintenance',
         '/forms',
-        '/dues',
         '/directory',
         '/contact-us',
         '/notifications',
         '/prayer-requests'
       ],
       allowedNestedRoutes: [
-        '/residents/all-residents',
-        '/residents/invites-requests',
         '/posts/create',
         '/posts',
         '/forms/create',
         '/forms',
         '/notifications/list',
-        '/notifications/create',
-        '/dues/billing'
+        '/notifications/create'
       ],
       actions: [
         'messages:view',
         'messages:create',
-        'residents:view',
-        'residents:create',
-        'residents:update',
-        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -235,18 +221,14 @@ const rules = {
         'notifications:trash',
         'notifications:draft',
         'prayerrequests:create',
-        'prayerrequests:view',
-        'dues:view',
-        'dues:create',
-        'dues:update',
-        'dues:delete',
-        'dues:view::update'
+        'prayerrequests:view'
       ]
     }
   },
   home: {
     administrator: {
       allowedRoutes: [
+        '/dashboard',
         '/properties',
         '/maintenance',
         '/staff',
@@ -312,6 +294,7 @@ const rules = {
     },
     company_admin: {
       allowedRoutes: [
+        '/dashboard',
         '/properties',
         '/staff',
         '/messages',
@@ -385,6 +368,7 @@ const rules = {
     },
     complex_admin: {
       allowedRoutes: [
+        '/dashboard',
         '/properties',
         '/staff',
         '/messages',
@@ -461,6 +445,7 @@ const rules = {
     },
     building_admin: {
       allowedRoutes: [
+        '/dashboard',
         '/properties',
         '/staff',
         '/messages',
@@ -554,6 +539,7 @@ const rules = {
   circle: {
     administrator: {
       allowedRoutes: [
+        '/dashboard',
         '/messages',
         '/attractions-events',
         '/qr-codes',
@@ -615,6 +601,7 @@ const rules = {
     },
     company_admin: {
       allowedRoutes: [
+        '/dashboard',
         '/messages',
         '/attractions-events',
         '/qr-codes',
@@ -676,6 +663,69 @@ const rules = {
     },
     complex_admin: {
       allowedRoutes: [
+        '/dashboard',
+        '/messages',
+        '/attractions-events',
+        '/qr-codes',
+        '/forms',
+        '/directory',
+        '/contact-us',
+        '/notifications'
+      ],
+      allowedNestedRoutes: [
+        '/attractions-events/create',
+        '/attractions-events/posts',
+        '/qr-codes/create',
+        '/qr-codes/posts',
+        '/forms/create',
+        '/forms',
+        '/notifications/list',
+        '/notifications/create'
+      ],
+      actions: [
+        'messages:create',
+        'messages:view',
+        'attractions:create',
+        'attractions:view',
+        'attractions:update',
+        'attractions:embed',
+        'attractions:draft',
+        'attractions:movetotrash',
+        'attractions:delete',
+        'attractions:restore',
+        'qrcodes:create',
+        'qrcodes:view',
+        'qrcodes:update',
+        'qrcodes:embed',
+        'qrcodes:draft',
+        'qrcodes:movetotrash',
+        'qrcodes:delete',
+        'qrcodes:restore',
+        'forms:createattachments',
+        'forms:view',
+        'forms:upload',
+        'forms:publish',
+        'directory:create',
+        'directory:update',
+        'directory:delete',
+        'directory:view',
+        'contactus:create',
+        'contactus:update',
+        'contactus:delete',
+        'contactus:view',
+        'notifications:create',
+        'notifications:view',
+        'notifications:update',
+        'notifications:embed',
+        'notifications:draft',
+        'notifications:movetotrash',
+        'notifications:delete',
+        'notifications:restore'
+      ]
+    },
+    member: {
+      allowedRoutes: [
+        '/dashboard',
         '/messages',
         '/attractions-events',
         '/qr-codes',

@@ -110,7 +110,7 @@ const DELETE_ACCOUNT_QUERY = gql`
 const UnitDirectoryComponent = () => {
   const router = useRouter()
   const [unit, setUnit] = useState()
-  const [unitOwner, setUnitOwner] = useState()
+  const [, setUnitOwner] = useState()
   const [residents, setResidents] = useState()
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
@@ -120,7 +120,7 @@ const UnitDirectoryComponent = () => {
   const [modalTitle, setModalTitle] = useState('')
   const [modalData, setModalData] = useState()
 
-  const { loading, data, error, refetch } = useQuery(GET_UNITS_QUERY, {
+  const { loading, data, error } = useQuery(GET_UNITS_QUERY, {
     enabled: false,
     variables: {
       where: {

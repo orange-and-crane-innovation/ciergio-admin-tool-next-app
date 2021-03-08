@@ -146,18 +146,6 @@ const navigation = [
         ]
       },
       {
-        url: '/dues',
-        icon: 'ciergio-dues',
-        title: 'My Dues',
-        items: [
-          {
-            url: '/dues/billing',
-            title: 'Billing',
-            items: []
-          }
-        ]
-      },
-      {
         url: '/directory',
         icon: 'ciergio-store',
         title: 'Directory',
@@ -219,12 +207,6 @@ const navigation = [
             items: []
           }
         ]
-      },
-      {
-        url: '/prayer-requests',
-        icon: 'ciergio-prayer',
-        title: 'Prayer Requests',
-        items: []
       },
       {
         url: '/donations',

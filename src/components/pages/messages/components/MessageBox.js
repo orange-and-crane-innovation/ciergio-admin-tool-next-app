@@ -92,11 +92,13 @@ export default function MessageBox({
   return (
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
-        {name ? (
+        {user?.firstName && user?.lastName ? (
           <h2 className="font-bold text text-base">{`${
             unitName || 'Unit 000'
-          } - ${name}`}</h2>
-        ) : null}
+          } - ${name || ''}`}</h2>
+        ) : (
+          <div />
+        )}
         <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
       </div>
       <div
@@ -207,7 +209,9 @@ export default function MessageBox({
           <input
             type="text"
             placeholder="Type your message here"
-            className="w-full h-8 border-0 outline-none"
+            className={`${
+              !conversation ? 'cursor-not-allowed' : ''
+            } w-full h-8 border-0 outline-none`}
             onChange={e => setMessageText(e.target.value)}
             value={messageText}
             onKeyPress={e => {
@@ -216,18 +220,20 @@ export default function MessageBox({
                 setMessageText('')
               }
             }}
+            disabled={!conversation}
           />
         </div>
         <div className="col-span-1 flex items-center justify-center">
           <div className={containerClass}>
             <input
-              className="hidden"
               type="file"
               id="attachment"
               name="attachment"
               multiple
               onChange={onUpload}
               accept="image/jpg, image/jpeg, image/png, .pdf, .doc, .docx"
+              disabled={!conversation}
+              className={`hidden ${!conversation ? 'cursor-not-allowed' : ''}`}
             />
             <div
               role="button"
