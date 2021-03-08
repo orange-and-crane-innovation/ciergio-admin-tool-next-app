@@ -33,7 +33,13 @@ const Page = ({ route, page }) => {
     [user]
   )
 
-  return check(systemType, profile?.role, route) ? page : <NotFound />
+  return check(systemType, profile?.role, route) ? (
+    page
+  ) : (
+    <div className="w-full flex justify-center mt-10">
+      <NotFound />
+    </div>
+  )
 }
 
 Page.propTypes = {
