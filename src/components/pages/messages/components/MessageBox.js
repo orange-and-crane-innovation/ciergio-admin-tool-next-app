@@ -46,11 +46,15 @@ export default function MessageBox({
   }, [conversation?.data])
 
   const user = useMemo(() => {
-    return participant?.participants?.data[1]?.user
+    if (participant?.participants?.data?.length > 1) {
+      return participant.participants.data[1]?.user
+    }
   }, [participant?.participants])
 
   const unitName = useMemo(() => {
-    return participant?.participants?.data[1]?.unit?.name
+    if (participant?.participants?.data[1]?.unit) {
+      return participant?.participants?.data[1]?.unit?.name
+    }
   }, [participant?.participants])
   const name = `${user?.firstName} ${user?.lastName}`
 

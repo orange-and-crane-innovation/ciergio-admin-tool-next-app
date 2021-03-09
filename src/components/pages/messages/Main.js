@@ -38,6 +38,8 @@ export default function Main() {
   const [uploadedAttachments, setUploadedAttachments] = useState(null)
   const [attachmentURLs, setAttachmentURLs] = useState([])
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
+  const [selectedAccountId, setSelectedAccountId] = useState(null)
+  const [conversations, setConversations] = useState(null)
   const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
 
@@ -60,15 +62,15 @@ export default function Main() {
 
   const {
     data: convos,
-    loading: loadingConvo,
-    refetch: refetchConversations
+    loading: loadingConvo
+    // refetch: refetchConversations
   } = useQuery(getConversations, {
     variables: {
       where: {
         participants: [accountId],
         includeEmptyConversation: false,
         pending: showPendingMessages,
-        type: localStorage.getItem('convoType') || convoType
+        type: localStorage.getItem('convoType') ?? convoType
       }
     }
   })
@@ -88,14 +90,13 @@ export default function Main() {
   })
   const [seenNewMessage] = useMutation(seenMessage)
 
-  const conversations = convos?.getConversations
   const firstConvo = conversations?.data[0]
 
   useEffect(() => {
-    if (firstConvo) {
-      handleMessagePreviewClick(firstConvo)
+    if (convos?.getConversations) {
+      setConversations(convos.getConversations)
     }
-  }, [firstConvo])
+  }, [convos?.getConversations])
 
   useEffect(() => {
     if (selectedConvo) {
@@ -127,23 +128,70 @@ export default function Main() {
     fetchAccounts,
     { data: accounts, loading: loadingAccounts }
   ] = useLazyQuery(getAccounts)
+
   const [
     createNewConversation,
-    { loading: creatingConversation }
-  ] = useMutation(createConversation, {
-    onCompleted: () => {
-      refetchConversations({
-        variables: {
-          where: {
-            participants: [accountId],
-            includeEmptyConversation: true,
-            pending: showPendingMessages,
-            type: convoType
-          }
+    {
+      data: createdConvo,
+      called: calledCreateConvo,
+      loading: creatingConversation
+    }
+  ] = useMutation(createConversation)
+
+  useEffect(() => {
+    if (firstConvo && !calledCreateConvo) {
+      handleMessagePreviewClick(firstConvo)
+    }
+  }, [firstConvo, calledCreateConvo])
+
+  useEffect(() => {
+    if (createdConvo && calledCreateConvo) {
+      const recipient = accounts?.getAccounts?.data?.find(
+        account => account.user._id === selectedAccountId
+      )
+
+      setConversations(old => ({
+        ...old,
+        count: old.count + 1,
+        data: [
+          {
+            _id: createdConvo?.createConversation?._id,
+            unit: null,
+            participants: {
+              data: [
+                {
+                  user: { ...profile.user }
+                },
+                {
+                  ...recipient,
+                  __typename: 'User'
+                }
+              ]
+            },
+            __typename: 'GetAccountsResult'
+          },
+          ...old.data
+        ]
+      }))
+      handleMessagePreviewClick({
+        _id: createdConvo?.createConversation?._id,
+        unit: null,
+        participants: {
+          data: [
+            {
+              user: { ...profile.user }
+            },
+            {
+              ...recipient,
+              __typename: 'User'
+            }
+          ]
         }
       })
+      setSelectedAccountId(null)
     }
-  })
+  }, [createdConvo, calledCreateConvo])
+
   const [
     fetchMessages,
     { data: messages, loading: loadingMessages, refetch: refetchMessages }
@@ -178,6 +226,7 @@ export default function Main() {
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
 
   const handleAccountClick = userid => {
+    setSelectedAccountId(userid)
     if (conversations?.data?.length > 0) {
       const index = conversations?.data.findIndex(
         convo => convo.participants.data[1].user._id === userid

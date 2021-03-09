@@ -8,11 +8,11 @@ export default function MessagePreviewItem({
   isSelected,
   currentUserid
 }) {
-  const author = data?.author?.user
-  const participant = data?.participants?.data[1]?.user
+  const participant = data?.participants?.data?.[1]?.user
   const participantName = `${participant?.firstName} ${participant?.lastName}`
-  const authorName = `${author?.firstName} ${author?.lastName}`
-  const previewHead = `${author?.unit?.name || 'Unit 000'} - ${participantName}`
+  const previewHead = `${
+    participant?.unit?.name || 'Unit 000'
+  } - ${participantName}`
   const newestMessage = data?.messages?.data[0]?.message
   const isSeen =
     data?.messages?.viewers?.data?.findIndex(
@@ -36,7 +36,7 @@ export default function MessagePreviewItem({
       <div className="mr-4">
         <img
           src={participant?.avatar || defaultAvatarUri}
-          alt={authorName}
+          alt={participantName}
           className="rounded-full h-8 w-8"
         />
       </div>
