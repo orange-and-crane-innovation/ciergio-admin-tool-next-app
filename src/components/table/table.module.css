@@ -1,6 +1,4 @@
 .tableContainer {
-  @apply overflow-auto;
-
   .tableControl {
     @apply w-full;
     @apply font-body font-normal text-base leading-relaxed;
@@ -31,6 +29,10 @@
 
     .tableBody {
       @apply font-body font-normal;
+
+      tr:nth-child(even) {
+        @apply bg-neutral-100;
+      }
 
       td {
         @apply px-8 py-4 max-w-lg;
