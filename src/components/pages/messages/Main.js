@@ -31,9 +31,7 @@ export default function Main() {
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id
   const [showPendingMessages, setShowPendingMessages] = useState(false)
-  const [convoType, setConvoType] = useState(
-    localStorage.getItem('convoType') || 'group'
-  )
+  const [convoType, setConvoType] = useState('group')
   const [showNewMessageModal, setShowNewMessageModal] = useState(false)
   const [selectedConvo, setSelectedConvo] = useState(null)
   const [search, setSearch] = useState('')
@@ -70,7 +68,7 @@ export default function Main() {
         participants: [accountId],
         includeEmptyConversation: false,
         pending: showPendingMessages,
-        type: convoType
+        type: localStorage.getItem('convoType') || convoType
       }
     }
   })
