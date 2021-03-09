@@ -22,6 +22,7 @@
 
   .paginationLimitContainer {
     @apply mt-4 w-1/6;
+    min-width: 172px;
   }
 
   .flexCenter {
