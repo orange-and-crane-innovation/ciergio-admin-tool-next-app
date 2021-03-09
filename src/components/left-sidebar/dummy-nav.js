@@ -83,17 +83,17 @@ const navigation = [
         ]
       },
       {
-        url: '/attractions',
+        url: '/attractions-events',
         icon: 'ciergio-event',
         title: 'Attractions and Events',
         items: [
           {
-            url: '/attractions',
+            url: '/attractions-events',
             title: 'View All Posts',
             items: []
           },
           {
-            url: '/attractions/create',
+            url: '/attractions-events/create',
             title: 'Create Bulletin',
             items: []
           }
@@ -146,6 +146,28 @@ const navigation = [
         ]
       },
       {
+        url: '/dues',
+        icon: 'ciergio-dues',
+        title: 'My Dues',
+        items: [
+          {
+            url: '/dues/billing',
+            title: 'Billing',
+            items: []
+          },
+          {
+            url: '/dues/overview',
+            title: 'Overview',
+            items: []
+          },
+          {
+            url: '/dues/manage-categories',
+            title: 'Manage Categories',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/directory',
         icon: 'ciergio-store',
         title: 'Directory',
@@ -181,37 +203,9 @@ const navigation = [
         items: []
       },
       {
-        url: '/maintenance',
-        icon: 'ciergio-maintenance',
-        title: 'Maintenance & Repairs',
-        items: []
-      },
-      {
-        url: '/dues',
-        icon: 'ciergio-dues',
-        title: 'My Dues',
-        items: [
-          {
-            url: '/dues/billing',
-            title: 'Billing',
-            items: []
-          },
-          {
-            url: '/dues/overview',
-            title: 'Overview',
-            items: []
-          },
-          {
-            url: '/dues/manage-categories',
-            title: 'Manage Categories',
-            items: []
-          }
-        ]
-      },
-      {
-        url: '/donations',
+        url: '/offerings',
         icon: 'ciergio-donate',
-        title: 'Donations',
+        title: 'Offerings',
         items: []
       }
     ]
