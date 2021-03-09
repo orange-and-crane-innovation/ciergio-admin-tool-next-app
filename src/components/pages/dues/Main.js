@@ -39,12 +39,6 @@ function Dues() {
   })
 
   useEffect(() => {
-    if (!_.isEmpty(categories) && !_.isEmpty(building)) {
-      router.push(`/dues/billing/${buildingID}/${categories[0]._id}`)
-    }
-  }, [categories, building, buildingID])
-
-  useEffect(() => {
     if (!loadingBuilding && dataBuilding) {
       setBuilding(dataBuilding?.getBuildings?.data)
     }
@@ -62,7 +56,7 @@ function Dues() {
 
   return (
     <>
-      {!_.isEmpty(categories) && !_.isEmpty(building) ? (
+      {!_.isEmpty(categories) && !_.isEmpty(building) && buildingID ? (
         <Billing
           categoriesBiling={categories}
           buildingName={building[0].name}

@@ -74,6 +74,7 @@ const DueDate = ({ fieldData }) => {
       })
     }
   }, [fieldData])
+
   return (
     <DatePicker
       rightIcon
@@ -381,7 +382,6 @@ function Unsent({ month, year }) {
             perform="dues:create"
             yes={
               <Button
-                full
                 primary={!isSent}
                 success={isSent}
                 danger={notSent}

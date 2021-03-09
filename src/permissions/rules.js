@@ -136,7 +136,8 @@ const rules = {
         '/contact-us',
         '/notifications',
         '/prayer-requests',
-        '/offerings'
+        '/offerings',
+        '/dues'
       ],
       allowedNestedRoutes: [
         '/residents/all-residents',
@@ -148,7 +149,8 @@ const rules = {
         '/notifications/list',
         '/notifications/all',
         '/notifications/create',
-        '/dues/billing'
+        '/dues/overview',
+        '/dues/manage-categories'
       ],
       actions: [
         'messages:view',
@@ -200,6 +202,7 @@ const rules = {
         '/directory',
         '/contact-us',
         '/notifications',
+        '/dues',
         '/prayer-requests'
       ],
       allowedNestedRoutes: [
@@ -208,7 +211,8 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
-        '/notifications/create'
+        '/notifications/create',
+        '/dues/billing'
       ],
       actions: [
         'messages:view',
