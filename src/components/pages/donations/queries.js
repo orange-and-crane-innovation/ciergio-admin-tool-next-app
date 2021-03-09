@@ -1,27 +1,76 @@
 import gql from 'graphql-tag'
-import { Pagev2 } from '@app/utils/schema-varibles'
 
 export const GET_DONATIONS = gql`
-    query getDonations($complexId: String, $search: String, $limit: Int, $sort: Int, $offset: Int) {
-        getDonations(where: {
-            complexId: $complexId
-        }, search: $search, limit: $limit, offset: $offset, sort: $sort,) {
-            ${Pagev2}
-            data {
-                name
-                email
-                bankCharges
-                ociFee
-                netAmount
-                senderReferenceCode
-                reconciliationId
-                transactionId
-                status
-                createAt
-                updatedAt
-                __typename
-            }
-            __typename
+  query getDonations(
+    $date: PaymentDateFilterInput
+    $companyId: String
+    $complexId: String
+    $paymentMethod: PaymentMethod
+    $search: String
+    $limit: Int
+    $sort: Int
+    $offset: Int
+  ) {
+    getDonations(
+      where: {
+        srcRef: { companyId: $companyId, complexId: $complexId }
+        date: $date
+        method: $paymentMethod
+      }
+      search: $search
+      limit: $limit
+      offset: $offset
+      sort: $sort
+    ) {
+      limit
+      offset
+      overallTotal
+      overallTotalNet
+      overallCount
+      data {
+        count
+        total
+        totalnet
+        date {
+          month
+          day
+          year
         }
+        data {
+          email
+          name
+          amount
+          bankCharges
+          ociFee
+          netAmount
+          senderReferenceCode
+          reconciliationId
+          transactionId
+          srcReference {
+            company {
+              name
+            }
+            complex {
+              name
+            }
+          }
+          status
+          createdAt
+          updatedAt
+        }
+      }
     }
+  }
+`
+
+export const GET_PAYMENT_METHODS = gql`
+  query {
+    getPaymentMethods {
+      count
+      data {
+        label
+        value
+      }
+    }
+  }
 `

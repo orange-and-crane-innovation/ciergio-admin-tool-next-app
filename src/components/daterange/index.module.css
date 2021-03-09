@@ -1,0 +1,48 @@
+.DateRangeContainer {
+  @apply relative w-full mx-4 md:w-72;
+
+  .Icon {
+    @apply absolute top-3 right-4;
+    @apply text-lg;
+  }
+
+  .Content {
+    @apply absolute top-14 left-0;
+    @apply bg-neutral-200 border border-neutral-300;
+    @apply shadow-md;
+    -webkit-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out;
+    transform: rotateX(90deg);
+    transform-origin: top;
+    opacity: 0;
+
+    &:before {
+      @apply inline-block absolute right-auto left-3;
+      border-bottom: 11px solid rgba(0, 0, 0, 0.1);
+      border-left: 11px solid transparent;
+      border-right: 11px solid transparent;
+      content: '';
+      top: -11px;
+    }
+
+    &:after {
+      @apply inline-block absolute right-auto left-3;
+      border-bottom: 11px solid #ffffff;
+      border-left: 11px solid transparent;
+      border-right: 11px solid transparent;
+      content: '';
+      top: -10px;
+    }
+
+    &.Open {
+      opacity: 1;
+      transform: rotateX(0deg);
+      transform-origin: top;
+    }
+
+    > .Button {
+      @apply mt-2 -mb-2 px-4 w-full;
+      @apply flex items-center justify-end;
+    }
+  }
+}

@@ -1,0 +1,13 @@
+.NotifCardContainer {
+  @apply p-4 h-64;
+  @apply flex flex-col items-center justify-center;
+  @apply text-neutral-500 text-base leading-7;
+
+  .NotifCardIcon {
+    @apply text-6xl mb-2;
+  }
+
+  .NotifCardHeader {
+    @apply font-semibold;
+  }
+}

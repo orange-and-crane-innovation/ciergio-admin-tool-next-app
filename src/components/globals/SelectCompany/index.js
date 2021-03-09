@@ -25,6 +25,7 @@ const SelectCategoryComponent = ({
   name,
   type,
   userType,
+  placeholder,
   selected,
   error,
   onChange,
@@ -72,7 +73,7 @@ const SelectCategoryComponent = ({
     <div className={styles.SelectCompanyContainer}>
       <FormSelect
         name={name}
-        placeholder={'Select a Company'}
+        placeholder={placeholder}
         valueholder="Company"
         noOptionsMessage={() => 'No item found.'}
         defaultValue={selected}
@@ -81,6 +82,7 @@ const SelectCategoryComponent = ({
         onChange={onChange}
         onClear={onClear}
         isMulti={isMulti}
+        isClearable
       />
     </div>
   )
@@ -94,6 +96,7 @@ SelectCategoryComponent.propTypes = {
   name: PropTypes.string,
   type: PropTypes.string,
   userType: PropTypes.string,
+  placeholder: PropTypes.string,
   selected: PropTypes.any,
   error: PropTypes.string,
   onChange: PropTypes.func,

@@ -6,11 +6,13 @@ const rules = {
         '/properties',
         '/staff',
         '/messages',
+        '/residents',
         '/posts',
         '/forms',
         '/directory',
         '/contact-us',
-        '/notifications'
+        '/notifications',
+        '/offerings'
       ],
       allowedNestedRoutes: [
         '/properties/company',
@@ -25,11 +27,16 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
-        '/notifications/create'
+        '/notifications/create',
+        'offerings:view'
       ],
       actions: [
         'messages:view',
         'messages:create',
+        'residents:view',
+        'residents:create',
+        'residents:update',
+        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -64,14 +71,16 @@ const rules = {
     company_admin: {
       allowedRoutes: [
         '/dashboard',
+        '/staff',
         '/messages',
         '/posts',
+        '/prayer-requests',
         '/forms',
         '/directory',
         '/contact-us',
         '/notifications',
         '/prayer-requests',
-        '/donations'
+        '/offerings'
       ],
       allowedNestedRoutes: [
         '/posts/create',
@@ -113,7 +122,7 @@ const rules = {
         'prayerrequests:export',
         'prayerrequests:print',
         'prayerrequests:view',
-        'donations:view'
+        'offerings:view'
       ]
     },
     complex_admin: {
@@ -121,26 +130,33 @@ const rules = {
         '/dashboard',
         '/messages',
         '/posts',
+        '/prayer-requests',
         '/forms',
         '/directory',
         '/contact-us',
         '/notifications',
         '/prayer-requests',
-        '/donations'
+        '/offerings'
       ],
       allowedNestedRoutes: [
+        '/residents/all-residents',
+        '/residents/invites-requests',
         '/posts/create',
         '/posts',
         '/forms/create',
         '/forms',
         '/notifications/list',
         '/notifications/all',
-        '/notifications/create'
+        '/notifications/create',
+        '/dues/billing'
       ],
       actions: [
         'messages:view',
         'messages:create',
         'residents:view',
+        'residents:create',
+        'residents:update',
+        'residents:resend::cancel',
         'bulletin:create',
         'bulletin:update',
         'bulletin:view',
@@ -167,6 +183,7 @@ const rules = {
         'notifications:draft',
         'prayerrequests:create',
         'prayerrequests:view',
+        'offerings:view',
         'dues:view',
         'dues:create',
         'dues:update',
