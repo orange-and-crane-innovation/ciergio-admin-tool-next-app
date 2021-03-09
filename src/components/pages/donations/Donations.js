@@ -55,11 +55,7 @@ function Donations() {
     { data: donations, loading: loadingDonations, error }
   ] = useLazyQuery(GET_DONATIONS)
 
-  const {
-    data: dataPaymentMethod,
-    loading: loadingPaymentMethod,
-    error: errorPaymentMethod
-  } = useQuery(GET_PAYMENT_METHODS)
+  const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS)
 
   const DONATIONS = donations?.getDonations
   const PAYMENT_METHODS = dataPaymentMethod?.getPaymentMethods
