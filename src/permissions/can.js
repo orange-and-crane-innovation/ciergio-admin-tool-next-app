@@ -6,8 +6,7 @@ import rules from './rules'
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
 const check = (type, role, action) => {
-  const userRole = role === 'building_admin' ? 'member' : role
-  const permissions = rules[type][userRole].actions
+  const permissions = rules[type][role].actions
 
   if (!permissions) {
     console.log("ERROR: one of the provided params don't exist!")

@@ -109,11 +109,6 @@ function Unsent({ month, year }) {
   const keyPressed = useKeyPress('Enter')
   const [modalDate, setModalDate] = useState(null)
   const [date, setDate] = useState(null)
-  const [amountValue, setAmountValue] = useState([
-    {
-      initial: null
-    }
-  ])
 
   const [isSent, setIsSent] = useState(false)
   const [notSent, setNotSent] = useState(false)
@@ -249,14 +244,13 @@ function Unsent({ month, year }) {
 
   const onChangeAmount = e => {
     const name = e.target.name
-    setAmountValue(prevState => ({
-      ...prevState,
-      [name]: e.target.value
-    }))
+    const value = e.target.value
     const id = name[name.length - 1]
-    const amount = { amount: e.target.value }
+    const amount = { amount: value }
     const formName = [`form${id}`]
-    setAmountPerRow(prevData => ({ ...prevData, [formName]: { ...amount } }))
+    if (/^(\s*|\d+)$/.test(value)) {
+      setAmountPerRow(prevData => ({ ...prevData, [formName]: { ...amount } }))
+    }
   }
 
   const handleFile = file => {
@@ -364,9 +358,9 @@ function Unsent({ month, year }) {
             placeholder="0.0"
             key={index}
             value={
-              amountValue[`amount${index}`]
-                ? amountValue[`amount${index}`]
-                : amountValue.initial
+              amountPerRow[`form${index}`]
+                ? amountPerRow[`form${index}`].amount
+                : ''
             }
           />
         )
@@ -393,7 +387,7 @@ function Unsent({ month, year }) {
                 onClick={e => submitForm(e)}
               />
             }
-            no={<Button full disabled label="Send" />}
+            no={<Button disabled label="Send" />}
           />
         )
 
@@ -475,7 +469,7 @@ function Unsent({ month, year }) {
       })
     }
 
-    setFloors(optionsData)
+    setFloors([{ label: 'All', value: 'all' }, ...optionsData])
   }, [
     loadingFloorNumbers,
     dataAllFloors,
@@ -538,7 +532,7 @@ function Unsent({ month, year }) {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
     setPerDate([])
-    setAmountValue([{ initial: '' }])
+    setAmountPerRow()
   }
 
   // setting limit in pagination
@@ -553,7 +547,6 @@ function Unsent({ month, year }) {
       <div className={styles.FormContainer}>
         <div className={styles.DueDateControl}>
           <Button
-            full
             primary
             label="Apply Due Dates to All Units"
             leftIcon={calendarIcon()}

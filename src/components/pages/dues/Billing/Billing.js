@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './Billing.module.css'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Unsent from './Unsent'
@@ -17,6 +17,12 @@ const Billing = ({ categoriesBiling, buildingName }) => {
   const [year, setYear] = useState(new Date().getFullYear())
 
   const user = JSON.parse(localStorage.getItem('profile'))
+
+  useEffect(() => {
+    if (categoriesBiling) {
+      router.push(`/dues/billing/${buildingID}/${categoriesBiling[0]._id}`)
+    }
+  }, [categoriesBiling])
 
   const handlingMonthOrYear = (date, type = 'year') => {
     if (date instanceof Date) {

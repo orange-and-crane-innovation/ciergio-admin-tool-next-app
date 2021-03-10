@@ -8,8 +8,7 @@ import rules from '@app/permissions/rules'
 import navigation from './dummy-nav'
 
 const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
-  const role = userRole === 'building_admin' ? 'member' : userRole
-  const rule = rules[systemType][role]
+  const rule = rules[systemType][userRole]
   const allowedRoutes = rule?.allowedRoutes || []
   const allowedNestedRoutes = rule?.allowedNestedRoutes || []
 
