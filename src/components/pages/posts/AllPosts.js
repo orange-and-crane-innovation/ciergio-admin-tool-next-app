@@ -135,6 +135,7 @@ const PostComponent = () => {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const isAttractionsEventsPage = router.pathname === '/attractions-events'
 
   const tableRowData = [
     {
@@ -310,7 +311,11 @@ const PostComponent = () => {
                       </Link>
                       {` | `}
                       <Can
-                        perform="bulletin:delete"
+                        perform={
+                          isAttractionsEventsPage
+                            ? 'attractions:delete'
+                            : 'bulletin:delete'
+                        }
                         yes={
                           <span
                             className="mx-2 cursor-pointer hover:underline"
@@ -323,7 +328,11 @@ const PostComponent = () => {
                     </div>
                   ) : (
                     <Can
-                      perform="bulletin:view"
+                      perform={
+                        isAttractionsEventsPage
+                          ? 'attractions:view'
+                          : 'bulletin:view'
+                      }
                       yes={
                         <div className="flex text-info-500 text-sm">
                           <Link href={`/posts/view/${item._id}`}>
@@ -354,7 +363,11 @@ const PostComponent = () => {
               ),
               button: (
                 <Can
-                  perform="bulletin:view"
+                  perform={
+                    isAttractionsEventsPage
+                      ? 'attractions:view'
+                      : 'bulletin:view'
+                  }
                   yes={
                     <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                   }
@@ -437,7 +450,7 @@ const PostComponent = () => {
   }
 
   const goToCreatePage = () => {
-    if (router.pathname === '/attractions-events') {
+    if (isAttractionsEventsPage) {
       router.push('/attractions-events/create')
     } else {
       router.push('posts/create')
@@ -673,7 +686,11 @@ const PostComponent = () => {
               ) : (
                 <>
                   <Can
-                    perform="bulletin:view"
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:view'
+                        : 'bulletin:view'
+                    }
                     yes={
                       <Button
                         default
@@ -693,7 +710,11 @@ const PostComponent = () => {
                   />
 
                   <Can
-                    perform="bulletin:create"
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:create'
+                        : 'bulletin:create'
+                    }
                     yes={
                       <Button
                         default
