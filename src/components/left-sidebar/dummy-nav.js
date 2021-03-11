@@ -4,18 +4,23 @@ const navigation = [
     items: [
       {
         url: '/dashboard',
-        icon: 'ciergio-dashboard',
+        icon: 'ciergio-home',
         title: 'Dashboard',
         items: []
       },
       {
         url: '/properties',
-        icon: 'ciergio-organization',
+        icon: 'ciergio-building',
         title: 'My Properties',
         items: [
           {
             url: '/properties/company',
             title: 'My Company',
+            items: []
+          },
+          {
+            url: '/properties/manage/unit-types',
+            title: 'Manage Unit Types',
             items: []
           },
           {
@@ -27,7 +32,7 @@ const navigation = [
       },
       {
         url: '/staff',
-        icon: 'ciergio-teams',
+        icon: 'ciergio-user-group',
         title: 'My Staff',
         items: [
           {
@@ -44,7 +49,7 @@ const navigation = [
       },
       {
         url: '/residents',
-        icon: 'ciergio-employees',
+        icon: 'ciergio-user',
         title: 'My Residents',
         items: [
           {
@@ -67,7 +72,7 @@ const navigation = [
       },
       {
         url: '/posts',
-        icon: 'ciergio-bulletin',
+        icon: 'ciergio-list',
         title: 'Bulletin Board',
         items: [
           {
@@ -84,7 +89,7 @@ const navigation = [
       },
       {
         url: '/attractions-events',
-        icon: 'ciergio-event',
+        icon: 'ciergio-list',
         title: 'Attractions and Events',
         items: [
           {
@@ -100,25 +105,31 @@ const navigation = [
         ]
       },
       {
-        url: '/qr-codes',
-        icon: 'fa fa-qrcode',
-        title: 'QR Codes',
+        url: '/qr-code',
+        icon: 'ciergio-qr',
+        title: 'QR Code',
         items: [
           {
-            url: '/qr-codes/posts',
+            url: '/qr-code',
             title: 'View All Posts',
             items: []
           },
           {
-            url: '/qr-codes/create',
-            title: 'Create Bulletin',
+            url: '/qr-code/create',
+            title: 'Create QR Code',
             items: []
           }
         ]
       },
       {
+        url: '/guest-delivery',
+        icon: 'ciergio-door',
+        title: 'Guest & Delivery',
+        items: []
+      },
+      {
         url: '/maintenance',
-        icon: 'ciergio-maintenance',
+        icon: 'ciergio-wrench',
         title: 'Maintenance & Repairs',
         items: []
       },
@@ -147,7 +158,7 @@ const navigation = [
       },
       {
         url: '/dues',
-        icon: 'ciergio-dues',
+        icon: 'ciergio-bill',
         title: 'My Dues',
         items: [
           {
@@ -181,7 +192,7 @@ const navigation = [
       },
       {
         url: '/notifications',
-        icon: 'ciergio-bulletin',
+        icon: 'ciergio-mail',
         title: 'Notifications',
         items: [
           {
@@ -204,7 +215,7 @@ const navigation = [
       },
       {
         url: '/offerings',
-        icon: 'ciergio-donate',
+        icon: 'ciergio-donate-2',
         title: 'Offerings',
         items: []
       }
