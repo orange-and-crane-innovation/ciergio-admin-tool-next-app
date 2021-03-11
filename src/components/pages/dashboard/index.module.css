@@ -1,0 +1,9 @@
+.DashboardContainer {
+  @apply pt-4 pb-8 px-8;
+
+  .DashboardHeader {
+    @apply mb-5;
+    @apply font-heading font-black;
+    @apply text-neutral-dark text-3xl leading-10;
+  }
+}
