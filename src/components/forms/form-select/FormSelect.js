@@ -19,9 +19,9 @@ const InputSelect = ({
   disabled,
   noCloseIcon,
   className,
-  description,
   isMulti,
-  isClearable
+  isClearable,
+  subLabel
 }) => {
   // eslint-disable-next-line react/prop-types
   const ValueContainer = ({ children, ...props }) => {
@@ -44,7 +44,7 @@ const InputSelect = ({
 
   return (
     <div className={`${styles.FormSelectContainer} ${className}`}>
-      {description || null}
+      {subLabel || null}
       <Select
         styles={{
           control: styles => ({
@@ -105,9 +105,13 @@ InputSelect.propTypes = {
   disabled: PropTypes.bool,
   noCloseIcon: PropTypes.bool,
   className: PropTypes.string,
-  description: PropTypes.node || PropTypes.string,
   isMulti: PropTypes.bool,
-  isClearable: PropTypes.bool
+  isClearable: PropTypes.bool,
+  subLabel: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.element,
+    PropTypes.string
+  ])
 }
 
 export default InputSelect

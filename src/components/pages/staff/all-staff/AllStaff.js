@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/router'
-import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 
@@ -11,7 +11,7 @@ import Dropdown from '@app/components/dropdown'
 import SelectDropdown from '@app/components/select'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchComponent from '@app/components/globals/SearchControl'
-import InviteStaffContent from './InviteStaffContent'
+import InviteStaffModal from './InviteStaffModal'
 import EditStaffContent from './EditStaffContent'
 import RemoveStaffContent from './RemoveStaffContent'
 import { FaPlusCircle } from 'react-icons/fa'
@@ -29,9 +29,7 @@ import {
   ADD_RECEPTIONIST,
   ADD_UNIT_OWNER,
   GET_ACCOUNTS,
-  GET_BUILDINGS,
   GET_COMPANIES,
-  GET_COMPLEXES,
   UPDATE_USER,
   DELETE_USER
 } from '../queries'
@@ -53,21 +51,22 @@ import {
 function AllStaff() {
   const router = useRouter()
   const {
-    handleSubmit: handleInviteStaffSubmit,
-    control: inviteStaffControl,
-    errors: inviteStaffErrors,
-    watch: watchInviteStaffForm,
-    reset: resetInviteStaffForm
+    handleSubmit: handleSubmitInvite,
+    control: inviteControl,
+    errors: inviteErrors,
+    watch: watchInvite,
+    reset: resetInvite
   } = useForm({
     resolver: yupResolver(inviteStaffValidationSchema),
     defaultValues: {
       staffType: '',
       email: '',
       jobTitle: '',
-      company: ''
+      company: '',
+      complex: '',
+      building: ''
     }
   })
-
   const {
     handleSubmit: handleEditStaffSubmit,
     control: editStaffControl,
@@ -77,18 +76,8 @@ function AllStaff() {
     resolver: yupResolver(editStaffValidationSchema)
   })
 
-  const staffType = watchInviteStaffForm('staffType')?.value
-  const companyId = watchInviteStaffForm('company')?.value
-  const complexId = watchInviteStaffForm('complex')?.value
-
-  const isComplexAccount = staffType === COMPLEX_ADMIN
-  const isBuildingAccount =
-    staffType === UNIT_OWNER ||
-    staffType === BUILDING_ADMIN ||
-    staffType === RECEPTIONIST
-
   const [searchText, setSearchText] = useState('')
-  const [showModal, setShowModal] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
   const [selectedRoles, setSelectedRoles] = useState(undefined)
   const [selectedAssignment, setSelectedAssignment] = useState(undefined)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -115,17 +104,6 @@ function AllStaff() {
     }
   })
   const { data: companies } = useQuery(GET_COMPANIES)
-  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES, {
-    variables: {
-      id: companyId
-    }
-  })
-
-  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS, {
-    variables: {
-      id: complexId
-    }
-  })
 
   const handleOnCompleted = () => {
     handleClearModal()
@@ -182,26 +160,10 @@ function AllStaff() {
     }
   })
 
-  useEffect(() => {
-    if (companyId !== undefined && (isComplexAccount || isBuildingAccount)) {
-      getComplexes()
-    }
-    if (complexId !== undefined && isBuildingAccount) {
-      getBuildings()
-    }
-  }, [
-    companyId,
-    complexId,
-    getBuildings,
-    getComplexes,
-    isBuildingAccount,
-    isComplexAccount
-  ])
-
   const handleShowModal = type => {
     switch (type) {
       case 'create':
-        setShowModal(old => !old)
+        setShowInviteModal(old => !old)
         break
       case 'edit':
         setShowEditModal(old => !old)
@@ -222,7 +184,7 @@ function AllStaff() {
       })
     }
     if (type === 'create') {
-      resetInviteStaffForm({
+      resetInvite({
         staffType: '',
         email: '',
         company: '',
@@ -332,28 +294,6 @@ function AllStaff() {
 
     return []
   }, [companies?.getCompanies])
-
-  const complexAssignments = useMemo(() => {
-    if (complexes?.getComplexes?.data?.length > 0) {
-      return complexes.getComplexes.data.map(complex => ({
-        label: complex.name,
-        value: complex._id
-      }))
-    }
-
-    return []
-  }, [complexes?.getComplexes])
-
-  const buildingAssignments = useMemo(() => {
-    if (buildings?.getBuildings?.data?.length > 0) {
-      return buildings.getBuildings.data.map(building => ({
-        label: building.name,
-        value: building._id
-      }))
-    }
-
-    return []
-  }, [buildings?.getBuildings])
 
   const staffData = useMemo(
     () => ({
@@ -544,32 +484,18 @@ function AllStaff() {
           />
         }
       />
-      <Modal
-        title="Invite Staff"
-        okText="Invite Staff"
-        visible={showModal}
-        onClose={() => handleClearModal('create')}
-        onCancel={() => handleClearModal('create')}
-        okButtonProps={{
-          loading: sendingInvite
+      <InviteStaffModal
+        open={showInviteModal}
+        loading={sendingInvite}
+        onCancel={type => handleClearModal(type)}
+        onOk={handleSubmitInvite(handleOk)}
+        companyOptions={assignments}
+        form={{
+          watch: watchInvite,
+          errors: inviteErrors,
+          control: inviteControl
         }}
-        onOk={handleInviteStaffSubmit(handleOk)}
-        width={450}
-      >
-        <InviteStaffContent
-          form={{
-            control: inviteStaffControl,
-            errors: inviteStaffErrors
-          }}
-          isComplex={isComplexAccount}
-          isBuilding={isBuildingAccount}
-          complexOptions={complexAssignments}
-          buildingOptions={buildingAssignments}
-          companyOptions={assignments}
-          staffRoles={roles}
-          staffType={staffType}
-        />
-      </Modal>
+      />
       <Modal
         title="Edit Staff"
         okText="Edit Staff"
