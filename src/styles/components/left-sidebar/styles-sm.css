@@ -20,7 +20,7 @@
       @apply uppercase font-bold text-base tracking-wider;
       @apply flex flex-row items-center justify-start h-16;
       @apply w-full whitespace-nowrap pl-4;
-      max-width: calc(theme('spacing.1') * 64);
+      max-width: calc(theme('spacing.1') * 72);
       @apply text-primary-900;
       span {
         @apply block;
@@ -37,8 +37,8 @@
     @apply whitespace-nowrap rounded-none border-0;
     @apply outline-none focus:outline-none py-4;
     min-width: calc(theme('spacing.1') * 16);
-    max-width: calc(theme('spacing.1') * 64);
-    width: calc(theme('spacing.1') * 64);
+    max-width: calc(theme('spacing.1') * 72);
+    width: calc(theme('spacing.1') * 72);
     > svg {
       width: calc(theme('spacing.1') * 16);
     }

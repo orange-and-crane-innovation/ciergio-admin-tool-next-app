@@ -2,10 +2,11 @@
   [data-layout='layout-1'] {
     width: 100%;
     .wrapper {
-      @apply relative flex flex-row items-stretch relative;
+      @apply h-full relative flex flex-row items-stretch relative;
       .left-sidebar {
-        @apply absolute top-0 left-0 bottom-0 h-full w-64 z-10;
-        @apply transform transition-transform duration-300 ease-in-out -translate-x-64;
+        @apply absolute top-0 left-0 bottom-0 h-full w-72 z-10;
+        @apply transform transition-transform duration-300 ease-in-out -translate-x-72;
+        @apply overflow-auto;
       }
       .main {
         @apply flex flex-col w-full z-0;
@@ -26,18 +27,19 @@
       @apply relative h-full flex flex-row items-stretch;
       .left-sidebar {
         @apply w-full;
+        @apply overflow-auto;
         min-width: calc(theme('spacing.1') * 16);
-        max-width: calc(theme('spacing.1') * 64);
+        max-width: calc(theme('spacing.1') * 72);
         transition: max-width 0.25s ease-in-out;
       }
       .main {
-        min-width: calc(100% - (theme('spacing.1') * 64));
+        min-width: calc(100% - (theme('spacing.1') * 72));
         @apply flex flex-col;
       }
     }
     &[data-collapsed='false'] {
       .left-sidebar {
-        max-width: calc(theme('spacing.1') * 64);
+        max-width: calc(theme('spacing.1') * 72);
       }
     }
     &[data-collapsed='true'] {

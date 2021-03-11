@@ -47,7 +47,7 @@
       @apply uppercase font-bold text-base tracking-wider;
       @apply flex flex-row items-center justify-start;
       @apply h-20 w-full whitespace-nowrap pl-4;
-      max-width: calc(theme('spacing.1') * 64);
+      max-width: calc(theme('spacing.1') * 72);
       @apply text-primary-900;
       span {
         transition: all 0.15s ease-in-out;
@@ -75,8 +75,8 @@
     @apply truncate w-full rounded-none border-0 outline-none;
     @apply focus:outline-none py-4;
     min-width: calc(theme('spacing.1') * 16);
-    max-width: calc(theme('spacing.1') * 64);
-    width: calc(theme('spacing.1') * 64);
+    max-width: calc(theme('spacing.1') * 72);
+    width: calc(theme('spacing.1') * 72);
     > svg {
       width: calc(theme('spacing.1') * 16);
     }
@@ -108,9 +108,9 @@
     &:hover,
     &.active {
       @apply bg-primary-500 text-white text-base;
-      /* &:after {
-        display: block;
-      } */
+      > svg {
+        fill: white;
+      }
     }
   }
 
