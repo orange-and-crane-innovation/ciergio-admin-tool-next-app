@@ -1,8 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
-// import { useRouter } from 'next/router'
-
-// import Button from '@app/components/button'
+import isEmpty from 'lodash/isEmpty'
 import FormInput from '@app/components/forms/form-input'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import Table from '@app/components/table'
@@ -12,12 +10,9 @@ import SelectDropdown from '@app/components/select'
 import Modal from '@app/components/modal'
 import Pagination from '@app/components/pagination'
 import { Card } from '@app/components/globals'
-
 import Empty from '../Empty'
-
 import { FaTimes, FaSearch } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
@@ -104,7 +99,7 @@ function PendingInvites() {
   const [selectedData, setSelectedData] = useState([])
   const [isBulkDisabled, setIsBulkDisabled] = useState(false)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(false)
-  const [selectedBulk, setSelectedBulk] = useState([])
+  const [selectedBulk, setSelectedBulk] = useState('')
   const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const [showResendInviteModal, setShowResendInviteModal] = useState(false)
   const [activePage, setActivePage] = useState(1)
@@ -241,12 +236,12 @@ function PendingInvites() {
   }
 
   const onClearBulk = () => {
-    setSelectedBulk('')
+    setSelectedBulk(null)
   }
 
-  const onBulkChange = e => {
-    setSelectedBulk(e.target.value)
-    if (e.target.value !== '') {
+  const onBulkChange = value => {
+    setSelectedBulk(value.value)
+    if (!isEmpty(value)) {
       setIsBulkButtonDisabled(false)
     } else {
       setIsBulkButtonDisabled(true)
