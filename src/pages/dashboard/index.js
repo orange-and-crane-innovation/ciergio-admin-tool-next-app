@@ -1,9 +1,8 @@
+import Dashboard from '@app/components/pages/dashboard'
+import Page from '@app/permissions/page'
+
 function DashboardPage() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-    </div>
-  )
+  return <Page route="/dashboard" page={<Dashboard />} />
 }
 
 export default DashboardPage
