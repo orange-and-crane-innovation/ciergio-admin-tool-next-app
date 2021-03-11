@@ -7,10 +7,12 @@ import { useRouter } from 'next/router'
 import { gql, useMutation, useQuery } from '@apollo/client'
 import axios from 'axios'
 import { FaSpinner, FaTimes } from 'react-icons/fa'
+import { FiDownload } from 'react-icons/fi'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import moment from 'moment'
+import QRCode from 'react-qr-code'
 
 import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'
@@ -30,6 +32,8 @@ import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
 import Can from '@app/permissions/can'
 import style from './Create.module.css'
+
+const saveSvgAsPng = require('save-svg-as-png')
 
 const UPDATE_POST_MUTATION = gql`
   mutation($id: String, $data: PostInput) {
@@ -125,7 +129,7 @@ const validationSchemaDraft = yup.object().shape({
 })
 
 const CreatePosts = () => {
-  const { query, push } = useRouter()
+  const { query, push, pathname } = useRouter()
   const [loading, setLoading] = useState(false)
   const [maxImages] = useState(3)
   const [post, setPost] = useState([])
@@ -159,6 +163,12 @@ const CreatePosts = () => {
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const routeName =
+    pathname === '/attractions-events/edit/[id]'
+      ? 'attractions-events'
+      : pathname === '/qr-code/edit/[id]'
+      ? 'qr-code'
+      : 'posts'
 
   const [
     updatePost,
@@ -329,11 +339,11 @@ const CreatePosts = () => {
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
 
   const goToBulletinPageLists = () => {
-    push('/posts/')
+    push(`/${routeName}/`)
   }
 
   const goToPreviewPage = () => {
-    push(`/posts/view/${query.id}`)
+    push(`/${routeName}/view/${query.id}`)
   }
 
   const onCountChar = e => {
@@ -352,7 +362,7 @@ const CreatePosts = () => {
 
       switch (type) {
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
           )
@@ -747,12 +757,57 @@ const CreatePosts = () => {
     onSubmit(getValues(), 'draft')
   }
 
+  const downloadQR = () => {
+    const imageOptions = {
+      scale: 5,
+      encoderOptions: 1,
+      backgroundColor: 'white'
+    }
+
+    saveSvgAsPng.saveSvgAsPng(
+      document.querySelector('.qrCode > svg'),
+      'qr.png',
+      imageOptions
+    )
+  }
+
   return (
     <>
       {loadingUpdate && <PageLoader fullPage />}
       <div className={style.CreatePostContainer}>
         <h1 className={style.CreatePostHeader}>Edit a Post</h1>
         <form>
+          {routeName === 'qr-code' && (
+            <Card
+              header={<span className={style.CardHeader}>QR Code</span>}
+              content={
+                <div className={style.CreateContentContainer}>
+                  <div className={style.CreatePostVideoInput}>Article URL</div>
+                  <FormInput
+                    type="text"
+                    name="qr-input"
+                    value={`${window.location.origin}/${routeName}/view/${dataPost?.getAllPost?.post[0]._id}`}
+                    readOnly
+                  />
+                  <div className={style.CreatePostVideoInput}>QR Code</div>
+                  <div className="qrCode">
+                    <QRCode
+                      size={168}
+                      value={`${window.location.origin}/${routeName}/view/${dataPost?.getAllPost?.post[0]._id}`}
+                    />
+                    <Button
+                      default
+                      label="Download"
+                      onClick={downloadQR}
+                      leftIcon={<FiDownload />}
+                      className="mt-4"
+                    />
+                  </div>
+                </div>
+              }
+            />
+          )}
+
           <Card
             header={<span className={style.CardHeader}>Featured Media</span>}
             content={
@@ -1071,7 +1126,7 @@ const CreatePosts = () => {
               />
               <Button
                 type="button"
-                label="Publish Post"
+                label="Update Post"
                 primary
                 onMouseDown={() => onUpdateStatus('active')}
                 onClick={handleSubmit(e => {

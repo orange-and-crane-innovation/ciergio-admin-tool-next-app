@@ -130,6 +130,12 @@ const PostComponent = () => {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const routeName =
+    router.pathname === '/attractions-events'
+      ? 'attractions-events'
+      : router.pathname === '/qr-code'
+      ? 'qr-code'
+      : 'posts'
 
   const tableRowData = [
     {
@@ -165,25 +171,26 @@ const PostComponent = () => {
     }
   ]
 
+  const fetchFilter = {
+    status: ['published', 'draft', 'unpublished', 'scheduled'],
+    type: 'post',
+    mypost: true,
+    categoryId: selectedCategory !== '' ? selectedCategory : null,
+    search: {
+      allpost: searchText
+    }
+  }
+
+  if (routeName === 'qr-code') {
+    fetchFilter.qr = true
+  }
+
   const { loading, data, error, refetch: refetchPosts } = useQuery(
     GET_ALL_POST_QUERY,
     {
       enabled: false,
       variables: {
-        where: {
-          status: selectedStatus || [
-            'published',
-            'draft',
-            'unpublished',
-            'scheduled'
-          ],
-          type: 'post',
-          mypost: true,
-          categoryId: selectedCategory,
-          search: {
-            mypost: searchText
-          }
-        },
+        where: fetchFilter,
         limit: limitPage,
         offset: offsetPage
       }
@@ -302,11 +309,11 @@ const PostComponent = () => {
                   {item.title}
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
-                      <Link href={`/posts/view/${item._id}`}>
+                      <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mr-2 hover:underline">View</a>
                       </Link>
                       {` | `}
-                      <Link href={`/posts/edit/${item._id}`}>
+                      <Link href={`/${routeName}/edit/${item._id}`}>
                         <a className="mx-2 hover:underline">Edit</a>
                       </Link>
                       {` | `}
@@ -319,7 +326,7 @@ const PostComponent = () => {
                     </div>
                   ) : (
                     <div className="flex text-info-500 text-sm">
-                      <Link href={`/posts/view/${item._id}`}>
+                      <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mr-2 hover:underline">View</a>
                       </Link>
                     </div>
@@ -420,11 +427,7 @@ const PostComponent = () => {
   }
 
   const goToCreatePage = () => {
-    if (router.pathname === '/attractions-events') {
-      router.push('/attractions-events/create')
-    } else {
-      router.push('posts/create')
-    }
+    router.push(`${routeName}/create`)
   }
 
   const onPageClick = e => {
@@ -517,7 +520,7 @@ const PostComponent = () => {
           break
         }
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
           )
@@ -654,7 +657,11 @@ const PostComponent = () => {
                   <Button
                     default
                     leftIcon={<FaPlusCircle />}
-                    label="Create Post"
+                    label={
+                      routeName === 'qr-code'
+                        ? 'Generate QR Code'
+                        : 'Create Post'
+                    }
                     onClick={goToCreatePage}
                   />
                 }
@@ -663,7 +670,11 @@ const PostComponent = () => {
                     disabled
                     default
                     leftIcon={<FaPlusCircle />}
-                    label="Create Post"
+                    label={
+                      routeName === 'qr-code'
+                        ? 'Generate QR Code'
+                        : 'Create Post'
+                    }
                     onClick={goToCreatePage}
                   />
                 }

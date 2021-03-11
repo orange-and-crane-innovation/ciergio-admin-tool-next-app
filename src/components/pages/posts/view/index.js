@@ -120,9 +120,12 @@ const Component = () => {
             </div>
             <div className={styles.HeaderTitle}>{post.title}</div>
           </div>
-          <div className="mb-4">
-            <ImageSlider images={post.images} />
-          </div>
+          {post?.images && (
+            <div className="mb-4">
+              <ImageSlider images={post?.images} />
+            </div>
+          )}
+
           <div className="mb-12">
             <strong>By {post.author}</strong> / {post.date}
           </div>
