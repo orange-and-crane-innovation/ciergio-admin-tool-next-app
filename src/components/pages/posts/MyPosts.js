@@ -130,6 +130,7 @@ const PostComponent = () => {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const isAttractionsEventsPage = router.pathname === '/attractions-events'
 
   const tableRowData = [
     {
@@ -624,7 +625,9 @@ const PostComponent = () => {
             selected={selectedCategory}
           />
           <Can
-            perform="bulletin:view"
+            perform={
+              isAttractionsEventsPage ? 'attractions:view' : 'bulletin:view'
+            }
             yes={
               <SearchControl
                 placeholder="Search by title"
@@ -649,7 +652,11 @@ const PostComponent = () => {
 
             <div className={styles.ContentFlex}>
               <Can
-                perform="bulletin:create"
+                perform={
+                  isAttractionsEventsPage
+                    ? 'attractions:create'
+                    : 'bulletin:create'
+                }
                 yes={
                   <Button
                     default
