@@ -559,6 +559,7 @@ const rules = {
         '/dashboard',
         '/messages',
         '/attractions-events',
+        '/staff',
         '/qr-codes',
         '/forms',
         '/directory',
@@ -573,7 +574,9 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
-        '/notifications/create'
+        '/notifications/create',
+        '/staff/all-staff',
+        '/staff/pending-invites'
       ],
       actions: [
         'messages:create',
@@ -613,7 +616,9 @@ const rules = {
         'notifications:draft',
         'notifications:movetotrash',
         'notifications:delete',
-        'notifications:restore'
+        'notifications:restore',
+        'staff:view::update::delete',
+        'staff:invite'
       ]
     },
     company_admin: {

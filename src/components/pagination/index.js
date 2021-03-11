@@ -54,6 +54,7 @@ const Pagination = ({ items, activePage, onPageClick, onLimitChange }) => {
     setTotalCount(items.count)
     setListStart(items.count > 0 ? offsetFinal + 1 : 0)
     setListEnd(items.data.length + offsetFinal)
+    console.log(items.count, items.limit, { activePage })
   }, [items, activePage])
 
   return (

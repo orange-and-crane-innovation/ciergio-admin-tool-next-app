@@ -215,12 +215,12 @@ select:active {
 .card .content table td {
   @apply py-2 px-5;
 }
-.card .content table tbody tr {
+/* .card .content table tbody tr {
   @apply bg-neutral-100;
-}
-.card .content table tbody tr:nth-child(even) {
+} */
+/* .card .content table tbody tr:nth-child(even) {
   @apply bg-white;
-}
+} */
 
 @media print {
   html,

@@ -4,27 +4,24 @@ import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 
+import { Card } from '@app/components/globals'
 import Button from '@app/components/button'
-import FormInput from '@app/components/forms/form-input'
 import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import SelectDropdown from '@app/components/select'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import { Card } from '@app/components/globals'
-
+import SearchComponent from '@app/components/globals/SearchControl'
 import InviteStaffContent from './InviteStaffContent'
 import EditStaffContent from './EditStaffContent'
 import RemoveStaffContent from './RemoveStaffContent'
-
-import { FaTimes, FaPlusCircle } from 'react-icons/fa'
+import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
-import { FiDownload, FiSearch } from 'react-icons/fi'
+import { FiDownload } from 'react-icons/fi'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
 import useDebounce from '@app/utils/useDebounce'
 import showToast from '@app/utils/toast'
+import Can from '@app/permissions/can'
 import { initializeApollo } from '@app/lib/apollo/client'
-
 import {
   ADD_BUILDING_ADMIN,
   ADD_COMPANY_ADMIN,
@@ -38,74 +35,20 @@ import {
   UPDATE_USER,
   DELETE_USER
 } from '../queries'
-
 import {
   BUILDING_ADMIN,
   COMPANY_ADMIN,
   COMPLEX_ADMIN,
   RECEPTIONIST,
-  UNIT_OWNER
+  UNIT_OWNER,
+  columns,
+  roles,
+  ALL_ROLES
 } from '../constants'
-
 import {
   editStaffValidationSchema,
   inviteStaffValidationSchema
 } from './schema'
-import Can from '@app/permissions/can'
-
-const columns = [
-  {
-    name: '',
-    width: ''
-  },
-  {
-    name: 'Name',
-    width: ''
-  },
-  {
-    name: 'Role',
-    width: ''
-  },
-  {
-    name: 'Assignment',
-    width: ''
-  },
-  {
-    name: '',
-    width: ''
-  }
-]
-
-const roles = [
-  {
-    label: 'Company Admin',
-    value: COMPANY_ADMIN
-  },
-  {
-    label: 'Complex Admin',
-    value: COMPLEX_ADMIN
-  },
-  {
-    label: 'Building Administrator',
-    value: BUILDING_ADMIN
-  },
-  {
-    label: 'Unit Owner',
-    value: UNIT_OWNER
-  },
-  {
-    label: 'Receptionist',
-    value: RECEPTIONIST
-  }
-]
-
-const ALL_ROLES = [
-  BUILDING_ADMIN,
-  COMPANY_ADMIN,
-  COMPLEX_ADMIN,
-  RECEPTIONIST,
-  UNIT_OWNER
-]
 
 function AllStaff() {
   const router = useRouter()
@@ -168,7 +111,7 @@ function AllStaff() {
       companyId: selectedAssignment?.value,
       search: debouncedSearchText,
       limit: limitPage,
-      skip: skipCount
+      skip: skipCount === 0 ? null : skipCount
     }
   })
   const { data: companies } = useQuery(GET_COMPANIES)
@@ -416,82 +359,81 @@ function AllStaff() {
     () => ({
       count: accounts?.getAccounts?.count || 0,
       limit: accounts?.getAccounts?.limit || 0,
+      offset: accounts?.getAccounts?.offset || 0,
       data:
         accounts?.getAccounts?.data?.length > 0
-          ? accounts.getAccounts.data.map(
-              ({ _id, user, company, accountType }) => {
-                const dropdownData = [
-                  {
-                    label: 'View Staff',
-                    icon: <span className="ciergio-employees" />,
-                    function: () => router.push(`/staff/view/${user?._id}`)
-                  },
-                  {
-                    label: 'Edit Staff',
-                    icon: <span className="ciergio-edit" />,
-                    function: () => {
-                      setSelectedStaff({
-                        user,
-                        company
-                      })
-                      resetEditStaffForm({
-                        staffFirstName: user?.firstName,
-                        staffLastName: user.lastName
-                      })
-                      handleShowModal('edit')
-                    }
-                  },
-                  {
-                    label: 'Remove Staff',
-                    icon: <span className="ciergio-trash" />,
-                    function: () => {
-                      setSelectedStaff({
-                        user,
-                        company
-                      })
-                      handleShowModal('delete')
-                    }
+          ? accounts.getAccounts.data.map(({ user, company, accountType }) => {
+              const dropdownData = [
+                {
+                  label: 'View Staff',
+                  icon: <span className="ciergio-employees" />,
+                  function: () => router.push(`/staff/view/${user?._id}`)
+                },
+                {
+                  label: 'Edit Staff',
+                  icon: <span className="ciergio-edit" />,
+                  function: () => {
+                    setSelectedStaff({
+                      user,
+                      company
+                    })
+                    resetEditStaffForm({
+                      staffFirstName: user?.firstName,
+                      staffLastName: user.lastName
+                    })
+                    handleShowModal('edit')
                   }
-                ]
-
-                return {
-                  avatar: (
-                    <div>
-                      <img
-                        className="w-11 h-11 rounded"
-                        src={
-                          user?.avatar ||
-                          `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
-                        }
-                        alt="user-avatar"
-                      />
-                    </div>
-                  ),
-                  name: (
-                    <span className="capitalize">{`${user?.firstName} ${user?.lastName}`}</span>
-                  ),
-                  role: (
-                    <span className="capitalize">
-                      {accountType?.replace('_', ' ') || ''}
-                    </span>
-                  ),
-                  assignment: (
-                    <span className="capitalize">{company?.name || ''}</span>
-                  ),
-                  dropdown: (
-                    <Can
-                      perform="staff:view::update::delete"
-                      yes={
-                        <Dropdown
-                          label={<AiOutlineEllipsis />}
-                          items={dropdownData}
-                        />
-                      }
-                    />
-                  )
+                },
+                {
+                  label: 'Remove Staff',
+                  icon: <span className="ciergio-trash" />,
+                  function: () => {
+                    setSelectedStaff({
+                      user,
+                      company
+                    })
+                    handleShowModal('delete')
+                  }
                 }
+              ]
+
+              return {
+                avatar: (
+                  <div>
+                    <img
+                      className="w-11 h-11 rounded"
+                      src={
+                        user?.avatar ||
+                        `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
+                      }
+                      alt="user-avatar"
+                    />
+                  </div>
+                ),
+                name: (
+                  <span className="capitalize">{`${user?.firstName} ${user?.lastName}`}</span>
+                ),
+                role: (
+                  <span className="capitalize">
+                    {accountType?.replace('_', ' ') || ''}
+                  </span>
+                ),
+                assignment: (
+                  <span className="capitalize">{company?.name || ''}</span>
+                ),
+                dropdown: (
+                  <Can
+                    perform="staff:view::update::delete"
+                    yes={
+                      <Dropdown
+                        label={<AiOutlineEllipsis />}
+                        items={dropdownData}
+                      />
+                    }
+                  />
+                )
               }
-            )
+            })
           : []
     }),
     [accounts?.getAccounts, router, resetEditStaffForm]
@@ -534,20 +476,13 @@ function AllStaff() {
             />
           </div>
           <div className="w-full relative max-w-xs mr-4 top-2">
-            <FormInput
-              name="search"
+            <SearchComponent
               placeholder="Search"
               inputClassName="pr-8"
-              onChange={e => setSearchText(e.target.value)}
-              value={searchText}
+              onSearch={e => setSearchText(e.target.value)}
+              searchText={searchText}
+              onClearSearch={() => setSearchText('')}
             />
-            <span className="absolute top-3 right-4">
-              {searchText ? (
-                <FaTimes className="cursor-pointer" onClick={() => {}} />
-              ) : (
-                <FiSearch className="text-xl text-gray-600" />
-              )}
-            </span>
           </div>
         </div>
       </div>
@@ -601,7 +536,7 @@ function AllStaff() {
             data={staffData}
             columns={columns}
             loading={loadingAccounts}
-            activePage={activePage}
+            currentPage={activePage}
             pageLimit={limitPage}
             setCurrentPage={setActivePage}
             setPageOffset={setSkipCount}
