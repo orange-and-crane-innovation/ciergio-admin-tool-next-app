@@ -32,7 +32,7 @@ const Component = ({ list, onListChange, rowNames }) => {
   const renderListItem = (item, index) => {
     return (
       <ListItem
-        key={item.id}
+        key={`list-${index}`}
         index={index}
         id={item.id}
         item={item}
@@ -113,6 +113,7 @@ const ListItem = ({ index, id, onMoveCard, item }) => {
   })
 
   const [{ isDragging }, drag] = useDrag({
+    type: itemType.LIST,
     item: { type: itemType.LIST, id, index },
     collect: monitor => ({
       isDragging: monitor.isDragging()
