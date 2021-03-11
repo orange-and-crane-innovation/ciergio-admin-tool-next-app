@@ -204,7 +204,7 @@ function Sent({ month, year }) {
   const handleShowModal = (type, id) => {
     const selected =
       !loading && data?.getDuesPerUnit?.data.find(due => due._id === id)
-    console.log(selected)
+
     if (selected) {
       switch (type) {
         case 'update': {

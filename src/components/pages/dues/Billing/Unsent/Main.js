@@ -358,7 +358,7 @@ function Unsent({ month, year }) {
             placeholder="0.0"
             key={index}
             value={
-              amountPerRow[`form${index}`]
+              amountPerRow[`form${index}`] !== undefined
                 ? amountPerRow[`form${index}`].amount
                 : ''
             }
@@ -538,7 +538,9 @@ function Unsent({ month, year }) {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
     setPerDate([])
-    setAmountPerRow()
+    setAmountPerRow({})
+    setIsSent({})
+    setNotSent({})
   }
 
   // setting limit in pagination

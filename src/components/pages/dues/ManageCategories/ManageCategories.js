@@ -55,10 +55,6 @@ function ManageCategories({ complexID, accountType }) {
   const [deleteCategoryModal, setDeleteCategoryModal] = useState(false)
   const [deleteItemId, setDeleteItemId] = useState(null)
 
-  useEffect(() => {
-    console.log(accountType)
-  }, [])
-
   const [
     deleteBillCategory,
     {

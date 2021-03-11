@@ -7,8 +7,10 @@ export default function DuesPage() {
   const { buildingID } = router.query
   const user = JSON.parse(localStorage.getItem('profile'))
   const buildingId = user?.accounts?.data[0]?.building?._id
-  console.log(buildingId)
-  router.push(`/dues/billing/${buildingID || buildingId}`)
-
+  if (buildingID === undefined || buildingId === undefined) {
+    return <Billing />
+  } else {
+    router.push(`/dues/billing/${routeBuildingID || routeBuildingId}`)
+  }
   return null
 }
