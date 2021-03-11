@@ -3,7 +3,7 @@ import { useLazyQuery } from '@apollo/client'
 import { Controller } from 'react-hook-form'
 import P from 'prop-types'
 
-import Modal from '@app/components/globals/Modal'
+import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
 
@@ -83,9 +83,9 @@ function InviteStaffModal({
       title="Invite Staff"
       okText="Invite Staff"
       cancelText="Cancel"
-      open={open}
-      onCancel={() => onCancel('create')}
-      onShowModal={() => onCancel('create')}
+      visible={open}
+      onClose={onCancel}
+      onCancel={onCancel}
       okButtonProps={{
         loading
       }}

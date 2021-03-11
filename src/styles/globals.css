@@ -496,3 +496,21 @@ td.rdtYear:hover {
 }
 
 /* END DATETIME PICKER */
+
+/* RODAL MODAL */
+
+.rodal {
+  @apply overflow-auto !important;
+}
+
+.rodal-mask {
+  @apply fixed !important;
+}
+
+.rodal-dialog {
+  @apply pb-10 !important;
+  @apply shadow-none !important;
+  @apply w-11/12 md:w-128 !important;
+}
+
+/* END RODAL MODAL */
