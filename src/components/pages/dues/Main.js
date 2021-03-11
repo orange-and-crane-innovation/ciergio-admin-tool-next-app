@@ -17,9 +17,7 @@ function Dues() {
 
   const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
     variables: {
-      where: {
-        accountType: 'building'
-      },
+      where: null,
       limit: 100
     }
   })
@@ -39,20 +37,25 @@ function Dues() {
   })
 
   useEffect(() => {
+    if (!_.isEmpty(categories)) {
+      router.push(`/dues/billing/${buildingID}/${categories[0]._id}`)
+    }
+  }, [categories])
+
+  useEffect(() => {
+    if (!loading && data && !error) {
+      const listOfCategory = data?.getAllowedBillCategory?.data.map(
+        category => category.categories
+      )
+      setCategories(...listOfCategory)
+    }
+  }, [loading, data, error])
+
+  useEffect(() => {
     if (!loadingBuilding && dataBuilding) {
       setBuilding(dataBuilding?.getBuildings?.data)
     }
   }, [loadingBuilding, dataBuilding, errorBuilding])
-
-  useEffect(() => {
-    if (!loading && data && !error) {
-      const catgry = data?.getAllowedBillCategory?.data.map(category => {
-        return category.categories
-      })
-
-      setCategories(...catgry)
-    }
-  }, [loading, data, error])
 
   return (
     <>

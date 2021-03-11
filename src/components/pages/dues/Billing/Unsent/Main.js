@@ -110,8 +110,8 @@ function Unsent({ month, year }) {
   const [modalDate, setModalDate] = useState(null)
   const [date, setDate] = useState(null)
 
-  const [isSent, setIsSent] = useState(false)
-  const [notSent, setNotSent] = useState(false)
+  const [isSent, setIsSent] = useState({})
+  const [notSent, setNotSent] = useState({})
   const [loader, setLoader] = useState(false)
   const [fileUploadedData, setFileUploadedData] = useState({})
   const [datePerRow, setDatePerRow] = useState({})
@@ -126,6 +126,7 @@ function Unsent({ month, year }) {
   const [companyIdPerRow, setCompanyIdPerRow] = useState({})
   const [complexIDPerRow, setComplexIdPerRow] = useState({})
   const [unitIdPerRow, setUnitIdPerRow] = useState({})
+  const [idRow, setIdRow] = useState()
 
   const [
     createDues,
@@ -276,9 +277,9 @@ function Unsent({ month, year }) {
         dataCreatingDues?.createDues?.processId !== ''
       ) {
         showToast('success', 'successfully submitted')
-        setIsSent(true)
+        setIsSent(prevState => ({ ...prevState, [idRow]: true }))
       } else {
-        setNotSent(true)
+        setNotSent(prevState => ({ ...prevState, [idRow]: true }))
       }
     }
   }, [loadingCreatingDues, calledCreatingDues, dataCreatingDues])
@@ -286,7 +287,7 @@ function Unsent({ month, year }) {
   const submitForm = async e => {
     e.preventDefault()
     const name = e.target.name
-
+    setIdRow(name)
     try {
       const data = {
         amount: parseInt(amountPerRow[name]?.amount),
@@ -304,8 +305,6 @@ function Unsent({ month, year }) {
         attachment: { ...fileUploadedData[name] }
       }
 
-      console.log(data)
-
       await createDues({
         variables: {
           data: data
@@ -313,7 +312,8 @@ function Unsent({ month, year }) {
       })
     } catch (e) {
       showToast('warning', 'Submit Failed')
-      setNotSent(true)
+
+      setNotSent(prevState => ({ ...prevState, [idRow]: true }))
     }
   }
 
@@ -376,12 +376,18 @@ function Unsent({ month, year }) {
             perform="dues:create"
             yes={
               <Button
-                primary={!isSent}
-                success={isSent}
-                danger={notSent}
+                primary={!isSent[`form${index}`]}
+                success={isSent[`form${index}`]}
+                danger={notSent[`form${index}`]}
                 disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
                 label={
-                  isSent ? <FaCheck /> : notSent ? <FaExclamation /> : 'Send'
+                  isSent[`form${index}`] ? (
+                    <FaCheck />
+                  ) : notSent[`form${index}`] ? (
+                    <FaExclamation />
+                  ) : (
+                    'Send'
+                  )
                 }
                 name={`form${index}`}
                 onClick={e => submitForm(e)}

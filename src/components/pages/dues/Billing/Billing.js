@@ -18,11 +18,11 @@ const Billing = ({ categoriesBiling, buildingName }) => {
 
   const user = JSON.parse(localStorage.getItem('profile'))
 
-  useEffect(() => {
-    if (categoriesBiling) {
-      router.push(`/dues/billing/${buildingID}/${categoriesBiling[0]._id}`)
-    }
-  }, [categoriesBiling])
+  // useEffect(() => {
+  //   if (categoriesBiling) {
+  //     router.push(`/dues/billing/${buildingID}/${categoriesBiling[0]._id}`)
+  //   }
+  // }, [categoriesBiling])
 
   const handlingMonthOrYear = (date, type = 'year') => {
     if (date instanceof Date) {
