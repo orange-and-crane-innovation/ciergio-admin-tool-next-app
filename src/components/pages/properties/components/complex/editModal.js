@@ -120,7 +120,7 @@ const Component = ({
       onCancel={onCancel}
     >
       <div className="p-2 text-base font-body leading-7">
-        <div className="flex items-center">
+        <div className="flex flex-col items-center md:flex-row">
           <div>
             <div className="font-black mb-2">Complex Logo</div>
             <div className="text-md mb-2">
