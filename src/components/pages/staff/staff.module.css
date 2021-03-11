@@ -1,4 +1,4 @@
 .inviteStaffContainer {
-	/* height: 300px; */
-	@apply w-full p-4 overflow-y-auto;
+  /* height: 300px; */
+  @apply w-full p-4 overflow-y-auto;
 }

@@ -6,14 +6,13 @@ import { useForm } from 'react-hook-form'
 
 import { Card } from '@app/components/globals'
 import Button from '@app/components/button'
-import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import SelectDropdown from '@app/components/select'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchComponent from '@app/components/globals/SearchControl'
 import InviteStaffModal from './InviteStaffModal'
-import EditStaffContent from './EditStaffContent'
-import RemoveStaffContent from './RemoveStaffContent'
+import EditStaffModal from './EditStaffModal'
+import RemoveStaffModal from './RemoveStaffModal'
 import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
@@ -68,7 +67,7 @@ function AllStaff() {
     }
   })
   const {
-    handleSubmit: handleEditStaffSubmit,
+    handleSubmit: handleEditSubmit,
     control: editStaffControl,
     errors: editStaffErrors,
     reset: resetEditStaffForm
@@ -386,6 +385,15 @@ function AllStaff() {
     addingReceptionist ||
     addingUnitOwner
 
+  const removeUser = useMemo(() => {
+    return {
+      firstName: selectedStaff?.user.firstName,
+      lastName: selectedStaff?.user.lastName,
+      jobTitle: selectedStaff?.user.jobTitle,
+      companyName: selectedStaff?.company.name
+    }
+  }, [selectedStaff?.user])
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">Staff List</h1>
@@ -487,7 +495,7 @@ function AllStaff() {
       <InviteStaffModal
         open={showInviteModal}
         loading={sendingInvite}
-        onCancel={type => handleClearModal(type)}
+        onCancel={() => handleClearModal('create')}
         onOk={handleSubmitInvite(handleOk)}
         companyOptions={assignments}
         form={{
@@ -496,46 +504,23 @@ function AllStaff() {
           control: inviteControl
         }}
       />
-      <Modal
-        title="Edit Staff"
-        okText="Edit Staff"
-        visible={showEditModal}
-        onClose={() => handleClearModal('edit')}
+      <EditStaffModal
+        form={{
+          control: editStaffControl,
+          errors: editStaffErrors
+        }}
+        open={showEditModal}
         onCancel={() => handleClearModal('edit')}
-        okButtonProps={{
-          loading: updatingUser
-        }}
-        onOk={handleEditStaffSubmit(handleEditOk)}
-        width={450}
-      >
-        <EditStaffContent
-          form={{
-            control: editStaffControl,
-            errors: editStaffErrors
-          }}
-        />
-      </Modal>
-      <Modal
-        title="Remove Staff"
-        okText="Remove Staff"
-        visible={showDeleteModal}
-        onClose={() => handleClearModal('delete')}
+        onOk={handleEditSubmit(handleEditOk)}
+        loading={updatingUser}
+      />
+      <RemoveStaffModal
+        open={showDeleteModal}
         onCancel={() => handleClearModal('delete')}
-        okButtonProps={{
-          loading: deletingUser
-        }}
         onOk={handleDeleteStaff}
-        width={450}
-      >
-        <RemoveStaffContent
-          user={{
-            firstName: selectedStaff?.user.firstName,
-            lastName: selectedStaff?.user.lastName,
-            jobTitle: selectedStaff?.user.jobTitle,
-            companyName: selectedStaff?.company.name
-          }}
-        />
-      </Modal>
+        loading={deletingUser}
+        user={removeUser}
+      />
     </section>
   )
 }

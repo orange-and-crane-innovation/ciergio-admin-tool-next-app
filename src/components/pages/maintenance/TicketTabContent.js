@@ -98,7 +98,7 @@ function Component({ title, content }) {
             </div>
           </div>
           <div className="w-full mb-4">
-            <h2 className="font-bold text-base mb-4 text-neutral-900 mb-8">
+            <h2 className="font-bold text-base text-neutral-900 mb-8">
               About the Issue
             </h2>
             <div className="w-8/12 mb-8">
