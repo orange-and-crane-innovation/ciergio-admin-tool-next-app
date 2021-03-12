@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import isEmpty from 'lodash/isEmpty'
-import FormInput from '@app/components/forms/form-input'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
@@ -11,7 +10,6 @@ import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
 import CancelInviteModal from './CancelInviteModal'
 import ResendInviteModal from './ResendInviteModal'
-import { FaTimes, FaSearch } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
@@ -32,6 +30,7 @@ import {
   RECEPTIONIST,
   UNIT_OWNER
 } from '../constants'
+import SearchComponent from '@app/components/globals/SearchControl'
 
 const roles = [
   {
@@ -131,7 +130,7 @@ function PendingInvites() {
     RESEND_INVITE,
     {
       onCompleted: () => {
-        showToast('success', 'Invitation has been resent succesfully.')
+        showToast('success', 'Invitation has been resent successfully.')
         handleClearModal('resend')
         refetchInvites()
       }
@@ -425,20 +424,12 @@ function PendingInvites() {
             />
           </div>
           <div className="w-full relative">
-            <FormInput
-              name="search"
+            <SearchComponent
               placeholder="Search"
-              inputClassName="pr-8"
-              onChange={e => setSearchText(e.target.value)}
-              value={searchText}
+              searchText={searchText}
+              onClearSearch={() => setSearchText('')}
+              onSearch={e => setSearchText(e.target.value)}
             />
-            <span className="absolute top-4 right-4">
-              {searchText ? (
-                <FaTimes className="cursor-pointer" onClick={() => {}} />
-              ) : (
-                <FaSearch />
-              )}
-            </span>
           </div>
         </div>
       </div>
