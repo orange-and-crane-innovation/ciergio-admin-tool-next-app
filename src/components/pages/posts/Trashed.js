@@ -3,6 +3,7 @@
 /* eslint-disable react/jsx-key */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { debounce } from 'lodash'
@@ -111,6 +112,7 @@ const UPDATE_POST_MUTATION = gql`
 `
 
 const PostComponent = () => {
+  const router = useRouter()
   const [posts, setPosts] = useState()
   const [searchText, setSearchText] = useState()
   const [activePage, setActivePage] = useState(1)
@@ -129,6 +131,12 @@ const PostComponent = () => {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const routeName =
+    router.pathname === '/attractions-events'
+      ? 'attractions-events'
+      : router.pathname === '/qr-code'
+      ? 'qr-code'
+      : 'posts'
 
   const tableRowData = [
     {
@@ -164,19 +172,25 @@ const PostComponent = () => {
     }
   ]
 
+  const fetchFilter = {
+    status: ['trashed'],
+    type: 'post',
+    categoryId: selectedCategory !== '' ? selectedCategory : null,
+    search: {
+      allpost: searchText
+    }
+  }
+
+  if (routeName === 'qr-code') {
+    fetchFilter.qr = true
+  }
+
   const { loading, data, error, refetch: refetchPosts } = useQuery(
     GET_ALL_POST_QUERY,
     {
       enabled: false,
       variables: {
-        where: {
-          status: ['trashed'],
-          type: 'post',
-          categoryId: selectedCategory,
-          search: {
-            allpost: searchText
-          }
-        },
+        where: fetchFilter,
         limit: limitPage,
         offset: offsetPage
       }
@@ -300,7 +314,7 @@ const PostComponent = () => {
                   {item.title}
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
-                      <Link href={`/posts/view/${item._id}`}>
+                      <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mr-2 hover:underline">View</a>
                       </Link>
                       {` | `}
@@ -320,7 +334,7 @@ const PostComponent = () => {
                     </div>
                   ) : (
                     <div className="flex text-info-500 text-sm">
-                      <Link href={`/posts/view/${item._id}`}>
+                      <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mr-2 hover:underline">View</a>
                       </Link>
                     </div>
@@ -511,7 +525,7 @@ const PostComponent = () => {
           break
         }
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="deleted" title={selected[0].title} />
           )

@@ -136,6 +136,13 @@ const PostComponent = () => {
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
+  const routeName = isAttractionsEventsPage
+    ? 'attractions-events'
+    : router.pathname === '/qr-code'
+    ? 'qr-code'
+    : 'posts'
+  const headerName =
+    router.pathname === '/qr-code' ? 'Active QR Codes' : 'All Posts'
 
   const tableRowData = [
     {
@@ -162,7 +169,7 @@ const PostComponent = () => {
       width: ''
     },
     {
-      name: 'Status',
+      name: routeName === 'qr-code' ? 'QR Code' : 'Status',
       width: ''
     },
     {
@@ -171,19 +178,25 @@ const PostComponent = () => {
     }
   ]
 
+  const fetchFilter = {
+    status: ['published', 'draft', 'unpublished', 'scheduled'],
+    type: 'post',
+    categoryId: selectedCategory !== '' ? selectedCategory : null,
+    search: {
+      allpost: searchText
+    }
+  }
+
+  if (routeName === 'qr-code') {
+    fetchFilter.qr = true
+  }
+
   const { loading, data, error, refetch: refetchPosts } = useQuery(
     GET_ALL_POST_QUERY,
     {
       enabled: false,
       variables: {
-        where: {
-          status: ['published', 'draft', 'unpublished', 'scheduled'],
-          type: 'post',
-          categoryId: selectedCategory !== '' ? selectedCategory : null,
-          search: {
-            allpost: searchText
-          }
-        },
+        where: fetchFilter,
         limit: limitPage,
         offset: offsetPage
       }
@@ -210,6 +223,9 @@ const PostComponent = () => {
   }, [])
 
   useEffect(() => {
+    if (error) {
+      errorHandler(error)
+    }
     if (!loading && data) {
       let isMine, checkbox
       const tableData = {
@@ -302,11 +318,11 @@ const PostComponent = () => {
                   {item.title}
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
-                      <Link href={`/posts/view/${item._id}`}>
+                      <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mr-2 hover:underline">View</a>
                       </Link>
                       {` | `}
-                      <Link href={`/posts/edit/${item._id}`}>
+                      <Link href={`/${routeName}/edit/${item._id}`}>
                         <a className="mx-2 hover:underline">Edit</a>
                       </Link>
                       {` | `}
@@ -335,7 +351,7 @@ const PostComponent = () => {
                       }
                       yes={
                         <div className="flex text-info-500 text-sm">
-                          <Link href={`/posts/view/${item._id}`}>
+                          <Link href={`/${routeName}/view/${item._id}`}>
                             <a className="mr-2 hover:underline">View</a>
                           </Link>
                         </div>
@@ -353,14 +369,21 @@ const PostComponent = () => {
                 </div>
               ),
               category: item.category?.name ?? 'Uncategorized',
-              status: (
-                <div className="flex flex-col">
-                  <span>{status}</span>
-                  <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
-                  </span>
-                </div>
-              ),
+              status:
+                routeName === 'qr-code' ? (
+                  <Button
+                    default
+                    label="Download QR"
+                    onClick={() => handleShowModal('download-qr', item._id)}
+                  />
+                ) : (
+                  <div className="flex flex-col">
+                    <span>{status}</span>
+                    <span className="text-neutral-500 text-sm">
+                      {DATE.toFriendlyDate(item.createdAt)}
+                    </span>
+                  </div>
+                ),
               button: (
                 <Can
                   perform={
@@ -450,11 +473,7 @@ const PostComponent = () => {
   }
 
   const goToCreatePage = () => {
-    if (isAttractionsEventsPage) {
-      router.push('/attractions-events/create')
-    } else {
-      router.push('posts/create')
-    }
+    router.push(`${routeName}/create`)
   }
 
   const onPageClick = e => {
@@ -547,7 +566,7 @@ const PostComponent = () => {
           break
         }
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
           )
@@ -564,6 +583,12 @@ const PostComponent = () => {
             />
           )
           setModalFooter(true)
+          break
+        }
+        case 'download-qr': {
+          setModalTitle('Download QR')
+          setModalContent(<UpdateCard type="download-qr" data={selected[0]} />)
+          setModalFooter(null)
           break
         }
       }
@@ -619,6 +644,34 @@ const PostComponent = () => {
     }
   }
 
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        if (networkError?.result?.errors[0]?.code === 4000) {
+          showToast('danger', 'Category name already exists')
+        } else {
+          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+        }
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
+
   return (
     <>
       <div className={styles.MainControl}>
@@ -659,7 +712,7 @@ const PostComponent = () => {
                 ? 'Reorder Posts'
                 : searchText
                 ? `Search result for "${searchText}" (${posts?.count || 0})`
-                : `All Posts (${posts?.count || 0})`}
+                : `${headerName} (${posts?.count || 0})`}
             </span>
 
             <div className={styles.ContentFlex}>
@@ -719,7 +772,11 @@ const PostComponent = () => {
                       <Button
                         default
                         leftIcon={<FaPlusCircle />}
-                        label="Create Post"
+                        label={
+                          routeName === 'qr-code'
+                            ? 'Generate QR Code'
+                            : 'Create Post'
+                        }
                         onClick={goToCreatePage}
                       />
                     }
@@ -728,7 +785,11 @@ const PostComponent = () => {
                         disabled
                         default
                         leftIcon={<FaPlusCircle />}
-                        label="Create Post"
+                        label={
+                          routeName === 'qr-code'
+                            ? 'Generate QR Code'
+                            : 'Create Post'
+                        }
                       />
                     }
                   />

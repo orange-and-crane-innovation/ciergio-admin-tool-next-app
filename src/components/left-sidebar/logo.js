@@ -1,22 +1,28 @@
 import React from 'react'
 import P from 'prop-types'
-import { FiBox, FiMenu } from 'react-icons/fi'
+import { FiMenu } from 'react-icons/fi'
 import Link from 'next/link'
+import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
+import CiergioLogoH from '@app/assets/svg/ciergio-logo-h.svg'
 
 const Logo = ({ onToggle, isCollapsed }) => {
   return (
     <div className="logo truncate">
       <Link href="/">
-        <a className="flex flex-row items-center justify-start space-x-2">
-          <FiBox size={28} />
-          <span>{'Ciergio'}</span>
-        </a>
+        <>
+          <CiergioLogo
+            className={`-ml-2 mr-2 hidden ${
+              isCollapsed ? 'md:block lg:block' : ''
+            }`}
+          />
+          <CiergioLogoH className={`${isCollapsed ? 'md:hidden' : ''}`} />
+        </>
       </Link>
       <button
         onClick={() => {
           onToggle(!isCollapsed)
         }}
-        className="ml-auto mr-4 block lg:hidden"
+        className="ml-auto mr-4 block md:hidden lg:hidden"
       >
         <FiMenu size={20} />
       </button>

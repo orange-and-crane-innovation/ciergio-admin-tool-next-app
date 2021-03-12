@@ -326,7 +326,7 @@ const CreatePosts = () => {
 
       switch (type) {
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
           )
