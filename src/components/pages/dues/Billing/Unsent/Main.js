@@ -74,6 +74,7 @@ const DueDate = ({ fieldData }) => {
       })
     }
   }, [fieldData])
+
   return (
     <DatePicker
       rightIcon
@@ -108,14 +109,9 @@ function Unsent({ month, year }) {
   const keyPressed = useKeyPress('Enter')
   const [modalDate, setModalDate] = useState(null)
   const [date, setDate] = useState(null)
-  const [amountValue, setAmountValue] = useState([
-    {
-      initial: null
-    }
-  ])
 
-  const [isSent, setIsSent] = useState(false)
-  const [notSent, setNotSent] = useState(false)
+  const [isSent, setIsSent] = useState({})
+  const [notSent, setNotSent] = useState({})
   const [loader, setLoader] = useState(false)
   const [fileUploadedData, setFileUploadedData] = useState({})
   const [datePerRow, setDatePerRow] = useState({})
@@ -130,6 +126,7 @@ function Unsent({ month, year }) {
   const [companyIdPerRow, setCompanyIdPerRow] = useState({})
   const [complexIDPerRow, setComplexIdPerRow] = useState({})
   const [unitIdPerRow, setUnitIdPerRow] = useState({})
+  const [idRow, setIdRow] = useState()
 
   const [
     createDues,
@@ -248,14 +245,13 @@ function Unsent({ month, year }) {
 
   const onChangeAmount = e => {
     const name = e.target.name
-    setAmountValue(prevState => ({
-      ...prevState,
-      [name]: e.target.value
-    }))
+    const value = e.target.value
     const id = name[name.length - 1]
-    const amount = { amount: e.target.value }
+    const amount = { amount: value }
     const formName = [`form${id}`]
-    setAmountPerRow(prevData => ({ ...prevData, [formName]: { ...amount } }))
+    if (/^(\s*|\d+)$/.test(value)) {
+      setAmountPerRow(prevData => ({ ...prevData, [formName]: { ...amount } }))
+    }
   }
 
   const handleFile = file => {
@@ -281,9 +277,9 @@ function Unsent({ month, year }) {
         dataCreatingDues?.createDues?.processId !== ''
       ) {
         showToast('success', 'successfully submitted')
-        setIsSent(true)
+        setIsSent(prevState => ({ ...prevState, [idRow]: true }))
       } else {
-        setNotSent(true)
+        setNotSent(prevState => ({ ...prevState, [idRow]: true }))
       }
     }
   }, [loadingCreatingDues, calledCreatingDues, dataCreatingDues])
@@ -291,7 +287,7 @@ function Unsent({ month, year }) {
   const submitForm = async e => {
     e.preventDefault()
     const name = e.target.name
-
+    setIdRow(name)
     try {
       const data = {
         amount: parseInt(amountPerRow[name]?.amount),
@@ -309,8 +305,6 @@ function Unsent({ month, year }) {
         attachment: { ...fileUploadedData[name] }
       }
 
-      console.log(data)
-
       await createDues({
         variables: {
           data: data
@@ -318,7 +312,8 @@ function Unsent({ month, year }) {
       })
     } catch (e) {
       showToast('warning', 'Submit Failed')
-      setNotSent(true)
+
+      setNotSent(prevState => ({ ...prevState, [idRow]: true }))
     }
   }
 
@@ -363,9 +358,9 @@ function Unsent({ month, year }) {
             placeholder="0.0"
             key={index}
             value={
-              amountValue[`amount${index}`]
-                ? amountValue[`amount${index}`]
-                : amountValue.initial
+              amountPerRow[`form${index}`] !== undefined
+                ? amountPerRow[`form${index}`].amount
+                : ''
             }
           />
         )
@@ -381,19 +376,24 @@ function Unsent({ month, year }) {
             perform="dues:create"
             yes={
               <Button
-                full
-                primary={!isSent}
-                success={isSent}
-                danger={notSent}
+                primary={!isSent[`form${index}`]}
+                success={isSent[`form${index}`]}
+                danger={notSent[`form${index}`]}
                 disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
                 label={
-                  isSent ? <FaCheck /> : notSent ? <FaExclamation /> : 'Send'
+                  isSent[`form${index}`] ? (
+                    <FaCheck />
+                  ) : notSent[`form${index}`] ? (
+                    <FaExclamation />
+                  ) : (
+                    'Send'
+                  )
                 }
                 name={`form${index}`}
                 onClick={e => submitForm(e)}
               />
             }
-            no={<Button full disabled label="Send" />}
+            no={<Button disabled label="Send" />}
           />
         )
 
@@ -475,7 +475,7 @@ function Unsent({ month, year }) {
       })
     }
 
-    setFloors(optionsData)
+    setFloors([{ label: 'All', value: 'all' }, ...optionsData])
   }, [
     loadingFloorNumbers,
     dataAllFloors,
@@ -538,7 +538,9 @@ function Unsent({ month, year }) {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
     setPerDate([])
-    setAmountValue([{ initial: '' }])
+    setAmountPerRow({})
+    setIsSent({})
+    setNotSent({})
   }
 
   // setting limit in pagination
@@ -553,7 +555,6 @@ function Unsent({ month, year }) {
       <div className={styles.FormContainer}>
         <div className={styles.DueDateControl}>
           <Button
-            full
             primary
             label="Apply Due Dates to All Units"
             leftIcon={calendarIcon()}

@@ -187,6 +187,7 @@ const rules = {
         '/directory',
         '/contact-us',
         '/notifications',
+        '/dues',
         '/prayer-requests'
       ],
       allowedNestedRoutes: [
@@ -195,7 +196,8 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
-        '/notifications/create'
+        '/notifications/create',
+        '/dues/billing'
       ],
       actions: [
         'messages:view',

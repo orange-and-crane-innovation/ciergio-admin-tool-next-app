@@ -18,7 +18,7 @@ export default function UpdateBills({
   id
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const [text, setText] = useState('')
+
   const [data, setData] = useState({
     attachment: {
       fileUrl,
@@ -36,8 +36,9 @@ export default function UpdateBills({
 
   const handleTextChange = e => {
     const amount = e.target.value
-    setText(amount)
-    setData(prevState => ({ ...prevState, amount: parseFloat(amount) }))
+    if (/^(\s*|\d+)$/.test(amount)) {
+      setData(prevState => ({ ...prevState, amount }))
+    }
   }
 
   const handleClearConfirmationModal = () => {
@@ -113,7 +114,8 @@ export default function UpdateBills({
             placeholder={`₱ ${amount.toFixed(2)}`}
             type="text"
             onChange={handleTextChange}
-            value={text}
+            value={data ? data.amount : ''}
+            name="amount"
             inputClassName="w-full rounded border-gray-300"
           />
           {selectedDate && (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './Billing.module.css'
 import DatePicker from '@app/components/forms/form-datepicker/'
 import Unsent from './Unsent'
@@ -48,15 +48,11 @@ const Billing = ({ categoriesBiling, buildingName }) => {
             {categoriesBiling &&
               categoriesBiling.map((category, index) => {
                 return (
-                  <>
-                    <Tabs.TabLabel id={index + 1}>
-                      <Link
-                        href={`/dues/billing/${buildingID}/${category._id}`}
-                      >
-                        <a>{category.name}</a>
-                      </Link>
-                    </Tabs.TabLabel>
-                  </>
+                  <Tabs.TabLabel key={index} id={String(index + 1)}>
+                    <Link href={`/dues/billing/${buildingID}/${category._id}`}>
+                      <a>{category.name}</a>
+                    </Link>
+                  </Tabs.TabLabel>
                 )
               })}
           </Tabs.TabLabel>
@@ -96,13 +92,8 @@ const Billing = ({ categoriesBiling, buildingName }) => {
 }
 
 Billing.propTypes = {
-  categoryID: P.string.isRequired,
-  buildingID: P.string.isRequired,
-  categoryName: P.string.isRequired,
-  accountID: P.string.isRequired,
-  data: P.array.isRequired,
-  categoriesBiling: P.array.isRequired,
-  buildingName: P.array.isRequired
+  categoriesBiling: P.array,
+  buildingName: P.string
 }
 
 export default Billing

@@ -18,7 +18,8 @@ function Dues() {
   const { loading, data, error } = useQuery(Query.GET_ALLOWED_CATEGORY, {
     variables: {
       where: {
-        accountType: 'building'
+        accountId: buildingID,
+        accountType: 'complex'
       },
       limit: 100
     }
@@ -39,10 +40,19 @@ function Dues() {
   })
 
   useEffect(() => {
-    if (!_.isEmpty(categories) && !_.isEmpty(building)) {
+    if (!_.isEmpty(categories)) {
       router.push(`/dues/billing/${buildingID}/${categories[0]._id}`)
     }
-  }, [categories, building, buildingID])
+  }, [categories])
+
+  useEffect(() => {
+    if (!loading && data && !error) {
+      const listOfCategory = data?.getAllowedBillCategory?.data.map(
+        category => category.categories
+      )
+      setCategories(...listOfCategory)
+    }
+  }, [loading, data, error])
 
   useEffect(() => {
     if (!loadingBuilding && dataBuilding) {
@@ -50,19 +60,9 @@ function Dues() {
     }
   }, [loadingBuilding, dataBuilding, errorBuilding])
 
-  useEffect(() => {
-    if (!loading && data && !error) {
-      const catgry = data?.getAllowedBillCategory?.data.map(category => {
-        return category.categories
-      })
-
-      setCategories(...catgry)
-    }
-  }, [loading, data, error])
-
   return (
     <>
-      {!_.isEmpty(categories) && !_.isEmpty(building) ? (
+      {!_.isEmpty(categories) && !_.isEmpty(building) && buildingID ? (
         <Billing
           categoriesBiling={categories}
           buildingName={building[0].name}
