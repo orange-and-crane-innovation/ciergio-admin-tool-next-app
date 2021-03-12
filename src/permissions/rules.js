@@ -568,6 +568,7 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/attractions-events/create',
+        '/attractions-events/manage',
         '/attractions-events',
         '/qr-codes/create',
         '/qr-codes/posts',

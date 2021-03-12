@@ -88,6 +88,11 @@ const navigation = [
         title: 'Attractions and Events',
         items: [
           {
+            url: '/attractions-events/manage',
+            title: 'Manage Categories',
+            items: []
+          },
+          {
             url: '/attractions-events',
             title: 'View All Posts',
             items: []
