@@ -3,13 +3,12 @@ import { useQuery, useMutation } from '@apollo/client'
 import isEmpty from 'lodash/isEmpty'
 import FormInput from '@app/components/forms/form-input'
 import SelectBulk from '@app/components/globals/SelectBulk'
-import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import SelectDropdown from '@app/components/select'
 import Modal from '@app/components/modal'
-import Pagination from '@app/components/pagination'
 import { Card } from '@app/components/globals'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
 import { FaTimes, FaSearch } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
@@ -280,15 +279,6 @@ function PendingInvites() {
     }
   }
 
-  const onPageClick = e => {
-    setActivePage(e)
-    setOffsetPage(e * limitPage)
-  }
-
-  const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
-  }
-
   const columns = useMemo(
     () => [
       {
@@ -460,24 +450,17 @@ function PendingInvites() {
       <Card
         noPadding
         content={
-          <>
-            <Table
-              rowNames={columns}
-              items={staffData}
-              loading={loadingInvites}
-              emptyText={<Empty />}
-            />
-            {!loadingInvites && staffData && (
-              <div className="px-8">
-                <Pagination
-                  items={staffData}
-                  activePage={activePage}
-                  onPageClick={onPageClick}
-                  onLimitChange={onLimitChange}
-                />
-              </div>
-            )}
-          </>
+          <PrimaryDataTable
+            columns={columns}
+            data={staffData}
+            loading={loadingInvites}
+            currentPage={activePage}
+            setCurrentPage={setActivePage}
+            setPageOffset={setOffsetPage}
+            pageLimit={limitPage}
+            setPageLimit={setLimitPage}
+            emptyText={<Empty />}
+          />
         }
       />
       <Modal
