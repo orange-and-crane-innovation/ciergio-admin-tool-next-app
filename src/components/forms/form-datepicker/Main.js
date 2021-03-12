@@ -153,7 +153,7 @@ FormDatePicker.propTypes = {
   disabledPreviousDate: P.func,
   date: P.instanceOf(Date),
   name: P.string,
-  rightIcon: P.oneOfType([P.element, P.node]),
+  rightIcon: P.bool,
   inputRef: P.object,
   customPicker: P.any
 }
