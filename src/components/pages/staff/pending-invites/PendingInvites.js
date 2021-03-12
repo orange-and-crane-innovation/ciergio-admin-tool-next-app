@@ -6,10 +6,11 @@ import SelectBulk from '@app/components/globals/SelectBulk'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import SelectDropdown from '@app/components/select'
-import Modal from '@app/components/modal'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
+import CancelInviteModal from './CancelInviteModal'
+import ResendInviteModal from './ResendInviteModal'
 import { FaTimes, FaSearch } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { friendlyDateTimeFormat } from '@app/utils/date'
@@ -91,7 +92,6 @@ const getAssignment = invite => {
 }
 
 function PendingInvites() {
-  // const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedAssignment, setSelectedAssignment] = useState(null)
@@ -463,50 +463,20 @@ function PendingInvites() {
           />
         }
       />
-      <Modal
-        title="Resend Invite"
-        okText="Resend Invite"
-        visible={showResendInviteModal}
-        onClose={() => handleClearModal('resend')}
+      <ResendInviteModal
         onCancel={() => handleClearModal('resend')}
-        okButtonProps={{
-          loading: resendingInvite
-        }}
         onOk={handleResendInvite}
-      >
-        <div className="p-4">
-          <p>
-            Are you sure you want to resend invite for{' '}
-            <span className="font-bold">{selectedData?.email}</span> as
-            <span className="capitalize">
-              {selectedData?.accountType?.replace('_', ' ')}
-            </span>
-            ?
-          </p>
-        </div>
-      </Modal>
-      <Modal
-        title="Cancel Invite"
-        okText="Cancel Invite"
-        visible={showCancelInviteModal}
-        onClose={() => handleClearModal('cancel')}
+        data={selectedData}
+        open={showResendInviteModal}
+        loading={resendingInvite}
+      />
+      <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}
-        okButtonProps={{
-          loading: cancellingInvite
-        }}
         onOk={handleCancelInvite}
-      >
-        <div className="p-4">
-          <p>
-            Are you sure you want to cancel invite for{' '}
-            <span className="font-bold">{selectedData?.email}</span> as
-            <span className="capitalize">
-              {selectedData?.accountType?.replace('_', ' ')}
-            </span>
-            ?
-          </p>
-        </div>
-      </Modal>
+        data={selectedData}
+        open={showCancelInviteModal}
+        loading={cancellingInvite}
+      />
     </section>
   )
 }
