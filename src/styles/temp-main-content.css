@@ -180,7 +180,7 @@ select:active {
 } */
 
 .modal {
-  @apply bg-white w-full m-auto flex-col flex rounded transition ease-in-out duration-700;
+  @apply bg-white w-full flex-col flex rounded transition ease-in-out duration-700;
 }
 
 .modal .modal-header {

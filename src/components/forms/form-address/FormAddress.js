@@ -91,7 +91,7 @@ const FormAddress = ({
         name={name}
         type="text"
         placeholder={placeholder}
-        value={value?.formattedAddress}
+        value={value}
         onChange={e => {
           searchLocation(e)
           onChange(e)

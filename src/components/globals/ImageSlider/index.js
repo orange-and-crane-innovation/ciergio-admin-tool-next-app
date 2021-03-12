@@ -13,7 +13,7 @@ const SearchComponent = ({ images }) => {
         disabled={disabled}
         onClick={onClick}
       >
-        <span className="text-6xl">&#10094;</span>
+        <span className="text-3xl md:text-6xl">&#10094;</span>
       </button>
     )
   }
@@ -25,7 +25,7 @@ const SearchComponent = ({ images }) => {
         disabled={disabled}
         onClick={onClick}
       >
-        <span className="text-6xl">&#10095;</span>
+        <span className="text-3xl md:text-6xl">&#10095;</span>
       </button>
     )
   }
@@ -37,7 +37,7 @@ const SearchComponent = ({ images }) => {
         showThumbnails={false}
         showPlayButton={false}
         showFullscreenButton={false}
-        showBullets={true}
+        showBullets={images?.length > 1}
         autoPlay={true}
         renderLeftNav={renderLeftNav}
         renderRightNav={renderRightNav}

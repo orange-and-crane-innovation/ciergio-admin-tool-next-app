@@ -96,6 +96,12 @@ const CreatePosts = () => {
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const routeName =
+    pathname === '/attractions-events/create'
+      ? 'attractions-events'
+      : pathname === '/qr-code/create'
+      ? 'qr-code'
+      : 'posts'
 
   const [
     createPost,
@@ -151,11 +157,7 @@ const CreatePosts = () => {
   }
 
   const goToBulletinPageLists = () => {
-    if (pathname === '/attractions-events/create') {
-      push('/attractions-events')
-    } else {
-      push('/posts')
-    }
+    push(`/${routeName}`)
   }
 
   const handleShowModal = type => {
@@ -316,6 +318,9 @@ const CreatePosts = () => {
         createData.audienceExceptions = {
           buildingIds: selectedBuildingExcept.map(item => item.value)
         }
+      }
+      if (routeName === 'qr-code') {
+        createData.qr = true
       }
       createPost({ variables: { data: createData } })
     }
@@ -725,7 +730,11 @@ const CreatePosts = () => {
 
               <Button
                 type="button"
-                label="Publish Post"
+                label={
+                  routeName === 'qr-code'
+                    ? 'Generate QR and Publish'
+                    : 'Publish Post'
+                }
                 primary
                 onMouseDown={() => onUpdateStatus('active')}
                 onClick={handleSubmit(e => {

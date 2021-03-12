@@ -170,12 +170,11 @@ p {
 }
 
 .image-gallery-slide img {
-  @apply w-full !important;
+  @apply w-full min-h-xs !important;
   @apply object-scale-down !important;
   @apply overflow-hidden !important;
   @apply object-center !important;
-  height: 430px !important;
-  max-height: 80vh !important;
+  @apply md:h-96 !important;
 }
 
 .image-gallery-icon {
@@ -496,3 +495,21 @@ td.rdtYear:hover {
 }
 
 /* END DATETIME PICKER */
+
+/* RODAL MODAL */
+
+.rodal {
+  @apply overflow-auto !important;
+}
+
+.rodal-mask {
+  @apply fixed !important;
+}
+
+.rodal-dialog {
+  @apply pb-10 !important;
+  @apply shadow-none !important;
+  @apply w-11/12 md:w-128 !important;
+}
+
+/* END RODAL MODAL */

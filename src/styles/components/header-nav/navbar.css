@@ -26,7 +26,7 @@
       &.user-info {
         .user-info-name,
         .user-info-title {
-          max-width: 236px;
+          max-width: 210px;
           text-overflow: ellipsis;
           display: block;
           white-space: nowrap;

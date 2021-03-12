@@ -151,6 +151,7 @@ const SelectCategoryComponent = ({
         defaultValue={
           lists ? lists.filter(item => item.value === selected) : null
         }
+        value={lists ? lists.filter(item => item.value === selected) : null}
         error={error}
         options={lists || []}
         disabled={disabled}

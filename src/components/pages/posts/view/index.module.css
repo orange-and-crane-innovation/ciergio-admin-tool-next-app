@@ -3,7 +3,7 @@
   @apply font-body font-normal text-base leading-6;
 
   .PageSubContainer {
-    @apply p-4;
+    @apply p-4 w-full;
 
     .PageHeader {
       @apply mb-4;

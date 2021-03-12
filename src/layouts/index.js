@@ -23,7 +23,14 @@ const Layouts = ({ children }) => {
     ].includes(pathname)
   ) {
     return <Centered>{children}</Centered>
-  } else if (['/auth/manage', '/posts/view/[id]'].includes(pathname)) {
+  } else if (
+    [
+      '/auth/manage',
+      '/posts/view/[id]',
+      '/attractions-events/view/[id]',
+      '/qr-code/view/[id]'
+    ].includes(pathname)
+  ) {
     return <CenteredAuth>{children}</CenteredAuth>
   } else {
     return <Layout>{children}</Layout>
