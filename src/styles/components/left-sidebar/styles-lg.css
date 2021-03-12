@@ -233,13 +233,13 @@
           }
         }
         &:not(.l0) {
-          @apply w-48;
+          @apply w-full;
           > .left-sidebar-item {
-            @apply flex flex-row h-10 w-48 items-center justify-start relative px-3;
+            @apply flex flex-row h-16 w-full items-center justify-start relative px-3;
           }
         }
         > ul {
-          @apply absolute top-0 w-48 shadow-lg z-10 invisible opacity-0 cursor-none;
+          @apply absolute top-0 w-56 shadow-lg z-10 invisible opacity-0 cursor-none;
           left: 100%;
         }
         &:hover {

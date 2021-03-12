@@ -27,7 +27,6 @@
       @apply relative h-full flex flex-row items-stretch;
       .left-sidebar {
         @apply w-full;
-        @apply overflow-auto;
         min-width: calc(theme('spacing.1') * 16);
         max-width: calc(theme('spacing.1') * 72);
         transition: max-width 0.25s ease-in-out;
