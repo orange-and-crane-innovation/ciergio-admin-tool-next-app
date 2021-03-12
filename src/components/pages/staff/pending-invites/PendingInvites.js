@@ -10,6 +10,7 @@ import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
 import CancelInviteModal from './CancelInviteModal'
 import ResendInviteModal from './ResendInviteModal'
+import Can from '@app/permissions/can'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
@@ -360,9 +361,14 @@ function PendingInvites() {
                 assignment: getAssignment(invite),
                 createdAt: friendlyDateTimeFormat(invite.createdAt, 'LL'),
                 dropdown: (
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
+                  <Can
+                    perform="attractions:resend::cancel"
+                    yes={
+                      <Dropdown
+                        label={<AiOutlineEllipsis />}
+                        items={dropdownData}
+                      />
+                    }
                   />
                 )
               }
