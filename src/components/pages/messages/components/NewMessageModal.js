@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import P from 'prop-types'
-import Modal from '@app/components/globals/Modal'
+import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Spinner from '@app/components/spinner'
 import { FiSearch } from 'react-icons/fi'
@@ -24,8 +24,8 @@ export default function NewMessageModal({
   return (
     <Modal
       title="New Message"
-      open={visible}
-      onShowModal={() => {
+      visible={visible}
+      onClose={() => {
         setSearchText('')
         onCancel()
       }}

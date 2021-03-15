@@ -7,6 +7,7 @@ import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
 
 import { toFriendlyDate, friendlyDateTimeFormat } from '@app/utils/date'
+import HISTORY_MESSAGES from '../constants'
 
 // import Button from '@app/components/button'
 // import { GoKebabHorizontal } from 'react-icons/go'
@@ -58,7 +59,12 @@ function Profile() {
                 date: `${toFriendlyDate(
                   historyDate
                 )} - ${friendlyDateTimeFormat(historyDate, 'LT')}`,
-                activity: history?.action
+                activity:
+                  (HISTORY_MESSAGES[history.action] &&
+                    HISTORY_MESSAGES[history.action](
+                      JSON.parse(history?.data)
+                    )) ||
+                  'No activity'
               }
             })
           : []

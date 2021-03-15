@@ -10,7 +10,8 @@ function PrimaryDataTable({
   setCurrentPage,
   setPageOffset,
   pageLimit,
-  setPageLimit
+  setPageLimit,
+  emptyText
 }) {
   const onPageClick = e => {
     setCurrentPage(e)
@@ -44,7 +45,8 @@ PrimaryDataTable.propTypes = {
   pageLimit: P.number,
   setCurrentPage: P.func,
   setPageOffset: P.func,
-  setPageLimit: P.func
+  setPageLimit: P.func,
+  emptyText: P.oneOfType([P.element, P.node, P.string])
 }
 
 export default PrimaryDataTable

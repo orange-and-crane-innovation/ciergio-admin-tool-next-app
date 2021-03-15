@@ -218,9 +218,9 @@ select:active {
   @apply py-2 px-5;
 }
 
-.card .content table tbody tr:nth-child(even) {
+/* .card .content table tbody tr:nth-child(even) {
   @apply bg-white;
-}
+} */
 
 @media print {
   html,

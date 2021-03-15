@@ -1,23 +1,17 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
-// import { useRouter } from 'next/router'
-
-// import Button from '@app/components/button'
-import FormInput from '@app/components/forms/form-input'
+import isEmpty from 'lodash/isEmpty'
 import SelectBulk from '@app/components/globals/SelectBulk'
-import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import SelectDropdown from '@app/components/select'
-import Modal from '@app/components/modal'
-import Pagination from '@app/components/pagination'
 import { Card } from '@app/components/globals'
-
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
-
-import { FaTimes, FaSearch } from 'react-icons/fa'
+import CancelInviteModal from './CancelInviteModal'
+import ResendInviteModal from './ResendInviteModal'
+import Can from '@app/permissions/can'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
@@ -37,6 +31,7 @@ import {
   RECEPTIONIST,
   UNIT_OWNER
 } from '../constants'
+import SearchComponent from '@app/components/globals/SearchControl'
 
 const roles = [
   {
@@ -97,14 +92,13 @@ const getAssignment = invite => {
 }
 
 function PendingInvites() {
-  // const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedAssignment, setSelectedAssignment] = useState(null)
   const [selectedData, setSelectedData] = useState([])
   const [isBulkDisabled, setIsBulkDisabled] = useState(false)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(false)
-  const [selectedBulk, setSelectedBulk] = useState([])
+  const [selectedBulk, setSelectedBulk] = useState('')
   const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const [showResendInviteModal, setShowResendInviteModal] = useState(false)
   const [activePage, setActivePage] = useState(1)
@@ -137,7 +131,7 @@ function PendingInvites() {
     RESEND_INVITE,
     {
       onCompleted: () => {
-        showToast('success', 'Invitation has been resent succesfully.')
+        showToast('success', 'Invitation has been resent successfully.')
         handleClearModal('resend')
         refetchInvites()
       }
@@ -241,12 +235,12 @@ function PendingInvites() {
   }
 
   const onClearBulk = () => {
-    setSelectedBulk('')
+    setSelectedBulk(null)
   }
 
-  const onBulkChange = e => {
-    setSelectedBulk(e.target.value)
-    if (e.target.value !== '') {
+  const onBulkChange = value => {
+    setSelectedBulk(value.value)
+    if (!isEmpty(value)) {
       setIsBulkButtonDisabled(false)
     } else {
       setIsBulkButtonDisabled(true)
@@ -283,15 +277,6 @@ function PendingInvites() {
       default:
         console.log('Error: wrong type!')
     }
-  }
-
-  const onPageClick = e => {
-    setActivePage(e)
-    setOffsetPage(e * limitPage)
-  }
-
-  const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
   }
 
   const columns = useMemo(
@@ -376,9 +361,14 @@ function PendingInvites() {
                 assignment: getAssignment(invite),
                 createdAt: friendlyDateTimeFormat(invite.createdAt, 'LL'),
                 dropdown: (
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
+                  <Can
+                    perform="attractions:resend::cancel"
+                    yes={
+                      <Dropdown
+                        label={<AiOutlineEllipsis />}
+                        items={dropdownData}
+                      />
+                    }
                   />
                 )
               }
@@ -440,20 +430,12 @@ function PendingInvites() {
             />
           </div>
           <div className="w-full relative">
-            <FormInput
-              name="search"
+            <SearchComponent
               placeholder="Search"
-              inputClassName="pr-8"
-              onChange={e => setSearchText(e.target.value)}
-              value={searchText}
+              searchText={searchText}
+              onClearSearch={() => setSearchText('')}
+              onSearch={e => setSearchText(e.target.value)}
             />
-            <span className="absolute top-4 right-4">
-              {searchText ? (
-                <FaTimes className="cursor-pointer" onClick={() => {}} />
-              ) : (
-                <FaSearch />
-              )}
-            </span>
           </div>
         </div>
       </div>
@@ -465,70 +447,33 @@ function PendingInvites() {
       <Card
         noPadding
         content={
-          <>
-            <Table
-              rowNames={columns}
-              items={staffData}
-              loading={loadingInvites}
-              emptyText={<Empty />}
-            />
-            {!loadingInvites && staffData && (
-              <div className="px-8">
-                <Pagination
-                  items={staffData}
-                  activePage={activePage}
-                  onPageClick={onPageClick}
-                  onLimitChange={onLimitChange}
-                />
-              </div>
-            )}
-          </>
+          <PrimaryDataTable
+            columns={columns}
+            data={staffData}
+            loading={loadingInvites}
+            currentPage={activePage}
+            setCurrentPage={setActivePage}
+            setPageOffset={setOffsetPage}
+            pageLimit={limitPage}
+            setPageLimit={setLimitPage}
+            emptyText={<Empty />}
+          />
         }
       />
-      <Modal
-        title="Resend Invite"
-        okText="Resend Invite"
-        visible={showResendInviteModal}
-        onClose={() => handleClearModal('resend')}
+      <ResendInviteModal
         onCancel={() => handleClearModal('resend')}
-        okButtonProps={{
-          loading: resendingInvite
-        }}
         onOk={handleResendInvite}
-      >
-        <div className="p-4">
-          <p>
-            Are you sure you want to resend invite for{' '}
-            <span className="font-bold">{selectedData?.email}</span> as
-            <span className="capitalize">
-              {selectedData?.accountType?.replace('_', ' ')}
-            </span>
-            ?
-          </p>
-        </div>
-      </Modal>
-      <Modal
-        title="Cancel Invite"
-        okText="Cancel Invite"
-        visible={showCancelInviteModal}
-        onClose={() => handleClearModal('cancel')}
+        data={selectedData}
+        open={showResendInviteModal}
+        loading={resendingInvite}
+      />
+      <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}
-        okButtonProps={{
-          loading: cancellingInvite
-        }}
         onOk={handleCancelInvite}
-      >
-        <div className="p-4">
-          <p>
-            Are you sure you want to cancel invite for{' '}
-            <span className="font-bold">{selectedData?.email}</span> as
-            <span className="capitalize">
-              {selectedData?.accountType?.replace('_', ' ')}
-            </span>
-            ?
-          </p>
-        </div>
-      </Modal>
+        data={selectedData}
+        open={showCancelInviteModal}
+        loading={cancellingInvite}
+      />
     </section>
   )
 }
