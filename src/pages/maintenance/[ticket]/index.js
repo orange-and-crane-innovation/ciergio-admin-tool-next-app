@@ -1,4 +1,4 @@
-import Ticket from '@app/components/pages/maintenance/ticket'
+import Ticket from '@app/components/pages/maintenance/components/ticket'
 import Page from '@app/permissions/page'
 
 function TicketPage() {

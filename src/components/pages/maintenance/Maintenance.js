@@ -1,12 +1,8 @@
-import Tickets from './Tickets'
+import Tickets from './components/Tickets'
 import Tabs from '@app/components/tabs'
-
-import UnassignedTickets from './UnassignedTickets'
-import InProgressTickets from './InProgressTickets'
-import TicketContent from './TicketTabContent'
-import OnHoldTickets from './OnHoldTickets'
-import ResolvedTickets from './ResolvedTickets'
-import CancelledTickets from './CancelledTickets'
+import TicketsTable from './components/TicketsTab'
+import TicketContent from './components/TicketTabContent'
+import { unassignedColumns, defaultColumns } from './columns'
 
 function Maintenance() {
   return (
@@ -26,31 +22,39 @@ function Maintenance() {
           <Tabs.TabPanel id="1">
             <TicketContent
               title="Unassigned Tickets"
-              content={<UnassignedTickets />}
+              content={
+                <TicketsTable columns={unassignedColumns} type="unassigned" />
+              }
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
             <TicketContent
               title="In Progress Tickets"
-              content={<InProgressTickets />}
+              content={
+                <TicketsTable columns={defaultColumns} type="inprogress" />
+              }
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
             <TicketContent
               title="On Hold Tickets"
-              content={<OnHoldTickets />}
+              content={<TicketsTable columns={defaultColumns} type="onhold" />}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="4">
             <TicketContent
               title="Resolved Tickets"
-              content={<ResolvedTickets />}
+              content={
+                <TicketsTable columns={defaultColumns} type="resolved" />
+              }
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="5">
             <TicketContent
               title="Cancelled Tickets"
-              content={<CancelledTickets />}
+              content={
+                <TicketsTable columns={defaultColumns} type="cancelled" />
+              }
             />
           </Tabs.TabPanel>
         </Tabs.TabPanels>

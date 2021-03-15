@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
 import Billing from '@app/components/pages/dues'
-import Page from '@app/permissions/page'
 
 export default function DuesPage() {
   const router = useRouter()
@@ -10,7 +9,7 @@ export default function DuesPage() {
   if (buildingID === undefined || buildingId === undefined) {
     return <Billing />
   } else {
-    router.push(`/dues/billing/${routeBuildingID || routeBuildingId}`)
+    router.push(`/dues/billing/${buildingID || buildingID}`)
   }
   return null
 }
