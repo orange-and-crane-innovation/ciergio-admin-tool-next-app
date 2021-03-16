@@ -1,22 +1,33 @@
 import P from 'prop-types'
+import styles from '../maintenance.module.css'
 
 function AssignedStaffs({ staffs }) {
   return (
-    <div className="relative">
-      {staffs.map(staff => (
+    <div className={styles.AssignedStaffsContainer}>
+      {[...staffs.slice(0, 1)].map((staff, index) => (
         <div
           key={staff?.user?._id}
           className="w-full flex justify-start items-center"
         >
-          <div className="w-12 h-12 border border-blue-500 border-dashed rounded-full mr-4 flex justify-center items-center">
+          <div className={styles.avatarContainer}>
             <img
-              src={staff.user?.avatar}
+              src={
+                staff.user?.avatar ||
+                `https://ui-avatars.com/api/?name=${staff.user.firstName}+${staff.user.lastName}&background=F5F6FA`
+              }
               alt={staff.user.firstName}
-              className="rounded-full"
+              className={`${styles.avatarImage} ${
+                index === 0 ? 'border-primary-500' : 'border-white -ml-4'
+              }`}
             />
           </div>
         </div>
       ))}
+      {staffs?.length > 2 ? (
+        <div className={styles.countImageContainer}>{`${
+          staffs.length - 2 > 0 ? '+' : ''
+        }${staffs.length - 2}`}</div>
+      ) : null}
     </div>
   )
 }

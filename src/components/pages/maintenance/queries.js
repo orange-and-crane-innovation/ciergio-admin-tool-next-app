@@ -17,6 +17,7 @@ export const GET_ISSUES_BY_STATUS = gql`
         content
         code
         createdAt
+        updatedAt
         readAt
         status
         category {

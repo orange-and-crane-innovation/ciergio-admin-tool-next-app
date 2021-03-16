@@ -4,10 +4,10 @@ import { useQuery } from '@apollo/client'
 
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
+import { friendlyDateTimeFormat, displayDateCreated } from '@app/utils/date'
 import EmptyStaff from './EmptyStaff'
 import AssignedStaffs from './AssignedStaffs'
 import { GET_ISSUES_BY_STATUS } from '../queries'
-import { FaEllipsisH } from 'react-icons/fa'
 
 function TicketsTab({ columns, type }) {
   const [page, setPage] = useState(1)
@@ -31,7 +31,7 @@ function TicketsTab({ columns, type }) {
       data:
         issues?.getIssues?.count > 0
           ? issues.getIssues.issue.map(issue => {
-              const reporter = issue?.reporter?.user
+              const reporter = issue?.reporter
               const dropdownData = [
                 {
                   label: 'View Ticket Details',
@@ -49,19 +49,68 @@ function TicketsTab({ columns, type }) {
                   function: () => {}
                 }
               ]
-
-              return {
-                dateCreated: issue?.createdAt,
-                ticket: issue?.title,
-                reportedBy: `${reporter?.firstName} ${reporter?.lastName}`,
+              const unassignedData = {
+                dateCreated: (
+                  <span className="text-sm text-neutral-dark">
+                    {friendlyDateTimeFormat(issue?.createdAt, 'MMM DD')}
+                  </span>
+                ),
+                ticket: (
+                  <div>
+                    <p
+                      className={`text-neutral-dark text-sm max-w-xs ${
+                        issue?.readAt !== null ? 'font-semibold' : 'font-normal'
+                      }`}
+                    >
+                      {issue?.title}
+                    </p>
+                    <div className="flex items-center justify-start">
+                      <span className="text-neutral-500 text-xs">
+                        {issue?.category?.name}
+                      </span>
+                      <div className="h-1 w-1 rounded-full bg-neutral-500 mx-2"></div>
+                      <span className="text-neutral-500 text-xs">
+                        {issue?.code}
+                      </span>
+                    </div>
+                  </div>
+                ),
+                reportedBy: (
+                  <div>
+                    <p className="text-secondary-500 text-sm m-0">{`${reporter?.user?.firstName} ${reporter?.user?.lastName}`}</p>
+                    <p className="text-neutral-dark text-xs m-0">{`Unit ${reporter?.unit?.name}`}</p>
+                  </div>
+                ),
                 staff:
                   issue?.assignee?.length > 0 ? (
                     <AssignedStaffs staffs={issue?.assignee} />
                   ) : (
                     <EmptyStaff />
+                  )
+              }
+
+              if (type !== 'unassigned') {
+                return {
+                  ...unassignedData,
+                  lastUpdate: (
+                    <span>{displayDateCreated(issue?.updatedAt)}</span>
                   ),
+                  dropdown: (
+                    <Dropdown
+                      label={<span className="ciergio-more" />}
+                      items={dropdownData}
+                    />
+                  )
+                }
+              }
+
+              return {
+                ...unassignedData,
                 dropdown: (
-                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  <Dropdown
+                    label={<span className="ciergio-more" />}
+                    items={dropdownData}
+                  />
                 )
               }
             })
