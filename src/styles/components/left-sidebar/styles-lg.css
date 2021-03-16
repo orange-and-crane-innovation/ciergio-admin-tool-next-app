@@ -17,9 +17,6 @@
   .arrow {
     transform: rotate(90deg);
     transition: transform 0.15s ease-in-out;
-    [data-collapsed='true'] & {
-      @apply hidden;
-    }
   }
 
   [data-collapsed='false'] {
