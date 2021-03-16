@@ -30,9 +30,7 @@ function Maintenance() {
           <Tabs.TabPanel id="2">
             <TicketContent
               title="In Progress Tickets"
-              content={
-                <TicketsTable columns={defaultColumns} type="inprogress" />
-              }
+              content={<TicketsTable columns={defaultColumns} type="ongoing" />}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
