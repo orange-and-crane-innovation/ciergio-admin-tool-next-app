@@ -9,7 +9,7 @@ export default function DuesPage() {
   if (buildingID === undefined || buildingId === undefined) {
     return <Billing />
   } else {
-    router.push(`/dues/billing/${buildingID || buildingID}`)
+    router.push(`/dues/billing/${buildingID}`)
   }
   return null
 }

@@ -1,0 +1,18 @@
+# serverless.yml
+name: CiergioAdmintool
+
+ociNextApp:
+  component: "@sls-next/serverless-component@1.19.0-alpha.35"
+  inputs:
+    runtime: "nodejs12.x"
+    domain: ["test","ciergiopray.com"]
+    domainType: "both"
+    memory: 1024
+    cloudfront:
+      api/*:
+        forward:
+          headers: [Host]
+
+    # publicDirectoryCache:
+    #   value: public, max-age=604800
+    #   test: /\.(gif|jpe?g|png|txt|xml)$/i
