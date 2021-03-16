@@ -624,8 +624,8 @@ const CreatePosts = () => {
                               : ' All those registered'}
                           </strong>
                         </span>
-                        {(systemType !== 'pray' ||
-                          (systemType === 'pray' &&
+                        {(systemType === 'home' ||
+                          (systemType !== 'home' &&
                             accountType !== 'complex_admin')) && (
                           <span
                             className={style.CreatePostLink}

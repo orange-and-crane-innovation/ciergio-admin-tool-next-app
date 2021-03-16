@@ -118,7 +118,7 @@ const OverviewComponent = ({
 
       <div className={styles.PageSubContainer}>
         <div className={styles.PageSubContainer2}>
-          {((systemType !== 'pray' && type === 'complex') ||
+          {((systemType === 'home' && type === 'complex') ||
             type === 'company' ||
             type === 'building' ||
             type === 'unit') && (
