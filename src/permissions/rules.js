@@ -24,10 +24,16 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
-        '/notifications/create',
-        'offerings:view'
+        '/notifications/create'
       ],
       actions: [
+        'staff:view',
+        'staff:invite',
+        'staff:update',
+        'staff:delete',
+        'staff:export',
+        'staff:print',
+        'staff:view::update::delete',
         'messages:view',
         'messages:create',
         'bulletin:create',
@@ -62,7 +68,8 @@ const rules = {
         'prayerrequests:create',
         'prayerrequests:export',
         'prayerrequests:print',
-        'prayerrequests:view'
+        'prayerrequests:view',
+        'offerings:view'
       ]
     },
     company_admin: {
@@ -79,6 +86,13 @@ const rules = {
         '/offerings'
       ],
       allowedNestedRoutes: [
+        'staff:view',
+        'staff:invite',
+        'staff:update',
+        'staff:delete',
+        'staff:export',
+        'staff:print',
+        'staff:view::update::delete',
         'messages:view',
         'messages:create',
         '/staff/all-staff',
@@ -272,6 +286,7 @@ const rules = {
         'staff:delete',
         'staff:export',
         'staff:print',
+        'staff:view::update::delete',
         'residents:view',
         'residents:create',
         'residents:update',
@@ -552,8 +567,7 @@ const rules = {
         '/staff',
         '/messages',
         '/attractions-events',
-        '/staff',
-        '/qr-codes',
+        '/qr-code',
         '/forms',
         '/directory',
         '/contact-us',
@@ -567,10 +581,6 @@ const rules = {
         '/staff/pending-invites',
         '/attractions-events',
         '/attractions-events/create',
-        '/attractions-events/manage',
-        '/attractions-events',
-        '/qr-codes/create',
-        '/qr-codes/posts',
         '/attractions-events/posts',
         '/qr-code',
         '/qr-code/create',
@@ -578,11 +588,16 @@ const rules = {
         '/forms/create',
         '/forms',
         '/notifications/list',
-        '/notifications/create',
-        '/staff/all-staff',
-        '/staff/pending-invites'
+        '/notifications/create'
       ],
       actions: [
+        'staff:view',
+        'staff:invite',
+        'staff:update',
+        'staff:delete',
+        'staff:export',
+        'staff:print',
+        'staff:view::update::delete',
         'messages:create',
         'messages:view',
         'attractions:create',
@@ -629,9 +644,7 @@ const rules = {
         'notifications:draft',
         'notifications:movetotrash',
         'notifications:delete',
-        'notifications:restore',
-        'staff:view::update::delete',
-        'staff:invite'
+        'notifications:restore'
       ]
     },
     company_admin: {
@@ -656,6 +669,13 @@ const rules = {
         '/notifications/create'
       ],
       actions: [
+        'staff:view',
+        'staff:invite',
+        'staff:update',
+        'staff:delete',
+        'staff:export',
+        'staff:print',
+        'staff:view::update::delete',
         'messages:create',
         'messages:view',
         'attractions:create',

@@ -908,7 +908,9 @@ const UnitDirectoryComponent = ({ title, profile }) => {
             options={floors}
             onChange={onFloorSelect}
             onClear={onClearFloor}
-            value={floorNumber}
+            value={
+              floors ? floors.filter(item => item.value === floorNumber) : null
+            }
             isClearable
           />
           <FormSelect
@@ -916,7 +918,11 @@ const UnitDirectoryComponent = ({ title, profile }) => {
             options={unitTypes}
             onChange={onUnitTypeSelect}
             onClear={onClearUnitType}
-            value={unitType}
+            value={
+              unitTypes
+                ? unitTypes.filter(item => item.value === unitType)
+                : null
+            }
             isClearable
           />
           <div className={styles.SearchControl}>

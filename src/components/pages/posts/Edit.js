@@ -990,8 +990,8 @@ const CreatePosts = () => {
                             ? ' Only show to those selected:'
                             : ' All those registered'}
                         </strong>
-                        {(systemType !== 'pray' ||
-                          (systemType === 'pray' &&
+                        {(systemType === 'home' ||
+                          (systemType !== 'home' &&
                             accountType !== 'complex_admin')) && (
                           <span
                             className={style.CreatePostLink}
