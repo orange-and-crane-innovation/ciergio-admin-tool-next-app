@@ -45,31 +45,36 @@ function Component({ title, content }) {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="font-bold text-base px-8 py-4">{title}</h1>
-        <div className="flex items-center">
+      <Card
+        title={title}
+        actions={[
           <Button
+            key="print"
             default
             icon={<HiOutlinePrinter />}
             onClick={() => {}}
             className="mr-4 mt-4"
-          />
+          />,
           <Button
+            key="export"
             default
             icon={<FiDownload />}
             onClick={() => {}}
             className="mr-4 mt-4"
-          />
+          />,
           <Button
+            key="create"
             primary
             leftIcon={<FaPlusCircle />}
             label="Create Ticket"
             onClick={handleShowModal}
             className="mr-4 mt-4"
           />
-        </div>
-      </div>
-      <Card noPadding content={content} className="rounded-t-none" />
+        ]}
+        noPadding
+        content={content}
+        className="rounded-t-none"
+      />
       <Modal
         visible={showModal}
         title="Create Ticket"
