@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLazyQuery, gql } from '@apollo/client'
 import PropTypes from 'prop-types'
-import { FaSpinner } from 'react-icons/fa'
 
 import FormSelect from '@app/components/forms/form-select'
 
@@ -134,14 +133,6 @@ const SelectCategoryComponent = ({
     errorAllowedCategory
   ])
 
-  if (loadingCategory || loadingAllowedCategory) {
-    return (
-      <div className={styles.SelectCategorySpinnerContainer}>
-        <FaSpinner className="icon-spin" />
-      </div>
-    )
-  }
-
   return (
     <div className={styles.SelectCategoryContainer}>
       <FormSelect
@@ -158,6 +149,7 @@ const SelectCategoryComponent = ({
         onChange={onChange}
         onClear={onClear}
         isClearable
+        loading={loadingCategory || loadingAllowedCategory}
       />
     </div>
   )

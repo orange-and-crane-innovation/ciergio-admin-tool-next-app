@@ -21,7 +21,8 @@ const InputSelect = ({
   className,
   isMulti,
   isClearable,
-  subLabel
+  subLabel,
+  loading
 }) => {
   // eslint-disable-next-line react/prop-types
   const ValueContainer = ({ children, ...props }) => {
@@ -78,6 +79,7 @@ const InputSelect = ({
         isDisabled={disabled}
         isClearable={isClearable}
         isSearchable
+        isLoading={loading}
         onChange={(selectedOption, triggeredAction) => {
           if (triggeredAction.action === 'clear') {
             onClear()
@@ -111,7 +113,8 @@ InputSelect.propTypes = {
     PropTypes.node,
     PropTypes.element,
     PropTypes.string
-  ])
+  ]),
+  loading: PropTypes.bool
 }
 
 export default InputSelect
