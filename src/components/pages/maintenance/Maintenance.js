@@ -7,21 +7,29 @@ import { unassignedColumns, defaultColumns } from './columns'
 import { GET_STAFFS, GET_CATEGORIES } from './queries'
 
 function Maintenance() {
+  const user = JSON.parse(localStorage.getItem('profile'))
   const [categoryId, setCategoryId] = useState(null)
   const [searchText, setSearchText] = useState('')
   const [staffId, setStaffId] = useState('')
   const { data: staffs } = useQuery(GET_STAFFS, {
     variables: {
       where: {
-        accountTypes: ['company_admin', 'complex_admin', 'building_admin'],
-        companyId: '',
-        complexId: '',
-        buildingId: ''
+        accountTypes: ['company_admin', 'complex_admin', 'building_admin']
       }
     }
   })
   const { data: categories } = useQuery(GET_CATEGORIES, {
-    variables: {}
+    variables: {
+      where: {
+        category: {
+          type: 'issue'
+        },
+        settings: {
+          accountId: user?._id,
+          accountType: 'company'
+        }
+      }
+    }
   })
 
   const handleCategoryChange = cat => setCategoryId(cat.value)
@@ -29,6 +37,7 @@ function Maintenance() {
   const handleSearchTextChange = e => setSearchText(e.target.value)
   const handleStaffChange = staff => setStaffId(staff.value)
   const handleClearStaff = () => setStaffId(null)
+  const handleClearSearch = () => setSearchText(null)
 
   const staffOptions = useMemo(() => {
     if (staffs?.getRepairsAndMaintenanceStaffs?.data?.length > 0) {
@@ -46,11 +55,15 @@ function Maintenance() {
   const categoryOptions = useMemo(() => {
     if (categories?.getAllowedPostCategory?.data?.length > 0) {
       return categories.getAllowedPostCategory.data.map(staff => {
-        const user = staff.user
-        return {
-          label: `${user.firstName} ${user.lastName} ${staff.accountType} `,
-          value: staff._id
-        }``
+        const user = staff?.user
+        if (user) {
+          return {
+            label: `${user.firstName} ${user.lastName} ${staff.accountType} `,
+            value: staff._id
+          }
+        }
+
+        return null
       })
     }
     return []
@@ -85,6 +98,7 @@ function Maintenance() {
               categoryId={categoryId}
               staffId={staffId}
               columns={unassignedColumns}
+              onClearSearch={handleClearSearch}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
@@ -102,6 +116,7 @@ function Maintenance() {
               categoryId={categoryId}
               staffId={staffId}
               columns={defaultColumns}
+              onClearSearch={handleClearSearch}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
@@ -119,6 +134,7 @@ function Maintenance() {
               categoryId={categoryId}
               staffId={staffId}
               columns={defaultColumns}
+              onClearSearch={handleClearSearch}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="4">
@@ -136,6 +152,7 @@ function Maintenance() {
               categoryId={categoryId}
               staffId={staffId}
               columns={defaultColumns}
+              onClearSearch={handleClearSearch}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="5">
@@ -153,6 +170,7 @@ function Maintenance() {
               categoryId={categoryId}
               staffId={staffId}
               columns={defaultColumns}
+              onClearSearch={handleClearSearch}
             />
           </Tabs.TabPanel>
         </Tabs.TabPanels>

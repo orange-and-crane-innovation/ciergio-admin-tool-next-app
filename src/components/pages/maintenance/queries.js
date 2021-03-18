@@ -57,7 +57,7 @@ export const GET_ISSUES_BY_STATUS = gql`
 
 export const GET_CATEGORIES = gql`
   query getCategories($where: AllowedPostCategoryInput) {
-    getAllowedPostCategory(where: $where) {
+    getAllowedPostCategory(where: $where, limit: 500) {
       count
       limit
       offset

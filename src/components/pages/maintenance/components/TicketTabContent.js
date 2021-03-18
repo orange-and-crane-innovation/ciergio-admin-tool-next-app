@@ -35,6 +35,7 @@ function Component({
   staffOptions,
   onCategoryChange,
   onClearCategory,
+  onClearSearch,
   onSearchTextChange,
   onStaffChange,
   onClearStaff
@@ -81,7 +82,6 @@ function Component({
   }
 
   const onUploadImage = e => {
-    console.log({ e })
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
     const fileList = []
@@ -152,6 +152,7 @@ function Component({
             placeholder="Search by title"
             onChange={onSearchTextChange}
             value={searchText}
+            onClearSearch={onClearSearch}
           />
         </div>
       </div>
@@ -226,6 +227,7 @@ Component.propTypes = {
   searchText: P.string,
   onCategoryChange: P.func,
   onSearchTextChange: P.func,
+  onClearSearch: P.func,
   onClearCategory: P.func,
   onStaffChange: P.func,
   onClearStaff: P.func,
