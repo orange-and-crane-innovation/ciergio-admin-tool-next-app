@@ -133,7 +133,7 @@ const navigation = [
         items: []
       },
       {
-        url: '/maintenance',
+        url: '/maintenance/complexes',
         icon: 'ciergio-wrench',
         title: 'Maintenance & Repairs',
         items: []

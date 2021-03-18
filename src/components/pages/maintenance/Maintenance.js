@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
+import { useRouter } from 'next/router'
 import Tickets from './components/Tickets'
 import Tabs from '@app/components/tabs'
 import TicketContent from './components/TicketTabContent'
@@ -7,14 +8,21 @@ import { unassignedColumns, defaultColumns } from './columns'
 import { GET_STAFFS, GET_CATEGORIES } from './queries'
 
 function Maintenance() {
+  const { query } = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
+  const userCompany = user?.accounts?.data?.find(
+    account => account?.accountType === 'company_admin'
+  )
   const [categoryId, setCategoryId] = useState(null)
   const [searchText, setSearchText] = useState('')
   const [staffId, setStaffId] = useState('')
   const { data: staffs } = useQuery(GET_STAFFS, {
     variables: {
       where: {
-        accountTypes: ['company_admin', 'complex_admin', 'building_admin']
+        accountTypes: ['company_admin', 'complex_admin', 'building_admin'],
+        companyId: userCompany?.company?._id,
+        complexId: query?.complexId,
+        buildingId: query?.buildingId
       }
     }
   })
@@ -44,7 +52,14 @@ function Maintenance() {
       return staffs?.getRepairsAndMaintenanceStaffs?.data.map(staff => {
         const user = staff.user
         return {
-          label: `${user.firstName} ${user.lastName} ${staff.accountType} `,
+          label: (
+            <span>
+              {`${user.firstName} ${user.lastName} `}
+              <span className="text-sm capitalize">
+                {staff.accountType?.replace('_', ' ')}
+              </span>
+            </span>
+          ),
           value: staff._id
         }
       })

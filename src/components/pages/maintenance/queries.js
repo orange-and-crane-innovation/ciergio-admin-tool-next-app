@@ -1,5 +1,31 @@
 import gql from 'graphql-tag'
 
+export const GET_COMPLEXES = gql`
+  query getComplexes($where: GetComplexesParams) {
+    getComplexes(where: $where, limit: 50, skip: 0) {
+      data {
+        _id
+        name
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
+export const GET_BUILDINGS = gql`
+  query getBuildings($where: GetBuildingsParams) {
+    getBuildings(where: $where, limit: 50, skip: 0) {
+      data {
+        _id
+        name
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
 export const GET_ISSUES_BY_STATUS = gql`
   query getIssuesByStatus(
     $where: IssuesInput
