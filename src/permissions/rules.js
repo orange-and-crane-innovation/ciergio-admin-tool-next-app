@@ -75,7 +75,6 @@ const rules = {
     company_admin: {
       allowedRoutes: [
         '/dashboard',
-        '/staff',
         '/messages',
         '/posts',
         '/prayer-requests',
@@ -86,17 +85,6 @@ const rules = {
         '/offerings'
       ],
       allowedNestedRoutes: [
-        'staff:view',
-        'staff:invite',
-        'staff:update',
-        'staff:delete',
-        'staff:export',
-        'staff:print',
-        'staff:view::update::delete',
-        'messages:view',
-        'messages:create',
-        '/staff/all-staff',
-        '/staff/pending-invites',
         '/posts/create',
         '/posts',
         '/forms/create',

@@ -439,41 +439,26 @@ function AllStaff() {
           accounts?.getAccounts?.count || 0
         })`}</h1>
         <div className="flex items-center">
-          <Can
-            perform="staff:print"
-            yes={
-              <Button
-                default
-                icon={<HiOutlinePrinter />}
-                onClick={() => {}}
-                className="mr-4 mt-4"
-                disabled
-              />
-            }
+          <Button
+            default
+            icon={<HiOutlinePrinter />}
+            onClick={() => {}}
+            className="mr-4 mt-4"
+            disabled
           />
-          <Can
-            perform="staff:export"
-            yes={
-              <Button
-                default
-                icon={<FiDownload />}
-                onClick={() => {}}
-                className="mr-4 mt-4"
-                disabled
-              />
-            }
+          <Button
+            default
+            icon={<FiDownload />}
+            onClick={() => {}}
+            className="mr-4 mt-4"
+            disabled
           />
-          <Can
-            perform="staff:invite"
-            yes={
-              <Button
-                default
-                leftIcon={<FaPlusCircle />}
-                label="Invite Staff"
-                onClick={() => handleShowModal('create')}
-                className="mr-4 mt-4"
-              />
-            }
+          <Button
+            default
+            leftIcon={<FaPlusCircle />}
+            label="Invite Staff"
+            onClick={() => handleShowModal('create')}
+            className="mr-4 mt-4"
           />
         </div>
       </div>
