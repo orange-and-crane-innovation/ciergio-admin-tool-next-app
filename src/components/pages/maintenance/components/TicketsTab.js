@@ -9,17 +9,27 @@ import EmptyStaff from './EmptyStaff'
 import AssignedStaffs from './AssignedStaffs'
 import { GET_ISSUES_BY_STATUS } from '../queries'
 
-function TicketsTab({ columns, type, staffId }) {
+function TicketsTab({
+  columns,
+  type,
+  staffId,
+  buildingId,
+  categoryId,
+  searchText
+}) {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
-
+  console.log({ staffId })
   const { data: issues, loading } = useQuery(GET_ISSUES_BY_STATUS, {
     variables: {
       where: {
         status: [type],
-        assigneeAccountId: staffId || null
+        assigneeAccountId: staffId,
+        buildingId,
+        categoryId
       },
+      search: searchText || null,
       limit,
       offset
     }
@@ -136,7 +146,10 @@ function TicketsTab({ columns, type, staffId }) {
 TicketsTab.propTypes = {
   columns: P.array.isRequired,
   type: P.string.isRequired,
-  staffId: P.string
+  staffId: P.string,
+  buildingId: P.string,
+  categoryId: P.string,
+  searchText: P.string
 }
 
 export default TicketsTab

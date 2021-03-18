@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
 import { useRouter } from 'next/router'
+import useDebounce from '@app/utils/useDebounce'
 import Tickets from './components/Tickets'
 import Tabs from '@app/components/tabs'
 import TicketContent from './components/TicketTabContent'
 import { unassignedColumns, defaultColumns } from './columns'
-import { GET_STAFFS, GET_CATEGORIES } from './queries'
+import { GET_STAFFS } from './queries'
 
 function Maintenance() {
   const { query } = useRouter()
@@ -13,9 +14,10 @@ function Maintenance() {
   const userCompany = user?.accounts?.data?.find(
     account => account?.accountType === 'company_admin'
   )
-  const [categoryId, setCategoryId] = useState(null)
+  const [category, setCategory] = useState(null)
   const [searchText, setSearchText] = useState('')
-  const [staffId, setStaffId] = useState('')
+  const [staff, setStaff] = useState('')
+  const debouncedSearchText = useDebounce(searchText, 700)
   const { data: staffs } = useQuery(GET_STAFFS, {
     variables: {
       where: {
@@ -26,25 +28,12 @@ function Maintenance() {
       }
     }
   })
-  const { data: categories } = useQuery(GET_CATEGORIES, {
-    variables: {
-      where: {
-        category: {
-          type: 'issue'
-        },
-        settings: {
-          accountId: user?._id,
-          accountType: 'company'
-        }
-      }
-    }
-  })
 
-  const handleCategoryChange = cat => setCategoryId(cat.value)
-  const handleClearCategory = () => setCategoryId(null)
+  const handleCategoryChange = e => setCategory(e.value !== '' ? e.value : null)
+  const handleClearCategory = () => setCategory(null)
   const handleSearchTextChange = e => setSearchText(e.target.value)
-  const handleStaffChange = staff => setStaffId(staff.value)
-  const handleClearStaff = () => setStaffId(null)
+  const handleStaffChange = staff => setStaff(staff)
+  const handleClearStaff = () => setStaff(null)
   const handleClearSearch = () => setSearchText(null)
 
   const staffOptions = useMemo(() => {
@@ -52,37 +41,13 @@ function Maintenance() {
       return staffs?.getRepairsAndMaintenanceStaffs?.data.map(staff => {
         const user = staff.user
         return {
-          label: (
-            <span>
-              {`${user.firstName} ${user.lastName} `}
-              <span className="text-sm capitalize">
-                {staff.accountType?.replace('_', ' ')}
-              </span>
-            </span>
-          ),
+          label: <span>{`${user.firstName} ${user.lastName} `}</span>,
           value: staff._id
         }
       })
     }
     return []
   }, [staffs?.getRepairsAndMaintenanceStaffs])
-
-  const categoryOptions = useMemo(() => {
-    if (categories?.getAllowedPostCategory?.data?.length > 0) {
-      return categories.getAllowedPostCategory.data.map(staff => {
-        const user = staff?.user
-        if (user) {
-          return {
-            label: `${user.firstName} ${user.lastName} ${staff.accountType} `,
-            value: staff._id
-          }
-        }
-
-        return null
-      })
-    }
-    return []
-  }, [categories?.getAllowedPostCategory])
 
   return (
     <section className="content-wrap">
@@ -108,12 +73,12 @@ function Maintenance() {
               onStaffChange={handleStaffChange}
               onClearStaff={handleClearStaff}
               staffOptions={staffOptions}
-              categoryOptions={categoryOptions}
-              searchText={searchText}
-              categoryId={categoryId}
-              staffId={staffId}
+              searchText={debouncedSearchText}
+              category={category}
+              staff={staff}
               columns={unassignedColumns}
               onClearSearch={handleClearSearch}
+              buildingId={query?.buildingId}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
@@ -126,12 +91,12 @@ function Maintenance() {
               onStaffChange={handleStaffChange}
               onClearStaff={handleClearStaff}
               staffOptions={staffOptions}
-              categoryOptions={categoryOptions}
-              searchText={searchText}
-              categoryId={categoryId}
-              staffId={staffId}
+              searchText={debouncedSearchText}
+              category={category}
+              staff={staff}
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
+              buildingId={query?.buildingId}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
@@ -144,12 +109,12 @@ function Maintenance() {
               onStaffChange={handleStaffChange}
               onClearStaff={handleClearStaff}
               staffOptions={staffOptions}
-              categoryOptions={categoryOptions}
-              searchText={searchText}
-              categoryId={categoryId}
-              staffId={staffId}
+              searchText={debouncedSearchText}
+              category={category}
+              staff={staff}
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
+              buildingId={query?.buildingId}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="4">
@@ -162,12 +127,12 @@ function Maintenance() {
               onStaffChange={handleStaffChange}
               onClearStaff={handleClearStaff}
               staffOptions={staffOptions}
-              categoryOptions={categoryOptions}
-              searchText={searchText}
-              categoryId={categoryId}
-              staffId={staffId}
+              searchText={debouncedSearchText}
+              category={category}
+              staff={staff}
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
+              buildingId={query?.buildingId}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="5">
@@ -180,12 +145,12 @@ function Maintenance() {
               onStaffChange={handleStaffChange}
               onClearStaff={handleClearStaff}
               staffOptions={staffOptions}
-              categoryOptions={categoryOptions}
-              searchText={searchText}
-              categoryId={categoryId}
-              staffId={staffId}
+              searchText={debouncedSearchText}
+              category={category}
+              staff={staff}
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
+              buildingId={query?.buildingId}
             />
           </Tabs.TabPanel>
         </Tabs.TabPanels>

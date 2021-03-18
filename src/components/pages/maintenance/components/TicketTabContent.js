@@ -7,6 +7,7 @@ import * as yup from 'yup'
 import Button from '@app/components/button'
 import FormSelect from '@app/components/forms/form-select'
 import Search from '@app/components/globals/SearchControl'
+import SelectCategory from '@app/components/globals/SelectCategory'
 import { Card } from '@app/components/globals'
 import axios from '@app/utils/axios'
 import CreateTicketModal from './CreateTicketModal'
@@ -14,7 +15,6 @@ import TicketsTable from './TicketsTab'
 import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
-
 import { GET_UNITS } from '../queries'
 
 export const createTicketValidation = yup.object().shape({
@@ -28,9 +28,8 @@ function Component({
   title,
   type,
   columns,
-  categoryOptions,
-  categoryId,
-  staffId,
+  category,
+  staff,
   searchText,
   staffOptions,
   onCategoryChange,
@@ -38,7 +37,8 @@ function Component({
   onClearSearch,
   onSearchTextChange,
   onStaffChange,
-  onClearStaff
+  onClearStaff,
+  buildingId
 }) {
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(createTicketValidation),
@@ -58,7 +58,7 @@ function Component({
       where: {
         occupied: true,
         vacant: false,
-        buildingId: ''
+        buildingId
       }
     }
   })
@@ -128,30 +128,29 @@ function Component({
   return (
     <>
       <div className="flex justify-end w-full">
-        <div className="flex items-center w-6/12">
+        <div className="flex items-center w-7/12">
           <FormSelect
             options={staffOptions}
-            value={staffId}
+            value={staff?.value}
             onChange={onStaffChange}
             onClear={onClearStaff}
             placeholder="Filter assignee"
             className="mr-4"
             isClearable
           />
-          <FormSelect
-            options={categoryOptions}
-            value={categoryId}
-            onChange={onCategoryChange}
-            onClear={onClearCategory}
-            placeholder="Filter category"
-            className="mr-4"
-            isClearable
-          />
+          <div className="mr-4 w-full">
+            <SelectCategory
+              type="issue"
+              selected={category}
+              placeholder="Filter category"
+              onChange={onCategoryChange}
+              onClear={onClearCategory}
+            />
+          </div>
           <Search
-            name="search"
             placeholder="Search by title"
-            onChange={onSearchTextChange}
-            value={searchText}
+            onSearch={onSearchTextChange}
+            searchText={searchText}
             onClearSearch={onClearSearch}
           />
         </div>
@@ -190,8 +189,9 @@ function Component({
           <TicketsTable
             type={type}
             columns={columns}
-            staffId={staffId}
-            categoryId={categoryId}
+            staffId={staff?.value}
+            buildingId={buildingId}
+            categoryId={category}
             searchText={searchText}
           />
         }
@@ -222,8 +222,8 @@ Component.propTypes = {
   content: P.oneOfType([P.node, P.element, null, P.string]),
   staffOptions: P.array,
   categoryOptions: P.array,
-  categoryId: P.string,
-  staffId: P.string,
+  category: P.string,
+  staff: P.object,
   searchText: P.string,
   onCategoryChange: P.func,
   onSearchTextChange: P.func,
@@ -232,7 +232,8 @@ Component.propTypes = {
   onStaffChange: P.func,
   onClearStaff: P.func,
   type: P.string,
-  columns: P.array
+  columns: P.array,
+  buildingId: P.string
 }
 
 export default Component
