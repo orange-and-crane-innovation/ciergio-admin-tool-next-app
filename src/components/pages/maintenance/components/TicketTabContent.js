@@ -1,50 +1,160 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import P from 'prop-types'
+import { useLazyQuery } from '@apollo/client'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
 import Button from '@app/components/button'
-import Modal from '@app/components/modal'
 import FormSelect from '@app/components/forms/form-select'
-import FormInput from '@app/components/forms/form-input'
-import Uploader from '@app/components/uploader'
+import Search from '@app/components/globals/SearchControl'
 import { Card } from '@app/components/globals'
-
+import axios from '@app/utils/axios'
+import CreateTicketModal from './CreateTicketModal'
+import TicketsTable from './TicketsTab'
 import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
-import { AiOutlineUserAdd } from 'react-icons/ai'
 
-const unitNumbers = [
-  {
-    label: 'Unit 1',
-    value: 'unit-1'
-  },
-  {
-    label: 'Unit 2',
-    value: 'unit-2'
-  },
-  {
-    label: 'Unit 3',
-    value: 'unit-3'
+import { GET_UNITS } from '../queries'
+
+export const createTicketValidation = yup.object().shape({
+  unitNumber: yup.string().required(),
+  requestor: yup.string().required(),
+  category: yup.string().required(),
+  title: yup.string().required()
+})
+
+function Component({
+  title,
+  type,
+  columns,
+  categoryOptions,
+  categoryId,
+  staffId,
+  searchText,
+  staffOptions,
+  onCategoryChange,
+  onClearCategory,
+  onSearchTextChange,
+  onStaffChange,
+  onClearStaff
+}) {
+  const { handleSubmit, control, errors, register, setValue } = useForm({
+    resolver: yupResolver(createTicketValidation),
+    defaultValues: {
+      unitNumber: '',
+      requestor: '',
+      category: '',
+      title: ''
+    }
+  })
+  const [showCreateTicketModal, setShowCreateTicketModal] = useState(false)
+  const [, setImageUploadedData] = useState(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [imageUrls, setImageUrls] = useState([])
+  const [fetchUnits, { data: units }] = useLazyQuery(GET_UNITS, {
+    variables: {
+      where: {
+        occupied: true,
+        vacant: false,
+        buildingId: ''
+      }
+    }
+  })
+  register({ name: 'embeddedFiles' })
+  const handleShowModal = () => setShowCreateTicketModal(old => !old)
+  const handleOk = values => console.log({ values })
+
+  const uploadApi = async payload => {
+    const response = await axios.post('/', payload)
+
+    if (response.data) {
+      const imageData = response.data.map(item => {
+        return {
+          url: item.location,
+          type: item.mimetype
+        }
+      })
+
+      setImageUploadedData(imageData)
+    }
   }
-]
 
-const residentNames = [
-  {
-    label: 'John Doe',
-    value: 'john-doe'
-  },
-  {
-    label: 'Jane Doe',
-    value: 'jane-doe'
+  const onUploadImage = e => {
+    console.log({ e })
+    const files = e.target.files ? e.target.files : e.dataTransfer.files
+    const formData = new FormData()
+    const fileList = []
+
+    if (files) {
+      setIsUploading(true)
+      for (const file of files) {
+        const reader = new FileReader()
+
+        reader.onloadend = () => {
+          setImageUrls(imageUrls => [...imageUrls, reader.result])
+          setIsUploading(false)
+        }
+        reader.readAsDataURL(file)
+
+        formData.append('photos', file)
+        fileList.push(file)
+      }
+      setValue('images', fileList)
+
+      uploadApi(formData)
+    }
   }
-]
 
-function Component({ title, content }) {
-  const [showModal, setShowModal] = useState(false)
+  const onRemoveImage = e => {
+    const images = imageUrls.filter(image => {
+      return image !== e.currentTarget.dataset.id
+    })
+    setImageUrls(images)
+    setValue('images', images.length !== 0 ? images : null)
+  }
 
-  const handleShowModal = () => setShowModal(old => !old)
+  const unitOptions = useMemo(() => {
+    if (units?.getUnits?.data?.length > 0) {
+      return units.getUnits?.data?.map(unit => ({
+        label: unit.name,
+        value: unit._id
+      }))
+    }
+
+    return []
+  })
 
   return (
     <>
+      <div className="flex justify-end w-full">
+        <div className="flex items-center w-6/12">
+          <FormSelect
+            options={staffOptions}
+            value={staffId}
+            onChange={onStaffChange}
+            onClear={onClearStaff}
+            placeholder="Filter assignee"
+            className="mr-4"
+            isClearable
+          />
+          <FormSelect
+            options={categoryOptions}
+            value={categoryId}
+            onChange={onCategoryChange}
+            onClear={onClearCategory}
+            placeholder="Filter category"
+            className="mr-4"
+            isClearable
+          />
+          <Search
+            name="search"
+            placeholder="Search by title"
+            onChange={onSearchTextChange}
+            value={searchText}
+          />
+        </div>
+      </div>
       <Card
         title={title}
         actions={[
@@ -67,90 +177,60 @@ function Component({ title, content }) {
             primary
             leftIcon={<FaPlusCircle />}
             label="Create Ticket"
-            onClick={handleShowModal}
+            onClick={() => {
+              fetchUnits()
+              handleShowModal()
+            }}
             className="mr-4 mt-4"
           />
         ]}
         noPadding
-        content={content}
+        content={
+          <TicketsTable
+            type={type}
+            columns={columns}
+            staffId={staffId}
+            categoryId={categoryId}
+            searchText={searchText}
+          />
+        }
         className="rounded-t-none"
       />
-      <Modal
-        visible={showModal}
-        title="Create Ticket"
-        onClose={handleShowModal}
-        okText="Create Ticket"
-        onOk={handleShowModal}
+      <CreateTicketModal
+        open={showCreateTicketModal}
         onCancel={handleShowModal}
-      >
-        <form>
-          <div className="w-full mb-4">
-            <h2 className="font-bold text-base mb-4 text-neutral-900">
-              Requested By
-            </h2>
-            <div className="flex w-full justify-between items-center">
-              <div className="w-4/12">
-                <p className="font-medium mb-1">Unit No.</p>
-                <FormSelect options={unitNumbers} placeholder="Unit No." />
-              </div>
-              <div className="w-8/12 ml-4">
-                <p className="font-medium mb-1">Requestor</p>
-                <FormSelect
-                  options={residentNames}
-                  placeholder="Resident's Name"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="w-full mb-4">
-            <h2 className="font-bold text-base mb-4 text-neutral-900">
-              About the Issue
-            </h2>
-            <div className="w-8/12 mb-8">
-              <p className="font-medium mb-1">Category</p>
-              <FormSelect options={[]} placeholder="Category" />
-            </div>
-            <div className="w-full mb-8">
-              <p className="font-medium mb-1">Title</p>
-              <FormInput placeholder="Enter Title" />
-            </div>
-            <div className="w-full mb-8">
-              <p className="font-medium mb-1">Message</p>
-              <FormInput placeholder="Give more details about the issue" />
-            </div>
-            <div className="w-full mb-8">
-              <p className="font-medium mb-2">Attach Photo</p>
-              <Uploader
-                multiple
-                files={{}}
-                fileUrls={[]}
-                loading={false}
-                maxFiles={3}
-                accept=".pdf, .doc, .docx"
-                onUpload={() => {}}
-                onRemove={() => {}}
-                type="image"
-              />
-            </div>
-            <div className="w-full">
-              <p className="font-medium mb-2">Staff in this Photo</p>
-              <div className="w-full flex justify-start items-center">
-                <div className="w-12 h-12 border border-blue-500 border-dashed rounded-full mr-4 flex justify-center items-center">
-                  <AiOutlineUserAdd className="text-blue-500" />
-                </div>
-                <p className="font-bold text-base text-blue-500">Add Staff</p>
-              </div>
-            </div>
-          </div>
-        </form>
-      </Modal>
+        onOk={handleSubmit(handleOk)}
+        form={{
+          errors,
+          control
+        }}
+        loading={isUploading}
+        imageURLs={imageUrls}
+        onUploadImage={onUploadImage}
+        onRemoveImage={onRemoveImage}
+        residentOptions={[]}
+        unitOptions={unitOptions}
+        staffOptions={staffOptions}
+      />
     </>
   )
 }
 
 Component.propTypes = {
   title: P.string,
-  content: P.node || P.string
+  content: P.oneOfType([P.node, P.element, null, P.string]),
+  staffOptions: P.array,
+  categoryOptions: P.array,
+  categoryId: P.string,
+  staffId: P.string,
+  searchText: P.string,
+  onCategoryChange: P.func,
+  onSearchTextChange: P.func,
+  onClearCategory: P.func,
+  onStaffChange: P.func,
+  onClearStaff: P.func,
+  type: P.string,
+  columns: P.array
 }
 
 export default Component

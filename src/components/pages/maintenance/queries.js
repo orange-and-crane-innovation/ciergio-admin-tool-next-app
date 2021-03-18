@@ -54,3 +54,70 @@ export const GET_ISSUES_BY_STATUS = gql`
     }
   }
 `
+
+export const GET_CATEGORIES = gql`
+  query getCategories($where: AllowedPostCategoryInput) {
+    getAllowedPostCategory(where: $where) {
+      count
+      limit
+      offset
+      data {
+        _id
+        accountId
+        accountType
+        categories {
+          _id
+          name
+          status
+          defaultImage
+          type
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
+export const GET_UNITS = gql`
+  query getUnits($where: GetUnitsParams) {
+    getUnits(where: $where) {
+      count
+      data {
+        _id
+        name
+        floorNumber
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
+export const GET_STAFFS = gql`
+  query getStaffs($where: GetRepairsAndMaintenanceStaffsParams) {
+    getRepairsAndMaintenanceStaffs(where: $where) {
+      data {
+        _id
+        accountType
+        user {
+          _id
+          firstName
+          lastName
+          __typename
+        }
+        complex {
+          _id
+          __typename
+        }
+        building {
+          _id
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+  }
+`
