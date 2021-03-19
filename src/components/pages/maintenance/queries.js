@@ -265,11 +265,11 @@ export const GET_ISSUE_DETAILS = gql`
 `
 
 export const GET_ISSUE_COMMENTS = gql`
-  query getIssueComments($id: String, $limit: Int, $offset: Int, $sort: Int) {
+  query getIssueComments($id: String) {
     getIssue(id: $id) {
       issue {
         _id
-        comments(limit: $limit, offset: $offset, sort: $sort) {
+        comments(limit: 100, offset: 0, sort: -1) {
           count
           limit
           offset
@@ -290,13 +290,23 @@ export const GET_ISSUE_COMMENTS = gql`
               __typename
             }
             createdAt
-
             __typename
           }
           __typename
         }
         __typename
       }
+      __typename
+    }
+  }
+`
+
+export const POST_ISSUE_COMMENT = gql`
+  mutation postIssueComment($data: CommentInput) {
+    comment(data: $data) {
+      _id
+      message
+      processId
       __typename
     }
   }

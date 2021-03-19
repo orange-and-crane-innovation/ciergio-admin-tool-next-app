@@ -1,24 +1,62 @@
 import { useMemo } from 'react'
 import { useRouter } from 'next/router'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import dayjs from '@app/utils/date'
+import showToast from '@app/utils/toast'
 import Button from '@app/components/button'
 import Tabs from '@app/components/tabs'
 import { Card } from '@app/components/globals'
 import { GoKebabHorizontal } from 'react-icons/go'
 import { AiOutlineUserAdd } from 'react-icons/ai'
-import { GET_ISSUE_DETAILS } from '../../queries'
+import {
+  GET_ISSUE_DETAILS,
+  GET_ISSUE_COMMENTS,
+  POST_ISSUE_COMMENT
+} from '../../queries'
 import Comments from '../Comments'
 
 function Ticket() {
   const router = useRouter()
+  const ticketId = router?.query?.ticket
   const { data: issue } = useQuery(GET_ISSUE_DETAILS, {
     variables: {
-      id: router?.query?.ticket
+      id: ticketId
+    }
+  })
+  const { data: comments, refetch: refetchComments } = useQuery(
+    GET_ISSUE_COMMENTS,
+    {
+      variables: {
+        id: ticketId
+      }
+    }
+  )
+
+  const [postComment] = useMutation(POST_ISSUE_COMMENT, {
+    onCompleted: () => {
+      showToast('success', 'Comment added!')
+      refetchComments({
+        variables: {
+          id: ticketId
+        }
+      })
     }
   })
 
+  const handleEnterComment = comment => {
+    postComment({
+      variables: {
+        data: {
+          comment,
+          service: 'issue',
+          srcId: ticketId
+        }
+      }
+    })
+  }
+
   const ticket = issue?.getIssue?.issue
+  const ticketComments = comments?.getIssue?.issue?.comments
   const buttonLabel = useMemo(() => {
     const status = ticket?.status
     return status === 'unassigned'
@@ -141,7 +179,10 @@ function Ticket() {
               </Tabs.TabLabels>
               <Tabs.TabPanels>
                 <Tabs.TabPanel id="1">
-                  <Comments />
+                  <Comments
+                    data={ticketComments}
+                    onEnterComment={handleEnterComment}
+                  />
                 </Tabs.TabPanel>
                 <Tabs.TabPanel id="2">
                   <p>Ticket History</p>
