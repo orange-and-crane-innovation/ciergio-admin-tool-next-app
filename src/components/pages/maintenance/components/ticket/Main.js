@@ -14,6 +14,7 @@ import {
   POST_ISSUE_COMMENT
 } from '../../queries'
 import Comments from '../Comments'
+import TicketHistory from '../TicketHistory'
 
 function Ticket() {
   const router = useRouter()
@@ -185,7 +186,7 @@ function Ticket() {
                   />
                 </Tabs.TabPanel>
                 <Tabs.TabPanel id="2">
-                  <p>Ticket History</p>
+                  <TicketHistory ticketId={ticketId} />
                 </Tabs.TabPanel>
               </Tabs.TabPanels>
             </Tabs>

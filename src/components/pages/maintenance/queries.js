@@ -311,3 +311,36 @@ export const POST_ISSUE_COMMENT = gql`
     }
   }
 `
+
+export const GET_ISSUE_HISTORY = gql`
+  query getIssueHistory($id: String) {
+    getIssue(id: $id) {
+      issue {
+        history(limit: 10, offset: 0, sort: -1) {
+          count
+          data {
+            _id
+            by {
+              _id
+              accountType
+              user {
+                _id
+                firstName
+                lastName
+                __typename
+              }
+              __typename
+            }
+            action
+            activity
+            createdAt
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+  }
+`
