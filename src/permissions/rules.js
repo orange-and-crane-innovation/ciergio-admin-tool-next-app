@@ -404,7 +404,9 @@ const rules = {
         '/forms',
         '/dues/billing',
         '/notifications/list',
-        '/notifications/create'
+        '/notifications/create',
+        '/dues/overview',
+        '/dues/manage-categories'
       ],
       actions: [
         'messages:view',
@@ -470,7 +472,8 @@ const rules = {
         '/dues',
         '/guest-and-deliveries',
         '/receptionist',
-        '/posts/create'
+        '/posts/create',
+        '/dues'
       ],
       allowedNestedRoutes: [
         '/properties/building',
@@ -487,7 +490,8 @@ const rules = {
         '/receptionist/visitors',
         '/receptionist/deliveries',
         '/receptionist/pick-ups',
-        '/receptionist/services'
+        '/receptionist/services',
+        '/dues/billing'
       ],
       actions: [
         'messages:view',

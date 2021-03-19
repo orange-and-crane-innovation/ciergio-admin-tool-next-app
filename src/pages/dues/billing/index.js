@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 import Billing from '@app/components/pages/dues'
-// import Page from '@app/permissions/page'
+import Page from '@app/permissions/page'
 
 export default function DuesPage() {
   const router = useRouter()
@@ -8,7 +8,7 @@ export default function DuesPage() {
   const user = JSON.parse(localStorage.getItem('profile'))
   const buildingId = user?.accounts?.data[0]?.building?._id
   if (buildingID === undefined || buildingId === undefined) {
-    return <Billing />
+    return <Page route="/dues" nestedRoute="/dues/billing" page={<Billing />} />
   } else {
     router.push(`/dues/billing/${buildingID}`)
   }
