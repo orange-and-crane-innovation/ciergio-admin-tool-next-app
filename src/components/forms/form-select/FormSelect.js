@@ -22,7 +22,8 @@ const InputSelect = ({
   isMulti,
   isClearable,
   subLabel,
-  loading
+  loading,
+  label
 }) => {
   // eslint-disable-next-line react/prop-types
   const ValueContainer = ({ children, ...props }) => {
@@ -45,6 +46,9 @@ const InputSelect = ({
 
   return (
     <div className={`${styles.FormSelectContainer} ${className}`}>
+      {label ? (
+        <label className="font-bold text-sm text-neutral-dark">{label}</label>
+      ) : null}
       {subLabel || null}
       <Select
         styles={{
@@ -114,7 +118,8 @@ InputSelect.propTypes = {
     PropTypes.element,
     PropTypes.string
   ]),
-  loading: PropTypes.bool
+  loading: PropTypes.bool,
+  label: PropTypes.string
 }
 
 export default InputSelect

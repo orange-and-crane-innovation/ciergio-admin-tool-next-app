@@ -2,12 +2,14 @@ import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
 import { useQuery } from '@apollo/client'
 import { useRouter } from 'next/router'
+import { useForm } from 'react-hook-form'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
 import { friendlyDateTimeFormat, displayDateCreated } from '@app/utils/date'
 import EmptyStaff from './EmptyStaff'
 import AssignedStaffs from './AssignedStaffs'
 import { GET_ISSUES_BY_STATUS } from '../queries'
+import AddStaffModal from './AddStaffModal'
 
 function TicketsTab({
   columns,
@@ -16,12 +18,15 @@ function TicketsTab({
   buildingId,
   categoryId,
   searchText,
-  isMutationSuccess
+  isMutationSuccess,
+  staffOptions
 }) {
+  const { handleSubmit, control, errors } = useForm()
   const router = useRouter()
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false)
 
   const { data: issues, loading, refetch } = useQuery(GET_ISSUES_BY_STATUS, {
     variables: {
@@ -42,6 +47,8 @@ function TicketsTab({
       refetch()
     }
   }, [isMutationSuccess])
+
+  const handleAddStaffSubmit = values => console.log({ values })
 
   const ticketsData = useMemo(() => {
     return {
@@ -66,7 +73,7 @@ function TicketsTab({
                 {
                   label: 'Assign Ticket',
                   icon: <span className="ciergio-user" />,
-                  function: () => {}
+                  function: () => setShowAddStaffModal(old => !old)
                 }
               ]
               const unassignedData = {
@@ -105,7 +112,9 @@ function TicketsTab({
                   issue?.assignee?.length > 0 ? (
                     <AssignedStaffs staffs={issue?.assignee} />
                   ) : (
-                    <EmptyStaff />
+                    <EmptyStaff
+                      onClick={() => setShowAddStaffModal(old => !old)}
+                    />
                   )
               }
 
@@ -139,16 +148,29 @@ function TicketsTab({
   }, [issues?.getIssues])
 
   return (
-    <PrimaryDataTable
-      columns={columns}
-      data={ticketsData}
-      loading={loading}
-      currentPage={page}
-      pageLimit={limit}
-      setPageLimit={setLimit}
-      setCurrentPage={setPage}
-      setPageOffset={setOffset}
-    />
+    <>
+      <PrimaryDataTable
+        columns={columns}
+        data={ticketsData}
+        loading={loading}
+        currentPage={page}
+        pageLimit={limit}
+        setPageLimit={setLimit}
+        setCurrentPage={setPage}
+        setPageOffset={setOffset}
+      />
+      <AddStaffModal
+        open={showAddStaffModal}
+        onOk={handleSubmit(handleAddStaffSubmit)}
+        onClose={() => setShowAddStaffModal(old => !old)}
+        loading={false}
+        form={{
+          control,
+          errors
+        }}
+        options={staffOptions}
+      />
+    </>
   )
 }
 
@@ -159,7 +181,8 @@ TicketsTab.propTypes = {
   buildingId: P.string,
   categoryId: P.string,
   searchText: P.string,
-  isMutationSuccess: P.bool
+  isMutationSuccess: P.bool,
+  staffOptions: P.array
 }
 
 export default TicketsTab

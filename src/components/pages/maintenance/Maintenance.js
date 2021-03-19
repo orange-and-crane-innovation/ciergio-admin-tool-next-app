@@ -56,14 +56,16 @@ function Maintenance() {
   const { data: staffs } = useQuery(GET_STAFFS, {
     variables: {
       where: {
-        accountTypes: ['company_admin', 'complex_admin', 'building_admin'],
+        accountTypes: ['company_admin', 'complex_admin'],
         companyId: userCompany?.company?._id,
         complexId: query?.complexId,
         buildingId: query?.buildingId
       }
     }
   })
+
   const buildingName = buildings?.getBuildings?.data[0]?.name
+
   const handleCategoryChange = e => setCategory(e.value !== '' ? e.value : null)
   const handleClearCategory = () => setCategory(null)
   const handleSearchTextChange = e => setSearchText(e.target.value)

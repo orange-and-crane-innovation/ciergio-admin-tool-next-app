@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useQuery, useMutation } from '@apollo/client'
+import { useForm } from 'react-hook-form'
 import dayjs from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import Button from '@app/components/button'
@@ -17,10 +18,17 @@ import {
 import Comments from '../Comments'
 import TicketHistory from '../TicketHistory'
 import Dropdown from '@app/components/dropdown'
+import HoldTicketModal from '../HoldTicketModal'
+import CancelTicketModal from '../CancelTicketModal'
+import AddStaffModal from '../AddStaffModal'
 
 function Ticket() {
+  const { handleSubmit, errors, control, register } = useForm()
   const router = useRouter()
   const ticketId = router?.query?.ticket
+  const [showHoldTicketModal, setShowHoldTicketModal] = useState(false)
+  const [showCancelTicketModal, setShowCancelTicketModal] = useState(false)
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false)
   const { data: issue, refetch: refetchIssue } = useQuery(GET_ISSUE_DETAILS, {
     variables: {
       id: ticketId
@@ -85,6 +93,14 @@ function Ticket() {
     })
   }
 
+  const handleCancelTicket = () => setShowCancelTicketModal(old => !old)
+  const handleHoldTicket = () => setShowHoldTicketModal(old => !old)
+  const handleAddStaff = () => setShowAddStaffModal(old => !old)
+  const handleCancelSubmit = values => console.log('cancel', values)
+  const handleHoldSubmit = values => {
+    console.log('hold', values)
+  }
+  const handleAddStaffSubmit = values => console.log('add staff', values)
   const ticket = issue?.getIssue?.issue
   const ticketComments = comments?.getIssue?.issue?.comments
   const buttonLabel = useMemo(() => {
@@ -104,12 +120,12 @@ function Ticket() {
     {
       label: 'Put Ticket on Hold',
       icon: <span className="ciergio-pause" />,
-      function: () => {}
+      function: () => setShowHoldTicketModal(old => !old)
     },
     {
       label: 'Cancel Ticket',
       icon: <span className="ciergio-x" />,
-      function: () => {}
+      function: () => setShowCancelTicketModal(old => !old)
     }
   ]
 
@@ -234,7 +250,13 @@ function Ticket() {
                       <h4 className="text-base font-medium mb-2">
                         Staff in this ticket
                       </h4>
-                      <div className="w-full flex justify-start items-center">
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={() => {}}
+                        className="w-full flex justify-start items-center"
+                        onClick={() => setShowAddStaffModal(old => !old)}
+                      >
                         <div className="w-12 h-12 border border-blue-500 border-dashed rounded-full mr-4 flex justify-center items-center">
                           <AiOutlineUserAdd className="text-blue-500" />
                         </div>
@@ -268,6 +290,35 @@ function Ticket() {
           </div>
         </div>
       </div>
+      <HoldTicketModal
+        open={showHoldTicketModal}
+        onCancel={handleHoldTicket}
+        onOk={handleSubmit(handleHoldSubmit)}
+        form={{
+          errors,
+          control
+        }}
+      />
+      <CancelTicketModal
+        open={showCancelTicketModal}
+        onCancel={handleCancelTicket}
+        onOk={handleSubmit(handleCancelSubmit)}
+        form={{
+          register,
+          errors,
+          control
+        }}
+      />
+      <AddStaffModal
+        open={showAddStaffModal}
+        onCancel={handleAddStaff}
+        onOk={handleSubmit(handleAddStaffSubmit)}
+        form={{
+          register,
+          errors,
+          control
+        }}
+      />
     </section>
   )
 }
