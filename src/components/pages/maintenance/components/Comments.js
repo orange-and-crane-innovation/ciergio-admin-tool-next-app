@@ -48,6 +48,7 @@ const CommentBox = ({ text, onChange, onEnter, user }) => (
       <img
         src={`https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=48`}
         alt="comment-avatar"
+        className="w-10 h-10 rounded-full"
       />
     </div>
     <div className="w-full ml-2 h-16">
@@ -77,7 +78,11 @@ const Comment = ({ comment }) => {
   return (
     <div className="flex w-full">
       <div className="mr-4 flex items-start">
-        <img src={avatar} alt="comment-avatar" />
+        <img
+          src={avatar}
+          alt="comment-avatar"
+          className="w-10 h-10 rounded-full"
+        />
       </div>
       <div className="flex flex-col justify-center">
         <p className="font-bold text-base mb-1">{`${user.firstName} ${user.lastName}`}</p>

@@ -344,3 +344,25 @@ export const GET_ISSUE_HISTORY = gql`
     }
   }
 `
+
+export const FOLLOW_ISSUE = gql`
+  mutation followIssue($data: FollowInput) {
+    follow(data: $data) {
+      _id
+      processId
+      message
+      __typename
+    }
+  }
+`
+
+export const RESOLVE_ISSUE = gql`
+  mutation resolveIssue($id: String, $data: InputUpdateIssue) {
+    updateIssue(id: $id, data: $data) {
+      _id
+      processId
+      message
+      __typename
+    }
+  }
+`

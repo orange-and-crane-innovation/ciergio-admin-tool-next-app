@@ -6,20 +6,22 @@ import showToast from '@app/utils/toast'
 import Button from '@app/components/button'
 import Tabs from '@app/components/tabs'
 import { Card } from '@app/components/globals'
-import { GoKebabHorizontal } from 'react-icons/go'
 import { AiOutlineUserAdd } from 'react-icons/ai'
 import {
   GET_ISSUE_DETAILS,
   GET_ISSUE_COMMENTS,
-  POST_ISSUE_COMMENT
+  POST_ISSUE_COMMENT,
+  FOLLOW_ISSUE,
+  RESOLVE_ISSUE
 } from '../../queries'
 import Comments from '../Comments'
 import TicketHistory from '../TicketHistory'
+import Dropdown from '@app/components/dropdown'
 
 function Ticket() {
   const router = useRouter()
   const ticketId = router?.query?.ticket
-  const { data: issue } = useQuery(GET_ISSUE_DETAILS, {
+  const { data: issue, refetch: refetchIssue } = useQuery(GET_ISSUE_DETAILS, {
     variables: {
       id: ticketId
     }
@@ -43,6 +45,33 @@ function Ticket() {
       })
     }
   })
+
+  const [followIssue, { loading: isFollowingTicket }] = useMutation(
+    FOLLOW_ISSUE,
+    {
+      onCompleted: () => {
+        refetchIssue({
+          variables: {
+            id: ticketId
+          }
+        })
+      }
+    }
+  )
+
+  const [resolveIssue, { loading: isResolvingIssue }] = useMutation(
+    RESOLVE_ISSUE,
+    {
+      onCompleted: () => {
+        showToast('success', 'Ticket resolved.')
+        refetchIssue({
+          variables: {
+            id: ticketId
+          }
+        })
+      }
+    }
+  )
 
   const handleEnterComment = comment => {
     postComment({
@@ -71,16 +100,62 @@ function Ticket() {
       : 'Cancelled'
   }, [ticket?.status])
 
+  const dropdownData = [
+    {
+      label: 'Put Ticket on Hold',
+      icon: <span className="ciergio-pause" />,
+      function: () => {}
+    },
+    {
+      label: 'Cancel Ticket',
+      icon: <span className="ciergio-x" />,
+      function: () => {}
+    }
+  ]
+
   return (
     <section className="content-wrap">
       <div className="w-full">
         <div className="flex flex-col w-8/12 justify-center items-end">
           <div className="flex justify-end items-center">
-            <Button label="Follow Ticket" />{' '}
+            <Button
+              label={ticket?.is_follower ? 'Following' : 'Follow Ticket'}
+              loading={isFollowingTicket}
+              onClick={() => {
+                followIssue({
+                  variables: {
+                    data: {
+                      service: 'issue',
+                      srcId: ticketId
+                    }
+                  }
+                })
+              }}
+            />{' '}
             {ticket?.status === 'ongoing' ? (
-              <Button primary label="Resolve Ticket" />
+              <Button
+                primary
+                label="Resolve Ticket"
+                onClick={() => {
+                  resolveIssue({
+                    variables: {
+                      id: ticketId,
+                      data: {
+                        status: 'resolved'
+                      }
+                    }
+                  })
+                }}
+                loading={isResolvingIssue}
+                className="ml-2"
+              />
             ) : null}
-            <Button icon={<GoKebabHorizontal />} className="ml-2" />
+            <div className="border border-neutral-100 w-10 h-10 bg-white flex items-center ml-2 -mt-4 shadow">
+              <Dropdown
+                label={<span className="ciergio-more" />}
+                items={dropdownData}
+              />
+            </div>
           </div>
 
           <div className="w-full">
@@ -102,7 +177,7 @@ function Ticket() {
                     <h2 className="font-bold text-2xl">
                       {ticket?.title || ''}
                     </h2>
-                    <div className="w-1/3 flex justify-start mb-4">
+                    <div className="w-2/3 flex justify-start mb-4">
                       <span className="mr-2">
                         {dayjs(ticket?.createdAt).format('MMM DD, YYYY')}
                       </span>
