@@ -22,13 +22,10 @@ const check = (type, role, route, nestedRoute) => {
       _.includes(allowedPageRoutes, route) &&
       _.includes(allowedNestedPageRoutes, nestedRoute)
     ) {
-      console.log({
-        are: allowedPageRoutes
-      })
       return true
     }
   } else {
-    if (_.includes(allowedPageRoutes.route)) {
+    if (_.includes(allowedPageRoutes, route)) {
       return true
     }
   }
@@ -37,6 +34,7 @@ const check = (type, role, route, nestedRoute) => {
 }
 
 const Page = ({ route, nestedRoute, page }) => {
+  console.log(nestedRoute)
   const [user] = useState(
     JSON.parse(localStorage.getItem('profile')) || undefined
   )
@@ -58,12 +56,12 @@ const Page = ({ route, nestedRoute, page }) => {
 }
 
 Page.defaultProps = {
-  nestedRoute: null
+  nestedRoute: P.null
 }
 
 Page.propTypes = {
   route: P.string,
-  nestedRoute: P.oneOfType([null, P.string]),
+  nestedRoute: P.oneOfType([P.null, P.string]),
   page: P.oneOfType([P.element, P.node])
 }
 
