@@ -6,7 +6,7 @@ import Tickets from './components/Tickets'
 import Tabs from '@app/components/tabs'
 import TicketContent from './components/TicketTabContent'
 import { unassignedColumns, defaultColumns } from './columns'
-import { GET_STAFFS } from './queries'
+import { GET_STAFFS, GET_BUILDING } from './queries'
 
 function Maintenance() {
   const { query } = useRouter()
@@ -18,6 +18,13 @@ function Maintenance() {
   const [searchText, setSearchText] = useState('')
   const [staff, setStaff] = useState('')
   const debouncedSearchText = useDebounce(searchText, 700)
+  const { data: buildings } = useQuery(GET_BUILDING, {
+    variables: {
+      where: {
+        _id: query?.buildingId
+      }
+    }
+  })
   const { data: staffs } = useQuery(GET_STAFFS, {
     variables: {
       where: {
@@ -28,7 +35,7 @@ function Maintenance() {
       }
     }
   })
-
+  const buildingName = buildings?.getBuildings?.data[0]?.name
   const handleCategoryChange = e => setCategory(e.value !== '' ? e.value : null)
   const handleClearCategory = () => setCategory(null)
   const handleSearchTextChange = e => setSearchText(e.target.value)
@@ -51,8 +58,10 @@ function Maintenance() {
 
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Tower 1 Residents</h1>
-      <Tickets />
+      <h1 className="content-title">
+        {buildingName ? `${buildingName} Tickets` : null}
+      </h1>
+      <Tickets buildingId={query?.buildingId} />
       <Tabs defaultTab="1">
         <Tabs.TabLabels>
           <Tabs.TabLabel id="1">Unassigned</Tabs.TabLabel>

@@ -81,6 +81,14 @@ export const GET_ISSUES_BY_STATUS = gql`
   }
 `
 
+export const GET_ISSUES_COUNT = gql`
+  query getIssuesCount($where: IssuesInput) {
+    getIssues(where: $where) {
+      count
+    }
+  }
+`
+
 export const GET_CATEGORIES = gql`
   query getCategories($where: AllowedPostCategoryInput) {
     getAllowedPostCategory(where: $where, limit: 500) {
@@ -363,6 +371,17 @@ export const RESOLVE_ISSUE = gql`
       processId
       message
       __typename
+    }
+  }
+`
+
+export const GET_BUILDING = gql`
+  query getBuilding($where: GetBuildingsParams) {
+    getBuildings(where: $where) {
+      data {
+        _id
+        name
+      }
     }
   }
 `
