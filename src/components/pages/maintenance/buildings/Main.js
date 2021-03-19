@@ -8,7 +8,7 @@ import { GET_BUILDINGS } from '../queries'
 
 function Main() {
   const { query } = useRouter()
-  const { data } = useQuery(GET_BUILDINGS, {
+  const { data, loading } = useQuery(GET_BUILDINGS, {
     variables: {
       complexId: query?.complexId
     }
@@ -25,7 +25,9 @@ function Main() {
                 <Link
                   href={`/maintenance?complexId=${query?.complexId}&buildingId=${_id}`}
                 >
-                  {name}
+                  <span className="text-secondary-500 hover:underline hover:cursor-pointer">
+                    {name}
+                  </span>
                 </Link>
               )
             }))
@@ -46,6 +48,7 @@ function Main() {
               }
             ]}
             items={buildingsData}
+            loading={loading}
           />
         }
         className="rounded-t-none"

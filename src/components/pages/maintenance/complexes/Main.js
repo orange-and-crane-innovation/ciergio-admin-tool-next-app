@@ -7,7 +7,7 @@ import { GET_COMPLEXES } from '../queries'
 
 function Main() {
   const user = JSON.parse(localStorage.getItem('profile'))
-  const { data } = useQuery(GET_COMPLEXES, {
+  const { data, loading } = useQuery(GET_COMPLEXES, {
     variables: {
       companyId: user?.accounts?.data[0]?.companyId
     }
@@ -22,7 +22,9 @@ function Main() {
           ? data.getComplexes.data.map(({ _id, name }) => ({
               name: (
                 <Link href={`/maintenance/buildings?complexId=${_id}`}>
-                  {name}
+                  <span className="text-secondary-500 hover:underline hover:cursor-pointer">
+                    {name}
+                  </span>
                 </Link>
               )
             }))
@@ -43,6 +45,7 @@ function Main() {
               }
             ]}
             items={complexesData}
+            loading={loading}
           />
         }
         className="rounded-t-none"
