@@ -179,3 +179,125 @@ export const CREATE_ISSUE = gql`
     }
   }
 `
+
+export const GET_ISSUE_DETAILS = gql`
+  query getIssueDetails($id: String) {
+    getIssue(id: $id) {
+      issue {
+        _id
+        createdAt
+        readAt
+        is_follower
+        title
+        content
+        status
+        code
+        category {
+          _id
+          name
+          __typename
+        }
+        mediaAttachments {
+          _id
+          url
+          type
+          __typename
+        }
+        author {
+          _id
+          accountType
+          user {
+            _id
+            firstName
+            lastName
+            __typename
+          }
+          __typename
+        }
+        reporter {
+          _id
+          accountType
+          user {
+            _id
+            firstName
+            lastName
+            __typename
+          }
+          __typename
+        }
+        assignee {
+          _id
+          accountType
+          user {
+            _id
+            avatar
+            firstName
+            lastName
+            __typename
+          }
+          __typename
+        }
+        company {
+          _id
+          name
+          __typename
+        }
+        complex {
+          _id
+          name
+          __typename
+        }
+        building {
+          _id
+          name
+          __typename
+        }
+        unit {
+          _id
+          name
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
+export const GET_ISSUE_COMMENTS = gql`
+  query getIssueComments($id: String, $limit: Int, $offset: Int, $sort: Int) {
+    getIssue(id: $id) {
+      issue {
+        _id
+        comments(limit: $limit, offset: $offset, sort: $sort) {
+          count
+          limit
+          offset
+          data {
+            _id
+            comment
+            mediaAttachments {
+              _id
+              url
+              type
+              __typename
+            }
+            user {
+              _id
+              avatar
+              firstName
+              lastName
+              __typename
+            }
+            createdAt
+
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+  }
+`

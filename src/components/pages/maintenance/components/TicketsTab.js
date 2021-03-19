@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
 import { useQuery } from '@apollo/client'
-
+import { useRouter } from 'next/router'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
 import { friendlyDateTimeFormat, displayDateCreated } from '@app/utils/date'
@@ -18,6 +18,7 @@ function TicketsTab({
   searchText,
   isMutationSuccess
 }) {
+  const router = useRouter()
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
@@ -54,12 +55,13 @@ function TicketsTab({
                 {
                   label: 'View Ticket Details',
                   icon: <span className="ciergio-file" />,
-                  function: () => {}
+                  function: () =>
+                    router.push(`/maintenance/details/${issue._id}`)
                 },
                 {
                   label: 'Message Resident',
                   icon: <span className="ciergio-mail" />,
-                  function: () => {}
+                  function: () => router.push(`/messages`)
                 },
                 {
                   label: 'Assign Ticket',
