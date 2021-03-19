@@ -1,11 +1,15 @@
+import { useEffect, useMemo } from 'react'
 import P from 'prop-types'
+import { useLazyQuery } from '@apollo/client'
 import Modal from '@app/components/modal'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
 import UploaderImage from '@app/components/uploader/image'
+import SelectCategory from '@app/components/globals/SelectCategory'
 import { Controller } from 'react-hook-form'
-import { AiOutlineUserAdd } from 'react-icons/ai'
+import { GET_RESIDENTS } from '../queries'
+// import { AiOutlineUserAdd } from 'react-icons/ai'
 
 function CreateTicketModal({
   open,
@@ -14,13 +18,32 @@ function CreateTicketModal({
   onCancel,
   form,
   unitOptions,
-  residentOptions,
   imageURLs,
   onUploadImage,
-  onRemoveImage
+  onRemoveImage,
+  staffOptions
 }) {
-  const { errors, control } = form
+  const { errors, control, watch } = form
 
+  const selectedUnit = watch('unitNumber')
+  const [fetchResidents, { data, loading: loadingResidents }] = useLazyQuery(
+    GET_RESIDENTS
+  )
+
+  useEffect(() => {
+    if (selectedUnit) {
+      fetchResidents()
+    }
+  }, [selectedUnit])
+
+  const residentsOptions = useMemo(() => {
+    if (data?.getAccounts?.data?.length > 0) {
+      return data.getAccounts.data.map(res => ({
+        label: res.name,
+        value: res._id
+      }))
+    }
+  }, [data?.getAccounts])
   return (
     <Modal
       visible={open}
@@ -66,8 +89,9 @@ function CreateTicketModal({
                     name={name}
                     value={value}
                     onChange={onChange}
-                    options={residentOptions}
+                    options={residentsOptions}
                     placeholder="Resident's Name"
+                    loading={loadingResidents}
                     error={errors?.requestor?.messsage}
                   />
                 )}
@@ -85,13 +109,13 @@ function CreateTicketModal({
               name="category"
               control={control}
               render={({ name, value, onChange }) => (
-                <FormSelect
+                <SelectCategory
                   name={name}
-                  value={value}
-                  onChange={onChange}
-                  options={[]}
+                  type="issue"
+                  selected={value}
                   placeholder="Category"
-                  error={errors?.category?.message}
+                  onChange={cat => onChange(cat?.value)}
+                  onClear={() => onChange(null)}
                 />
               )}
             />
@@ -114,7 +138,7 @@ function CreateTicketModal({
           <div className="w-full mb-8">
             <p className="font-medium mb-1">Message</p>
             <Controller
-              name="message"
+              name="content"
               control={control}
               render={({ value, onChange, name }) => (
                 <FormTextArea
@@ -125,7 +149,7 @@ function CreateTicketModal({
                   maxLength={200}
                   withCounter
                   options={[]}
-                  error={errors?.message?.message ?? null}
+                  error={errors?.content?.message ?? null}
                 />
               )}
             />
@@ -143,12 +167,27 @@ function CreateTicketModal({
             />
           </div>
           <div className="w-full">
-            <p className="font-medium mb-2">Staff in this Photo</p>
+            {/* TODO: change to new UI later */}
+            <p className="font-medium mb-2">Assign Staff</p>
             <div className="w-full flex justify-start items-center">
-              <div className="w-12 h-12 border border-blue-500 border-dashed rounded-full mr-4 flex justify-center items-center">
+              {/* <div className="w-12 h-12 border border-blue-500 border-dashed rounded-full mr-4 flex justify-center items-center">
                 <AiOutlineUserAdd className="text-blue-500" />
               </div>
-              <p className="font-bold text-base text-blue-500">Add Staff</p>
+              <p className="font-bold text-base text-blue-500">Add Staff</p> */}
+              <Controller
+                name="staff"
+                control={control}
+                render={({ name, value, onChange }) => (
+                  <FormSelect
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    options={staffOptions}
+                    placeholder="Select Staff"
+                    error={errors?.staff?.messsage}
+                  />
+                )}
+              />
             </div>
           </div>
         </div>

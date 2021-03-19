@@ -52,7 +52,6 @@ function Maintenance() {
   return (
     <section className="content-wrap">
       <h1 className="content-title">Tower 1 Residents</h1>
-
       <Tickets />
       <Tabs defaultTab="1">
         <Tabs.TabLabels>
@@ -79,6 +78,7 @@ function Maintenance() {
               columns={unassignedColumns}
               onClearSearch={handleClearSearch}
               buildingId={query?.buildingId}
+              profileId={user?._id}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
@@ -97,6 +97,9 @@ function Maintenance() {
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
               buildingId={query?.buildingId}
+              companyId={userCompany?.company?._id}
+              complexId={query?.complexId}
+              profileId={user?._id}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
@@ -115,6 +118,9 @@ function Maintenance() {
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
               buildingId={query?.buildingId}
+              companyId={userCompany?.company?._id}
+              complexId={query?.complexId}
+              profileId={user?._id}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="4">
@@ -133,6 +139,9 @@ function Maintenance() {
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
               buildingId={query?.buildingId}
+              companyId={userCompany?.company?._id}
+              complexId={query?.complexId}
+              profileId={user?._id}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="5">
@@ -151,6 +160,9 @@ function Maintenance() {
               columns={defaultColumns}
               onClearSearch={handleClearSearch}
               buildingId={query?.buildingId}
+              companyId={userCompany?.company?._id}
+              complexId={query?.complexId}
+              profileId={user?._id}
             />
           </Tabs.TabPanel>
         </Tabs.TabPanels>

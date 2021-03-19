@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
 import { useQuery } from '@apollo/client'
 
@@ -15,13 +15,14 @@ function TicketsTab({
   staffId,
   buildingId,
   categoryId,
-  searchText
+  searchText,
+  isMutationSuccess
 }) {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
-  console.log({ staffId })
-  const { data: issues, loading } = useQuery(GET_ISSUES_BY_STATUS, {
+
+  const { data: issues, loading, refetch } = useQuery(GET_ISSUES_BY_STATUS, {
     variables: {
       where: {
         status: [type],
@@ -34,6 +35,12 @@ function TicketsTab({
       offset
     }
   })
+
+  useEffect(() => {
+    if (isMutationSuccess) {
+      refetch()
+    }
+  }, [isMutationSuccess])
 
   const ticketsData = useMemo(() => {
     return {
@@ -149,7 +156,8 @@ TicketsTab.propTypes = {
   staffId: P.string,
   buildingId: P.string,
   categoryId: P.string,
-  searchText: P.string
+  searchText: P.string,
+  isMutationSuccess: P.bool
 }
 
 export default TicketsTab

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import P from 'prop-types'
-import { useLazyQuery } from '@apollo/client'
+import { useLazyQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -10,12 +10,13 @@ import Search from '@app/components/globals/SearchControl'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import { Card } from '@app/components/globals'
 import axios from '@app/utils/axios'
+import showToast from '@app/utils/toast'
 import CreateTicketModal from './CreateTicketModal'
 import TicketsTable from './TicketsTab'
 import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
-import { GET_UNITS } from '../queries'
+import { GET_UNITS, CREATE_ISSUE } from '../queries'
 
 export const createTicketValidation = yup.object().shape({
   unitNumber: yup.string().required(),
@@ -38,19 +39,24 @@ function Component({
   onSearchTextChange,
   onStaffChange,
   onClearStaff,
-  buildingId
+  buildingId,
+  companyId,
+  complexId,
+  profileId
 }) {
-  const { handleSubmit, control, errors, register, setValue } = useForm({
+  const { handleSubmit, control, errors, register, setValue, watch } = useForm({
     resolver: yupResolver(createTicketValidation),
     defaultValues: {
       unitNumber: '',
       requestor: '',
       category: '',
-      title: ''
+      title: '',
+      staffId: '',
+      content: ''
     }
   })
   const [showCreateTicketModal, setShowCreateTicketModal] = useState(false)
-  const [, setImageUploadedData] = useState(null)
+  const [imageUploadedData, setImageUploadedData] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [fetchUnits, { data: units }] = useLazyQuery(GET_UNITS, {
@@ -62,13 +68,47 @@ function Component({
       }
     }
   })
+  const [createIssue, { data, loading, called, error }] = useMutation(
+    CREATE_ISSUE,
+    {
+      onCompleted: () => {
+        handleShowModal()
+        showToast('success', `Ticket created.`)
+      }
+    }
+  )
   register({ name: 'embeddedFiles' })
   const handleShowModal = () => setShowCreateTicketModal(old => !old)
-  const handleOk = values => console.log({ values })
+  const handleOk = values => {
+    const {
+      unitNumber: unitId,
+      requestor: reporterAccountId,
+      category: categoryId,
+      title,
+      staff,
+      content
+    } = values
+    createIssue({
+      variables: {
+        data: {
+          buildingId,
+          content,
+          categoryId,
+          reporterAccountId,
+          unitId,
+          title,
+          companyId,
+          complexId,
+          authorAccountId: profileId,
+          assigneeAccountId: [staff?.value],
+          mediaAttachments: imageUploadedData
+        }
+      }
+    })
+  }
 
   const uploadApi = async payload => {
     const response = await axios.post('/', payload)
-
     if (response.data) {
       const imageData = response.data.map(item => {
         return {
@@ -76,7 +116,6 @@ function Component({
           type: item.mimetype
         }
       })
-
       setImageUploadedData(imageData)
     }
   }
@@ -85,23 +124,19 @@ function Component({
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
     const fileList = []
-
     if (files) {
       setIsUploading(true)
       for (const file of files) {
         const reader = new FileReader()
-
         reader.onloadend = () => {
           setImageUrls(imageUrls => [...imageUrls, reader.result])
           setIsUploading(false)
         }
         reader.readAsDataURL(file)
-
         formData.append('photos', file)
         fileList.push(file)
       }
       setValue('images', fileList)
-
       uploadApi(formData)
     }
   }
@@ -121,7 +156,6 @@ function Component({
         value: unit._id
       }))
     }
-
     return []
   })
 
@@ -193,6 +227,7 @@ function Component({
             buildingId={buildingId}
             categoryId={category}
             searchText={searchText}
+            isMutationSuccess={called && !loading & data & !error}
           />
         }
         className="rounded-t-none"
@@ -203,7 +238,8 @@ function Component({
         onOk={handleSubmit(handleOk)}
         form={{
           errors,
-          control
+          control,
+          watch
         }}
         loading={isUploading}
         imageURLs={imageUrls}
@@ -233,7 +269,10 @@ Component.propTypes = {
   onClearStaff: P.func,
   type: P.string,
   columns: P.array,
-  buildingId: P.string
+  buildingId: P.string,
+  complexId: P.string,
+  companyId: P.string,
+  profileId: P.string
 }
 
 export default Component

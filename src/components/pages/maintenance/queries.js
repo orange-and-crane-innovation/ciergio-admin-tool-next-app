@@ -147,3 +147,35 @@ export const GET_STAFFS = gql`
     }
   }
 `
+
+export const GET_RESIDENTS = gql`
+  query getResidents($where: GetAccountsParams) {
+    getAccounts(where: $where, limit: 100, skip: 0) {
+      count
+      skip
+      limit
+      data {
+        _id
+        accountType
+        user {
+          _id
+          firstName
+          lastName
+          __typename
+        }
+        __typename
+      }
+    }
+  }
+`
+
+export const CREATE_ISSUE = gql`
+  mutation createTicket($data: InputCreateIssue) {
+    createIssue(data: $data) {
+      _id
+      message
+      processId
+      __typename
+    }
+  }
+`
