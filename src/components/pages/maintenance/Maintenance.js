@@ -8,6 +8,34 @@ import TicketContent from './components/TicketTabContent'
 import { unassignedColumns, defaultColumns } from './columns'
 import { GET_STAFFS, GET_BUILDING } from './queries'
 
+const tabs = [
+  {
+    title: 'Unassigned',
+    status: 'unassigned',
+    columns: unassignedColumns
+  },
+  {
+    title: 'In Progress',
+    status: 'ongoing',
+    columns: defaultColumns
+  },
+  {
+    title: 'On Hold',
+    status: 'onhold',
+    columns: defaultColumns
+  },
+  {
+    title: 'Resolved',
+    status: 'resolved',
+    columns: defaultColumns
+  },
+  {
+    title: 'Cancelled',
+    status: 'cancelled',
+    columns: defaultColumns
+  }
+]
+
 function Maintenance() {
   const { query } = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -62,118 +90,36 @@ function Maintenance() {
         {buildingName ? `${buildingName} Tickets` : null}
       </h1>
       <Tickets buildingId={query?.buildingId} />
-      <Tabs defaultTab="1">
+      <Tabs defaultTab="unassigned">
         <Tabs.TabLabels>
-          <Tabs.TabLabel id="1">Unassigned</Tabs.TabLabel>
-          <Tabs.TabLabel id="2">In Progress</Tabs.TabLabel>
-          <Tabs.TabLabel id="3">On Hold</Tabs.TabLabel>
-          <Tabs.TabLabel id="4">Resolved</Tabs.TabLabel>
-          <Tabs.TabLabel id="5">Cancelled</Tabs.TabLabel>
+          {tabs.map(tab => (
+            <Tabs.TabLabel key={tab.status} id={tab.status}>
+              {tab.title}
+            </Tabs.TabLabel>
+          ))}
         </Tabs.TabLabels>
         <Tabs.TabPanels>
-          <Tabs.TabPanel id="1">
-            <TicketContent
-              title="Unassigned Tickets"
-              type="unassigned"
-              onCategoryChange={handleCategoryChange}
-              onClearCategory={handleClearCategory}
-              onSearchTextChange={handleSearchTextChange}
-              onStaffChange={handleStaffChange}
-              onClearStaff={handleClearStaff}
-              staffOptions={staffOptions}
-              searchText={debouncedSearchText}
-              category={category}
-              staff={staff}
-              columns={unassignedColumns}
-              onClearSearch={handleClearSearch}
-              buildingId={query?.buildingId}
-              profileId={user?._id}
-            />
-          </Tabs.TabPanel>
-          <Tabs.TabPanel id="2">
-            <TicketContent
-              title="In Progress Tickets"
-              type="ongoing"
-              onCategoryChange={handleCategoryChange}
-              onClearCategory={handleClearCategory}
-              onSearchTextChange={handleSearchTextChange}
-              onStaffChange={handleStaffChange}
-              onClearStaff={handleClearStaff}
-              staffOptions={staffOptions}
-              searchText={debouncedSearchText}
-              category={category}
-              staff={staff}
-              columns={defaultColumns}
-              onClearSearch={handleClearSearch}
-              buildingId={query?.buildingId}
-              companyId={userCompany?.company?._id}
-              complexId={query?.complexId}
-              profileId={user?._id}
-            />
-          </Tabs.TabPanel>
-          <Tabs.TabPanel id="3">
-            <TicketContent
-              title="On Hold Tickets"
-              type="onhold"
-              onCategoryChange={handleCategoryChange}
-              onClearCategory={handleClearCategory}
-              onSearchTextChange={handleSearchTextChange}
-              onStaffChange={handleStaffChange}
-              onClearStaff={handleClearStaff}
-              staffOptions={staffOptions}
-              searchText={debouncedSearchText}
-              category={category}
-              staff={staff}
-              columns={defaultColumns}
-              onClearSearch={handleClearSearch}
-              buildingId={query?.buildingId}
-              companyId={userCompany?.company?._id}
-              complexId={query?.complexId}
-              profileId={user?._id}
-            />
-          </Tabs.TabPanel>
-          <Tabs.TabPanel id="4">
-            <TicketContent
-              title="Resolved Tickets"
-              type="resolved"
-              onCategoryChange={handleCategoryChange}
-              onClearCategory={handleClearCategory}
-              onSearchTextChange={handleSearchTextChange}
-              onStaffChange={handleStaffChange}
-              onClearStaff={handleClearStaff}
-              staffOptions={staffOptions}
-              searchText={debouncedSearchText}
-              category={category}
-              staff={staff}
-              columns={defaultColumns}
-              onClearSearch={handleClearSearch}
-              buildingId={query?.buildingId}
-              companyId={userCompany?.company?._id}
-              complexId={query?.complexId}
-              profileId={user?._id}
-            />
-          </Tabs.TabPanel>
-          <Tabs.TabPanel id="5">
-            <TicketContent
-              title="Cancelled Tickets"
-              type="cancelled"
-              onCategoryChange={handleCategoryChange}
-              onClearCategory={handleClearCategory}
-              onSearchTextChange={handleSearchTextChange}
-              onStaffChange={handleStaffChange}
-              onClearStaff={handleClearStaff}
-              staffOptions={staffOptions}
-              searchText={debouncedSearchText}
-              category={category}
-              staff={staff}
-              columns={defaultColumns}
-              onClearSearch={handleClearSearch}
-              buildingId={query?.buildingId}
-              companyId={userCompany?.company?._id}
-              complexId={query?.complexId}
-              profileId={user?._id}
-            />
-          </Tabs.TabPanel>
+          {tabs.map(tab => (
+            <Tabs.TabPanel key={tab.status} id={tab.status}>
+              <TicketContent
+                title={tab.title}
+                type={tab.status}
+                onCategoryChange={handleCategoryChange}
+                onClearCategory={handleClearCategory}
+                onSearchTextChange={handleSearchTextChange}
+                onStaffChange={handleStaffChange}
+                onClearStaff={handleClearStaff}
+                staffOptions={staffOptions}
+                searchText={debouncedSearchText}
+                category={category}
+                staff={staff}
+                columns={tab.columns}
+                onClearSearch={handleClearSearch}
+                buildingId={query?.buildingId}
+                profileId={user?._id}
+              />
+            </Tabs.TabPanel>
+          ))}
         </Tabs.TabPanels>
       </Tabs>
     </section>
