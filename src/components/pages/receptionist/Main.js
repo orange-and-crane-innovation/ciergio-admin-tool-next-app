@@ -1,13 +1,12 @@
-// import Visitors from './visitors'
-// import Deliveries from './deliveries'
-// import Services from './services'
-// import PickUps from './pick-ups'
 import React, { useState } from 'react'
 import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import styles from './main.module.css'
-import { DateInput } from '@app/components/datetime'
+import DateAndSearch from './DateAndSearch'
+import LogBook from './logbook'
+import Cancelled from './cancelled'
+import UpComing from './upcoming'
 
 const _ = require('lodash')
 
@@ -30,23 +29,13 @@ export default function Main() {
   const routerName = _.split(router.pathname, '/')[2]
   const [selectedDate, setSelectedDate] = useState(new Date())
 
-  const handleDateChange = e => {
-    setSelectedDate(e)
-  }
-
   return (
     <>
       <div className={styles.ReceptionistContainer}>
         <h1 className={styles.ReceptionistHeading}>
           Some building {routerName}
         </h1>
-        <div className={styles.ReceotionistTableHeader}>
-          <DateInput
-            date={selectedDate}
-            onDateChange={handleDateChange}
-            dateFormat="MMMM DD, YYYY"
-          />
-        </div>
+
         <Tabs defaultTab="1">
           <Tabs.TabLabels>
             {SETTINGS[routerName] &&
@@ -62,6 +51,19 @@ export default function Main() {
                 )
               })}
           </Tabs.TabLabels>
+          <Tabs.TabPanels>
+            <Tabs.TabPanel id="1">
+              <DateAndSearch />
+              <LogBook />
+            </Tabs.TabPanel>
+            <Tabs.TabPanel id="2">
+              <UpComing />
+            </Tabs.TabPanel>
+            <Tabs.TabPanel id="3">
+              <DateAndSearch />
+              <Cancelled />
+            </Tabs.TabPanel>
+          </Tabs.TabPanels>
         </Tabs>
       </div>
     </>

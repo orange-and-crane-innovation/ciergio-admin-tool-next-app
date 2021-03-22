@@ -5,6 +5,54 @@
   .ReceptionistHeading {
     @apply mb-2;
     @apply font-heading font-black capitalize;
-    @apply text-neutral-dark text-3xl leading-10;
+    @apply text-3xl leading-10;
+  }
+
+  .ReceotionistTableHeader {
+  }
+}
+
+.DateTimeContainer {
+  @apply flex flex-col w-1/6;
+
+  .DateTimeHeader {
+    @apply font-heading font-bold text-gray-400 capitalize text-xl leading-10;
+  }
+}
+
+.SearchControlTextContainer {
+  @apply flex justify-center items-center;
+}
+
+.DataTime {
+  background-color: #fafafa;
+  border: 0;
+  border-bottom: 1px grey solid;
+  outline: none;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  @apply font-bold text-3xl;
+
+  &:hover {
+    outline: none;
+    border: 0;
+    border-bottom: 1px grey solid;
+  }
+}
+
+.ReceptionistCardHeaderContainer {
+  @apply flex flex-row w-full justify-between;
+
+  .ReceptionistCardHeader {
+    @apply text-xl text-black;
+  }
+
+  .ReceptionistButtonCard {
+    @apply mx-0 px-0;
+
+    button {
+      @apply mx-1;
+    }
   }
 }
