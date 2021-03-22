@@ -1,0 +1,10 @@
+.ReceptionistContainer {
+  @apply mb-5;
+  @apply flex flex-col items-start justify-between mt-6;
+
+  .ReceptionistHeading {
+    @apply mb-2;
+    @apply font-heading font-black capitalize;
+    @apply text-neutral-dark text-3xl leading-10;
+  }
+}
