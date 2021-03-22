@@ -218,6 +218,33 @@ const navigation = [
         ]
       },
       {
+        url: '/receptionist',
+        icon: 'ciergio-list',
+        title: 'Guest and Delivery',
+        items: [
+          {
+            url: '/receptionist/visitors',
+            title: 'Visitors',
+            items: []
+          },
+          {
+            url: '/receptionist/deliveries',
+            title: 'Deliveries',
+            items: []
+          },
+          {
+            url: '/receptionist/pick-ups',
+            title: 'Pick-Ups',
+            items: []
+          },
+          {
+            url: '/receptionist/services',
+            title: 'Services',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/my-members',
         icon: 'ciergio-employees',
         title: 'My Members',
