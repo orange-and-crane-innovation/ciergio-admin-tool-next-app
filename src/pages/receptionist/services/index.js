@@ -1,7 +1,14 @@
-import Servces from '@app/components/pages/receptionist'
+import Services from '@app/components/pages/receptionist'
+import Page from '@app/permissions/page'
 
 function ReceptionistServicesPage() {
-  return <Servces />
+  return (
+    <Page
+      route="/receptionist"
+      nestedRoute="/receptionist/services"
+      page={<Services />}
+    />
+  )
 }
 
 export default ReceptionistServicesPage
