@@ -213,13 +213,16 @@ function Ticket() {
                             <h3 className="text-base font-medium mb-2">
                               Attached File
                             </h3>
-                            {ticket.mediaAttachments.map((media, index) => (
-                              <img
-                                key={media._id}
-                                src={media.url}
-                                alt={`${ticket?.title}-${index}`}
-                              />
-                            ))}
+                            <div className="flex">
+                              {ticket.mediaAttachments.map((media, index) => (
+                                <img
+                                  key={media._id}
+                                  src={media.url}
+                                  alt={`${ticket?.title}-${index}`}
+                                  className="w-20 rounded mr-2"
+                                />
+                              ))}
+                            </div>
                           </div>
                         ) : null}
                       </div>
