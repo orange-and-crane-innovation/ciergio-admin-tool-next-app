@@ -364,8 +364,8 @@ export const FOLLOW_ISSUE = gql`
   }
 `
 
-export const RESOLVE_ISSUE = gql`
-  mutation resolveIssue($id: String, $data: InputUpdateIssue) {
+export const UPDATE_ISSUE = gql`
+  mutation updateIssue($id: String, $data: InputUpdateIssue) {
     updateIssue(id: $id, data: $data) {
       _id
       processId

@@ -8,12 +8,13 @@ import Button from '@app/components/button'
 import Tabs from '@app/components/tabs'
 import { Card } from '@app/components/globals'
 import { AiOutlineUserAdd } from 'react-icons/ai'
+import { FaRegEnvelopeOpen } from 'react-icons/fa'
 import {
   GET_ISSUE_DETAILS,
   GET_ISSUE_COMMENTS,
   POST_ISSUE_COMMENT,
   FOLLOW_ISSUE,
-  RESOLVE_ISSUE
+  UPDATE_ISSUE
 } from '../../queries'
 import Comments from '../Comments'
 import TicketHistory from '../TicketHistory'
@@ -29,6 +30,7 @@ function Ticket() {
   const [showHoldTicketModal, setShowHoldTicketModal] = useState(false)
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false)
   const [showAddStaffModal, setShowAddStaffModal] = useState(false)
+  const [updateType, setUpdateType] = useState(null)
   const { data: issue, refetch: refetchIssue } = useQuery(GET_ISSUE_DETAILS, {
     variables: {
       id: ticketId
@@ -67,16 +69,34 @@ function Ticket() {
     }
   )
 
-  const [resolveIssue, { loading: isResolvingIssue }] = useMutation(
-    RESOLVE_ISSUE,
+  const [updateIssue, { loading: isUpdatingIssue }] = useMutation(
+    UPDATE_ISSUE,
     {
-      onCompleted: () => {
-        showToast('success', 'Ticket resolved.')
+      onCompleted: data => {
+        console.log({ data })
+        if (updateType === 'resolve') {
+          showToast('success', 'Ticket resolved.')
+        }
+        if (updateType === 'hold') {
+          handleHoldTicket()
+          showToast('success', 'Ticket On hold.')
+        }
+        if (updateType === 'cancel') {
+          handleCancelTicket()
+          showToast('success', 'Ticket Cancelled.')
+        }
+        if (updateType === 'resume') {
+          showToast('success', 'Ticket Resumed.')
+        }
+        if (updateType === 'reopen') {
+          showToast('success', 'Ticket Reopened.')
+        }
         refetchIssue({
           variables: {
             id: ticketId
           }
         })
+        setUpdateType(null)
       }
     }
   )
@@ -96,9 +116,29 @@ function Ticket() {
   const handleCancelTicket = () => setShowCancelTicketModal(old => !old)
   const handleHoldTicket = () => setShowHoldTicketModal(old => !old)
   const handleAddStaff = () => setShowAddStaffModal(old => !old)
-  const handleCancelSubmit = values => console.log('cancel', values)
+  const handleCancelSubmit = values => {
+    setUpdateType('cancel')
+    updateIssue({
+      variables: {
+        id: ticketId,
+        data: {
+          status: 'cancelled',
+          notes: values?.reason
+        }
+      }
+    })
+  }
   const handleHoldSubmit = values => {
-    console.log('hold', values)
+    setUpdateType('hold')
+    updateIssue({
+      variables: {
+        id: ticketId,
+        data: {
+          status: 'onhold',
+          notes: values?.reason
+        }
+      }
+    })
   }
   const handleAddStaffSubmit = values => console.log('add staff', values)
   const ticket = issue?.getIssue?.issue
@@ -116,18 +156,40 @@ function Ticket() {
       : 'Cancelled'
   }, [ticket?.status])
 
-  const dropdownData = [
-    {
-      label: 'Put Ticket on Hold',
-      icon: <span className="ciergio-pause" />,
-      function: () => setShowHoldTicketModal(old => !old)
-    },
-    {
-      label: 'Cancel Ticket',
-      icon: <span className="ciergio-x" />,
-      function: () => setShowCancelTicketModal(old => !old)
-    }
-  ]
+  let dropdownData = []
+
+  if (ticket?.status === 'cancelled') {
+    dropdownData = [
+      {
+        label: 'Reopen',
+        icon: <FaRegEnvelopeOpen />,
+        function: () => {
+          setUpdateType('reopen')
+          updateIssue({
+            variables: {
+              id: ticketId,
+              status: 'reopen'
+            }
+          })
+        }
+      }
+    ]
+  }
+
+  if (ticket?.status !== 'cancelled') {
+    dropdownData = [
+      {
+        label: 'Put Ticket on Hold',
+        icon: <span className="ciergio-pause" />,
+        function: () => setShowHoldTicketModal(old => !old)
+      },
+      {
+        label: 'Cancel Ticket',
+        icon: <span className="ciergio-x" />,
+        function: () => setShowCancelTicketModal(old => !old)
+      }
+    ]
+  }
 
   return (
     <section className="content-wrap">
@@ -153,7 +215,8 @@ function Ticket() {
                 primary
                 label="Resolve Ticket"
                 onClick={() => {
-                  resolveIssue({
+                  setUpdateType('resolve')
+                  updateIssue({
                     variables: {
                       id: ticketId,
                       data: {
@@ -162,7 +225,26 @@ function Ticket() {
                     }
                   })
                 }}
-                loading={isResolvingIssue}
+                loading={isUpdatingIssue}
+                className="ml-2"
+              />
+            ) : null}
+            {ticket?.status === 'onhold' ? (
+              <Button
+                primary
+                label="Resume Ticket"
+                onClick={() => {
+                  setUpdateType('resume')
+                  updateIssue({
+                    variables: {
+                      id: ticketId,
+                      data: {
+                        status: 'ongoing'
+                      }
+                    }
+                  })
+                }}
+                loading={isUpdatingIssue}
                 className="ml-2"
               />
             ) : null}
