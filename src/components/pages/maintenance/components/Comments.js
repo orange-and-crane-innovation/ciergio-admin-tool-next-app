@@ -1,31 +1,26 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import P from 'prop-types'
 import FormInput from '@app/components/forms/form-input'
+import dayjs from '@app/utils/date'
 
-function Comments() {
-  const [comments, setComments] = useState([])
+function Comments({ data, onEnterComment }) {
+  const [comments, setComments] = useState(data?.data)
   const [comment, setComment] = useState('')
-
   const handleCommentChange = e => setComment(e.target.value)
-  const handleEnterComment = () => {
-    setComments(old => [
-      {
-        firstName: 'Anne',
-        lastName: 'Cupcake',
-        text: comment,
-        date: new Date()
-      },
-      ...old
-    ])
-    setComment('')
-  }
+
+  useEffect(() => {
+    setComments(data?.data)
+  }, [data])
 
   return (
     <>
       <CommentBox
         text={comment}
         onChange={handleCommentChange}
-        onEnter={handleEnterComment}
+        onEnter={() => {
+          onEnterComment(comment)
+          setComment('')
+        }}
         user={{
           firstName: 'Anne',
           lastName: 'Cupcake'
@@ -35,9 +30,9 @@ function Comments() {
         Sorted by <span className="font-bold">Newest</span>
       </h3>
       <div className="bg-white p-4 rounded">
-        {comments?.length > 0
-          ? comments.map(comment => (
-              <div key={comment.date} className="mb-6">
+        {data?.count > 0
+          ? comments?.map(comment => (
+              <div key={comment._id} className="mb-6">
                 <Comment comment={comment} />
               </div>
             ))
@@ -53,6 +48,7 @@ const CommentBox = ({ text, onChange, onEnter, user }) => (
       <img
         src={`https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=48`}
         alt="comment-avatar"
+        className="w-10 h-10 rounded-full"
       />
     </div>
     <div className="w-full ml-2 h-16">
@@ -74,18 +70,26 @@ const CommentBox = ({ text, onChange, onEnter, user }) => (
 )
 
 const Comment = ({ comment }) => {
+  const user = comment?.user
+  const avatar =
+    user?.avatar ||
+    `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=32`
+
   return (
     <div className="flex w-full">
-      <div className="mr-4 flex items-center">
+      <div className="mr-4 flex items-start">
         <img
-          src={`https://ui-avatars.com/api/?name=${comment?.firstName}+${comment?.lastName}&rounded=true&size=32`}
+          src={avatar}
           alt="comment-avatar"
+          className="w-10 h-10 rounded-full"
         />
       </div>
       <div className="flex flex-col justify-center">
-        <p className="font-bold text-base mb-1">{`${comment.firstName} ${comment.lastName}`}</p>
-        <p className="text-base">{comment.text}</p>
-        <p className="text-gray-600">{comment.date.toString()}</p>
+        <p className="font-bold text-base mb-1">{`${user.firstName} ${user.lastName}`}</p>
+        <p className="text-base">{comment.comment}</p>
+        <p className="text-gray-600">
+          {dayjs(comment.createdAt).format('MMM DD, YYYY hh:mm A')}
+        </p>
       </div>
     </div>
   )
@@ -100,6 +104,11 @@ CommentBox.propTypes = {
 
 Comment.propTypes = {
   comment: P.object
+}
+
+Comments.propTypes = {
+  data: P.object.isRequired,
+  onEnterComment: P.func.isRequired
 }
 
 export default Comments

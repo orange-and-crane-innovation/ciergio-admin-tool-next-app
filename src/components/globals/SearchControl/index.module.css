@@ -2,7 +2,7 @@
   @apply relative w-full;
 
   .SearchControlIcon {
-    @apply absolute top-4 right-4;
+    @apply absolute top-3 right-4;
   }
 }
 

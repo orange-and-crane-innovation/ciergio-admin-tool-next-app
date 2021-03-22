@@ -316,6 +316,8 @@ const rules = {
         '/contact-us',
         '/notifications',
         '/maintenance',
+        '/maintenance/complexes',
+        '/maintenance/buildings',
         '/dues'
       ],
       allowedNestedRoutes: [
@@ -390,6 +392,8 @@ const rules = {
         '/contact-us',
         '/notifications',
         '/maintenance',
+        '/maintenance/complexes',
+        '/maintenance/buildings',
         '/dues'
       ],
       allowedNestedRoutes: [
@@ -469,6 +473,8 @@ const rules = {
         '/contact-us',
         '/notifications',
         '/maintenance',
+        '/maintenance/complexes',
+        '/maintenance/buildings',
         '/dues',
         '/guest-and-deliveries',
         '/receptionist',
