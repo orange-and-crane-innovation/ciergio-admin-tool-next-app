@@ -1,11 +1,16 @@
 import P from 'prop-types'
 import Modal from '@app/components/modal'
 import FormSelect from '@app/components/forms/form-select'
-import { Controller } from 'react-hook-form'
 
-function AddStaffModal({ open, onOk, onCancel, loading, form, options }) {
-  const { errors, control } = form
-
+function AddStaffModal({
+  open,
+  onOk,
+  onCancel,
+  loading,
+  onSelectStaff,
+  selectedStaff,
+  options
+}) {
   return (
     <Modal
       title="Add staff to this ticket"
@@ -18,21 +23,16 @@ function AddStaffModal({ open, onOk, onCancel, loading, form, options }) {
         loading
       }}
     >
-      <Controller
-        control={control}
-        name="staff"
-        render={({ name, value, onChange }) => (
-          <FormSelect
-            label="Staff Name"
-            name={name}
-            placeholder="Choose staff name"
-            options={options}
-            value={value}
-            onChange={onChange}
-            error={errors?.staff?.message}
-          />
-        )}
-      />
+      <div>
+        <FormSelect
+          label="Staff Name"
+          name={name}
+          placeholder="Choose staff name"
+          options={options}
+          value={selectedStaff}
+          onChange={e => onSelectStaff(e)}
+        />
+      </div>
     </Modal>
   )
 }
@@ -42,7 +42,8 @@ AddStaffModal.propTypes = {
   onOk: P.func.isRequired,
   onCancel: P.func.isRequired,
   loading: P.bool,
-  form: P.object.isRequired,
+  onSelectStaff: P.func,
+  selectedStaff: P.object,
   options: P.array.isRequired
 }
 

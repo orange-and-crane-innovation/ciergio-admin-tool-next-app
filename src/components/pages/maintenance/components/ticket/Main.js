@@ -7,14 +7,16 @@ import showToast from '@app/utils/toast'
 import Button from '@app/components/button'
 import Tabs from '@app/components/tabs'
 import { Card } from '@app/components/globals'
-import { AiOutlineUserAdd } from 'react-icons/ai'
+import EmptyStaff from '../EmptyStaff'
+import AssignedStaffs from '../AssignedStaffs'
 import { FaRegEnvelopeOpen } from 'react-icons/fa'
 import {
   GET_ISSUE_DETAILS,
   GET_ISSUE_COMMENTS,
   POST_ISSUE_COMMENT,
   FOLLOW_ISSUE,
-  UPDATE_ISSUE
+  UPDATE_ISSUE,
+  GET_STAFFS
 } from '../../queries'
 import Comments from '../Comments'
 import TicketHistory from '../TicketHistory'
@@ -27,10 +29,15 @@ function Ticket() {
   const { handleSubmit, errors, control, register } = useForm()
   const router = useRouter()
   const ticketId = router?.query?.ticket
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const userCompany = user?.accounts?.data?.find(
+    account => account?.accountType === 'company_admin'
+  )
   const [showHoldTicketModal, setShowHoldTicketModal] = useState(false)
   const [showCancelTicketModal, setShowCancelTicketModal] = useState(false)
   const [showAddStaffModal, setShowAddStaffModal] = useState(false)
   const [updateType, setUpdateType] = useState(null)
+  const [selectedStaff, setSelectedStaff] = useState(null)
   const { data: issue, refetch: refetchIssue } = useQuery(GET_ISSUE_DETAILS, {
     variables: {
       id: ticketId
@@ -44,6 +51,18 @@ function Ticket() {
       }
     }
   )
+
+  const { data: staffs } = useQuery(GET_STAFFS, {
+    enabled: issue?.getIssue?.issue,
+    variables: {
+      where: {
+        accountTypes: ['company_admin', 'complex_admin'],
+        companyId: userCompany?.company?._id,
+        complexId: issue?.getIssue?.issue?.complex?._id,
+        buildingId: issue?.getIssue?.issue?.complex?._id
+      }
+    }
+  })
 
   const [postComment] = useMutation(POST_ISSUE_COMMENT, {
     onCompleted: () => {
@@ -91,6 +110,9 @@ function Ticket() {
         if (updateType === 'reopen') {
           showToast('success', 'Ticket Reopened.')
         }
+        if (updateType === 'assign-staff') {
+          handleAddStaff()
+        }
         refetchIssue({
           variables: {
             id: ticketId
@@ -115,7 +137,10 @@ function Ticket() {
 
   const handleCancelTicket = () => setShowCancelTicketModal(old => !old)
   const handleHoldTicket = () => setShowHoldTicketModal(old => !old)
-  const handleAddStaff = () => setShowAddStaffModal(old => !old)
+  const handleAddStaff = () => {
+    if (selectedStaff) setSelectedStaff(null)
+    setShowAddStaffModal(old => !old)
+  }
   const handleCancelSubmit = values => {
     setUpdateType('cancel')
     updateIssue({
@@ -140,7 +165,17 @@ function Ticket() {
       }
     })
   }
-  const handleAddStaffSubmit = values => console.log('add staff', values)
+  const handleAddStaffSubmit = () => {
+    setUpdateType('assign-staff')
+    updateIssue({
+      variables: {
+        id: ticketId,
+        data: {
+          assigneeAccountId: [selectedStaff.value]
+        }
+      }
+    })
+  }
   const ticket = issue?.getIssue?.issue
   const ticketComments = comments?.getIssue?.issue?.comments
   const buttonLabel = useMemo(() => {
@@ -190,6 +225,26 @@ function Ticket() {
       }
     ]
   }
+
+  const staffOptions = useMemo(() => {
+    if (staffs?.getRepairsAndMaintenanceStaffs?.data?.length > 0) {
+      return staffs?.getRepairsAndMaintenanceStaffs?.data.map(staff => {
+        const user = staff.user
+        return {
+          label: (
+            <p>
+              {`${user.firstName} ${user.lastName} `}
+              <span className="capitalize text-sm">
+                {staff.accountType.replace('_', ' ')}
+              </span>
+            </p>
+          ),
+          value: staff._id
+        }
+      })
+    }
+    return []
+  }, [staffs?.getRepairsAndMaintenanceStaffs])
 
   return (
     <section className="content-wrap">
@@ -335,7 +390,21 @@ function Ticket() {
                       <h4 className="text-base font-medium mb-2">
                         Staff in this ticket
                       </h4>
-                      <div
+                      {issue?.getIssue?.issue?.assignee?.length > 0 ? (
+                        <div className="flex">
+                          <AssignedStaffs
+                            staffs={issue.getIssue.issue.assignee}
+                          />
+                          <EmptyStaff
+                            onClick={() => setShowAddStaffModal(old => !old)}
+                          />
+                        </div>
+                      ) : (
+                        <EmptyStaff
+                          onClick={() => setShowAddStaffModal(old => !old)}
+                        />
+                      )}
+                      {/* <div
                         role="button"
                         tabIndex={0}
                         onKeyDown={() => {}}
@@ -348,7 +417,7 @@ function Ticket() {
                         <p className="font-bold text-base text-blue-500">
                           Add Staff
                         </p>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -397,12 +466,10 @@ function Ticket() {
       <AddStaffModal
         open={showAddStaffModal}
         onCancel={handleAddStaff}
-        onOk={handleSubmit(handleAddStaffSubmit)}
-        form={{
-          register,
-          errors,
-          control
-        }}
+        onOk={handleAddStaffSubmit}
+        options={staffOptions}
+        onSelectStaff={setSelectedStaff}
+        selectedStaff={selectedStaff}
       />
     </section>
   )
