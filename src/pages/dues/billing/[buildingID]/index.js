@@ -1,5 +1,6 @@
 import Billing from '@app/components/pages/dues'
+import Page from '@app/permissions/page'
 
 export default function DynamicUnsentPage() {
-  return <Billing />
+  return <Page route="/dues" nestedRoute="/dues/billing" page={<Billing />} />
 }

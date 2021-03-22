@@ -32,7 +32,7 @@ const Can = ({ perform, yes, no }) => {
     [user]
   )
 
-  return check(systemType, profile?.role, perform) ? yes : no
+  return check(systemType?.toLowerCase(), profile?.role, perform) ? yes : no
 }
 
 Can.propTypes = {

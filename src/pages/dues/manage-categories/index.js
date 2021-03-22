@@ -9,6 +9,7 @@ export default function Categories() {
   return (
     <Page
       route="/dues"
+      nestedRoute="/dues/manage-categories"
       page={
         <ManageCategories
           complexID={complexID}

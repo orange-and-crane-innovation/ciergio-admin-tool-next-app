@@ -19,6 +19,16 @@ const navigation = [
             items: []
           },
           {
+            url: '/properties/complex',
+            title: 'My Complex',
+            items: []
+          },
+          {
+            url: '/properties/building',
+            title: 'My Building',
+            items: []
+          },
+          {
             url: '/properties/manage/unit-types',
             title: 'Manage Unit Types',
             items: []
@@ -92,11 +102,6 @@ const navigation = [
         icon: 'ciergio-list',
         title: 'Attractions and Events',
         items: [
-          {
-            url: '/attractions-events/manage',
-            title: 'Manage Categories',
-            items: []
-          },
           {
             url: '/attractions-events',
             title: 'View All Posts',

@@ -1,27 +1,40 @@
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import NotFound from '@app/pages/404'
-
 import rules from './rules'
+
+const _ = require('lodash')
 
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
-const check = (type, role, action) => {
-  const permissions = rules[type][role].allowedRoutes
+const check = (type, role, route, nestedRoute) => {
+  const allowedPageRoutes = rules[type][role].allowedRoutes
+  const allowedNestedPageRoutes =
+    nestedRoute && rules[type][role].allowedNestedRoutes
 
-  if (!permissions) {
+  if (!allowedPageRoutes) {
     console.log("ERROR: one of the provided params don't exist!")
     return false
   }
 
-  if (permissions.includes(action)) {
-    return true
+  if (!_.isEmpty(allowedNestedPageRoutes)) {
+    if (
+      _.includes(allowedPageRoutes, route) &&
+      _.includes(allowedNestedPageRoutes, nestedRoute)
+    ) {
+      return true
+    }
+  } else {
+    if (_.includes(allowedPageRoutes, route)) {
+      return true
+    }
   }
 
   return false
 }
 
-const Page = ({ route, page }) => {
+const Page = ({ route, nestedRoute, page }) => {
+  console.log(nestedRoute)
   const [user] = useState(
     JSON.parse(localStorage.getItem('profile')) || undefined
   )
@@ -33,7 +46,7 @@ const Page = ({ route, page }) => {
     [user]
   )
 
-  return check(systemType, profile?.role, route) ? (
+  return check(systemType, profile?.role, route, nestedRoute) ? (
     page
   ) : (
     <div className="w-full flex justify-center mt-10">
@@ -42,8 +55,13 @@ const Page = ({ route, page }) => {
   )
 }
 
+Page.defaultProps = {
+  nestedRoute: P.null
+}
+
 Page.propTypes = {
   route: P.string,
+  nestedRoute: P.oneOfType([P.null, P.string]),
   page: P.oneOfType([P.element, P.node])
 }
 

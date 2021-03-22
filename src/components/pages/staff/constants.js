@@ -39,18 +39,6 @@ export const roles = [
   {
     label: 'Complex Admin',
     value: COMPLEX_ADMIN
-  },
-  {
-    label: 'Building Administrator',
-    value: BUILDING_ADMIN
-  },
-  {
-    label: 'Unit Owner',
-    value: UNIT_OWNER
-  },
-  {
-    label: 'Receptionist',
-    value: RECEPTIONIST
   }
 ]
 

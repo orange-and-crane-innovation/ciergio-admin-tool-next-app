@@ -1,5 +1,4 @@
 import Overview from '@app/components/pages/dues/Overview'
-
 import Page from '@app/permissions/page'
 
 export default function OverviewPage() {
@@ -10,6 +9,7 @@ export default function OverviewPage() {
   return (
     <Page
       route="/dues"
+      nestedRoute="/dues/overview"
       page={
         <Overview
           complexID={complexID}
