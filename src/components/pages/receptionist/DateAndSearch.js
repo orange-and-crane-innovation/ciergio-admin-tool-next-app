@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Datetime from 'react-datetime'
+import Button from '@app/components/button'
 import 'react-datetime/css/react-datetime.css'
 import styles from './main.module.css'
 import FormInput from '@app/components/forms/form-input'
@@ -23,38 +24,48 @@ function SelectDate() {
     setDate(friendlyDateTimeFormat(date, 'MMMM DD, YYYY'))
   }
 
+  const showTableData = e => {
+    e.preventDefault()
+  }
+
   return (
     <>
       <div className="flex flex-row w-full justify-between my-10">
-        <div className={styles.DateTimeContainer}>
-          <p className={styles.DateTimeHeader}>Date</p>
-          <Datetime
-            renderInput={(props, openCalendar) => (
-              <>
-                <div className="relative">
-                  <FormInput
-                    inputClassName={styles.DataTime}
-                    name="input-datetime"
-                    value={date}
-                    readOnly
-                  />
-                  <span
-                    className="ciergio-calendar absolute top-3 right-4 cursor-pointer h-full"
-                    onClick={openCalendar}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={() => {}}
-                  />
-                </div>
-              </>
-            )}
-            dateFormat="MMM DD, YYYY"
-            timeFormat={false}
-            value={date}
-            onChange={handleDateChange}
-            disabled="true"
-          />
+        <div className="flex flex-row w-full mx-4">
+          <div className={styles.DateTimeContainer}>
+            <p className={styles.DateTimeHeader}>Date</p>
+            <Datetime
+              renderInput={(props, openCalendar) => (
+                <>
+                  <div className="relative">
+                    <FormInput
+                      inputClassName={styles.DataTime}
+                      name="input-datetime"
+                      value={date}
+                      readOnly
+                    />
+                    <span
+                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer h-full"
+                      onClick={openCalendar}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={() => {}}
+                    />
+                  </div>
+                </>
+              )}
+              dateFormat="MMM DD, YYYY"
+              timeFormat={false}
+              value={date}
+              onChange={handleDateChange}
+              disabled="true"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button default label="Show" onClick={showTableData} />
+          </div>
         </div>
+
         <div className={styles.SearchControlTextContainer}>
           <SearchControl
             placeholder="Search by title"

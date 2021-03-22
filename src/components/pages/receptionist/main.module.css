@@ -7,17 +7,17 @@
     @apply font-heading font-black capitalize;
     @apply text-3xl leading-10;
   }
-
-  .ReceotionistTableHeader {
-  }
 }
 
 .DateTimeContainer {
-  @apply flex flex-col w-1/6;
+  @apply flex flex-col w-1/4;
+  margin-right: 10px;
+}
 
-  .DateTimeHeader {
-    @apply font-heading font-bold text-gray-400 capitalize text-xl leading-10;
-  }
+.DateTimeHeader {
+  @apply font-bold text-gray-400 capitalize text-xl;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .SearchControlTextContainer {
@@ -31,7 +31,6 @@
   outline: none;
   padding: 0 !important;
   margin: 0 !important;
-
   @apply font-bold text-3xl;
 
   &:hover {

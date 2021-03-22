@@ -42,7 +42,7 @@ function Upcoming() {
             />
           </div>
         }
-        content={<Table rowNames={dummyRow} items={[]} />}
+        content={<Table rowNames={dummyRow} items={{ data: [] }} />}
       />
     </>
   )

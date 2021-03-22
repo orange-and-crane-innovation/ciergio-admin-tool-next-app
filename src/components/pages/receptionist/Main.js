@@ -28,12 +28,14 @@ export default function Main() {
   const router = useRouter()
   const routerName = _.split(router.pathname, '/')[2]
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const buildingName = user?.accounts?.data[0]?.building?.name
 
   return (
     <>
       <div className={styles.ReceptionistContainer}>
         <h1 className={styles.ReceptionistHeading}>
-          Some building {routerName}
+          {buildingName && `${buildingName} ${routerName}`}
         </h1>
 
         <Tabs defaultTab="1">
