@@ -3,6 +3,7 @@ import Card from '@app/components/card'
 import styles from '../main.module.css'
 import Button from '@app/components/button'
 import { BsPlusCircle } from 'react-icons/bs'
+import P from 'prop-types'
 
 const dummyRow = [
   {
@@ -23,7 +24,7 @@ const dummyRow = [
   }
 ]
 
-function Upcoming() {
+function Upcoming({ buildingId, categoryID }) {
   const addVisitor = e => {
     e.preventDefault()
   }
@@ -46,6 +47,11 @@ function Upcoming() {
       />
     </>
   )
+}
+
+Upcoming.propTypes = {
+  buildingId: P.string.isRequired,
+  categoryId: P.string.isRequired
 }
 
 export default Upcoming

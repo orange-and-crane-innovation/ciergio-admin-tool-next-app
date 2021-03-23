@@ -4,6 +4,7 @@ import styles from '../main.module.css'
 import Button from '@app/components/button'
 import { BsPlusCircle } from 'react-icons/bs'
 import { FiPrinter, FiDownload } from 'react-icons/fi'
+import P from 'prop-types'
 
 const dummyRow = [
   {
@@ -16,7 +17,7 @@ const dummyRow = [
   }
 ]
 
-function Cancelled() {
+function Cancelled({ buildings, categoryId }) {
   const addVisitor = e => {
     e.preventDefault()
   }
@@ -43,6 +44,11 @@ function Cancelled() {
       />
     </>
   )
+}
+
+Cancelled.propTypes = {
+  buildingId: P.string.isRequired,
+  categoryId: P.string.isRequired
 }
 
 export default Cancelled
