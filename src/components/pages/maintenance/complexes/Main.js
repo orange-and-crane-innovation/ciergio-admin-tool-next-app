@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
@@ -6,6 +7,8 @@ import { useQuery } from '@apollo/client'
 import { GET_COMPLEXES } from '../queries'
 
 function Main() {
+  const router = useRouter()
+  const originPath = router?.pathname?.split('/')[1]
   const user = JSON.parse(localStorage.getItem('profile'))
   const { data, loading } = useQuery(GET_COMPLEXES, {
     variables: {
@@ -21,7 +24,13 @@ function Main() {
         data?.getComplexes?.data?.length > 0
           ? data.getComplexes.data.map(({ _id, name }) => ({
               name: (
-                <Link href={`/maintenance/buildings?complexId=${_id}`}>
+                <Link
+                  href={`/${
+                    originPath === 'residents'
+                      ? 'residents/all-residents'
+                      : originPath
+                  }/buildings?complexId=${_id}`}
+                >
                   <span className="text-secondary-500 hover:underline hover:cursor-pointer">
                     {name}
                   </span>
