@@ -7,6 +7,7 @@ import DateAndSearch from './DateAndSearch'
 import LogBook from './logbook'
 import Cancelled from './cancelled'
 import UpComing from './upcoming'
+import { GET_CATEGORIES } from './query'
 
 const _ = require('lodash')
 
@@ -29,6 +30,7 @@ export default function Main() {
   const routerName = _.split(router.pathname, '/')[2]
   const [selectedDate, setSelectedDate] = useState(new Date())
   const user = JSON.parse(localStorage.getItem('profile'))
+  const buildingId = user?.accounts?.data[0]?.building?._id
   const buildingName = user?.accounts?.data[0]?.building?.name
 
   return (

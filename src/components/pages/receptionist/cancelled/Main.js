@@ -33,7 +33,7 @@ function Cancelled() {
               <Button
                 primary
                 label="Add Visitor"
-                rightIcon={<BsPlusCircle />}
+                leftIcon={<BsPlusCircle />}
                 onClick={addVisitor}
               />
             </div>
