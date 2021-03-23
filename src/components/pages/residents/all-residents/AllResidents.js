@@ -1,38 +1,26 @@
-import React, { useState } from 'react'
+import { useState, useMemo } from 'react'
 import P from 'prop-types'
-
+import { useRouter } from 'next/router'
+import { useQuery } from '@apollo/client'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-
 import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
-
 import AddResidentModal from '../AddResidentModal'
 import Can from '@app/permissions/can'
 import Dropdown from '@app/components/dropdown'
-
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
-const floors = [
-  {
-    label: 'First Floor',
-    value: 'first-floor'
-  },
-  {
-    label: 'Second Floor',
-    value: 'second-floor'
-  },
-  {
-    label: 'Third Floor',
-    value: 'third-floor'
-  }
-]
+import { GET_RESIDENTS, GET_FLOOR_NUMBERS } from '../queries'
 
 const accountTypes = [
+  {
+    label: 'All Accounts',
+    value: null
+  },
   {
     label: 'Unit Owner',
     value: 'unit-owner'
@@ -40,10 +28,6 @@ const accountTypes = [
   {
     label: 'Relative',
     value: 'relative'
-  },
-  {
-    label: 'Other (Unregistered)',
-    value: 'other'
   }
 ]
 
@@ -61,126 +45,97 @@ const columns = [
     width: ''
   },
   {
-    Name: 'invite',
-    width: ''
-  },
-  {
     Name: '',
     width: ''
   }
 ]
 
-const data = [
-  {
-    unit_number: 101,
-    resident_name: 'Brandie Lane',
-    contact_number: '09778562090',
-    account_type: 'Unit Owner',
-    active: true
-  },
-  {
-    unit_number: 101,
-    resident_name: 'Max Murphy',
-    contact_number: '09778562090',
-    account_type: 'Relative',
-    active: false
-  },
-  {
-    unit_number: 102,
-    resident_name: 'Ralph Bell',
-    contact_number: '09778562090',
-    account_type: 'Other',
-    active: false
-  },
-  {
-    unit_number: 103,
-    resident_name: 'Victoria Miles',
-    contact_number: '09778562090',
-    account_type: 'Unit Owner',
-    active: true
-  },
-  {
-    unit_number: 103,
-    resident_name: 'Wendy Jones',
-    contact_number: '09778562090',
-    account_type: 'Staff',
-    active: true
-  },
-  {
-    unit_number: 104,
-    resident_name: 'Judith Cooper',
-    contact_number: '09778562090',
-    account_type: 'Staff',
-    active: true
-  },
-  {
-    unit_number: 105,
-    resident_name: 'Wendy Jones',
-    contact_number: '09778562090',
-    account_type: 'Unit Owner',
-    active: true
-  },
-  {
-    unit_number: 105,
-    resident_name: 'Albert Howard',
-    contact_number: '09778562090',
-    account_type: 'Housemate',
-    active: true
-  },
-  {
-    unit_number: 105,
-    resident_name: 'Priscilla Richards',
-    contact_number: '09778562090',
-    account_type: 'Housemate',
-    active: false
-  }
-]
-
 function AllResidents() {
+  const router = useRouter()
+  const { buildingId } = router?.query
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
   const [, setPageOffset] = useState(0)
 
-  const residentsData = React.useMemo(
+  const { data: residents } = useQuery(GET_RESIDENTS, {
+    variables: {
+      where: {
+        accountTypes: ['unit_owner', 'resident'],
+        sortBy: { unitName: 1 },
+        buildingId
+      }
+    }
+  })
+
+  const { data: floorNumbers } = useQuery(GET_FLOOR_NUMBERS, {
+    variables: {
+      buildingId
+    }
+  })
+
+  const floorOptions = useMemo(() => {
+    if (floorNumbers?.getFloorNumbers?.length > 0) {
+      const floors = floorNumbers.getFloorNumbers.map(floor => ({
+        label: floor,
+        value: floor
+      }))
+      return [
+        {
+          label: 'All Floors',
+          value: null
+        },
+        ...floors
+      ]
+    }
+    return []
+  })
+
+  const residentsData = useMemo(
     () => ({
-      count: 161,
+      count: residents?.getAccounts?.count || 0,
       limit: 10,
       offset: 0,
-      data: data.map(dt => {
-        const dropdownData = [
-          {
-            label: 'Resend Invite',
-            icon: <span className="ciergio-employees" />,
-            function: () => {}
-          },
-          {
-            label: 'Cancel Invite',
-            icon: <span className="ciergio-edit" />,
-            function: () => {}
-          }
-        ]
+      data:
+        residents?.getAccounts?.count > 0
+          ? residents.getAccounts.data.map(dt => {
+              const user = dt?.user
+              const dropdownData = [
+                {
+                  label: 'Resend Invite',
+                  icon: <span className="ciergio-employees" />,
+                  function: () => {}
+                },
+                {
+                  label: 'Cancel Invite',
+                  icon: <span className="ciergio-edit" />,
+                  function: () => {}
+                }
+              ]
 
-        return {
-          unitNumber: dt.unit_number,
-          name: dt.resident_name,
-          type: dt.account_type,
-          invite: dt.invite,
-          dropdown: (
-            <Can
-              perform="residents:resend::cancel"
-              yes={
-                <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              return {
+                unitNumber: dt?.unit?.name,
+                name: `${user?.firstName} ${user?.lastName}`,
+                type: dt?.accountType,
+                dropdown: (
+                  <Can
+                    perform="residents:resend::cancel"
+                    yes={
+                      <Dropdown
+                        label={<AiOutlineEllipsis />}
+                        items={dropdownData}
+                      />
+                    }
+                  />
+                )
               }
-            />
-          )
-        }
-      })
+            })
+          : []
     }),
-    []
+    [residents?.getAccounts]
   )
-
+  console.log('res', residents)
   const handleShowModal = () => setShowModal(old => !old)
 
   return (
@@ -189,8 +144,7 @@ function AllResidents() {
 
       <div className="flex items-center justify-end mt-12 mx-4 w-full">
         <div className="flex items-center justify-between w-8/12 flex-row">
-          <FormSelect options={floors} className="mr-4" />
-          <FormSelect options={[]} className="mr-4" placeholder="Choose One" />
+          <FormSelect options={floorOptions} className="mr-4" />
           <FormSelect options={accountTypes} className="mr-4" />
           <div className="w-full relative mr-4">
             <FormInput
@@ -261,6 +215,23 @@ function AllResidents() {
             pageLimit={pageLimit}
             setPageLimit={setPageLimit}
             setPageOffset={setPageOffset}
+            customBody={
+              <>
+                {residentsData?.data?.map((r, i) => {
+                  return (
+                    <tr key={i}>
+                      <td
+                        className="border px-8 py-4 text-left"
+                        colSpan={columns?.length}
+                      >
+                        {r.unitNumber}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </>
+            }
+            customize
           />
         }
       />

@@ -4,7 +4,7 @@ import { useQuery } from '@apollo/client'
 import { Card } from '@app/components/globals'
 import Table from '@app/components/table'
 import { friendlyDateTimeFormat } from '@app/utils/date'
-import { GET_RESIDENT, GET_RESIDENT_HISTORY } from '../queries'
+import { GET_RESIDENTS, GET_RESIDENT_HISTORY } from '../queries'
 import historyMessages from './historyMessages'
 
 const columns = [
@@ -26,7 +26,7 @@ function Profile() {
   const router = useRouter()
   const { id } = router?.query
 
-  const { data: profile } = useQuery(GET_RESIDENT, {
+  const { data: profile } = useQuery(GET_RESIDENTS, {
     variables: {
       where: {
         _id: id

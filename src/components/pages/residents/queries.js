@@ -1,6 +1,6 @@
 import gql from 'graphql-tag'
 
-export const GET_RESIDENT = gql`
+export const GET_RESIDENTS = gql`
   query getResident($where: GetAccountsParams) {
     getAccounts(where: $where) {
       count
@@ -53,5 +53,11 @@ export const GET_RESIDENT_HISTORY = gql`
       }
       __typename
     }
+  }
+`
+
+export const GET_FLOOR_NUMBERS = gql`
+  query getFloorNumbers($buildingId: String) {
+    getFloorNumbers(buildingId: $buildingId)
   }
 `
