@@ -21,27 +21,26 @@ function DateInput({ date, onDateChange, dateFormat, name, label, disabled }) {
 
   return (
     <Datetime
-      renderInput={(props, openCalendar) => (
-        <>
-          <div className="font-semibold">{label}</div>
-          <div className="relative">
-            <FormInput {...props} name={name} value={dateValue} readOnly />
-            <span
-              className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
-              onClick={openCalendar}
-              role="button"
-              tabIndex={0}
-              onKeyDown={() => {}}
-            />
-          </div>
-        </>
-      )}
-      dateFormat={dateFormat}
-      timeFormat={false}
-      value={date}
-      onChange={onDateChange}
-      disabled={disabled}
-    />
+    renderInput={(props, openCalendar) => (
+      <>
+        <div className="font-semibold">{label}</div>
+        <div className="relative">
+          <FormInput {...props} name={name} value={dateValue} readOnly />
+          <span
+            className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+            onClick={openCalendar}
+            role="button"
+            tabIndex={0}
+            onKeyDown={() => {}}
+          />
+        </div>
+      </>
+    )}
+    dateFormat={dateFormat}
+    timeFormat={false}
+    value={date}
+    onChange={onDateChange}
+    disabled={disabled}
   )
 }
 

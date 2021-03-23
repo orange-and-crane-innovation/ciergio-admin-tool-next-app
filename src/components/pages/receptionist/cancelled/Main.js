@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import Table from '@app/components/table'
 import Card from '@app/components/card'
 import styles from '../main.module.css'
