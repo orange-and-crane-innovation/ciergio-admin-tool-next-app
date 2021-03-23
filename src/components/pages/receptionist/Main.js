@@ -37,15 +37,17 @@ export default function Main() {
   const user = JSON.parse(localStorage.getItem('profile'))
   const buildingId = user?.accounts?.data[0]?.building?._id
   const buildingName = user?.accounts?.data[0]?.building?.name
-  const [categoryIds, setCategoryIds] = useState([])
+  const [categoryIds, setCategoryIds] = useState({})
 
   const { loading, data, error, refetch } = useQuery(GET_CATEGORIES)
 
   useEffect(() => {
     if (!loading && !error && data) {
-      const categories = data?.getRegistryCategories?.data.map(category => {
-        return [{ [`${category.mark}`]: category._id }]
+      const categories = {}
+      data?.getRegistryCategories?.data.forEach(category => {
+        categories[`${category.mark}`] = category._id
       })
+      console.log(categories)
       setCategoryIds(categories)
     }
   }, [loading, data, error, refetch])
@@ -75,14 +77,29 @@ export default function Main() {
           <Tabs.TabPanels>
             <Tabs.TabPanel id="1">
               <DateAndSearch />
-              <LogBook />
+              {routerName && categoryIds && buildingId && (
+                <LogBook
+                  buildingId={buildingId}
+                  categoryId={categoryIds[SETTINGS[routerName].mark]}
+                />
+              )}
             </Tabs.TabPanel>
             <Tabs.TabPanel id="2">
-              <UpComing />
+              {routerName && categoryIds && buildingId && (
+                <UpComing
+                  buildingId={buildingId}
+                  categoryId={categoryIds[SETTINGS[routerName].mark]}
+                />
+              )}
             </Tabs.TabPanel>
             <Tabs.TabPanel id="3">
               <DateAndSearch />
-              <Cancelled />
+              {routerName && categoryIds && buildingId && (
+                <Cancelled
+                  buildingId={buildingId}
+                  categoryId={categoryIds[SETTINGS[routerName].mark]}
+                />
+              )}
             </Tabs.TabPanel>
           </Tabs.TabPanels>
         </Tabs>

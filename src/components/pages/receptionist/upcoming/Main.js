@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import Table from '@app/components/table'
 import Card from '@app/components/card'
 import styles from '../main.module.css'
@@ -24,7 +25,13 @@ const dummyRow = [
   }
 ]
 
-function Upcoming({ buildingId, categoryID }) {
+function Upcoming({ buildingId, categoryId }) {
+  useEffect(() => {
+    console.log({
+      building: buildingId,
+      category: categoryId
+    })
+  }, [buildingId, categoryId])
   const addVisitor = e => {
     e.preventDefault()
   }
