@@ -15,25 +15,43 @@ const _ = require('lodash')
 const SETTINGS = {
   visitors: {
     tabs: ['Logbook', 'Upcoming', 'Cancelled'],
+    status: {
+      logbook: ['checkedIn', 'checkedOut'],
+      upcming: 'scheduled',
+      cancelled: 'cancelled'
+    },
     mark: '_VISITORS_'
   },
   deliveries: {
     tabs: ['Logbook', 'Upcoming', 'Cancelled'],
+    status: {
+      logbook: ['checkedIn', 'checkedOut'],
+      upcming: 'scheduled',
+      cancelled: 'cancelled'
+    },
     mark: '_DELIVERIES_'
   },
   services: {
     tabs: ['Logbook', 'Cancelled'],
+    status: {
+      logbook: ['checkedIn', 'checkedOut'],
+      cancelled: 'cancelled'
+    },
     mark: '_SVC_WORKERS_'
   },
   'pick-ups': {
     tabs: ['Logbook', 'Cancelled'],
+    status: {
+      logbook: ['checkedIn', 'checkedOut'],
+      cancelled: 'cancelled'
+    },
     mark: '_PICKUPS_'
   }
 }
+
 export default function Main() {
   const router = useRouter()
   const routerName = _.split(router.pathname, '/')[2]
-  const [selectedDate, setSelectedDate] = useState(new Date())
   const user = JSON.parse(localStorage.getItem('profile'))
   const buildingId = user?.accounts?.data[0]?.building?._id
   const buildingName = user?.accounts?.data[0]?.building?.name
@@ -81,6 +99,7 @@ export default function Main() {
                 <LogBook
                   buildingId={buildingId}
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
+                  status={SETTINGS[routerName].status.logbook}
                 />
               )}
             </Tabs.TabPanel>
@@ -89,6 +108,7 @@ export default function Main() {
                 <UpComing
                   buildingId={buildingId}
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
+                  status={SETTINGS[routerName].status.upcopming}
                 />
               )}
             </Tabs.TabPanel>
@@ -98,6 +118,7 @@ export default function Main() {
                 <Cancelled
                   buildingId={buildingId}
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
+                  status={SETTINGS[routerName].status.cancelled}
                 />
               )}
             </Tabs.TabPanel>
