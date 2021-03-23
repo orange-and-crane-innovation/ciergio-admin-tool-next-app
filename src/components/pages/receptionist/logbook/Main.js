@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import DateAndSearch from '../DateAndSearch'
 import Table from '@app/components/table'
 import Card from '@app/components/card'
 import styles from '../main.module.css'
@@ -12,6 +13,7 @@ import P from 'prop-types'
 import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineMessage, AiOutlineFileText } from 'react-icons/ai'
+import moment from 'moment'
 
 const NUMBEROFCOLUMN = 6
 
@@ -54,22 +56,27 @@ const UnitStyle = ({ unitNumber, unitOwnerName }) => {
 function LogBook({ buildingId, categoryId, status }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
-  const [sort, setSort] = useState(1)
   const [sortBy, setSortBy] = useState('checkedIn')
   const [activePage, setActivePage] = useState(1)
   const [tableData, setTableData] = useState()
+  const [date, setDate] = useState(new Date())
+  const [search, setSearch] = useState('')
+  const [checkedInAtTime, setCheckedInAtTime] = useState([
+    moment(new Date()).startOf('day').format(),
+    moment(new Date()).endOf('day').format()
+  ])
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
       limit: limitPage,
       offset: offsetPage,
-      sort,
+      sort: 1,
       sortBy,
       where: {
         buildingId,
         categoryId,
         status,
-        checkedInAt: ['2021-03-23T00:00:00+08:00', '2021-03-23T23:59:59+08:00'],
+        checkedInAt: checkedInAtTime,
         keyword: null
       }
     }
@@ -140,8 +147,36 @@ function LogBook({ buildingId, categoryId, status }) {
   const onLimitChange = e => {
     setLimitPage(parseInt(e.value))
   }
+
+  const handleDateChange = date => {
+    setDate(date)
+  }
+
+  const clickShowButton = e => {
+    e.preventDefault()
+    if (date) {
+      const startOfADay = moment(date).startOf('day').format()
+      const endOfADay = moment(date).endOf('day').format()
+      setCheckedInAtTime([startOfADay, endOfADay])
+    }
+  }
+
+  useEffect(() => {
+    console.log(checkedInAtTime)
+  }, [checkedInAtTime])
+
+  const handleSearch = e => {
+    setSearch(e.target.value)
+  }
   return (
     <>
+      <DateAndSearch
+        date={date}
+        handleDateChange={handleDateChange}
+        search={search}
+        handleSearchChange={handleSearch}
+        showTableData={clickShowButton}
+      />
       <Card
         noPadding
         header={

@@ -3,12 +3,11 @@ import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import styles from './main.module.css'
-import DateAndSearch from './DateAndSearch'
 import LogBook from './logbook'
 import Cancelled from './cancelled'
 import UpComing from './upcoming'
 import { GET_CATEGORIES } from './query'
-import { useQuery, gql } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 
 const _ = require('lodash')
 
@@ -94,7 +93,6 @@ export default function Main() {
           </Tabs.TabLabels>
           <Tabs.TabPanels>
             <Tabs.TabPanel id="1">
-              <DateAndSearch />
               {routerName && categoryIds && buildingId && (
                 <LogBook
                   buildingId={buildingId}
@@ -113,7 +111,6 @@ export default function Main() {
               )}
             </Tabs.TabPanel>
             <Tabs.TabPanel id="3">
-              <DateAndSearch />
               {routerName && categoryIds && buildingId && (
                 <Cancelled
                   buildingId={buildingId}
