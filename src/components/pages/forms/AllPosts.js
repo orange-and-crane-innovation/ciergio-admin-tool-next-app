@@ -178,7 +178,12 @@ const PostComponent = () => {
 
   const [
     bulkUpdate,
-    { loading: loadingBulk, called: calledBulk, data: dataBulk }
+    {
+      loading: loadingBulk,
+      called: calledBulk,
+      error: errorBulk,
+      data: dataBulk
+    }
   ] = useMutation(BULK_UPDATE_MUTATION)
 
   const [
@@ -293,7 +298,7 @@ const PostComponent = () => {
                       </Link>
                       {` | `}
                       <span
-                        className="mx-2 cursor-pointer hover:underline"
+                        className="mx-2 text-danger-500 cursor-pointer hover:underline"
                         onClick={() => handleShowModal('delete', item._id)}
                       >
                         Move to Trash
@@ -335,10 +340,15 @@ const PostComponent = () => {
   }, [loading, data, error])
 
   useEffect(() => {
+    if (!loadingBulk && errorBulk) {
+      showToast('danger', 'Bulk update failed')
+    }
+
     if (!loadingBulk && calledBulk && dataBulk) {
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
+        let message
 
         if (allCheck.checked) {
           allCheck.click()
@@ -349,13 +359,25 @@ const PostComponent = () => {
             itemsCheck[i].click()
           }
         }
-
+        setSelectedBulk(null)
+        setSelectedData([])
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk(null)
         setShowModal(old => !old)
 
-        showToast('success', `You have successfully updated a form`)
+        switch (selectedBulk) {
+          case 'unpublished':
+            message = `You have successfully unpublished (${selectedData?.length}) items.`
+            break
+          case 'trashed':
+            message = `You have successfully sent (${selectedData?.length}) items to the trash.`
+            break
+          default:
+            message = `You have successfully updated a post.`
+            break
+        }
+
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Bulk update failed`)
@@ -368,8 +390,19 @@ const PostComponent = () => {
       showToast('danger', `Update failed`)
     } else if (!loadingUpdate && calledUpdate && dataUpdate) {
       if (dataUpdate?.updatePost?.message === 'success') {
+        let message
+
+        switch (modalType) {
+          case 'delete':
+            message = 'You have successfully sent item to the trash.'
+            break
+          default:
+            message = 'You have successfully updated a post'
+            break
+        }
+
         setShowModal(old => !old)
-        showToast('success', `You have successfully updated a post`)
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Update failed`)

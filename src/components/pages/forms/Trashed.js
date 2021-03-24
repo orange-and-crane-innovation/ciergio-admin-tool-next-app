@@ -304,7 +304,7 @@ const PostComponent = () => {
                           </span>
                           {` | `}
                           <span
-                            className="mx-2 cursor-pointer hover:underline"
+                            className="mx-2 text-danger-500 cursor-pointer hover:underline"
                             onClick={() => handleShowModal('delete', item._id)}
                           >
                             Permanently Delete
@@ -349,16 +349,14 @@ const PostComponent = () => {
 
   useEffect(() => {
     if (!loadingBulk && errorBulk) {
-      showToast(
-        'danger',
-        `An error occured during update. Please contact your system administrator.`
-      )
+      showToast('danger', 'Bulk update failed')
     }
 
     if (!loadingBulk && calledBulk && dataBulk) {
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
+        let message
 
         if (allCheck.checked) {
           allCheck.click()
@@ -375,7 +373,19 @@ const PostComponent = () => {
         setSelectedBulk(null)
         setShowModal(old => !old)
 
-        showToast('success', `You have successfully updated a post`)
+        switch (selectedBulk) {
+          case 'deleted':
+            message = `You have successfully deleted (${selectedData?.length}) items.`
+            break
+          case 'draft':
+            message = `You have successfully restored (${selectedData?.length}) items.`
+            break
+          default:
+            message = `You have successfully updated a post.`
+            break
+        }
+
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Bulk update failed`)
@@ -388,8 +398,22 @@ const PostComponent = () => {
       showToast('danger', `Update failed`)
     } else if (!loadingUpdate && calledUpdate && dataUpdate) {
       if (dataUpdate?.updatePost?.message === 'success') {
+        let message
+
+        switch (modalType) {
+          case 'delete':
+            message = 'You have successfully deleted an item.'
+            break
+          case 'draft':
+            message = 'You have successfully restored an item.'
+            break
+          default:
+            message = 'You have successfully updated a post'
+            break
+        }
+
         setShowModal(old => !old)
-        showToast('success', `You have successfully updated a post`)
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Update failed`)
