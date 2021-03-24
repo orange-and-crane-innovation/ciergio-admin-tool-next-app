@@ -123,6 +123,7 @@ export const GET_REGISTRYRECORDS = gql`
       }
       limit
       offset
+      count
     }
   }
 `

@@ -13,6 +13,7 @@ import { GET_REGISTRYRECORDS } from '../query'
 import P from 'prop-types'
 import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineFileText } from 'react-icons/ai'
+import moment from 'moment'
 
 const dummyRow = [
   {
@@ -45,21 +46,26 @@ const UnitStyle = ({ unitNumber, unitOwnerName }) => {
 function Cancelled({ buildingId, categoryId, status }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
-  const [sortBy, setSortBy] = useState('checkedIn')
   const [activePage, setActivePage] = useState(1)
   const [tableData, setTableData] = useState()
+  const [date, setDate] = useState(new Date())
+  const [search, setSearch] = useState('')
+  const [checkedInAtTime, setCheckedInAtTime] = useState([
+    moment(new Date()).startOf('day').format(),
+    moment(new Date()).endOf('day').format()
+  ])
 
-  const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
+  const { loading, error, data } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
       limit: limitPage,
       offset: offsetPage,
       sort: 1,
-      sortBy,
+      sortBy: 'updatedAt',
       where: {
         buildingId,
         categoryId,
         status,
-        checkedInAt: ['2021-03-23T00:00:00+08:00', '2021-03-23T23:59:59+08:00'],
+        checkedInAt: checkedInAtTime,
         keyword: null
       }
     }
@@ -114,9 +120,38 @@ function Cancelled({ buildingId, categoryId, status }) {
   const onLimitChange = e => {
     setLimitPage(parseInt(e.value))
   }
+
+  const handleDateChange = date => {
+    setDate(date)
+  }
+
+  const clickShowButton = e => {
+    e.preventDefault()
+    if (date) {
+      const startOfADay = moment(date).startOf('day').format()
+      const endOfADay = moment(date).endOf('day').format()
+      setCheckedInAtTime([startOfADay, endOfADay])
+    }
+  }
+
+  const handleSearch = e => {
+    setSearch(e.target.value)
+  }
+
+  const onClearSearch = () => {
+    setSearch('')
+  }
+
   return (
     <>
-      <DateAndSearch />
+      <DateAndSearch
+        date={date}
+        handleDateChange={handleDateChange}
+        search={search}
+        handleSearchChange={handleSearch}
+        showTableData={clickShowButton}
+        handleClear={onClearSearch}
+      />
       <Card
         noPadding
         header={

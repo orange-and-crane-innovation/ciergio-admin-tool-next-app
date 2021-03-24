@@ -12,7 +12,8 @@ function SelectDate({
   handleDateChange,
   search,
   handleSearchChange,
-  showTableData
+  showTableData,
+  handleClear
 }) {
   return (
     <>
@@ -59,6 +60,7 @@ function SelectDate({
             searchText={search}
             onSearch={handleSearchChange}
             className={styles.SearchControl}
+            onClearSearch={handleClear}
           />
         </div>
       </div>
@@ -71,7 +73,8 @@ SelectDate.propTypes = {
   handleDateChange: P.func.isRequired,
   search: P.string.isRequired,
   handleSearchChange: P.func.isRequired,
-  showTableData: P.func.isRequired
+  showTableData: P.func.isRequired,
+  handleClear: P.func.isRequired
 }
 
 export default SelectDate

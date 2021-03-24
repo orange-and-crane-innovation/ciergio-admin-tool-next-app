@@ -14,6 +14,7 @@ import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineMessage, AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
+import useKeyPress from '@app/utils/useKeyPress'
 
 const NUMBEROFCOLUMN = 6
 
@@ -56,28 +57,29 @@ const UnitStyle = ({ unitNumber, unitOwnerName }) => {
 function LogBook({ buildingId, categoryId, status }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
-  const [sortBy, setSortBy] = useState('checkedIn')
   const [activePage, setActivePage] = useState(1)
   const [tableData, setTableData] = useState()
   const [date, setDate] = useState(new Date())
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(null)
+  const [searchText, setSearchText] = useState(null)
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
   ])
+  const keyPressed = useKeyPress('Enter')
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
       limit: limitPage,
       offset: offsetPage,
       sort: 1,
-      sortBy,
+      sortBy: 'checkedIn',
       where: {
         buildingId,
         categoryId,
         status,
         checkedInAt: checkedInAtTime,
-        keyword: null
+        keyword: search
       }
     }
   })
@@ -153,21 +155,33 @@ function LogBook({ buildingId, categoryId, status }) {
   }
 
   const clickShowButton = e => {
-    e.preventDefault()
     if (date) {
       const startOfADay = moment(date).startOf('day').format()
       const endOfADay = moment(date).endOf('day').format()
       setCheckedInAtTime([startOfADay, endOfADay])
+      refetch()
     }
   }
 
   useEffect(() => {
-    console.log(checkedInAtTime)
-  }, [checkedInAtTime])
+    if (keyPressed) {
+      setSearch(searchText)
+      refetch()
+    }
+  }, [keyPressed, searchText])
+  // ============
 
   const handleSearch = e => {
-    setSearch(e.target.value)
+    if (e.target.value === '') {
+      setSearch(null)
+    } else {
+      setSearchText(e.target.value)
+    }
   }
+  const onClearSearch = () => {
+    setSearch('')
+  }
+
   return (
     <>
       <DateAndSearch
@@ -176,12 +190,17 @@ function LogBook({ buildingId, categoryId, status }) {
         search={search}
         handleSearchChange={handleSearch}
         showTableData={clickShowButton}
+        handleClear={onClearSearch}
       />
       <Card
         noPadding
         header={
           <div className={styles.ReceptionistCardHeaderContainer}>
-            <b className={styles.ReceptionistCardHeader}>Visitors Logbook</b>
+            <b className={styles.ReceptionistCardHeader}>
+              {search
+                ? `Search results from "${search}"`
+                : `Visitors Logbook (${data?.getRegistryRecords?.count})`}
+            </b>
             <Button
               primary
               label="Add Visitor"
