@@ -7,7 +7,6 @@ import * as yup from 'yup'
 import FormInput from '@app/components/forms/form-input'
 import FormAddress from '@app/components/forms/form-address'
 import Modal from '@app/components/modal'
-import SelectCompany from '@app/components/globals/SelectCompany'
 
 const validationSchema = yup.object().shape({
   name: yup.string().label('Complex Name').nullable().trim().required(),
@@ -25,9 +24,6 @@ const Component = ({
   onSave,
   onCancel
 }) => {
-  const user = JSON.parse(localStorage.getItem('profile'))
-  const accountType = user?.accounts?.data[0]?.accountType
-
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
