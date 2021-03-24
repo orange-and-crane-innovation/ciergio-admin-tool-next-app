@@ -5,6 +5,7 @@ import { Controller } from 'react-hook-form'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import FormCheckBox from '@app/components/forms/form-checkbox'
+import FormTextArea from '@app/components/forms/form-textarea'
 import { DateInput, TimeInput } from '@app/components/datetime'
 import UploaderImage from '@app/components/uploader/image'
 
@@ -184,9 +185,28 @@ function AddVisitorModalContent({ form }) {
                 )}
               />
             </div>
+            <div className="w-full h-1/4">
+              <p className="text-neutral-dark font-body font-bold text-sm">
+                Note (Optional)
+              </p>
+              <Controller
+                name="unit_owner_name"
+                control={control}
+                render={({ name, onChange, value }) => (
+                  <FormTextArea
+                    maxLength={120}
+                    placeholder="Enter additional notes here"
+                    toolbarHidden={true}
+                    onChange={onChange}
+                    value={value}
+                    withCounter={true}
+                  />
+                )}
+              />
+            </div>
 
             <div className="w-full">
-              <p className="font-medium mb-2 text-sm">
+              <p className="text-neutral-dark font-body font-bold text-sm">
                 Attach Image (Optional)
               </p>
               <Controller
