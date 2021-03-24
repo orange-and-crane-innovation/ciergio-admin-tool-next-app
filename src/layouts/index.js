@@ -19,7 +19,8 @@ const Layouts = ({ children }) => {
       '/auth/reset',
       '/auth/reset/verify',
       '/auth/reset/password',
-      '/auth/join/[code]'
+      '/auth/join/[code]',
+      '/auth/verify-email/[code]'
     ].includes(pathname)
   ) {
     return <Centered>{children}</Centered>
@@ -28,7 +29,8 @@ const Layouts = ({ children }) => {
       '/auth/manage',
       '/posts/view/[id]',
       '/attractions-events/view/[id]',
-      '/qr-code/view/[id]'
+      '/qr-code/view/[id]',
+      '/daily-readings/view/[id]'
     ].includes(pathname)
   ) {
     return <CenteredAuth>{children}</CenteredAuth>
