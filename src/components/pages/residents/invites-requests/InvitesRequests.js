@@ -57,7 +57,9 @@ function InvitesRequests() {
     {
       onCompleted: () => {
         showToast('success', 'Invite has been resent.')
-        handleResendBulk()
+        if (showResendBulkInviteModal) {
+          handleResendBulk()
+        }
       }
     }
   )
@@ -162,7 +164,15 @@ function InvitesRequests() {
                 {
                   label: 'Resend Invite',
                   icon: <span className="ciergio-mail" />,
-                  function: () => {}
+                  function: () => {
+                    resendInvite({
+                      variables: {
+                        data: {
+                          inviteIds: req?._id
+                        }
+                      }
+                    })
+                  }
                 },
                 {
                   label: 'Cancel Invite',
