@@ -271,7 +271,7 @@ function InvitesRequests() {
     cancelInvite({
       variables: {
         data: {
-          invitationId: selectedInviteId
+          requestId: selectedInviteId
         }
       }
     })
@@ -288,7 +288,7 @@ function InvitesRequests() {
 
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Residents</h1>
+      <h1 className="content-title">Resident List</h1>
 
       <div className="flex items-center justify-between mt-12 mx-4 w-full">
         <SelectBulk
