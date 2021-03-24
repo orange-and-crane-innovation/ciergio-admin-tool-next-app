@@ -3,7 +3,7 @@ import P from 'prop-types'
 
 import TabButton from './tab-button'
 
-const TabLabel = ({ id, activeId, children, handleClick }) => {
+const TabLabel = ({ id, activeId, children, handleClick, isHidden }) => {
   const selectTab = () => {
     handleClick(id)
   }
@@ -15,6 +15,7 @@ const TabLabel = ({ id, activeId, children, handleClick }) => {
         label={children}
         onClick={selectTab}
         isSelected={activeId === id}
+        isHidden={isHidden}
       />
     </li>
   )
@@ -24,7 +25,8 @@ TabLabel.propTypes = {
   id: P.string,
   activeId: P.string,
   children: P.any,
-  handleClick: P.func
+  handleClick: P.func,
+  isHidden: P.bool
 }
 
 export default TabLabel
