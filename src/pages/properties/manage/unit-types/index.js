@@ -5,7 +5,7 @@ function ManageUnitTypePage() {
   return (
     <Page
       route="/properties"
-      nestedRoute="unit-types"
+      nestedRoute="/properties/manage/unit-types"
       page={<UnitTypePage />}
     />
   )

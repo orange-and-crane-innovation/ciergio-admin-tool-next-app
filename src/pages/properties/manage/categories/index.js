@@ -5,7 +5,7 @@ function ManageCategoriesPage() {
   return (
     <Page
       route="/properties"
-      nestedRoute="/properties/categories"
+      nestedRoute="/properties/manage/categories"
       page={<CategoriesPage />}
     />
   )
