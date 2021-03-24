@@ -16,6 +16,19 @@ function Main() {
     }
   })
 
+  const getNextPath = id => {
+    let path = originPath
+    if (originPath === 'residents') {
+      if (router?.pathname?.split[2] === 'all-residents') {
+        path = 'residents/all-residents'
+        return
+      }
+      path = 'residents/invites-requests'
+    }
+
+    return `/${path}?complexId=${query?.complexId}&buildingId=${id}`
+  }
+
   const buildingsData = useMemo(() => {
     return {
       count: data?.getBuildings?.data?.length || 0,
@@ -24,13 +37,7 @@ function Main() {
         data?.getBuildings?.data?.length > 0
           ? data.getBuildings.data.map(({ _id, name }) => ({
               name: (
-                <Link
-                  href={`/${
-                    originPath === 'residents'
-                      ? 'residents/all-residents'
-                      : originPath
-                  }?complexId=${query?.complexId}&buildingId=${_id}`}
-                >
+                <Link href={getNextPath(_id)}>
                   <span className="text-secondary-500 hover:underline hover:cursor-pointer">
                     {name}
                   </span>

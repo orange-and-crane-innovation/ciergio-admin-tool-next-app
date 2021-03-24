@@ -68,7 +68,7 @@ const navigation = [
             items: []
           },
           {
-            url: '/residents/invites-requests',
+            url: '/residents/invites-requests/complexes',
             title: 'Invites & Requests',
             items: []
           }

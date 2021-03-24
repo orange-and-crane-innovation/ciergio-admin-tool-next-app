@@ -15,6 +15,18 @@ function Main() {
       companyId: user?.accounts?.data[0]?.companyId
     }
   })
+  const getNextPath = id => {
+    let path = originPath
+    if (originPath === 'residents') {
+      if (router?.pathname?.split[2] === 'all-residents') {
+        path = 'residents/all-residents'
+        return
+      }
+      path = 'residents/invites-requests'
+    }
+
+    return `/${path}/buildings?complexId=${id}`
+  }
 
   const complexesData = useMemo(() => {
     return {
@@ -22,21 +34,19 @@ function Main() {
       limit: 50,
       data:
         data?.getComplexes?.data?.length > 0
-          ? data.getComplexes.data.map(({ _id, name }) => ({
-              name: (
-                <Link
-                  href={`/${
-                    originPath === 'residents'
-                      ? 'residents/all-residents'
-                      : originPath
-                  }/buildings?complexId=${_id}`}
-                >
-                  <span className="text-secondary-500 hover:underline hover:cursor-pointer">
-                    {name}
-                  </span>
-                </Link>
-              )
-            }))
+          ? data.getComplexes.data.map(({ _id, name }) => {
+              const nextPath = getNextPath(_id)
+
+              return {
+                name: (
+                  <Link href={nextPath}>
+                    <span className="text-secondary-500 hover:underline hover:cursor-pointer">
+                      {name}
+                    </span>
+                  </Link>
+                )
+              }
+            })
           : []
     }
   }, [data?.getComplexes])
