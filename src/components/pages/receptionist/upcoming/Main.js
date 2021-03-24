@@ -44,16 +44,16 @@ const dummyRow = [
   }
 ]
 
-const UnitStyle = ({ unitNumber, unitOwnerName }) => {
+const TableColStyle = ({ top, bottom }) => {
   return (
     <div className="flex flex-col">
-      <b>{unitNumber}</b>
-      <p>{unitOwnerName}</p>
+      <p className="text-gray-900">{top}</p>
+      <p className="text-gray-400">{bottom}</p>
     </div>
   )
 }
 
-function Upcoming({ buildingId, categoryId, status }) {
+function Upcoming({ buildingId, categoryId, status, name }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -105,13 +105,19 @@ function Upcoming({ buildingId, categoryId, status }) {
         const dateUTC = new Date(+registry.checkedInAt)
         tableData.push({
           unitNumberAndOwner: (
-            <UnitStyle
+            <TableColStyle
               key={index}
-              unitNumber={`${registry.forWhat.name}`}
-              unitOwnerName={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+              top={`${registry.forWhat.name}`}
+              bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
             />
           ),
-          personCompany: `${registry.visitor.firstName} ${registry.visitor.lastName}`,
+          personCompany: (
+            <TableColStyle
+              key={index}
+              top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+              bottom={registry.visitor.company}
+            />
+          ),
           checkedIn: DATE.toFriendlyTime(dateUTC.toUTCString()),
           checkedOut: registry.checkedOutAt ? (
             DATE.toFriendlyTime(registry.checkedOutAt)
@@ -180,7 +186,7 @@ function Upcoming({ buildingId, categoryId, status }) {
             <b className={styles.ReceptionistCardHeader}>
               {search
                 ? `Search results from "${search}"`
-                : `Visitors Logbook (${data?.getRegistryRecords?.count})`}
+                : `Upcoming ${name} (${data?.getRegistryRecords?.count})`}
             </b>
             <Button
               primary
@@ -207,15 +213,16 @@ function Upcoming({ buildingId, categoryId, status }) {
   )
 }
 
-UnitStyle.propTypes = {
-  unitNumber: P.oneOfType(P.string, P.array),
-  unitOwnerName: P.string.isRequired
+TableColStyle.propTypes = {
+  top: P.oneOfType(P.string, P.array),
+  bottom: P.string
 }
 
 Upcoming.propTypes = {
   buildingId: P.string.isRequired,
   categoryId: P.string.isRequired,
-  status: P.oneOfType[(P.string, P.array)]
+  status: P.oneOfType[(P.string, P.array)],
+  name: P.string.isRequired
 }
 
 export default Upcoming

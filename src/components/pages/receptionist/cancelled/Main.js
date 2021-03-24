@@ -43,7 +43,7 @@ const UnitStyle = ({ unitNumber, unitOwnerName }) => {
   )
 }
 
-function Cancelled({ buildingId, categoryId, status }) {
+function Cancelled({ buildingId, categoryId, status, name }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -156,7 +156,11 @@ function Cancelled({ buildingId, categoryId, status }) {
         noPadding
         header={
           <div className={styles.ReceptionistCardHeaderContainer}>
-            <b className={styles.ReceptionistCardHeader}>Cancelled Logbook</b>
+            <b className={styles.ReceptionistCardHeader}>
+              {search
+                ? `Search results from "${search}"`
+                : `Cancelled ${name} (${data?.getRegistryRecords?.count})`}
+            </b>
             <div className={styles.ReceptionistButtonCard}>
               <Button icon={<FiPrinter />} />
               <Button icon={<FiDownload />} />
@@ -194,7 +198,8 @@ UnitStyle.propTypes = {
 Cancelled.propTypes = {
   buildingId: P.string.isRequired,
   categoryId: P.string.isRequired,
-  status: P.oneOfType[(P.string, P.array)]
+  status: P.oneOfType[(P.string, P.array)],
+  name: P.string.isRequired
 }
 
 export default Cancelled

@@ -19,7 +19,8 @@ const SETTINGS = {
       upcoming: 'scheduled',
       cancelled: 'cancelled'
     },
-    mark: '_VISITORS_'
+    mark: '_VISITORS_',
+    name: 'Visitors'
   },
   deliveries: {
     tabs: ['Logbook', 'Upcoming', 'Cancelled'],
@@ -28,7 +29,8 @@ const SETTINGS = {
       upcoming: 'scheduled',
       cancelled: 'cancelled'
     },
-    mark: '_DELIVERIES_'
+    mark: '_DELIVERIES_',
+    name: 'Deliveries'
   },
   services: {
     tabs: ['Logbook', 'Cancelled'],
@@ -36,7 +38,8 @@ const SETTINGS = {
       logbook: ['checkedIn', 'checkedOut'],
       cancelled: 'cancelled'
     },
-    mark: '_SVC_WORKERS_'
+    mark: '_SVC_WORKERS_',
+    name: 'Seliveries'
   },
   'pick-ups': {
     tabs: ['Logbook', 'Cancelled'],
@@ -44,7 +47,8 @@ const SETTINGS = {
       logbook: ['checkedIn', 'checkedOut'],
       cancelled: 'cancelled'
     },
-    mark: '_PICKUPS_'
+    mark: '_PICKUPS_',
+    name: 'Pick-ups'
   }
 }
 
@@ -98,6 +102,7 @@ export default function Main() {
                   buildingId={buildingId}
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
                   status={SETTINGS[routerName].status.logbook}
+                  name={SETTINGS[routerName].name}
                 />
               )}
             </Tabs.TabPanel>
@@ -107,6 +112,7 @@ export default function Main() {
                   buildingId={buildingId}
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
                   status={SETTINGS[routerName].status.upcoming}
+                  name={SETTINGS[routerName].name}
                 />
               )}
             </Tabs.TabPanel>
@@ -116,6 +122,7 @@ export default function Main() {
                   buildingId={buildingId}
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
                   status={SETTINGS[routerName].status.cancelled}
+                  name={SETTINGS[routerName].name}
                 />
               )}
             </Tabs.TabPanel>
