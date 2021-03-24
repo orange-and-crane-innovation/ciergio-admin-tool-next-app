@@ -1,5 +1,5 @@
 .tableContainer {
-  @apply overflow-auto;
+  @apply overflow-x-auto;
 
   .tableControl {
     @apply w-full;
