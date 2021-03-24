@@ -4,5 +4,9 @@
 
   .BulkControlButton {
     @apply ml-2;
+
+    &.isHidden {
+      @apply hidden !important;
+    }
   }
 }
