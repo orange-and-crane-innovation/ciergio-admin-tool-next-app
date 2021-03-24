@@ -49,4 +49,17 @@
       @apply absolute top-4 right-4;
     }
   }
+
+  .TextWrapper {
+    @apply whitespace-nowrap;
+    @apply overflow-ellipsis overflow-hidden;
+
+    @supports (-webkit-line-clamp: 3) {
+      @apply overflow-ellipsis overflow-hidden;
+      white-space: initial;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+  }
 }

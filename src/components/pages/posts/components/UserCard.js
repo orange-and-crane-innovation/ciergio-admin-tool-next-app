@@ -1,10 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-
 import { FaEllipsisH } from 'react-icons/fa'
 
-const DEFAULT_AVATAR =
-  'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-default.png'
+import { IMAGES } from '@app/constants'
+
+const DEFAULT_AVATAR = IMAGES.DEFAULT_AVATAR
 
 const Component = ({ index, avatar, firstName, lastName }) => {
   const avatarImg = avatar || DEFAULT_AVATAR
@@ -21,7 +21,7 @@ const Component = ({ index, avatar, firstName, lastName }) => {
           </div>
           {`${firstName} ${lastName}`}
         </div>
-        <FaEllipsisH />
+        <FaEllipsisH className="hidden" />
       </div>
     </div>
   )

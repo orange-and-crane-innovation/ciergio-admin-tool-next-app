@@ -12,14 +12,21 @@ import styles from './Main.module.css'
 
 const PostComponent = () => {
   const router = useRouter()
-  const pageName =
-    router.pathname === '/attractions-events'
-      ? 'Attractions & Events'
-      : router.pathname === '/qr-code'
-      ? 'QR Code'
-      : 'Bulletin Board'
-  const tabName =
-    router.pathname === '/qr-code' ? 'Active QR Posts' : 'All Posts'
+  const isAttractionsEventsPage = router.pathname === '/attractions-events'
+  const isQRCodePage = router.pathname === '/qr-code'
+  const isDailyReadingsPage = router.pathname === '/daily-readings'
+  const pageName = isAttractionsEventsPage
+    ? 'Attractions & Events'
+    : isQRCodePage
+    ? 'QR Code'
+    : isDailyReadingsPage
+    ? 'Daily Readings'
+    : 'Bulletin Board'
+  const tabName = isQRCodePage
+    ? 'Active QR Posts'
+    : isDailyReadingsPage
+    ? 'Daily Readings'
+    : 'All Posts'
 
   return (
     <div className={styles.PostContainer}>
@@ -28,7 +35,9 @@ const PostComponent = () => {
       <Tabs defaultTab="1">
         <Tabs.TabLabels>
           <Tabs.TabLabel id="1">{tabName}</Tabs.TabLabel>
-          <Tabs.TabLabel id="2">My Posts</Tabs.TabLabel>
+          <Tabs.TabLabel id="2" isHidden={isDailyReadingsPage}>
+            My Posts
+          </Tabs.TabLabel>
           <Tabs.TabLabel id="3">Trash</Tabs.TabLabel>
         </Tabs.TabLabels>
         <Tabs.TabPanels>
