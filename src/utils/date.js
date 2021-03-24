@@ -2,13 +2,16 @@ import dayjs from 'dayjs'
 import LocalizedFormat from 'dayjs/plugin/localizedFormat'
 
 const duration = require('dayjs/plugin/duration')
+const utc = require('dayjs/plugin/utc')
 
 dayjs.extend(LocalizedFormat)
 dayjs.extend(duration)
+dayjs.extend(utc)
 
 export const toFriendlyISO = data => {
   const dateObj = new Date(data)
-  return dateObj.toISOString()
+  const dayObj = dayjs(dateObj).utc().local()
+  return dayObj.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
 }
 
 export const toFriendlyDateTime = data => {
@@ -71,6 +74,18 @@ export const friendlyDateTimeFormat = (newDate, format) => {
   return convertedDate
 }
 
+export const toFriendlyYearMonth = data => {
+  let convertedDate = '-'
+
+  if (data) {
+    const dateObj = new Date(data)
+    const dayObj = dayjs(dateObj)
+    convertedDate = dayObj.format('MMM YYYY')
+  }
+
+  return convertedDate
+}
+
 export const displayDateCreated = data => {
   const inputDate = dayjs(data)
   const currentDate = dayjs(new Date())
@@ -107,6 +122,33 @@ export const displayDateCreated = data => {
     returnData = 'Yesterday at ' + dayjs(data).format('h:mm a')
   }
   return returnData
+}
+
+export const toBeginningOfMonth = data => {
+  const date = new Date(data)
+  date.setDate(1)
+  date.setHours(0)
+  date.setMinutes(0)
+  date.setSeconds(0)
+  return date
+}
+
+export const toEndOfMonth = data => {
+  const date = new Date(data)
+  date.setMonth(date.getMonth() + 1)
+  date.setDate(0)
+  date.setHours(23)
+  date.setMinutes(59)
+  date.setSeconds(59)
+  return date
+}
+
+export const getInitialTime = data => {
+  const date = new Date(data)
+  date.setHours(0)
+  date.setMinutes(0)
+  date.setSeconds(0)
+  return date
 }
 
 export default dayjs
