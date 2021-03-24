@@ -36,7 +36,8 @@ const OverviewComponent = ({
   onLimitChange,
   onCreateButtonClick,
   onHistoryButtonClick,
-  onUnitButtonClick
+  onUnitButtonClick,
+  onSubscriptionButtonClick
 }) => {
   const router = useRouter()
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
@@ -240,7 +241,7 @@ const OverviewComponent = ({
                 <div className="text-center">
                   <button
                     className="font-bold"
-                    onClick={() => alert('Upgrade Plan button clicked!')}
+                    onClick={onSubscriptionButtonClick}
                   >
                     Upgrade Plan
                   </button>
@@ -336,7 +337,8 @@ OverviewComponent.propTypes = {
   onLimitChange: P.func.isRequired,
   onCreateButtonClick: P.func,
   onHistoryButtonClick: P.func,
-  onUnitButtonClick: P.func
+  onUnitButtonClick: P.func,
+  onSubscriptionButtonClick: P.func
 }
 
 export default OverviewComponent

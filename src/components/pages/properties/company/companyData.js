@@ -22,6 +22,7 @@ import CreateModal from '../components/complex/createModal'
 import EditModal from '../components/complex/editModal'
 import DeleteModal from '../components/complex/deleteModal'
 import EditModalCompany from '../components/company/editModal'
+import EditSubsctiptionModal from '../components/company/editSubscriptionModal'
 
 import styles from './index.module.css'
 
@@ -403,7 +404,7 @@ const CompanyDataComponent = () => {
               }
             }) || null
         }
-
+        console.log(tableData)
         setComplexes(tableData)
       }
     }
@@ -553,6 +554,15 @@ const CompanyDataComponent = () => {
           }
         }
         await updateCompany({ variables: updateData })
+      } else if (type === 'edit_subscription') {
+        const updateData = {
+          companyId: router.query.id,
+          data: {
+            complexLimit: data?.complexNo,
+            buildingLimit: data?.buildingNo
+          }
+        }
+        await updateCompany({ variables: updateData })
       }
     } catch (e) {
       console.log(e)
@@ -584,6 +594,10 @@ const CompanyDataComponent = () => {
       }
       case 'edit_company': {
         setModalTitle('Edit Company')
+        setModalData(data)
+        break
+      }
+      case 'edit_subscription': {
         setModalData(data)
         break
       }
@@ -637,6 +651,9 @@ const CompanyDataComponent = () => {
               onLimitChange={onLimitChange}
               onCreateButtonClick={() => handleShowModal('create')}
               onHistoryButtonClick={() => goToHistoryData()}
+              onSubscriptionButtonClick={() =>
+                handleShowModal('edit_subscription', companyProfile)
+              }
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="about">
@@ -702,6 +719,13 @@ const CompanyDataComponent = () => {
           <EditModalCompany
             processType={modalType}
             title={modalTitle}
+            data={modalData}
+            isShown={showModal}
+            onSave={e => onSubmit(modalType, e)}
+            onCancel={onCancel}
+          />
+        ) : modalType === 'edit_subscription' ? (
+          <EditSubsctiptionModal
             data={modalData}
             isShown={showModal}
             onSave={e => onSubmit(modalType, e)}
