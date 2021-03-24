@@ -132,6 +132,23 @@ const navigation = [
         ]
       },
       {
+        url: '/daily-readings',
+        icon: 'ciergio-list',
+        title: 'Daily Readings',
+        items: [
+          {
+            url: '/daily-readings',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/daily-readings/create',
+            title: 'Create Daily Reading',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/guest-delivery',
         icon: 'ciergio-door',
         title: 'Guest & Delivery',
@@ -152,7 +169,7 @@ const navigation = [
       {
         url: '/forms',
         icon: 'ciergio-file',
-        title: 'Forms',
+        title: 'Downloadable Forms',
         items: [
           {
             url: '/forms/create',
