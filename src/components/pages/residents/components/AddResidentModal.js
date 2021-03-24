@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 
 import Modal from '@app/components/modal'
-import validationSchema from './schema'
+import validationSchema from '../schema'
 
 import AddResidentModalContent from './AddResidentModalContent'
 

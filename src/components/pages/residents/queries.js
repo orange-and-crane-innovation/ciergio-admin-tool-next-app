@@ -86,3 +86,14 @@ export const GET_INVITES_AND_REQUESTS = gql`
     }
   }
 `
+
+export const RESEND_INVITE = gql`
+  mutation resendInvite($data: InputResendInvite) {
+    resendInvite(data: $data) {
+      _id
+      message
+      processId
+      __typename
+    }
+  }
+`

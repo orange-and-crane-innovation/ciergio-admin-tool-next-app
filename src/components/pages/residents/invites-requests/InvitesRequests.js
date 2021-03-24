@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
 import Button from '@app/components/button'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -12,8 +12,10 @@ import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import useDebounce from '@app/utils/useDebounce'
-import { GET_INVITES_AND_REQUESTS } from '../queries'
-import AddResidentModal from '../AddResidentModal'
+import showToast from '@app/utils/toast'
+import { GET_INVITES_AND_REQUESTS, RESEND_INVITE } from '../queries'
+import AddResidentModal from '../components/AddResidentModal'
+import ResendBulkInviteModal from '../components/ResendBulkInviteModal'
 import SearchComponent from '@app/components/globals/SearchControl'
 
 const bulkOptions = [
@@ -27,7 +29,7 @@ function InvitesRequests() {
   const router = useRouter()
   const { buildingId } = router?.query
   const [searchText, setSearchText] = useState('')
-  const [showModal, setShowModal] = useState('')
+  const [showAddResidentModal, setShowAddResidentModal] = useState(false)
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [selectedBulk, setSelectedBulk] = useState()
@@ -35,6 +37,9 @@ function InvitesRequests() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
   const [pageOffset, setPageOffset] = useState(0)
+  const [showResendBulkInviteModal, setShowResendBulkInviteModal] = useState(
+    false
+  )
   const debouncedText = useDebounce(searchText, 700)
   const { data, loading } = useQuery(GET_INVITES_AND_REQUESTS, {
     variables: {
@@ -47,6 +52,15 @@ function InvitesRequests() {
       }
     }
   })
+  const [resendInvite, { loading: resendingInvite }] = useMutation(
+    RESEND_INVITE,
+    {
+      onCompleted: () => {
+        showToast('success', 'Invite has been resent.')
+        handleResendBulk()
+      }
+    }
+  )
   const columns = React.useMemo(
     () => [
       {
@@ -195,7 +209,7 @@ function InvitesRequests() {
     [data?.getExtensionAccountRequests]
   )
 
-  const handleShowModal = () => setShowModal(old => !old)
+  const handleAddResidentModal = () => setShowAddResidentModal(old => !old)
 
   const onBulkChange = e => {
     setSelectedBulk(e.value)
@@ -206,18 +220,23 @@ function InvitesRequests() {
     }
   }
 
-  const onBulkSubmit = async () => {
-    // const data = { id: selectedData, status: selectedBulk }
-    // try {
-    //   await bulkUpdate({ variables: data })
-    // } catch (e) {
-    //   console.log(e)
-    // }
+  const onBulkSubmit = () => {
+    resendInvite({
+      variables: {
+        data: {
+          inviteIds: selectedData
+        }
+      }
+    })
   }
 
   const onClearBulk = () => {
     setSelectedBulk(null)
     setIsBulkButtonDisabled(true)
+  }
+
+  const handleResendBulk = () => {
+    setShowResendBulkInviteModal(old => !old)
   }
 
   return (
@@ -231,7 +250,7 @@ function InvitesRequests() {
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
           onBulkChange={onBulkChange}
-          onBulkSubmit={onBulkSubmit}
+          onBulkSubmit={handleResendBulk}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
         />
@@ -264,7 +283,7 @@ function InvitesRequests() {
             default
             leftIcon={<FaPlusCircle />}
             label="Add Resident"
-            onClick={handleShowModal}
+            onClick={handleAddResidentModal}
             className="mr-4 mt-4"
           />
         </div>
@@ -283,7 +302,17 @@ function InvitesRequests() {
           />
         }
       />
-      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
+      <AddResidentModal
+        showModal={showAddResidentModal}
+        onShowModal={handleAddResidentModal}
+      />
+      <ResendBulkInviteModal
+        open={showResendBulkInviteModal}
+        onOk={onBulkSubmit}
+        onCancel={handleResendBulk}
+        bulkInvitesLength={selectedData?.length}
+        loading={resendingInvite}
+      />
     </section>
   )
 }
