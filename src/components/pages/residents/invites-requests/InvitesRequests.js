@@ -13,10 +13,15 @@ import { FiDownload } from 'react-icons/fi'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import useDebounce from '@app/utils/useDebounce'
 import showToast from '@app/utils/toast'
-import { GET_INVITES_AND_REQUESTS, RESEND_INVITE } from '../queries'
+import {
+  GET_INVITES_AND_REQUESTS,
+  RESEND_INVITE,
+  CANCEL_INVITE
+} from '../queries'
 import AddResidentModal from '../components/AddResidentModal'
 import ResendBulkInviteModal from '../components/ResendBulkInviteModal'
 import SearchComponent from '@app/components/globals/SearchControl'
+import CancelInviteModal from '../components/CancelInviteModal'
 
 const bulkOptions = [
   {
@@ -34,14 +39,16 @@ function InvitesRequests() {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [selectedBulk, setSelectedBulk] = useState()
   const [selectedData, setSelectedData] = useState([])
+  const [selectedInviteId, setSelectedInviteId] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
   const [pageOffset, setPageOffset] = useState(0)
   const [showResendBulkInviteModal, setShowResendBulkInviteModal] = useState(
     false
   )
+  const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const debouncedText = useDebounce(searchText, 700)
-  const { data, loading } = useQuery(GET_INVITES_AND_REQUESTS, {
+  const { data, loading, refetch } = useQuery(GET_INVITES_AND_REQUESTS, {
     variables: {
       limit: pageLimit,
       skip: pageOffset,
@@ -60,6 +67,26 @@ function InvitesRequests() {
         if (showResendBulkInviteModal) {
           handleResendBulk()
         }
+      }
+    }
+  )
+  const [cancelInvite, { loading: cancellingInvite }] = useMutation(
+    CANCEL_INVITE,
+    {
+      onCompleted: () => {
+        showToast('success', 'Invite has been cancelled.')
+        handleCancelInviteModal()
+        refetch({
+          variables: {
+            limit: pageLimit,
+            skip: pageOffset,
+            where: {
+              buildingId,
+              pendingInvites: true,
+              search: debouncedText ?? null
+            }
+          }
+        })
       }
     }
   )
@@ -177,7 +204,10 @@ function InvitesRequests() {
                 {
                   label: 'Cancel Invite',
                   icon: <span className="ciergio-trash" />,
-                  function: () => {}
+                  function: () => {
+                    setSelectedInviteId(req._id)
+                    handleCancelInviteModal()
+                  }
                 }
               ]
               return {
@@ -220,6 +250,7 @@ function InvitesRequests() {
   )
 
   const handleAddResidentModal = () => setShowAddResidentModal(old => !old)
+  const handleCancelInviteModal = () => setShowCancelInviteModal(old => !old)
 
   const onBulkChange = e => {
     setSelectedBulk(e.value)
@@ -235,6 +266,16 @@ function InvitesRequests() {
       variables: {
         data: {
           inviteIds: selectedData
+        }
+      }
+    })
+  }
+
+  const onCancelInviteSubmit = () => {
+    cancelInvite({
+      variables: {
+        data: {
+          invitationId: selectedInviteId
         }
       }
     })
@@ -322,6 +363,12 @@ function InvitesRequests() {
         onCancel={handleResendBulk}
         bulkInvitesLength={selectedData?.length}
         loading={resendingInvite}
+      />
+      <CancelInviteModal
+        open={showCancelInviteModal}
+        onOk={onCancelInviteSubmit}
+        onCancel={handleCancelInviteModal}
+        loading={cancellingInvite}
       />
     </section>
   )

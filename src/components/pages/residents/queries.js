@@ -97,3 +97,14 @@ export const RESEND_INVITE = gql`
     }
   }
 `
+
+export const CANCEL_INVITE = gql`
+  mutation cancelInvite($data: InputCancelRegistrationInvite) {
+    cancelRegistrationInvite(data: $data) {
+      _id
+      message
+      processId
+      __typename
+    }
+  }
+`
