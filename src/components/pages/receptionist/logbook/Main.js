@@ -15,6 +15,7 @@ import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineMessage, AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
 import useKeyPress from '@app/utils/useKeyPress'
+import AddVisitorModal from '../modals/AddVisitorModal'
 
 const NUMBEROFCOLUMN = 6
 
@@ -68,6 +69,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
     moment(new Date()).endOf('day').format()
   ])
   const keyPressed = useKeyPress('Enter')
+  const [showModal, setShowModal] = useState(false)
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -144,10 +146,6 @@ function LogBook({ buildingId, categoryId, status, name }) {
     }
   }, [loading, error, data])
 
-  const addVisitor = e => {
-    e.preventDefault()
-  }
-
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
@@ -185,8 +183,11 @@ function LogBook({ buildingId, categoryId, status, name }) {
       setSearchText(e.target.value)
     }
   }
-  const onClearSearch = () => {
-    setSearch('')
+  const onClearSearch = () => setSearch('')
+
+  const handleShowModal = () => {
+    console.log('wew')
+    setShowModal(old => !old)
   }
 
   return (
@@ -212,7 +213,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
               primary
               label="Add Visitor"
               leftIcon={<BsPlusCircle />}
-              onClick={addVisitor}
+              onClick={handleShowModal}
             />
           </div>
         }
@@ -229,6 +230,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
           onLimitChange={onLimitChange}
         />
       )}
+      <AddVisitorModal showModal={showModal} onShowModal={handleShowModal} />
     </>
   )
 }
