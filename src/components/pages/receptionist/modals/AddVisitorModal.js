@@ -13,11 +13,13 @@ function AddVisitorModal({ showModal, onShowModal }) {
     resolver: yupResolver(validationSchema),
     defaultValues: {
       unit_number: '',
-      unit_owner_name: '',
+      host: '',
+      date_of_visit: '',
+      time_of_visit: '',
       first_name: '',
       last_name: '',
-      resident_type: '',
-      resident_email: ''
+      company: '',
+      note: ''
     }
   })
   const handleShowModal = () => onShowModal(old => !old)
