@@ -215,7 +215,7 @@ p {
   @apply border border-neutral-300 !important;
   @apply rounded bg-clip-padding;
   @apply hidden shadow-md;
-  @apply min-w-full !important;
+  width: 260px !important;
 
   &:before {
     @apply inline-block absolute left-auto right-3;
@@ -261,15 +261,18 @@ p {
 }
 
 .rdtDay {
-  @apply h-7 w-7 p-0;
+  @apply h-6 w-6 p-0;
   @apply text-center leading-7;
   @apply rounded-full;
 
+  &:hover,
   &.rdtToday.rdtActive,
   &.rdtActive,
-  &.rdtActive:hover {
+  &.rdtActive:hover,
+  &.rdtOld:hover,
+  &.rdtNew:hover {
     @apply bg-primary-500 !important;
-    @apply bg-white;
+    @apply text-white;
   }
 }
 
