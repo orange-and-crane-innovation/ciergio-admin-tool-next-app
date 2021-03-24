@@ -30,6 +30,14 @@ const accountTypes = {
   MEM: {
     value: 'member',
     name: 'Member'
+  },
+  PARISHADMIN: {
+    value: 'company_admin',
+    name: 'Parish Admin'
+  },
+  PARISHHEAD: {
+    value: 'company_admin',
+    name: 'Parish Head'
   }
 }
 

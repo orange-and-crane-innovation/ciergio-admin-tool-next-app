@@ -19,6 +19,7 @@ const Component = ({
       okText="Yes, delete complex"
       onOk={onSave}
       onCancel={onCancel}
+      okButtonProps={{ disabled: true }}
     >
       <div className="p-2 text-base font-body leading-7">
         <p>

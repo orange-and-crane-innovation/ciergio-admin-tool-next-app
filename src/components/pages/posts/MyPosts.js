@@ -151,7 +151,7 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: '20%'
+      width: '40%'
     },
     {
       name: 'Author',
@@ -199,7 +199,12 @@ const PostComponent = () => {
 
   const [
     bulkUpdate,
-    { loading: loadingBulk, called: calledBulk, data: dataBulk }
+    {
+      loading: loadingBulk,
+      called: calledBulk,
+      error: errorBulk,
+      data: dataBulk
+    }
   ] = useMutation(BULK_UPDATE_MUTATION)
 
   const [
@@ -306,15 +311,15 @@ const PostComponent = () => {
               checkbox: checkbox,
               title: (
                 <div className="flex flex-col">
-                  {item.title}
+                  <span className={styles.TextWrapper}>{item?.title}</span>
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
-                      <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline">View</a>
-                      </Link>
-                      {` | `}
                       <Link href={`/${routeName}/edit/${item._id}`}>
                         <a className="mx-2 hover:underline">Edit</a>
+                      </Link>
+                      {` | `}
+                      <Link href={`/${routeName}/view/${item._id}`}>
+                        <a className="mr-2 hover:underline">View</a>
                       </Link>
                       {` | `}
                       <span
@@ -341,7 +346,7 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              category: item.category?.name,
+              category: item.category?.name ?? 'Uncategorized',
               status: (
                 <div className="flex flex-col">
                   <span>{status}</span>
@@ -360,10 +365,15 @@ const PostComponent = () => {
   }, [loading, data, error])
 
   useEffect(() => {
-    if ((!loadingBulk, calledBulk && dataBulk)) {
+    if (!loadingBulk && errorBulk) {
+      showToast('danger', 'Bulk update failed')
+    }
+
+    if (!loadingBulk && calledBulk && dataBulk) {
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
+        let message
 
         if (allCheck.checked) {
           allCheck.click()
@@ -375,12 +385,25 @@ const PostComponent = () => {
           }
         }
 
+        setSelectedBulk(null)
+        setSelectedData([])
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk(null)
         setShowModal(old => !old)
 
-        showToast('success', `You have successfully updated a post`)
+        switch (selectedBulk) {
+          case 'unpublished':
+            message = `You have successfully unpublished (${selectedData?.length}) items.`
+            break
+          case 'trashed':
+            message = `You have successfully sent (${selectedData?.length}) items to the trash.`
+            break
+          default:
+            message = `You have successfully updated a post.`
+            break
+        }
+
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Bulk update failed`)
@@ -393,8 +416,19 @@ const PostComponent = () => {
       showToast('danger', `Update failed`)
     } else if (!loadingUpdate && calledUpdate && dataUpdate) {
       if (dataUpdate?.updatePost?.message === 'success') {
+        let message
+
+        switch (modalType) {
+          case 'delete':
+            message = 'You have successfully sent item to the trash.'
+            break
+          default:
+            message = 'You have successfully updated a post'
+            break
+        }
+
         setShowModal(old => !old)
-        showToast('success', `You have successfully updated a post`)
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Update failed`)

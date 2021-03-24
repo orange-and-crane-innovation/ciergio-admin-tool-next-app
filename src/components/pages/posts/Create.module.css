@@ -53,11 +53,11 @@
   }
 
   .CreatePostCardContent {
-    @apply max-w-lg;
+    @apply mb-4 w-full md:max-w-xs;
   }
 
   .CreatePostVideoContent {
-    @apply max-w-xl;
+    @apply w-full md:max-w-xl;
   }
 
   .CreatePostVideoInputContent {

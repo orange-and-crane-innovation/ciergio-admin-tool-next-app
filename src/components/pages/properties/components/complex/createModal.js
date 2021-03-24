@@ -16,14 +16,6 @@ const validationSchema = yup.object().shape({
   jobtitle: yup.string().label('Job Title').nullable().trim().required()
 })
 
-const validationSchemaAdmin = yup.object().shape({
-  name: yup.string().label('Complex Name').nullable().trim().required(),
-  location: yup.string().label('Location').nullable().trim().required(),
-  email: yup.string().email().label('Email').nullable().trim().required(),
-  jobtitle: yup.string().label('Job Title').nullable().trim().required(),
-  company: yup.string().label('Company').nullable().trim().required()
-})
-
 const Component = ({
   processType,
   title,
@@ -37,9 +29,7 @@ const Component = ({
   const accountType = user?.accounts?.data[0]?.accountType
 
   const { handleSubmit, control, errors, register, setValue } = useForm({
-    resolver: yupResolver(
-      accountType === 'administrator' ? validationSchemaAdmin : validationSchema
-    ),
+    resolver: yupResolver(validationSchema),
     defaultValues: {
       name: '',
       location: '',
@@ -144,27 +134,6 @@ const Component = ({
             />
           )}
         />
-
-        {accountType === 'administrator' && (
-          <>
-            <div className="font-semibold mb-2">Company</div>
-            <Controller
-              name="company"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <SelectCompany
-                  name={name}
-                  type="active"
-                  userType={accountType}
-                  placeholder="Select a Company"
-                  onChange={e => onChange(e.value)}
-                  selected={value}
-                  error={errors?.company?.message ?? null}
-                />
-              )}
-            />
-          </>
-        )}
       </div>
     </Modal>
   )

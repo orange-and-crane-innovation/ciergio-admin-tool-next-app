@@ -49,14 +49,16 @@ const GET_POST_QUERY = gql`
           url
           type
         }
+        dailyReadingDate
       }
     }
   }
 `
 
 const Component = () => {
-  const { query } = useRouter()
+  const { query, pathname } = useRouter()
   const [post, setPost] = useState()
+  const isDailyReadingsPage = pathname === '/daily-readings/view/[id]'
 
   const { loading, data, error, refetch } = useQuery(GET_POST_QUERY, {
     variables: {
@@ -78,12 +80,12 @@ const Component = () => {
 
       if (itemData) {
         setPost({
-          category: itemData?.category?.name || '',
-          title: itemData?.title || '',
+          category: itemData?.category?.name ?? '',
+          title: itemData?.title ?? '',
           author:
             `${itemData?.author?.user?.firstName} ${itemData?.author?.user?.lastName}` ||
             '',
-          date: DATE.displayDateCreated(itemData?.createdAt) || '',
+          date: DATE.displayDateCreated(itemData?.createdAt) ?? '',
           images:
             itemData?.primaryMedia.map(item => {
               return {
@@ -94,7 +96,8 @@ const Component = () => {
             (itemData?.embeddedMediaFiles &&
               itemData?.embeddedMediaFiles[0]?.url) ||
             null,
-          content: itemData?.content
+          content: itemData?.content,
+          dailyReadingDate: itemData?.dailyReadingDate ?? null
         })
       }
     }
@@ -116,9 +119,11 @@ const Component = () => {
         <div className={styles.PageSubContainer}>
           <div className={styles.PageHeader}>
             <div className={styles.HeaderCategory}>
-              {post.category.toUpperCase()}
+              {isDailyReadingsPage ? '' : post.category.toUpperCase()}
             </div>
-            <div className={styles.HeaderTitle}>{post.title}</div>
+            <div className={styles.HeaderTitle}>
+              {isDailyReadingsPage ? '' : post.title}
+            </div>
           </div>
           {post?.images && (
             <div className="mb-4">
@@ -126,14 +131,40 @@ const Component = () => {
             </div>
           )}
 
-          <div className="mb-12">
-            <strong>By {post.author}</strong> / {post.date}
-          </div>
-          {post.videos && (
+          {!isDailyReadingsPage && (
+            <div className="mb-12">
+              <strong>By {post.author}</strong> / {post.date}
+            </div>
+          )}
+
+          {isDailyReadingsPage && (
+            <center>
+              <div className="my-6 text-3xl leading-10">
+                <strong>
+                  {DATE.toFriendlyShortDate(post.dailyReadingDate)}
+                </strong>
+              </div>
+            </center>
+          )}
+
+          {post.videos && !isDailyReadingsPage && (
             <div className="mb-6">
               <VideoPlayer url={post.videos} />
             </div>
           )}
+
+          {isDailyReadingsPage && (
+            <div className="mb-2">
+              <strong>{post.title}</strong>
+            </div>
+          )}
+
+          {post.videos && isDailyReadingsPage && (
+            <div className="mb-6">
+              <VideoPlayer url={post.videos} />
+            </div>
+          )}
+
           <div className="mb-6">{ReactHtmlParser(post.content)}</div>
         </div>
       </div>

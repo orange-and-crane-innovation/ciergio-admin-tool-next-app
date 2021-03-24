@@ -14,12 +14,12 @@ const validationSchema = yup.object().shape({
   logo: yup.array().label('Image').nullable().required(),
   name: yup.string().label('Company Name').nullable().trim().required(),
   location: yup.string().label('Location').nullable().trim().required(),
-  domain: yup.string().label('Domain').nullable().trim().required(),
+  domain: yup.string().label('Domain').nullable().trim(),
   email: yup.string().email().label('Email').nullable().trim().required(),
   jobtitle: yup.string().label('Job Title').nullable().trim().required(),
   complexNo: yup
     .number()
-    .positive('No of Complexes must be greater than zero')
+    .moreThan(-1, 'No of Complexes must be greater than or equal to 0')
     .integer()
     .label('No of Complexes')
     .typeError('No of Complexes must be a number')
@@ -27,7 +27,7 @@ const validationSchema = yup.object().shape({
     .required(),
   buildingNo: yup
     .number()
-    .positive('No of Complexes must be greater than zero')
+    .moreThan(-1, 'No of Buildings must be greater than or equal to 0')
     .integer()
     .label('No of Buildings')
     .typeError('No of Buildings must be a number')
@@ -53,7 +53,7 @@ const Component = ({
       name: '',
       location: '',
       address: '',
-      domain: '',
+      domain: null,
       email: '',
       jobtitle: '',
       complexNo: '',
@@ -199,12 +199,13 @@ const Component = ({
           )}
         />
 
-        <div className="font-semibold mb-2">Custom Domain</div>
+        <div className="font-semibold mb-2 hidden">Custom Domain</div>
         <Controller
           name="domain"
           control={control}
           render={({ name, value, onChange }) => (
             <FormInput
+              containerClassName="hidden"
               id={name}
               name={name}
               placeholder=".com"

@@ -24,16 +24,20 @@ const Table = ({
   let listItem = []
   return (
     <div className={styles.tableContainer}>
-      <table className={styles.tableControl}>
+      <table id="table" className={styles.tableControl}>
         <thead className={styles.tableHeader}>
           <tr>
             {rowNames &&
               rowNames.map((item, index) => {
-                return (
-                  <th key={index} width={item.width}>
-                    {item.name}
-                  </th>
-                )
+                if (!item.hidden) {
+                  return (
+                    <th key={index} width={item.width}>
+                      {item.name}
+                    </th>
+                  )
+                } else {
+                  return false
+                }
               })}
           </tr>
         </thead>
@@ -45,7 +49,7 @@ const Table = ({
               items.data.map((item, index) => {
                 listItem = Object.entries(item).map(
                   ([key, value], rowIndex) => {
-                    if (key !== 'id') {
+                    if (value !== false && key !== 'id') {
                       return <td key={rowIndex}>{value}</td>
                     }
                     return null
@@ -55,6 +59,7 @@ const Table = ({
                 return (
                   <tr
                     key={index}
+                    data-id={item?.id ?? index}
                     onClick={() => {
                       if (onRowClick) {
                         onRowClick(item)

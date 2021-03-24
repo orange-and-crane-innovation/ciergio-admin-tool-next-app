@@ -12,6 +12,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import moment from 'moment'
+import Datetime from 'react-datetime'
 
 import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'
@@ -20,6 +21,8 @@ import Button from '@app/components/button'
 import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
 import PageLoader from '@app/components/page-loader'
+
+import { DATE } from '@app/utils'
 
 import VideoPlayer from '@app/components/globals/VideoPlayer'
 import SelectCategory from '@app/components/globals/SelectCategory'
@@ -55,6 +58,7 @@ const validationSchema = yup.object().shape({
 })
 
 const validationSchemaDraft = yup.object().shape({
+  date: yup.string(),
   title: yup
     .string()
     .nullable()
@@ -62,6 +66,18 @@ const validationSchemaDraft = yup.object().shape({
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
   content: yup.mixed().nullable(),
   category: yup.string().nullable()
+})
+
+const validationSchemaDailyReadings = yup.object().shape({
+  title: yup
+    .string()
+    .label('Title')
+    .nullable()
+    .trim()
+    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .required(),
+  content: yup.mixed().label('Content').nullable().required(),
+  images: yup.array().label('Image').nullable()
 })
 
 const CreatePosts = () => {
@@ -93,15 +109,20 @@ const CreatePosts = () => {
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
-  const routeName =
-    pathname === '/attractions-events/create'
-      ? 'attractions-events'
-      : pathname === '/qr-code/create'
-      ? 'qr-code'
-      : 'posts'
+  const isAttractionsEventsPage = pathname === '/attractions-events/create'
+  const isQRCodePage = pathname === '/qr-code/create'
+  const isDailyReadingsPage = pathname === '/daily-readings/create'
+  const routeName = isAttractionsEventsPage
+    ? 'attractions-events'
+    : isQRCodePage
+    ? 'qr-code'
+    : isDailyReadingsPage
+    ? 'daily-readings'
+    : 'posts'
 
   const [
     createPost,
@@ -123,9 +144,14 @@ const CreatePosts = () => {
     getValues
   } = useForm({
     resolver: yupResolver(
-      selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
+      selectedStatus === 'draft'
+        ? validationSchemaDraft
+        : isDailyReadingsPage
+        ? validationSchemaDailyReadings
+        : validationSchema
     ),
     defaultValues: {
+      date: selectedDate,
       title: '',
       content: null,
       video: '',
@@ -319,9 +345,14 @@ const CreatePosts = () => {
           buildingIds: selectedBuildingExcept.map(item => item.value)
         }
       }
-      if (routeName === 'qr-code') {
+      if (isQRCodePage) {
         createData.qr = true
       }
+      if (isDailyReadingsPage) {
+        createData.type = 'daily_reading'
+        createData.dailyReadingDate = DATE.getInitialTime(selectedDate)
+      }
+      console.log(createData)
       createPost({ variables: { data: createData } })
     }
   }
@@ -433,14 +464,24 @@ const CreatePosts = () => {
     onSubmit(getValues(), 'draft')
   }
 
+  const handleDateChange = e => {
+    setSelectedDate(e)
+  }
+
   return (
     <>
       {loadingCreate && <PageLoader fullPage />}
       <div className={style.CreatePostContainer}>
-        <h1 className={style.CreatePostHeader}>Create a Post</h1>
+        <h1 className={style.CreatePostHeader}>
+          {isDailyReadingsPage ? 'Create Daily Reading' : 'Create a Post'}
+        </h1>
         <form>
           <Card
-            header={<span className={style.CardHeader}>Featured Media</span>}
+            header={
+              <span className={style.CardHeader}>
+                Featured Media (optional)
+              </span>
+            }
             content={
               <div className={style.CreateContentContainer}>
                 <UploaderImage
@@ -460,7 +501,59 @@ const CreatePosts = () => {
           <Card
             content={
               <div className={style.CreateContentContainer}>
-                <h2 className={style.CreatePostHeaderSmall}>Title</h2>
+                {isDailyReadingsPage && (
+                  <>
+                    <h2 className={style.CreatePostHeaderSmall}>
+                      Daily Reading Date
+                    </h2>
+                    <div className={style.CreatePostCardContent}>
+                      <div className={style.CreatePostSubContent}>
+                        <Controller
+                          name="date"
+                          control={control}
+                          render={({ name, value, onChange }) => (
+                            <Datetime
+                              renderInput={(props, openCalendar) => (
+                                <>
+                                  <div className="relative">
+                                    <FormInput
+                                      {...props}
+                                      inputClassName={
+                                        style.CreatePostInputCustom
+                                      }
+                                      name="date"
+                                      value={moment(selectedDate).format(
+                                        'MMM DD, YYYY'
+                                      )}
+                                      error={errors?.date?.message ?? null}
+                                      readOnly
+                                    />
+                                    <i
+                                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                                      onClick={openCalendar}
+                                    />
+                                  </div>
+                                </>
+                              )}
+                              dateFormat="MMMM DD, YYYY"
+                              timeFormat={false}
+                              value={selectedDate}
+                              closeOnSelect
+                              onChange={e => {
+                                onChange(e)
+                                handleDateChange(e)
+                              }}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <h2 className={style.CreatePostHeaderSmall}>
+                  {isDailyReadingsPage ? 'Daily Reading Title' : 'Title'}
+                </h2>
                 <div className={style.CreatePostSubContent}>
                   <div className={style.CreatePostSubContentGrow}>
                     <Controller
@@ -573,32 +666,34 @@ const CreatePosts = () => {
             }
           />
 
-          <Card
-            header={<span className={style.CardHeader}>Category</span>}
-            content={
-              <div className={style.CreateContentContainer}>
-                <div className={style.CreatePostCardContent}>
-                  <Controller
-                    name="category"
-                    control={control}
-                    render={({ name, value, onChange }) => (
-                      <SelectCategory
-                        placeholder="Select a Category"
-                        type="post"
-                        onChange={e => {
-                          onChange(e.value)
-                          onCategorySelect(e)
-                        }}
-                        onClear={onClearCategory}
-                        error={errors?.category?.message ?? null}
-                        selected={selectedCategory}
-                      />
-                    )}
-                  />
+          {!isDailyReadingsPage && (
+            <Card
+              header={<span className={style.CardHeader}>Category</span>}
+              content={
+                <div className={style.CreateContentContainer}>
+                  <div className={style.CreatePostCardContent}>
+                    <Controller
+                      name="category"
+                      control={control}
+                      render={({ name, value, onChange }) => (
+                        <SelectCategory
+                          placeholder="Select a Category"
+                          type="post"
+                          onChange={e => {
+                            onChange(e.value)
+                            onCategorySelect(e)
+                          }}
+                          onClear={onClearCategory}
+                          error={errors?.category?.message ?? null}
+                          selected={selectedCategory}
+                        />
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
-            }
-          />
+              }
+            />
+          )}
 
           <Card
             header={<span className={style.CardHeader}>Publish Details</span>}
@@ -692,30 +787,35 @@ const CreatePosts = () => {
           />
 
           <div className={style.CreatePostFooter}>
-            <Can
-              perform="bulletin:draft"
-              yes={
-                <Button
-                  default
-                  type="button"
-                  label="Save as Draft"
-                  className={style.CreatePostFooterButton}
-                  onMouseDown={() => onUpdateStatus('draft')}
-                  onClick={handleSubmit(e => {
-                    onSubmit(e, 'draft')
-                  })}
-                />
-              }
-              no={
-                <Button
-                  disabled
-                  default
-                  type="button"
-                  label="Save as Draft"
-                  className={style.CreatePostFooterButton}
-                />
-              }
-            />
+            {isDailyReadingsPage ? (
+              <span></span>
+            ) : (
+              <Can
+                perform="bulletin:draft"
+                yes={
+                  <Button
+                    default
+                    type="button"
+                    label="Save as Draft"
+                    className={style.CreatePostFooterButton}
+                    onMouseDown={() => onUpdateStatus('draft')}
+                    onClick={handleSubmit(e => {
+                      onSubmit(e, 'draft')
+                    })}
+                  />
+                }
+                no={
+                  <Button
+                    disabled
+                    default
+                    type="button"
+                    label="Save as Draft"
+                    className={style.CreatePostFooterButton}
+                  />
+                }
+              />
+            )}
+
             <span>
               <Button
                 default
@@ -731,8 +831,10 @@ const CreatePosts = () => {
               <Button
                 type="button"
                 label={
-                  routeName === 'qr-code'
+                  isQRCodePage
                     ? 'Generate QR and Publish'
+                    : isDailyReadingsPage
+                    ? 'Publish'
                     : 'Publish Post'
                 }
                 primary
