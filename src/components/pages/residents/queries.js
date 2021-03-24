@@ -61,3 +61,28 @@ export const GET_FLOOR_NUMBERS = gql`
     getFloorNumbers(buildingId: $buildingId)
   }
 `
+
+export const GET_INVITES_AND_REQUESTS = gql`
+  query($where: GetExtensionAccountRequestsParams, $limit: Int, $skip: Int) {
+    getExtensionAccountRequests(where: $where, limit: $limit, skip: $skip) {
+      count
+      limit
+      skip
+      data {
+        _id
+        __typename
+        firstName
+        lastName
+        email
+        createdAt
+        accountType
+        unit {
+          _id
+          name
+          __typename
+        }
+      }
+      __typename
+    }
+  }
+`
