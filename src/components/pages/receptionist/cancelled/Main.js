@@ -14,6 +14,7 @@ import P from 'prop-types'
 import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
+import AddVisitorModal from '../modals/AddVisitorModal'
 
 const dummyRow = [
   {
@@ -54,6 +55,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
   ])
+  const [showModal, setShowModal] = useState(false)
 
   const { loading, error, data } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -108,10 +110,6 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     }
   }, [loading, error, data])
 
-  const addVisitor = e => {
-    e.preventDefault()
-  }
-
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
@@ -142,6 +140,8 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     setSearch('')
   }
 
+  const handleShowModal = () => setShowModal(show => !show)
+
   return (
     <>
       <DateAndSearch
@@ -168,7 +168,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
                 primary
                 label="Add Visitor"
                 leftIcon={<BsPlusCircle />}
-                onClick={addVisitor}
+                onClick={handleShowModal}
               />
             </div>
           </div>
@@ -186,6 +186,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           onLimitChange={onLimitChange}
         />
       )}
+      <AddVisitorModal showModal={showModal} onShowModal={handleShowModal} />
     </>
   )
 }

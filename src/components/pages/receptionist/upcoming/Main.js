@@ -15,6 +15,7 @@ import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineMessage, AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
 import useKeyPress from '@app/utils/useKeyPress'
+import AddVisitorModal from '../modals/AddVisitorModal'
 
 const COLCOUNT = 6
 const dummyRow = [
@@ -60,6 +61,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
   const [tableData, setTableData] = useState()
   const [search, setSearch] = useState(null)
   const [searchText, setSearchText] = useState(null)
+  const [showModal, setShowModal] = useState(false)
 
   const keyPressed = useKeyPress('Enter')
   console.log(status)
@@ -139,10 +141,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
     }
   }, [loading, error, data])
 
-  const addVisitor = e => {
-    e.preventDefault()
-  }
-
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
@@ -171,6 +169,8 @@ function Upcoming({ buildingId, categoryId, status, name }) {
     setSearch('')
   }
 
+  const handleShowModal = () => setShowModal(show => !show)
+
   return (
     <>
       <DateAndSearch
@@ -192,7 +192,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
               primary
               label="Add Visitor"
               leftIcon={<BsPlusCircle />}
-              onClick={addVisitor}
+              onClick={handleShowModal}
             />
           </div>
         }
@@ -209,6 +209,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           onLimitChange={onLimitChange}
         />
       )}
+      <AddVisitorModal showModal={showModal} onShowModal={handleShowModal} />
     </>
   )
 }

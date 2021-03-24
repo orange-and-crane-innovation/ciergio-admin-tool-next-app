@@ -185,10 +185,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   }
   const onClearSearch = () => setSearch('')
 
-  const handleShowModal = () => {
-    console.log('wew')
-    setShowModal(old => !old)
-  }
+  const handleShowModal = () => setShowModal(show => !show)
 
   return (
     <>
@@ -211,7 +208,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label="Add Visitor"
+              label="Add Visitors"
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />

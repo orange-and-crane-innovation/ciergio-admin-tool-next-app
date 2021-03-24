@@ -13,6 +13,7 @@ function AddVisitorModal({ showModal, onShowModal }) {
     resolver: yupResolver(validationSchema),
     defaultValues: {
       unit_number: '',
+      unit_owner_name: '',
       first_name: '',
       last_name: '',
       resident_type: '',
@@ -30,8 +31,8 @@ function AddVisitorModal({ showModal, onShowModal }) {
   }
   return (
     <Modal
-      title="Add Resident"
-      okText="Add Resident"
+      title="Add Visitor"
+      okText="Add"
       visible={showModal}
       onClose={handleClearModal}
       onCancel={handleClearModal}
