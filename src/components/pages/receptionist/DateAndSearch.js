@@ -13,48 +13,59 @@ function SelectDate({
   search,
   handleSearchChange,
   showTableData,
-  handleClear
+  handleClear,
+  noDate
 }) {
   return (
     <>
       <div className="flex flex-row w-full justify-between my-10">
-        <div className="flex flex-row w-full mx-4">
-          <div className={styles.DateTimeContainer}>
-            <p className={styles.DateTimeHeader}>Date</p>
-            <Datetime
-              renderInput={(props, openCalendar) => (
-                <>
-                  <div className="relative">
-                    <FormInput
-                      inputClassName={styles.DataTime}
-                      name="input-datetime"
-                      value={friendlyDateTimeFormat(date, 'MMMM DD, YYYY')}
-                      readOnly
-                    />
-                    <span
-                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer h-full"
-                      onClick={openCalendar}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={() => {}}
-                    />
-                  </div>
-                </>
-              )}
-              initialValue={friendlyDateTimeFormat(new Date(), 'MMMM DD, YYYY')}
-              dateFormat="MMM DD, YYYY"
-              timeFormat={false}
-              value={date}
-              onChange={handleDateChange}
-              disabled="true"
-            />
+        {!noDate && (
+          <div className="flex flex-row w-full mx-4">
+            <div className={styles.DateTimeContainer}>
+              <p className={styles.DateTimeHeader}>Date</p>
+              <Datetime
+                renderInput={(props, openCalendar) => (
+                  <>
+                    <div className="relative">
+                      <FormInput
+                        inputClassName={styles.DataTime}
+                        name="input-datetime"
+                        value={friendlyDateTimeFormat(date, 'MMMM DD, YYYY')}
+                        readOnly
+                      />
+                      <span
+                        className="ciergio-calendar absolute top-3 right-4 cursor-pointer h-full"
+                        onClick={openCalendar}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={() => {}}
+                      />
+                    </div>
+                  </>
+                )}
+                initialValue={friendlyDateTimeFormat(
+                  new Date(),
+                  'MMMM DD, YYYY'
+                )}
+                dateFormat="MMM DD, YYYY"
+                timeFormat={false}
+                value={date}
+                onChange={handleDateChange}
+                disabled="true"
+              />
+            </div>
+            <div className="flex items-end">
+              <Button default label="Show" onClick={showTableData} />
+            </div>
           </div>
-          <div className="flex items-end">
-            <Button default label="Show" onClick={showTableData} />
-          </div>
-        </div>
-
-        <div className={styles.SearchControlTextContainer}>
+        )}
+        <div
+          className={
+            !noDate
+              ? styles.SearchControlTextContainer
+              : 'flex w-full justify-end'
+          }
+        >
           <SearchControl
             placeholder="Search by title"
             searchText={search}
@@ -68,13 +79,18 @@ function SelectDate({
   )
 }
 
+SelectDate.defaultProps = {
+  noDate: false
+}
+
 SelectDate.propTypes = {
   date: P.oneOfType[(P.string, P.date)],
-  handleDateChange: P.func.isRequired,
-  search: P.string.isRequired,
-  handleSearchChange: P.func.isRequired,
-  showTableData: P.func.isRequired,
-  handleClear: P.func.isRequired
+  handleDateChange: P.func,
+  search: P.string,
+  handleSearchChange: P.func,
+  showTableData: P.func,
+  handleClear: P.func,
+  noDate: P.bool.isRequired
 }
 
 export default SelectDate

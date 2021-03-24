@@ -16,7 +16,7 @@ const SETTINGS = {
     tabs: ['Logbook', 'Upcoming', 'Cancelled'],
     status: {
       logbook: ['checkedIn', 'checkedOut'],
-      upcming: 'scheduled',
+      upcoming: 'scheduled',
       cancelled: 'cancelled'
     },
     mark: '_VISITORS_'
@@ -25,7 +25,7 @@ const SETTINGS = {
     tabs: ['Logbook', 'Upcoming', 'Cancelled'],
     status: {
       logbook: ['checkedIn', 'checkedOut'],
-      upcming: 'scheduled',
+      upcoming: 'scheduled',
       cancelled: 'cancelled'
     },
     mark: '_DELIVERIES_'
@@ -106,7 +106,7 @@ export default function Main() {
                 <UpComing
                   buildingId={buildingId}
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
-                  status={SETTINGS[routerName].status.upcopming}
+                  status={SETTINGS[routerName].status.upcoming}
                 />
               )}
             </Tabs.TabPanel>
