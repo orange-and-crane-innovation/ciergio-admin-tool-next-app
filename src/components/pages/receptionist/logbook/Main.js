@@ -48,12 +48,16 @@ const dummyRow = [
 
 const TableColStyle = ({ top, bottom }) => {
   return (
-    <div className="flex flex-col">
-      <p className={!bottom ? 'text-gray-900' : 'text-gray-900 font-bold'}>
-        {top}
-      </p>
-      <p className="text-gray-900">{bottom}</p>
-    </div>
+    <>
+      {!bottom ? (
+        top
+      ) : (
+        <div className="flex flex-col">
+          <p className="text-gray-900 font-bold">{top}</p>
+          <p className="text-gray-900">{bottom}</p>
+        </div>
+      )}
+    </>
   )
 }
 function LogBook({ buildingId, categoryId, status, name }) {
@@ -233,7 +237,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
 }
 
 TableColStyle.propTypes = {
-  top: P.oneOfType(P.string, P.array),
+  top: P.string,
   bottom: P.string
 }
 

@@ -6,7 +6,6 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import validationSchema from './schema'
 
-
 import AddVisitorModalContent from './AddVisitorModalContent'
 
 function AddVisitorModal({ showModal, onShowModal }) {

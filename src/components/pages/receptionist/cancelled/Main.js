@@ -35,12 +35,18 @@ const dummyRow = [
   }
 ]
 
-const UnitStyle = ({ unitNumber, unitOwnerName }) => {
+const TableColStyle = ({ top, bottom }) => {
   return (
-    <div className="flex flex-col">
-      <b>{unitNumber}</b>
-      <p className="text-gray-600">{unitOwnerName}</p>
-    </div>
+    <>
+      {!bottom ? (
+        top
+      ) : (
+        <div className="flex flex-col">
+          <p className="text-gray-900 font-bold">{top}</p>
+          <p className="text-gray-900">{bottom}</p>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -88,10 +94,10 @@ function Cancelled({ buildingId, categoryId, status, name }) {
 
         tableData.push({
           unitNumberAndOwner: (
-            <UnitStyle
+            <TableColStyle
               key={index}
-              unitNumber={`${registry.forWhat.name}`}
-              unitOwnerName={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+              top={`${registry.forWhat.name}`}
+              bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
             />
           ),
           personCompany: `${registry.visitor.firstName} ${registry.visitor.lastName}`,
@@ -191,9 +197,9 @@ function Cancelled({ buildingId, categoryId, status, name }) {
   )
 }
 
-UnitStyle.propTypes = {
-  unitNumber: P.oneOfType(P.string, P.array),
-  unitOwnerName: P.string.isRequired
+TableColStyle.propTypes = {
+  top: P.string,
+  bottom: P.string
 }
 
 Cancelled.propTypes = {
