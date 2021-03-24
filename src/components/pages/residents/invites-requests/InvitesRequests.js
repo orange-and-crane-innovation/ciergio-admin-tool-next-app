@@ -1,15 +1,11 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
-import Button from '@app/components/button'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Checkbox from '@app/components/forms/form-checkbox'
 import Dropdown from '@app/components/dropdown'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import { Card } from '@app/components/globals'
-import { FaPlusCircle } from 'react-icons/fa'
-import { HiOutlinePrinter } from 'react-icons/hi'
-import { FiDownload } from 'react-icons/fi'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import useDebounce from '@app/utils/useDebounce'
 import showToast from '@app/utils/toast'
@@ -315,31 +311,8 @@ function InvitesRequests() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Pending Invites`}</h1>
-        <div className="flex items-center">
-          <Button
-            default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />
-          <Button
-            default
-            leftIcon={<FaPlusCircle />}
-            label="Add Resident"
-            onClick={handleAddResidentModal}
-            className="mr-4 mt-4"
-          />
-        </div>
-      </div>
       <Card
+        title={'Pending Invites'}
         content={
           <PrimaryDataTable
             columns={columns}
