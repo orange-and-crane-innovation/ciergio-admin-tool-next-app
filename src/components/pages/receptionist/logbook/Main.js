@@ -178,7 +178,6 @@ function LogBook({ buildingId, categoryId, status, name }) {
       refetch()
     }
   }, [keyPressed, searchText])
-  // ============
 
   const handleSearch = e => {
     if (e.target.value === '') {

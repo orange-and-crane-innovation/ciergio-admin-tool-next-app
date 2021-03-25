@@ -15,7 +15,7 @@ function AddVisitorModalContent({ form, buildingId }) {
   const [loading, setLoading] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [onSchedule, setOnSchedule] = useState(false)
-  const { control } = form
+  const { control, errors } = form
   const [units, setUnits] = useState([])
   const [unitHostName, setUnitHostName] = useState([])
   const [host, setHost] = useState('')
@@ -29,17 +29,16 @@ function AddVisitorModalContent({ form, buildingId }) {
   })
 
   useEffect(() => {
-    if (!error && !loadingUnits && data) {
+    if (buildingId && !error && !loadingUnits && data) {
       console.log(data)
       const hostName = []
       const unitList = data?.getUnits?.data.map(unit => {
         hostName.push({
-          id: unit?._id,
-          name: unit.name,
-          hostname: `${unit?.unitOwner?.user?.firstName} ${unit?.unitOwner?.user?.lastName}`
+          value: unit.name,
+          label: `${unit?.unitOwner?.user?.firstName} ${unit?.unitOwner?.user?.lastName}`
         })
         return {
-          value: unit?._id,
+          value: unit?.name,
           label: unit.name
         }
       })
@@ -69,59 +68,67 @@ function AddVisitorModalContent({ form, buildingId }) {
   }
 
   const onRemoveImage = e => {
-    const images = imageUrls.filter(image => {
-      return image !== e.currentTarget.dataset.id
-    })
+    // const images = imageUrls.filter(image => {
+    //   return image !== e.currentTarget.dataset.id
+    // })
   }
 
   const onRepeatChange = e => setOnSchedule(e.target.checked)
 
   const setHostName = e => {
-    const foundHostName = unitHostName.find(val => val.name === e.label)
-    setHost(foundHostName.hostname)
+    const foundHostName = unitHostName.find(val => val.value === e.label)
+    setHost([foundHostName])
   }
 
   return (
     <>
-      {' '}
       <div className="w-full">
         <form>
           <div className="w-full flex flex-col justify-between">
             <div className="w-full flex justify-between align-center">
-              <div className="w-4/12 mr-4">
+              <div className="w-2/5 mr-4">
                 <Controller
                   name="unit_number"
                   control={control}
-                  render={({ name, onChange, value }) => (
-                    <FormSelect
-                      label="Unit"
-                      name={name}
-                      onChange={e => {
-                        onChange(e)
-                        setHostName(e)
-                      }}
-                      value={value}
-                      options={units}
-                    />
-                  )}
+                  render={({ name, onChange, value }) => {
+                    return (
+                      <FormSelect
+                        label="Unit"
+                        name={name}
+                        onChange={e => {
+                          onChange(e)
+                          setHostName(e)
+                        }}
+                        error={errors.unit_number && "Field shouldn't be empty"}
+                        placeholdr={value.name}
+                        value={value.name}
+                        options={units}
+                      />
+                    )
+                  }}
                 />
+                <pre>{JSON.stringify(errors, null, 2)}</pre>
               </div>
               <Controller
                 name="host"
                 control={control}
-                render={({ name, onChange, value }) => (
-                  <FormSelect
-                    label="Host"
-                    readOnly={true}
-                    name={name}
-                    placeholder={host}
-                    onChange={onChange}
-                    value={value}
-                    disabled
-                  />
-                )}
+                options={host[0]}
+                render={({ name, onChange, value }) => {
+                  return (
+                    <FormSelect
+                      label="Host"
+                      name={name}
+                      options={host}
+                      onChange={onChange}
+                      value={value}
+                      defaultValue={value}
+                      error={errors.host && "Field shouldn't be empty"}
+                    />
+                  )
+                }}
               />
             </div>
+
             <div className="w-full mb-5">
               <FormCheckBox
                 label="Scheduled Visit"
@@ -169,6 +176,7 @@ function AddVisitorModalContent({ form, buildingId }) {
                 control={control}
                 render={({ name, value, onChange }) => (
                   <FormInput
+                    error={errors.first_name && "Field shouldn't be empty"}
                     placeholder="Enter First Name"
                     type="email"
                     label="Fist Name"
@@ -188,6 +196,7 @@ function AddVisitorModalContent({ form, buildingId }) {
                     placeholder="Enter Last Name"
                     type="email"
                     label="Last Name"
+                    error={errors.last_name && "Field shouldn't be empty"}
                     onChange={onChange}
                     name={name}
                     value={value}
@@ -219,10 +228,11 @@ function AddVisitorModalContent({ form, buildingId }) {
                 Note (Optional)
               </p>
               <Controller
-                name="notes"
+                name="note"
                 control={control}
                 render={({ name, onChange, value }) => (
                   <FormTextArea
+                    name={name}
                     maxLength={120}
                     placeholder="Enter additional notes here"
                     toolbarHidden={true}
@@ -238,19 +248,13 @@ function AddVisitorModalContent({ form, buildingId }) {
               <p className="text-neutral-dark font-body font-bold text-sm">
                 Attach Image (Optional)
               </p>
-              <Controller
+              <UploaderImage
                 name="image"
-                control={control}
-                render={({ name, onChange, value }) => (
-                  <UploaderImage
-                    name="image"
-                    maxImages={1}
-                    images={imageUrls}
-                    loading={loading}
-                    onUploadImage={onUploadImage}
-                    onRemoveImage={onRemoveImage}
-                  />
-                )}
+                maxImages={1}
+                images={imageUrls}
+                loading={loading}
+                onUploadImage={onUploadImage}
+                onRemoveImage={onRemoveImage}
               />
             </div>
           </div>

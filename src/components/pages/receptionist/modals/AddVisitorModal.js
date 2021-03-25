@@ -8,7 +8,7 @@ import validationSchema from './schema'
 
 import AddVisitorModalContent from './AddVisitorModalContent'
 
-function AddVisitorModal({ showModal, onShowModal }) {
+function AddVisitorModal({ showModal, onShowModal, buildingId }) {
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -28,9 +28,10 @@ function AddVisitorModal({ showModal, onShowModal }) {
     handleShowModal()
   }
 
-  const handleOk = () => {
-    handleClearModal()
-  }
+  React.useEffect(() => {
+    console.log(buildingId)
+  }, [])
+
   return (
     <Modal
       title="Add Visitor"
@@ -38,16 +39,20 @@ function AddVisitorModal({ showModal, onShowModal }) {
       visible={showModal}
       onClose={handleClearModal}
       onCancel={handleClearModal}
-      onOk={handleSubmit(handleOk)}
+      onOk={handleSubmit(e => console.log(e))}
     >
-      <AddVisitorModalContent form={{ control, errors }} />
+      <AddVisitorModalContent
+        form={{ control, errors }}
+        buildingId={buildingId}
+      />
     </Modal>
   )
 }
 
 AddVisitorModal.propTypes = {
   showModal: P.bool,
-  onShowModal: P.func
+  onShowModal: P.func,
+  buildingId: P.string
 }
 
 export default AddVisitorModal
