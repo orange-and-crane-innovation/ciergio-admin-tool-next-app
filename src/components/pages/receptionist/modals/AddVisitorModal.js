@@ -1,14 +1,16 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import Modal from '@app/components/modal'
 import P from 'prop-types'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { CREATE_REGISTRYRECORD } from '../mutation'
+import { useMutation } from '@apollo/client'
 
 import validationSchema from './schema'
 
 import AddVisitorModalContent from './AddVisitorModalContent'
 
-function AddVisitorModal({ showModal, onShowModal, buildingId }) {
+function AddVisitorModal({ showModal, onShowModal, buildingId, categoryId }) {
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -24,13 +26,15 @@ function AddVisitorModal({ showModal, onShowModal, buildingId }) {
   })
   const handleShowModal = () => onShowModal(old => !old)
 
+  const [createRegistryRecord, { loading, called, data }] = useMutation(
+    CREATE_REGISTRYRECORD
+  )
+
   const handleClearModal = () => {
     handleShowModal()
   }
 
-  React.useEffect(() => {
-    console.log(buildingId)
-  }, [])
+  const handleOk = async data => {}
 
   return (
     <Modal
@@ -39,7 +43,7 @@ function AddVisitorModal({ showModal, onShowModal, buildingId }) {
       visible={showModal}
       onClose={handleClearModal}
       onCancel={handleClearModal}
-      onOk={handleSubmit(e => console.log(e))}
+      onOk={handleSubmit(handleOk)}
     >
       <AddVisitorModalContent
         form={{ control, errors }}
@@ -52,7 +56,8 @@ function AddVisitorModal({ showModal, onShowModal, buildingId }) {
 AddVisitorModal.propTypes = {
   showModal: P.bool,
   onShowModal: P.func,
-  buildingId: P.string
+  buildingId: P.string,
+  categoryId: P.string
 }
 
 export default AddVisitorModal

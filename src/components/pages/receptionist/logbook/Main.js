@@ -234,6 +234,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         showModal={showModal}
         onShowModal={handleShowModal}
         buildingId={buildingId}
+        categoryId={categoryId}
       />
     </>
   )
