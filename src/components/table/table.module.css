@@ -46,5 +46,15 @@
         @apply px-8 py-4;
       }
     }
+
+    .customBody {
+      @apply font-body font-normal;
+
+      td {
+        @apply px-8 py-4 max-w-lg;
+        @apply border-b;
+        @apply break-words;
+      }
+    }
   }
 }

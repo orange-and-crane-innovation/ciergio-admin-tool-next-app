@@ -24,13 +24,17 @@ function PrimaryDataTable({
 
   return (
     <>
-      <Table
-        rowNames={columns}
-        items={data}
-        loading={loading}
-        custom={customize}
-        customBody={customBody}
-      />
+      {customize ? (
+        <Table
+          loading={loading}
+          rowNames={columns}
+          custom={customize}
+          customBody={customBody}
+        />
+      ) : (
+        <Table rowNames={columns} items={data} loading={loading} />
+      )}
+
       {!loading && data && (
         <div className="px-8">
           <Pagination
