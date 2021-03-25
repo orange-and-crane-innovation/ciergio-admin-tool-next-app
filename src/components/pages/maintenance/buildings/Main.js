@@ -19,11 +19,14 @@ function Main() {
   const getNextPath = id => {
     let path = originPath
     if (originPath === 'residents') {
-      if (router?.pathname?.split[2] === 'all-residents') {
-        path = 'residents/all-residents'
-        return
+      if (originPath === 'residents') {
+        const residentsPath = router?.pathname?.split('/')[2]
+        if (residentsPath === 'all-residents') {
+          path = 'residents/all-residents'
+        } else {
+          path = 'residents/invites-requests'
+        }
       }
-      path = 'residents/invites-requests'
     }
 
     return `/${path}?complexId=${query?.complexId}&buildingId=${id}`
