@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import P from 'prop-types'
 import { Controller } from 'react-hook-form'
 
@@ -8,12 +8,45 @@ import FormCheckBox from '@app/components/forms/form-checkbox'
 import FormTextArea from '@app/components/forms/form-textarea'
 import { DateInput, TimeInput } from '@app/components/datetime'
 import UploaderImage from '@app/components/uploader/image'
+import { GET_UNITS } from '../query'
+import { useQuery } from '@apollo/client'
 
-function AddVisitorModalContent({ form }) {
+function AddVisitorModalContent({ form, buildingId }) {
   const [loading, setLoading] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [onSchedule, setOnSchedule] = useState(false)
   const { control } = form
+  const [units, setUnits] = useState([])
+  const [unitHostName, setUnitHostName] = useState([])
+  const [host, setHost] = useState('')
+
+  const { data, error, loading: loadingUnits } = useQuery(GET_UNITS, {
+    variables: {
+      where: {
+        buildingId
+      }
+    }
+  })
+
+  useEffect(() => {
+    if (!error && !loadingUnits && data) {
+      console.log(data)
+      const hostName = []
+      const unitList = data?.getUnits?.data.map(unit => {
+        hostName.push({
+          id: unit?._id,
+          name: unit.name,
+          hostname: `${unit?.unitOwner?.user?.firstName} ${unit?.unitOwner?.user?.lastName}`
+        })
+        return {
+          value: unit?._id,
+          label: unit.name
+        }
+      })
+      setUnitHostName(hostName)
+      setUnits(unitList)
+    }
+  }, [data, error, loadingUnits])
 
   const onUploadImage = e => {
     const files = e.target.files ? e.target.files : e.dataTransfer.files
@@ -39,10 +72,14 @@ function AddVisitorModalContent({ form }) {
     const images = imageUrls.filter(image => {
       return image !== e.currentTarget.dataset.id
     })
-    setImageUrls(images)
   }
 
   const onRepeatChange = e => setOnSchedule(e.target.checked)
+
+  const setHostName = e => {
+    const foundHostName = unitHostName.find(val => val.name === e.label)
+    setHost(foundHostName.hostname)
+  }
 
   return (
     <>
@@ -59,76 +96,68 @@ function AddVisitorModalContent({ form }) {
                     <FormSelect
                       label="Unit"
                       name={name}
-                      onChange={onChange}
+                      onChange={e => {
+                        onChange(e)
+                        setHostName(e)
+                      }}
                       value={value}
-                      options={[
-                        {
-                          label: 'Unit 1',
-                          value: 'unit-1'
-                        }
-                      ]}
+                      options={units}
                     />
                   )}
                 />
               </div>
               <Controller
-                name="unit_owner_name"
+                name="host"
                 control={control}
                 render={({ name, onChange, value }) => (
                   <FormSelect
                     label="Host"
                     readOnly={true}
                     name={name}
+                    placeholder={host}
                     onChange={onChange}
                     value={value}
-                    options={[
-                      {
-                        label: 'Unit 1',
-                        value: 'unit-1'
-                      }
-                    ]}
+                    disabled
                   />
                 )}
               />
             </div>
             <div className="w-full mb-5">
-              <Controller
-                name="unit_owner_name"
-                control={control}
-                render={({ name, onChange, value }) => (
-                  <FormCheckBox
-                    label="Scheduled Visit"
-                    name="schedule"
-                    value={onSchedule}
-                    isChecked={onSchedule}
-                    onChange={onRepeatChange}
-                  />
-                )}
+              <FormCheckBox
+                label="Scheduled Visit"
+                name="schedule"
+                value={onSchedule}
+                isChecked={onSchedule}
+                onChange={onRepeatChange}
               />
             </div>
             {onSchedule && (
               <div className="w-full flex justify-between align-center">
                 <Controller
-                  name="unit_number"
+                  name="date_of_visit"
                   control={control}
                   render={({ name, onChange, value }) => (
                     <DateInput
                       label="Date of Visit"
-                      date={new Date()}
-                      onDateChange={date => console.log(date)}
+                      name={name}
+                      date={value}
+                      onDateChange={onChange}
                       dateFormat="MMMM DD, YYYY"
+                      value={value}
                     />
                   )}
                 />
 
                 <Controller
-                  name="unit_owner_name"
+                  name="time_of_visit"
                   control={control}
                   render={({ name, onChange, value }) => (
                     <TimeInput
                       label="Time of Visit"
-                      time={new Date()}
-                      onTimeChange={date => console.log(date)}
+                      time={value}
+                      name={name}
+                      onTimeChange={onChange}
+                      value={value}
                     />
                   )}
                 />
@@ -136,7 +165,7 @@ function AddVisitorModalContent({ form }) {
             )}
             <div className="w-full flex justify-between align-center">
               <Controller
-                name="resident_email"
+                name="first_name"
                 control={control}
                 render={({ name, value, onChange }) => (
                   <FormInput
@@ -152,7 +181,7 @@ function AddVisitorModalContent({ form }) {
               />
 
               <Controller
-                name="resident_email"
+                name="last_name"
                 control={control}
                 render={({ name, value, onChange }) => (
                   <FormInput
@@ -170,7 +199,7 @@ function AddVisitorModalContent({ form }) {
 
             <div className="w-full">
               <Controller
-                name="unit_owner_name"
+                name="company"
                 control={control}
                 render={({ name, onChange, value }) => (
                   <FormInput
@@ -190,7 +219,7 @@ function AddVisitorModalContent({ form }) {
                 Note (Optional)
               </p>
               <Controller
-                name="unit_owner_name"
+                name="notes"
                 control={control}
                 render={({ name, onChange, value }) => (
                   <FormTextArea
@@ -210,7 +239,7 @@ function AddVisitorModalContent({ form }) {
                 Attach Image (Optional)
               </p>
               <Controller
-                name="unit_owner_name"
+                name="image"
                 control={control}
                 render={({ name, onChange, value }) => (
                   <UploaderImage
@@ -232,6 +261,7 @@ function AddVisitorModalContent({ form }) {
 }
 
 AddVisitorModalContent.propTypes = {
-  form: P.object
+  form: P.object,
+  buildingId: P.string.isRequired
 }
 export default AddVisitorModalContent

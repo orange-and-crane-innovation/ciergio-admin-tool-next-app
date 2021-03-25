@@ -127,3 +127,30 @@ export const GET_REGISTRYRECORDS = gql`
     }
   }
 `
+export const GET_UNITS = gql`
+  query getUnits($where: GetUnitsParams) {
+    getUnits(where: $where) {
+      data {
+        _id
+        name
+        building {
+          name
+          __typename
+          _id
+        }
+        unitOwner {
+          accountType
+          __typename
+          _id
+          user {
+            firstName
+            email
+            lastName
+            _id
+            __typename
+          }
+        }
+      }
+    }
+  }
+`

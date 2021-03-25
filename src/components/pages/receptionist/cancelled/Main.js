@@ -192,7 +192,11 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           onLimitChange={onLimitChange}
         />
       )}
-      <AddVisitorModal showModal={showModal} onShowModal={handleShowModal} />
+      <AddVisitorModal
+        buildingId={buildingId}
+        showModal={showModal}
+        onShowModal={handleShowModal}
+      />
     </>
   )
 }

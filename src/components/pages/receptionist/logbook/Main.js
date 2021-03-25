@@ -231,7 +231,11 @@ function LogBook({ buildingId, categoryId, status, name }) {
           onLimitChange={onLimitChange}
         />
       )}
-      <AddVisitorModal showModal={showModal} onShowModal={handleShowModal} />
+      <AddVisitorModal
+        showModal={showModal}
+        onShowModal={handleShowModal}
+        buildingId={buildingId}
+      />
     </>
   )
 }
