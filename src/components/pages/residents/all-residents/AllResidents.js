@@ -1,51 +1,53 @@
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
+import uniqWith from 'lodash/uniqWith'
+import isEqual from 'lodash/isEqual'
 import { useRouter } from 'next/router'
 import { useQuery } from '@apollo/client'
 import FormSelect from '@app/components/forms/form-select'
-import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
+import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
 import AddResidentModal from '../components/AddResidentModal'
 import Can from '@app/permissions/can'
+import useDebounce from '@app/utils/useDebounce'
 import Dropdown from '@app/components/dropdown'
-import { AiOutlineEllipsis } from 'react-icons/ai'
 import { GET_RESIDENTS, GET_FLOOR_NUMBERS } from '../queries'
+import SearchComponent from '@app/components/globals/SearchControl'
 
 const accountTypes = [
   {
     label: 'All Accounts',
-    value: null
+    value: ['unit_owner', 'resident']
   },
   {
     label: 'Unit Owner',
-    value: 'unit-owner'
+    value: ['unit_owner']
   },
   {
-    label: 'Relative',
-    value: 'relative'
+    label: 'Resident',
+    value: ['resident']
   }
 ]
 
 const columns = [
   {
-    Name: 'Unit #',
+    name: 'Unit #',
     width: ''
   },
   {
-    Name: 'Resident Name',
+    name: 'Resident Name',
     width: ''
   },
   {
-    Name: 'Account Type',
+    name: 'Account Type',
     width: ''
   },
   {
-    Name: '',
+    name: '',
     width: ''
   }
 ]
@@ -57,18 +59,27 @@ function AllResidents() {
   const [showModal, setShowModal] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
-  const [, setPageOffset] = useState(0)
-
-  const { data: residents } = useQuery(GET_RESIDENTS, {
+  const [pageOffset, setPageOffset] = useState(0)
+  const [selectedFloor, setSelectedFloor] = useState(null)
+  const [selectedAccounts, setSelectedAccounts] = useState([
+    'unit_owner',
+    'resident'
+  ])
+  const debouncedText = useDebounce(searchText, 700)
+  const { data: residents, loading } = useQuery(GET_RESIDENTS, {
     variables: {
       where: {
-        accountTypes: ['unit_owner', 'resident'],
+        accountTypes: selectedAccounts,
         sortBy: { unitName: 1 },
-        buildingId
-      }
+        buildingId,
+        floorNumber: selectedFloor,
+        search: debouncedText
+      },
+      limit: pageLimit,
+      skip: pageOffset
     }
   })
-
+  console.log({ selectedFloor })
   const { data: floorNumbers } = useQuery(GET_FLOOR_NUMBERS, {
     variables: {
       buildingId
@@ -92,50 +103,112 @@ function AllResidents() {
     return []
   })
 
+  const units = useMemo(() => {
+    const newUnits = residents?.getAccounts?.data?.map(res => ({
+      name: res.unit.name,
+      id: res.unit._id
+    }))
+    return uniqWith(newUnits, isEqual)
+  }, [residents?.getAccounts])
+
   const residentsData = useMemo(
     () => ({
       count: residents?.getAccounts?.count || 0,
-      limit: 10,
-      offset: 0,
+      limit: residents?.getAccounts?.limit || 10,
+      offset: residents?.getAccounts?.skip || 0,
       data:
-        residents?.getAccounts?.count > 0
-          ? residents.getAccounts.data.map(dt => {
-              const user = dt?.user
-              const dropdownData = [
-                {
-                  label: 'Resend Invite',
-                  icon: <span className="ciergio-employees" />,
-                  function: () => {}
-                },
-                {
-                  label: 'Cancel Invite',
-                  icon: <span className="ciergio-edit" />,
-                  function: () => {}
-                }
-              ]
-
+        units?.length > 0
+          ? units.map(unit => {
               return {
-                unitNumber: dt?.unit?.name,
-                name: `${user?.firstName} ${user?.lastName}`,
-                type: dt?.accountType,
-                dropdown: (
-                  <Can
-                    perform="residents:resend::cancel"
-                    yes={
-                      <Dropdown
-                        label={<AiOutlineEllipsis />}
-                        items={dropdownData}
-                      />
+                name: unit.name,
+                id: unit.id,
+                residents: residents.getAccounts.data.map(res => {
+                  const dropdownData = [
+                    {
+                      label: 'View Profile',
+                      icon: <span className="ciergio-user" />,
+                      function: () => {
+                        router.push(`/residents/view/${res._id}`)
+                      }
                     }
-                  />
-                )
+                  ]
+
+                  if (res?.unit?._id === unit.id) {
+                    return {
+                      name: `${res.user.firstName} ${res.user.lastName}`,
+                      avatar: res.user.avatar,
+                      accountType: res.accountType,
+                      dropdown: (
+                        <Dropdown
+                          label={<span className="ciergio-more" />}
+                          items={dropdownData}
+                        />
+                      )
+                    }
+                  }
+                  return null
+                })
               }
             })
           : []
     }),
-    [residents?.getAccounts]
+    [residents?.getAccounts, units]
   )
-  console.log('res', residents)
+
+  const customResidentsTable = useMemo(() => {
+    return (
+      <>
+        {residentsData?.data?.map(unit => {
+          return (
+            <>
+              <tr key={unit.id} className="bg-neutral-100">
+                <td
+                  className="border px-8 py-4 text-left"
+                  colSpan={columns?.length}
+                >
+                  <span className="font-bold text-neutral-dark">
+                    {unit.name}
+                  </span>
+                </td>
+              </tr>
+              {unit?.residents?.length > 0
+                ? unit.residents.map((resident, index) => {
+                    if (!resident) return null
+                    return (
+                      <tr key={index} className="bg-white">
+                        <td></td>
+                        <td>
+                          <div className="flex items-center">
+                            <img
+                              src={
+                                resident?.avatar ??
+                                `https://ui-avatars.com/api/?name=${resident?.name}`
+                              }
+                              alt={resident?.name}
+                              className="w-10 h-10 rounded-full mr-4"
+                            />
+                            <span className="font-bold text-neutral-dark">
+                              {resident?.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="capitalize">
+                            {resident?.accountType?.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td>{resident?.dropdown}</td>
+                      </tr>
+                    )
+                  })
+                : null}
+            </>
+          )
+        })}
+      </>
+    )
+  }, [residentsData?.data])
+
   const handleShowModal = () => setShowModal(old => !old)
 
   return (
@@ -144,24 +217,29 @@ function AllResidents() {
 
       <div className="flex items-center justify-end mt-12 mx-4 w-full">
         <div className="flex items-center justify-between w-8/12 flex-row">
-          <FormSelect options={floorOptions} className="mr-4" />
-          <FormSelect options={accountTypes} className="mr-4" />
-          <div className="w-full relative mr-4">
-            <FormInput
-              name="search"
-              placeholder="Search"
-              inputClassName="pr-8"
-              onChange={e => setSearchText(e.target.value)}
-              value={searchText}
-            />
-            <span className="absolute top-4 right-4">
-              {searchText ? (
-                <FaTimes className="cursor-pointer" onClick={() => {}} />
-              ) : (
-                <FaSearch />
-              )}
-            </span>
-          </div>
+          <FormSelect
+            options={floorOptions}
+            className="mr-4"
+            onChange={floor => setSelectedFloor(floor.value)}
+          />
+          <FormSelect
+            options={accountTypes}
+            className="mr-4"
+            onChange={account => setSelectedAccounts(account?.value)}
+          />
+          <SearchComponent
+            name="search"
+            searchText={searchText}
+            placeholder="Search"
+            onSearch={e => {
+              if (e.target.value === '') {
+                setSearchText(null)
+              } else {
+                setSearchText(e.target.value)
+              }
+            }}
+            onClearSearch={() => setSearchText(null)}
+          />
         </div>
       </div>
 
@@ -208,29 +286,14 @@ function AllResidents() {
         content={
           <PrimaryDataTable
             columns={columns}
+            loading={loading}
             data={residentsData}
-            loading={false}
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             pageLimit={pageLimit}
             setPageLimit={setPageLimit}
             setPageOffset={setPageOffset}
-            customBody={
-              <>
-                {residentsData?.data?.map((r, i) => {
-                  return (
-                    <tr key={i}>
-                      <td
-                        className="border px-8 py-4 text-left"
-                        colSpan={columns?.length}
-                      >
-                        {r.unitNumber}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </>
-            }
+            customBody={customResidentsTable}
             customize
           />
         }

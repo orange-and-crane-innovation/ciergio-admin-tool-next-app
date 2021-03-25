@@ -1,9 +1,11 @@
 import gql from 'graphql-tag'
 
 export const GET_RESIDENTS = gql`
-  query getResident($where: GetAccountsParams) {
-    getAccounts(where: $where) {
+  query getResident($where: GetAccountsParams, $limit: Int, $skip: Int) {
+    getAccounts(where: $where, limit: $limit, skip: $skip) {
       count
+      limit
+      skip
       data {
         _id
         accountType
