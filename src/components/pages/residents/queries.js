@@ -110,3 +110,32 @@ export const CANCEL_INVITE = gql`
     }
   }
 `
+
+export const GET_UNITS = gql`
+  query getUnits($where: GetUnitsParams) {
+    getUnits(where: $where) {
+      count
+      data {
+        _id
+        name
+        floorNumber
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
+export const INVITE_RESIDENT = gql`
+  mutation inviteResident(
+    $data: InputRequestExtensionAccount
+    $unitId: String
+  ) {
+    requestExtensionAccount(data: $data, unitId: $unitId) {
+      _id
+      message
+      processId
+      __typename
+    }
+  }
+`

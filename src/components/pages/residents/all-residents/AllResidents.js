@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import P from 'prop-types'
+import { useState, useMemo, Fragment } from 'react'
 import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
 import { useRouter } from 'next/router'
@@ -56,7 +55,7 @@ function AllResidents() {
   const router = useRouter()
   const { buildingId } = router?.query
   const [searchText, setSearchText] = useState('')
-  const [showModal, setShowModal] = useState('')
+  const [showModal, setShowModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
   const [pageOffset, setPageOffset] = useState(0)
@@ -66,7 +65,7 @@ function AllResidents() {
     'resident'
   ])
   const debouncedText = useDebounce(searchText, 700)
-  const { data: residents, loading } = useQuery(GET_RESIDENTS, {
+  const { data: residents, loading, refetch } = useQuery(GET_RESIDENTS, {
     variables: {
       where: {
         accountTypes: selectedAccounts,
@@ -79,12 +78,28 @@ function AllResidents() {
       skip: pageOffset
     }
   })
-  console.log({ selectedFloor })
+
   const { data: floorNumbers } = useQuery(GET_FLOOR_NUMBERS, {
     variables: {
       buildingId
     }
   })
+
+  const handleRefetch = () => {
+    refetch({
+      variables: {
+        where: {
+          accountTypes: selectedAccounts,
+          sortBy: { unitName: 1 },
+          buildingId,
+          floorNumber: selectedFloor,
+          search: debouncedText
+        },
+        limit: pageLimit,
+        skip: pageOffset
+      }
+    })
+  }
 
   const floorOptions = useMemo(() => {
     if (floorNumbers?.getFloorNumbers?.length > 0) {
@@ -160,8 +175,8 @@ function AllResidents() {
       <>
         {residentsData?.data?.map(unit => {
           return (
-            <>
-              <tr key={unit.id} className="bg-neutral-100">
+            <Fragment key={unit.id}>
+              <tr className="bg-neutral-100">
                 <td
                   className="border px-8 py-4 text-left"
                   colSpan={columns?.length}
@@ -202,7 +217,7 @@ function AllResidents() {
                     )
                   })
                 : null}
-            </>
+            </Fragment>
           )
         })}
       </>
@@ -213,7 +228,11 @@ function AllResidents() {
 
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Tower 1 Residents List</h1>
+      <h1 className="content-title">
+        {residents?.getAccounts
+          ? `${residents?.getAccounts?.data[0]?.building?.name} Resident List`
+          : null}
+      </h1>
 
       <div className="flex items-center justify-end mt-12 mx-4 w-full">
         <div className="flex items-center justify-between w-8/12 flex-row">
@@ -298,50 +317,14 @@ function AllResidents() {
           />
         }
       />
-      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
+      <AddResidentModal
+        showModal={showModal}
+        onShowModal={handleShowModal}
+        buildingId={buildingId}
+        refetch={handleRefetch}
+      />
     </section>
   )
-}
-
-function ResidentCell({ value }) {
-  return (
-    <div>
-      <div>{value.resident_name}</div>
-      <div>{value.contact_number}</div>
-    </div>
-  )
-}
-
-function ResidentInviteButton({ value }) {
-  if (value.active) return null
-
-  return (
-    <div>
-      <Button label="Invite" onClick={() => console.log('invited')} />
-    </div>
-  )
-}
-
-function ResidentType({ value }) {
-  return (
-    <div>
-      <span>{`${value.account_type} ${
-        !value.active ? '(Unregistered)' : ''
-      }`}</span>
-    </div>
-  )
-}
-
-ResidentCell.propTypes = {
-  value: P.object
-}
-
-ResidentInviteButton.propTypes = {
-  value: P.object
-}
-
-ResidentType.propTypes = {
-  value: P.object
 }
 
 export default AllResidents
