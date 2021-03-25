@@ -17,7 +17,8 @@ function Component({
   footer,
   children,
   okButtonProps,
-  loading
+  loading,
+  modalProps
 }) {
   const customStyles = {
     height: 'auto',
@@ -33,13 +34,16 @@ function Component({
       onClose={onClose}
       customStyles={customStyles}
       closeMaskOnClick={false}
+      {...modalProps}
     >
       <div className="modal">
-        <div className="modal-header">
-          <div className="modal-title">
-            <span>{title}</span>
+        {title ? (
+          <div className="modal-header">
+            <div className="modal-title">
+              <span>{title}</span>
+            </div>
           </div>
-        </div>
+        ) : null}
         <div className="modal-content">{loading ? <Spinner /> : children}</div>
         {footer !== null ? (
           <div className="modal-footer">
@@ -75,7 +79,8 @@ Component.propTypes = {
   onCancel: P.func,
   footer: P.bool,
   okButtonProps: P.object,
-  loading: P.bool
+  loading: P.bool,
+  modalProps: P.object
 }
 
 export default Component

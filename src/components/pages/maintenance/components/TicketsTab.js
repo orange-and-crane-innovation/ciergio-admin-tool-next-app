@@ -162,13 +162,13 @@ function TicketsTab({
       <AddStaffModal
         open={showAddStaffModal}
         onOk={handleSubmit(handleAddStaffSubmit)}
-        onClose={() => setShowAddStaffModal(old => !old)}
+        onCancel={() => setShowAddStaffModal(old => !old)}
         loading={false}
         form={{
           control,
           errors
         }}
-        options={staffOptions}
+        options={staffOptions || []}
       />
     </>
   )

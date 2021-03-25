@@ -63,12 +63,12 @@ const navigation = [
         title: 'My Residents',
         items: [
           {
-            url: '/residents/all-residents',
+            url: '/residents/all-residents/complexes',
             title: 'All Residents',
             items: []
           },
           {
-            url: '/residents/invites-requests',
+            url: '/residents/invites-requests/complexes',
             title: 'Invites & Requests',
             items: []
           }

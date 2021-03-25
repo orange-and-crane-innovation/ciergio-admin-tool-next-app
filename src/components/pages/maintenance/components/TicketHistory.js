@@ -8,7 +8,7 @@ import { GET_ISSUE_HISTORY } from '../queries'
 
 const columns = [
   {
-    name: 'Data & Time',
+    name: 'Date & Time',
     width: ''
   },
   {

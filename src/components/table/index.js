@@ -41,7 +41,7 @@ const Table = ({
               })}
           </tr>
         </thead>
-        <tbody className={styles.tableBody}>
+        <tbody className={!custom ? styles.tableBody : styles.customBody}>
           {custom
             ? customBody
             : items &&

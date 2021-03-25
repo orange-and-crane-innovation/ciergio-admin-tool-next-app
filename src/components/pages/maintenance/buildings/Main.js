@@ -7,12 +7,30 @@ import { useQuery } from '@apollo/client'
 import { GET_BUILDINGS } from '../queries'
 
 function Main() {
-  const { query } = useRouter()
+  const router = useRouter()
+  const query = router?.query
+  const originPath = router?.pathname?.split('/')[1]
   const { data, loading } = useQuery(GET_BUILDINGS, {
     variables: {
       complexId: query?.complexId
     }
   })
+
+  const getNextPath = id => {
+    let path = originPath
+    if (originPath === 'residents') {
+      if (originPath === 'residents') {
+        const residentsPath = router?.pathname?.split('/')[2]
+        if (residentsPath === 'all-residents') {
+          path = 'residents/all-residents'
+        } else {
+          path = 'residents/invites-requests'
+        }
+      }
+    }
+
+    return `/${path}?complexId=${query?.complexId}&buildingId=${id}`
+  }
 
   const buildingsData = useMemo(() => {
     return {
@@ -22,9 +40,7 @@ function Main() {
         data?.getBuildings?.data?.length > 0
           ? data.getBuildings.data.map(({ _id, name }) => ({
               name: (
-                <Link
-                  href={`/maintenance?complexId=${query?.complexId}&buildingId=${_id}`}
-                >
+                <Link href={getNextPath(_id)}>
                   <span className="text-secondary-500 hover:underline hover:cursor-pointer">
                     {name}
                   </span>

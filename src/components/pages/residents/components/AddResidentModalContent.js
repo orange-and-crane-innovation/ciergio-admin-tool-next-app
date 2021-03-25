@@ -1,53 +1,75 @@
+import { useMemo } from 'react'
 import P from 'prop-types'
 import { Controller } from 'react-hook-form'
-
+import { useQuery } from '@apollo/client'
 import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
+import { GET_UNITS } from '../queries'
 
-const accountTypes = [
+const relationshipOptions = [
   {
-    label: 'Unit Owner',
-    value: 'unit-owner'
+    label: 'Immediate Family',
+    value: 'family'
   },
   {
-    label: 'Relative',
-    value: 'relative'
+    label: 'Housemate',
+    value: 'housemate'
   },
   {
-    label: 'Other (Unregistered)',
+    label: 'Other Relatives',
+    value: 'other-relatives'
+  },
+  {
+    label: 'Tenant',
+    value: 'tenant'
+  },
+  {
+    label: 'Staff',
+    value: 'staff'
+  },
+  {
+    label: 'Other',
     value: 'other'
   }
 ]
 
-function AddResidentModalContent({ form }) {
+function AddResidentModalContent({ form, buildingId }) {
   const { control } = form
+
+  const { data: units } = useQuery(GET_UNITS, {
+    where: {
+      occupied: true,
+      buildingId
+    }
+  })
+
+  const unitOptions = useMemo(() => {
+    if (units?.getUnits?.count > 0) {
+      return units.getUnits.data.map(unit => ({
+        label: unit.name,
+        value: unit._id
+      }))
+    }
+    return []
+  }, [units?.getUnits])
 
   return (
     <div className="w-full">
       <form>
         <h3 className="font-bold text-sm mb-4">Unit #</h3>
         <Controller
-          name="unit_number"
+          name="unit"
           control={control}
-          render={({ name, onChange, value }) => (
-            <FormSelect
-              name={name}
-              onChange={onChange}
-              value={value}
-              options={[
-                {
-                  label: 'Unit 1',
-                  value: 'unit-1'
-                }
-              ]}
-            />
+          render={({ name, onChange }) => (
+            <FormSelect name={name} onChange={onChange} options={unitOptions} />
           )}
+          defaultValue=""
         />
         <div className="w-full flex flex-col">
           <h3 className="text-sm font-bold mb-4">About the Resident</h3>
           <div className="w-full flex justify-between align-center">
             <Controller
-              name="first_name"
+              name="firstName"
               control={control}
               render={({ name, value, onChange }) => (
                 <FormInput
@@ -61,7 +83,7 @@ function AddResidentModalContent({ form }) {
               )}
             />
             <Controller
-              name="last_name"
+              name="lastName"
               control={control}
               render={({ name, value, onChange }) => (
                 <FormInput
@@ -76,18 +98,18 @@ function AddResidentModalContent({ form }) {
             />
           </div>
           <div>
-            <h3 className="text-sm font-bold mb-4">Resident Type</h3>
+            <h3 className="text-sm font-bold mb-4">Relationship</h3>
             <Controller
-              name="resident_type"
+              name="relationship"
               control={control}
-              render={({ name, value, onChange }) => (
+              render={({ name, onChange }) => (
                 <FormSelect
                   name={name}
                   onChange={onChange}
-                  value={value}
-                  options={accountTypes}
+                  options={relationshipOptions}
                 />
               )}
+              defaultValue=""
             />
           </div>
           <div>
@@ -96,7 +118,7 @@ function AddResidentModalContent({ form }) {
               An invite will be sent if an email is provided.
             </p>
             <Controller
-              name="resident_email"
+              name="email"
               control={control}
               render={({ name, value, onChange }) => (
                 <FormInput
@@ -117,7 +139,8 @@ function AddResidentModalContent({ form }) {
 }
 
 AddResidentModalContent.propTypes = {
-  form: P.object
+  form: P.object,
+  buildingId: P.string
 }
 
 export default AddResidentModalContent

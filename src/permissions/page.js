@@ -34,7 +34,6 @@ const check = (type, role, route, nestedRoute) => {
 }
 
 const Page = ({ route, nestedRoute, page }) => {
-  console.log(nestedRoute)
   const [user] = useState(
     JSON.parse(localStorage.getItem('profile')) || undefined
   )

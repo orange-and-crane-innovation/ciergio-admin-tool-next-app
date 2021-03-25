@@ -1,213 +1,264 @@
-import React, { useState } from 'react'
-import P from 'prop-types'
-
+import { useState, useMemo, Fragment } from 'react'
+import uniqWith from 'lodash/uniqWith'
+import isEqual from 'lodash/isEqual'
+import { useRouter } from 'next/router'
+import { useQuery } from '@apollo/client'
 import FormSelect from '@app/components/forms/form-select'
-import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-
-import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
+import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
-
-import AddResidentModal from '../AddResidentModal'
+import AddResidentModal from '../components/AddResidentModal'
 import Can from '@app/permissions/can'
+import useDebounce from '@app/utils/useDebounce'
 import Dropdown from '@app/components/dropdown'
-
-import { AiOutlineEllipsis } from 'react-icons/ai'
-
-const floors = [
-  {
-    label: 'First Floor',
-    value: 'first-floor'
-  },
-  {
-    label: 'Second Floor',
-    value: 'second-floor'
-  },
-  {
-    label: 'Third Floor',
-    value: 'third-floor'
-  }
-]
+import { GET_RESIDENTS, GET_FLOOR_NUMBERS } from '../queries'
+import SearchComponent from '@app/components/globals/SearchControl'
 
 const accountTypes = [
   {
+    label: 'All Accounts',
+    value: ['unit_owner', 'resident']
+  },
+  {
     label: 'Unit Owner',
-    value: 'unit-owner'
+    value: ['unit_owner']
   },
   {
-    label: 'Relative',
-    value: 'relative'
-  },
-  {
-    label: 'Other (Unregistered)',
-    value: 'other'
+    label: 'Resident',
+    value: ['resident']
   }
 ]
 
 const columns = [
   {
-    Name: 'Unit #',
+    name: 'Unit #',
     width: ''
   },
   {
-    Name: 'Resident Name',
+    name: 'Resident Name',
     width: ''
   },
   {
-    Name: 'Account Type',
+    name: 'Account Type',
     width: ''
   },
   {
-    Name: 'invite',
+    name: '',
     width: ''
-  },
-  {
-    Name: '',
-    width: ''
-  }
-]
-
-const data = [
-  {
-    unit_number: 101,
-    resident_name: 'Brandie Lane',
-    contact_number: '09778562090',
-    account_type: 'Unit Owner',
-    active: true
-  },
-  {
-    unit_number: 101,
-    resident_name: 'Max Murphy',
-    contact_number: '09778562090',
-    account_type: 'Relative',
-    active: false
-  },
-  {
-    unit_number: 102,
-    resident_name: 'Ralph Bell',
-    contact_number: '09778562090',
-    account_type: 'Other',
-    active: false
-  },
-  {
-    unit_number: 103,
-    resident_name: 'Victoria Miles',
-    contact_number: '09778562090',
-    account_type: 'Unit Owner',
-    active: true
-  },
-  {
-    unit_number: 103,
-    resident_name: 'Wendy Jones',
-    contact_number: '09778562090',
-    account_type: 'Staff',
-    active: true
-  },
-  {
-    unit_number: 104,
-    resident_name: 'Judith Cooper',
-    contact_number: '09778562090',
-    account_type: 'Staff',
-    active: true
-  },
-  {
-    unit_number: 105,
-    resident_name: 'Wendy Jones',
-    contact_number: '09778562090',
-    account_type: 'Unit Owner',
-    active: true
-  },
-  {
-    unit_number: 105,
-    resident_name: 'Albert Howard',
-    contact_number: '09778562090',
-    account_type: 'Housemate',
-    active: true
-  },
-  {
-    unit_number: 105,
-    resident_name: 'Priscilla Richards',
-    contact_number: '09778562090',
-    account_type: 'Housemate',
-    active: false
   }
 ]
 
 function AllResidents() {
+  const router = useRouter()
+  const { buildingId } = router?.query
   const [searchText, setSearchText] = useState('')
-  const [showModal, setShowModal] = useState('')
+  const [showModal, setShowModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
-  const [, setPageOffset] = useState(0)
+  const [pageOffset, setPageOffset] = useState(0)
+  const [selectedFloor, setSelectedFloor] = useState(null)
+  const [selectedAccounts, setSelectedAccounts] = useState([
+    'unit_owner',
+    'resident'
+  ])
+  const debouncedText = useDebounce(searchText, 700)
+  const { data: residents, loading, refetch } = useQuery(GET_RESIDENTS, {
+    variables: {
+      where: {
+        accountTypes: selectedAccounts,
+        sortBy: { unitName: 1 },
+        buildingId,
+        floorNumber: selectedFloor,
+        search: debouncedText
+      },
+      limit: pageLimit,
+      skip: pageOffset
+    }
+  })
 
-  const residentsData = React.useMemo(
+  const { data: floorNumbers } = useQuery(GET_FLOOR_NUMBERS, {
+    variables: {
+      buildingId
+    }
+  })
+
+  const handleRefetch = () => {
+    refetch({
+      variables: {
+        where: {
+          accountTypes: selectedAccounts,
+          sortBy: { unitName: 1 },
+          buildingId,
+          floorNumber: selectedFloor,
+          search: debouncedText
+        },
+        limit: pageLimit,
+        skip: pageOffset
+      }
+    })
+  }
+
+  const floorOptions = useMemo(() => {
+    if (floorNumbers?.getFloorNumbers?.length > 0) {
+      const floors = floorNumbers.getFloorNumbers.map(floor => ({
+        label: floor,
+        value: floor
+      }))
+      return [
+        {
+          label: 'All Floors',
+          value: null
+        },
+        ...floors
+      ]
+    }
+    return []
+  })
+
+  const units = useMemo(() => {
+    const newUnits = residents?.getAccounts?.data?.map(res => ({
+      name: res.unit.name,
+      id: res.unit._id
+    }))
+    return uniqWith(newUnits, isEqual)
+  }, [residents?.getAccounts])
+
+  const residentsData = useMemo(
     () => ({
-      count: 161,
-      limit: 10,
-      offset: 0,
-      data: data.map(dt => {
-        const dropdownData = [
-          {
-            label: 'Resend Invite',
-            icon: <span className="ciergio-employees" />,
-            function: () => {}
-          },
-          {
-            label: 'Cancel Invite',
-            icon: <span className="ciergio-edit" />,
-            function: () => {}
-          }
-        ]
+      count: residents?.getAccounts?.count || 0,
+      limit: residents?.getAccounts?.limit || 10,
+      offset: residents?.getAccounts?.skip || 0,
+      data:
+        units?.length > 0
+          ? units.map(unit => {
+              return {
+                name: unit.name,
+                id: unit.id,
+                residents: residents.getAccounts.data.map(res => {
+                  const dropdownData = [
+                    {
+                      label: 'View Profile',
+                      icon: <span className="ciergio-user" />,
+                      function: () => {
+                        router.push(`/residents/view/${res._id}`)
+                      }
+                    }
+                  ]
 
-        return {
-          unitNumber: dt.unit_number,
-          name: dt.resident_name,
-          type: dt.account_type,
-          invite: dt.invite,
-          dropdown: (
-            <Can
-              perform="residents:resend::cancel"
-              yes={
-                <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+                  if (res?.unit?._id === unit.id) {
+                    return {
+                      name: `${res.user.firstName} ${res.user.lastName}`,
+                      avatar: res.user.avatar,
+                      accountType: res.accountType,
+                      dropdown: (
+                        <Dropdown
+                          label={<span className="ciergio-more" />}
+                          items={dropdownData}
+                        />
+                      )
+                    }
+                  }
+                  return null
+                })
               }
-            />
-          )
-        }
-      })
+            })
+          : []
     }),
-    []
+    [residents?.getAccounts, units]
   )
+
+  const customResidentsTable = useMemo(() => {
+    return (
+      <>
+        {residentsData?.data?.map(unit => {
+          return (
+            <Fragment key={unit.id}>
+              <tr className="bg-neutral-100">
+                <td
+                  className="border px-8 py-4 text-left"
+                  colSpan={columns?.length}
+                >
+                  <span className="font-bold text-neutral-dark">
+                    {unit.name}
+                  </span>
+                </td>
+              </tr>
+              {unit?.residents?.length > 0
+                ? unit.residents.map((resident, index) => {
+                    if (!resident) return null
+                    return (
+                      <tr key={index} className="bg-white">
+                        <td></td>
+                        <td>
+                          <div className="flex items-center">
+                            <img
+                              src={
+                                resident?.avatar ??
+                                `https://ui-avatars.com/api/?name=${resident?.name}`
+                              }
+                              alt={resident?.name}
+                              className="w-10 h-10 rounded-full mr-4"
+                            />
+                            <span className="font-bold text-neutral-dark">
+                              {resident?.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="capitalize">
+                            {resident?.accountType?.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td>{resident?.dropdown}</td>
+                      </tr>
+                    )
+                  })
+                : null}
+            </Fragment>
+          )
+        })}
+      </>
+    )
+  }, [residentsData?.data])
 
   const handleShowModal = () => setShowModal(old => !old)
 
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Tower 1 Residents List</h1>
+      <h1 className="content-title">
+        {residents?.getAccounts
+          ? `${residents?.getAccounts?.data[0]?.building?.name} Resident List`
+          : null}
+      </h1>
 
       <div className="flex items-center justify-end mt-12 mx-4 w-full">
         <div className="flex items-center justify-between w-8/12 flex-row">
-          <FormSelect options={floors} className="mr-4" />
-          <FormSelect options={[]} className="mr-4" placeholder="Choose One" />
-          <FormSelect options={accountTypes} className="mr-4" />
-          <div className="w-full relative mr-4">
-            <FormInput
-              name="search"
-              placeholder="Search"
-              inputClassName="pr-8"
-              onChange={e => setSearchText(e.target.value)}
-              value={searchText}
-            />
-            <span className="absolute top-4 right-4">
-              {searchText ? (
-                <FaTimes className="cursor-pointer" onClick={() => {}} />
-              ) : (
-                <FaSearch />
-              )}
-            </span>
-          </div>
+          <FormSelect
+            options={floorOptions}
+            className="mr-4"
+            onChange={floor => setSelectedFloor(floor.value)}
+          />
+          <FormSelect
+            options={accountTypes}
+            className="mr-4"
+            onChange={account => setSelectedAccounts(account?.value)}
+          />
+          <SearchComponent
+            name="search"
+            searchText={searchText}
+            placeholder="Search"
+            onSearch={e => {
+              if (e.target.value === '') {
+                setSearchText(null)
+              } else {
+                setSearchText(e.target.value)
+              }
+            }}
+            onClearSearch={() => setSearchText(null)}
+          />
         </div>
       </div>
 
@@ -254,60 +305,26 @@ function AllResidents() {
         content={
           <PrimaryDataTable
             columns={columns}
+            loading={loading}
             data={residentsData}
-            loading={false}
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             pageLimit={pageLimit}
             setPageLimit={setPageLimit}
             setPageOffset={setPageOffset}
+            customBody={customResidentsTable}
+            customize
           />
         }
       />
-      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
+      <AddResidentModal
+        showModal={showModal}
+        onShowModal={handleShowModal}
+        buildingId={buildingId}
+        refetch={handleRefetch}
+      />
     </section>
   )
-}
-
-function ResidentCell({ value }) {
-  return (
-    <div>
-      <div>{value.resident_name}</div>
-      <div>{value.contact_number}</div>
-    </div>
-  )
-}
-
-function ResidentInviteButton({ value }) {
-  if (value.active) return null
-
-  return (
-    <div>
-      <Button label="Invite" onClick={() => console.log('invited')} />
-    </div>
-  )
-}
-
-function ResidentType({ value }) {
-  return (
-    <div>
-      <span>{`${value.account_type} ${
-        !value.active ? '(Unregistered)' : ''
-      }`}</span>
-    </div>
-  )
-}
-
-ResidentCell.propTypes = {
-  value: P.object
-}
-
-ResidentInviteButton.propTypes = {
-  value: P.object
-}
-
-ResidentType.propTypes = {
-  value: P.object
 }
 
 export default AllResidents

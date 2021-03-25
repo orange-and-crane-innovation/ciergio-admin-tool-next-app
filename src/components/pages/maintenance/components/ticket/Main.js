@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useQuery, useMutation } from '@apollo/client'
 import { useForm } from 'react-hook-form'
+import Link from 'next/link'
 import dayjs from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import Button from '@app/components/button'
@@ -376,9 +377,13 @@ function Ticket() {
                           {`Unit ${ticket?.unit?.name}, ${ticket?.building?.name}`}
                         </p>
                         <p>
-                          <span className="text-blue-400">
-                            {`${ticket?.reporter?.user?.firstName} ${ticket?.reporter?.user?.lastName}`}
-                          </span>{' '}
+                          <Link
+                            href={`/residents/view/${ticket?.reporter?._id}`}
+                          >
+                            <span className="text-blue-400">
+                              {`${ticket?.reporter?.user?.firstName} ${ticket?.reporter?.user?.lastName}`}
+                            </span>
+                          </Link>{' '}
                           <span className="capitalize">{`(${ticket?.reporter?.accountType?.replace(
                             '_',
                             ' '
@@ -404,20 +409,6 @@ function Ticket() {
                           onClick={() => setShowAddStaffModal(old => !old)}
                         />
                       )}
-                      {/* <div
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={() => {}}
-                        className="w-full flex justify-start items-center"
-                        onClick={() => setShowAddStaffModal(old => !old)}
-                      >
-                        <div className="w-12 h-12 border border-blue-500 border-dashed rounded-full mr-4 flex justify-center items-center">
-                          <AiOutlineUserAdd className="text-blue-500" />
-                        </div>
-                        <p className="font-bold text-base text-blue-500">
-                          Add Staff
-                        </p>
-                      </div> */}
                     </div>
                   </div>
                 </div>
