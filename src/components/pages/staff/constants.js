@@ -7,6 +7,8 @@ export const COMPANY_ADMIN = 'company_admin'
 export const COMPLEX_ADMIN = 'complex_admin'
 export const RECEPTIONIST = 'receptionist'
 export const UNIT_OWNER = 'unit_owner'
+export const MEMBER = 'member'
+export const SUPER_ADMIN = 'administrator'
 
 export const columns = [
   {
@@ -33,22 +35,24 @@ export const columns = [
 
 export const roles = [
   {
-    label: 'Company Admin',
+    label: 'Super Admin',
+    value: SUPER_ADMIN
+  },
+  {
+    label: 'Parish Head',
     value: COMPANY_ADMIN
   },
   {
-    label: 'Complex Admin',
+    label: 'Parish Admin',
     value: COMPLEX_ADMIN
+  },
+  {
+    label: 'Member',
+    value: MEMBER
   }
 ]
 
-export const ALL_ROLES = [
-  BUILDING_ADMIN,
-  COMPANY_ADMIN,
-  COMPLEX_ADMIN,
-  RECEPTIONIST,
-  UNIT_OWNER
-]
+export const ALL_ROLES = [SUPER_ADMIN, COMPLEX_ADMIN, COMPANY_ADMIN, MEMBER]
 
 const historyMessages = {
   CreateUnitType: data =>
