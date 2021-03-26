@@ -5,7 +5,6 @@ const rules = {
         '/dashboard',
         '/properties',
         '/staff',
-        '/messages',
         '/posts',
         '/daily-readings',
         '/prayer-requests',
@@ -37,6 +36,7 @@ const rules = {
         'staff:export',
         'staff:print',
         'staff:view::update::delete',
+        'staff:resend::cancel',
         'messages:view',
         'messages:create',
         'bulletin:create',
@@ -91,15 +91,6 @@ const rules = {
         '/offerings'
       ],
       allowedNestedRoutes: [
-        'staff:view',
-        'staff:invite',
-        'staff:update',
-        'staff:delete',
-        'staff:export',
-        'staff:print',
-        'staff:view::update::delete',
-        'messages:view',
-        'messages:create',
         '/staff/all-staff',
         '/staff/pending-invites',
         '/posts/create',
@@ -144,7 +135,17 @@ const rules = {
         'prayerrequests:export',
         'prayerrequests:print',
         'prayerrequests:view',
-        'offerings:view'
+        'offerings:view',
+        'staff:view',
+        'staff:invite',
+        'staff:update',
+        'staff:delete',
+        'staff:export',
+        'staff:print',
+        'staff:view::update::delete',
+        'staff:resend::cancel',
+        'messages:view',
+        'messages:create'
       ]
     },
     complex_admin: {
