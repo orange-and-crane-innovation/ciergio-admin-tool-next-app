@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { debounce } from 'lodash'
-import moment from 'moment'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa'
 
 import Tabs from '@app/components/tabs'
@@ -308,15 +307,10 @@ function Donations() {
 
   const onDateApply = () => {
     setAppliedDate({
-      from: moment(selectedDateRange[0].startDate).format(
-        'YYYY-MM-DDTHH:mm:ss.SSSZ'
+      from: DATE.toFriendlyISO(
+        DATE.setInitialTime(selectedDateRange[0].startDate)
       ),
-      to: moment(selectedDateRange[0].endDate)
-        .add(23, 'hours')
-        .add(59, 'minutes')
-        .add(59, 'seconds')
-        .add(999, 'milliseconds')
-        .format('YYYY-MM-DDTHH:mm:ss.SSSZ')
+      to: DATE.toFriendlyISO(DATE.setEndTime(selectedDateRange[0].endDate))
     })
   }
 
@@ -331,11 +325,7 @@ function Donations() {
         )
 
       if (networkError?.result?.errors) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
       if (
