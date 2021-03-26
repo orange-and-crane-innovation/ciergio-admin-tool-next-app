@@ -176,7 +176,7 @@ const CategoriesComponent = () => {
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
-        errorHandler(errorCreate)
+        errorHandler(errorUpdate)
       }
       if (calledUpdate && dataUpdate) {
         showToast('success', 'You have successfully updated a category.')
