@@ -45,8 +45,13 @@ const bulkOptions = [
 ]
 
 const GET_ALL_POST_QUERY = gql`
-  query getAllPost($where: AllPostInput, $limit: Int, $offset: Int) {
-    getAllPost(where: $where, limit: $limit, offset: $offset) {
+  query getAllPost(
+    $where: AllPostInput
+    $limit: Int
+    $offset: Int
+    $sort: PostSort
+  ) {
+    getAllPost(where: $where, limit: $limit, offset: $offset, sort: $sort) {
       count
       limit
       offset
@@ -134,8 +139,8 @@ const PostComponent = () => {
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [isBulkButtonHidden, setIsBulkButtonHidden] = useState(false)
-  const [temporaryDate, setTemporaryDate] = useState()
-  const [temporaryMonth, setTemporaryMonth] = useState()
+  const [temporaryDate, setTemporaryDate] = useState('')
+  const [temporaryMonth, setTemporaryMonth] = useState('')
   const [selectedDate, setSelectedDate] = useState()
   const [selectedMonth, setSelectedMonth] = useState()
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -222,7 +227,11 @@ const PostComponent = () => {
       variables: {
         where: fetchFilter,
         limit: limitPage,
-        offset: offsetPage
+        offset: offsetPage,
+        sort: {
+          by: isDailyReadingsPage ? 'dailyReadingDate' : 'createdAt',
+          order: 'desc'
+        }
       }
     }
   )
@@ -311,6 +320,10 @@ const PostComponent = () => {
               }
               case 'trashed': {
                 status = 'Trashed'
+                break
+              }
+              case 'scheduled': {
+                status = 'Scheduled'
                 break
               }
             }
@@ -700,11 +713,11 @@ const PostComponent = () => {
 
   const onApplyDate = () => {
     if (temporaryDate && temporaryDate !== '') {
-      setSelectedDate(DATE.toFriendlyISO(DATE.getInitialTime(temporaryDate)))
+      setSelectedDate(DATE.toFriendlyISO(DATE.setInitialTime(temporaryDate)))
       setSelectedMonth('')
     }
 
-    if (temporaryMonth && temporaryMonth !== '') {
+    if (temporaryMonth !== '') {
       setSelectedDate('')
       setSelectedMonth([
         DATE.toFriendlyISO(DATE.toBeginningOfMonth(temporaryMonth)),

@@ -172,7 +172,12 @@ const PostComponent = () => {
   ]
 
   const fetchFilter = {
-    status: ['published', 'draft', 'unpublished', 'scheduled'],
+    status: selectedStatus || [
+      'published',
+      'draft',
+      'unpublished',
+      'scheduled'
+    ],
     type: 'post',
     mypost: true,
     categoryId: selectedCategory !== '' ? selectedCategory : null,
@@ -280,6 +285,10 @@ const PostComponent = () => {
                 status = 'Trashed'
                 break
               }
+              case 'scheduled': {
+                status = 'Scheduled'
+                break
+              }
             }
 
             if (
@@ -323,7 +332,7 @@ const PostComponent = () => {
                       </Link>
                       {` | `}
                       <span
-                        className="mx-2 cursor-pointer hover:underline"
+                        className="mx-2 text-danger-500 cursor-pointer hover:underline"
                         onClick={() => handleShowModal('delete', item._id)}
                       >
                         Move to Trash
