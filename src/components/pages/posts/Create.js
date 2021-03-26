@@ -132,7 +132,9 @@ const CreatePosts = () => {
       data: dataCreate,
       error: errorCreate
     }
-  ] = useMutation(CREATE_POST_MUTATION)
+  ] = useMutation(CREATE_POST_MUTATION, {
+    onError: _e => {}
+  })
 
   const {
     handleSubmit,
@@ -165,16 +167,52 @@ const CreatePosts = () => {
   useEffect(() => {
     if (!loadingCreate) {
       if (errorCreate) {
-        showToast('danger', 'Sorry, an error occured during creation of post.')
+        errorHandler(errorCreate)
       }
       if (calledCreate && dataCreate) {
+        let message
+
         reset()
         resetForm()
         goToBulletinPageLists()
-        showToast('success', 'You have successfully created a post.')
+
+        switch (selectedStatus) {
+          case 'draft':
+            message = `You have successfully draft a post.`
+            break
+          default:
+            message = `You have successfully created a post.`
+            break
+        }
+
+        showToast('success', message)
       }
     }
   }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
 
   const onCountChar = e => {
     if (e.currentTarget.maxLength) {
@@ -265,7 +303,7 @@ const CreatePosts = () => {
   }
 
   const onVideoChange = e => {
-    setVideoLoading(true)
+    setVideoLoading(e.target.value !== '')
     setVideoError(null)
     setVideoUrl(e.target.value)
   }
@@ -350,9 +388,10 @@ const CreatePosts = () => {
       }
       if (isDailyReadingsPage) {
         createData.type = 'daily_reading'
-        createData.dailyReadingDate = DATE.getInitialTime(selectedDate)
+        createData.dailyReadingDate = DATE.toFriendlyISO(
+          DATE.setInitialTime(selectedDate)
+        )
       }
-      console.log(createData)
       createPost({ variables: { data: createData } })
     }
   }
@@ -639,6 +678,9 @@ const CreatePosts = () => {
                           />
                         }
                       />
+                      {videoError && (
+                        <p className={style.TextError}>{videoError}</p>
+                      )}
                     </div>
                     <FaTimes
                       className={`${style.CreatePostVideoButtonClose} ${
@@ -660,8 +702,6 @@ const CreatePosts = () => {
                     onReady={onVideoReady}
                   />
                 )}
-
-                {videoError && <p className={style.TextError}>{videoError}</p>}
               </div>
             }
           />
@@ -762,8 +802,8 @@ const CreatePosts = () => {
                     </span>
                   </div>
 
-                  <div className={style.CreatePostPublishMarginContainer}>
-                    <span style={{ minWidth: '65px' }}>Publish: </span>
+                  <div className="flex">
+                    <span className={style.CreatePostSection}>Publish: </span>
                     <span className="mr-2">
                       <strong>
                         {selectedPublishTimeType === 'later'
@@ -773,12 +813,14 @@ const CreatePosts = () => {
                           : ' Immediately'}
                       </strong>
                     </span>
-                    <span
-                      className={style.CreatePostLink}
-                      onClick={handleShowPublishTimeModal}
-                    >
-                      Edit
-                    </span>
+                    {!isDailyReadingsPage && (
+                      <span
+                        className={style.CreatePostLink}
+                        onClick={handleShowPublishTimeModal}
+                      >
+                        Edit
+                      </span>
+                    )}
                   </div>
                   <span />
                 </div>

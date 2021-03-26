@@ -164,7 +164,7 @@ const PostComponent = () => {
     {
       variables: {
         where: {
-          status: ['published', 'draft', 'unpublished', 'scheduled'],
+          status: ['published'],
           type: 'form',
           search: {
             allpost: searchText

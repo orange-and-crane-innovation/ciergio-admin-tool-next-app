@@ -100,7 +100,6 @@ const Pagination = ({ items, activePage, onPageClick, onLimitChange }) => {
           value={limitOptions.filter(item => item.value === limit)}
           options={limitOptions}
           onChange={onLimitChange}
-          noCloseIcon
         />
       </div>
     </div>

@@ -43,8 +43,6 @@ const Dropdown = () => {
       }
       if (called && data) {
         localStorage.setItem('keep', data?.switchAccount?.slave)
-        router.push('/dashboard')
-
         const timer = setTimeout(() => {
           router.reload()
           clearInterval(timer)

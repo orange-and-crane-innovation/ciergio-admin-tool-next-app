@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 
 import PageLoader from '@app/components/page-loader'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+
 const verifySession = gql`
   query {
     getProfile {
@@ -51,6 +53,9 @@ const verifySession = gql`
 `
 
 const withGuest = WrappedComponent => {
+  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = system === 'pray'
+
   const GuestComponent = props => {
     const [loaded, setLoaded] = useState(false)
     const router = useRouter()
@@ -61,7 +66,14 @@ const withGuest = WrappedComponent => {
     useEffect(() => {
       if (!loading) {
         if (data) {
-          router.replace('/dashboard')
+          const profile = data ? data.getProfile : {}
+          const accountType = profile?.accounts?.data[0]?.accountType
+
+          if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
+            router.push('/messages')
+          } else {
+            router.push('/properties')
+          }
         } else {
           setLoaded(true)
         }

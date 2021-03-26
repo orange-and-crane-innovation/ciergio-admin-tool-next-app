@@ -7,7 +7,6 @@ import PageLoader from '@app/components/page-loader'
 import style from './VerifyEmail.module.css'
 
 function VerifyEmail({ loading, data, error }) {
-  console.log(loading)
   const errorLists = {
     1000: {
       errorType: style.PageError,
@@ -23,7 +22,7 @@ function VerifyEmail({ loading, data, error }) {
         'Verification failed. Make sure you have copied a valid verification link from your email.'
     }
   }
-  console.log(data)
+
   return (
     <main className={style.PageContainer}>
       <div className={style.PageWrapper}>

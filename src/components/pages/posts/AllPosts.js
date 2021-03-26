@@ -58,8 +58,13 @@ const bulkOptionsDailyReadings = [
 ]
 
 const GET_ALL_POST_QUERY = gql`
-  query getAllPost($where: AllPostInput, $limit: Int, $offset: Int) {
-    getAllPost(where: $where, limit: $limit, offset: $offset) {
+  query getAllPost(
+    $where: AllPostInput
+    $limit: Int
+    $offset: Int
+    $sort: PostSort
+  ) {
+    getAllPost(where: $where, limit: $limit, offset: $offset, sort: $sort) {
       count
       limit
       offset
@@ -252,7 +257,11 @@ const PostComponent = () => {
       variables: {
         where: fetchFilter,
         limit: limitPage,
-        offset: offsetPage
+        offset: offsetPage,
+        sort: {
+          by: isDailyReadingsPage ? 'dailyReadingDate' : 'createdAt',
+          order: 'desc'
+        }
       }
     }
   )
@@ -863,7 +872,7 @@ const PostComponent = () => {
 
   const onApplyDate = () => {
     if (temporaryDate !== '') {
-      setSelectedDate(DATE.toFriendlyISO(DATE.getInitialTime(temporaryDate)))
+      setSelectedDate(DATE.toFriendlyISO(DATE.setInitialTime(temporaryDate)))
       setSelectedMonth('')
     }
 
@@ -942,6 +951,10 @@ const PostComponent = () => {
           status = 'Trashed'
           break
         }
+        case 'scheduled': {
+          status = 'Scheduled'
+          break
+        }
       }
 
       if (
@@ -982,12 +995,12 @@ const PostComponent = () => {
               )}
               {isMine ? (
                 <div className="flex text-info-500 text-sm">
-                  <Link href={`/${routeName}/view/${item._id}`}>
-                    <a className="mr-2 hover:underline">View</a>
-                  </Link>
-                  {` | `}
                   <Link href={`/${routeName}/edit/${item._id}`}>
                     <a className="mx-2 hover:underline">Edit</a>
+                  </Link>
+                  {` | `}
+                  <Link href={`/${routeName}/view/${item._id}`}>
+                    <a className="mr-2 hover:underline">View</a>
                   </Link>
                   {` | `}
                   <Can

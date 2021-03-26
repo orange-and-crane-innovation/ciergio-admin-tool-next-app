@@ -18,5 +18,13 @@
         @apply font-black text-4xl leading-10;
       }
     }
+
+    .PageContent {
+      @apply mb-6;
+
+      a {
+        @apply text-info-900 hover:underline;
+      }
+    }
   }
 }

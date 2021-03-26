@@ -79,9 +79,10 @@
   }
 
   .CreatePostPublishContent {
-    @apply flex items-start justify-between;
+    @apply flex flex-col items-start justify-between md:flex-row;
 
     .CreatePostPublishSubContent {
+      @apply mr-4;
       @apply flex flex-col;
 
       > span {

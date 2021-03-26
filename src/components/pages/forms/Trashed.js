@@ -145,10 +145,6 @@ const PostComponent = () => {
       width: '30%'
     },
     {
-      name: 'Category',
-      width: ''
-    },
-    {
       name: 'Status',
       width: ''
     },
@@ -527,7 +523,7 @@ const PostComponent = () => {
         case 'delete': {
           setModalTitle('Delete Form')
           setModalContent(
-            <UpdateCard type="trashed" title={selected[0].title} />
+            <UpdateCard type="deleted" title={selected[0].title} />
           )
           setModalFooter(true)
           setModalID(selected[0]._id)
@@ -672,7 +668,7 @@ const PostComponent = () => {
         visible={showModal}
         onClose={handleClearModal}
         footer={modalFooter}
-        okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
+        okText={modalType === 'delete' ? 'Yes, delete permanently' : 'Yes'}
         onOk={() =>
           modalType === 'delete'
             ? onDeletePost()

@@ -404,7 +404,6 @@ const CompanyDataComponent = () => {
               }
             }) || null
         }
-        console.log(tableData)
         setComplexes(tableData)
       }
     }

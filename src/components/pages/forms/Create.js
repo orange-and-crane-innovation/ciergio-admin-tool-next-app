@@ -42,9 +42,8 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
-  content: yup.mixed().label('Content').nullable(),
-  embeddedFiles: yup.array().label('File').nullable().required(),
-  category: yup.string().label('Category').nullable().required()
+  content: yup.string().label('Content').nullable(),
+  embeddedFiles: yup.array().label('File').nullable().required()
 })
 
 const validationSchemaDraft = yup.object().shape({
@@ -53,9 +52,8 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
-  content: yup.mixed(),
-  embeddedFiles: yup.array().label('File').nullable(),
-  category: yup.string().nullable()
+  content: yup.mixed().nullable(),
+  embeddedFiles: yup.array().label('File').nullable()
 })
 
 const CreatePosts = () => {
@@ -79,6 +77,9 @@ const CreatePosts = () => {
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
 
   const [
     createPost,
@@ -88,7 +89,9 @@ const CreatePosts = () => {
       data: dataCreate,
       error: errorCreate
     }
-  ] = useMutation(CREATE_POST_MUTATION)
+  ] = useMutation(CREATE_POST_MUTATION, {
+    onError: _e => {}
+  })
 
   const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
@@ -97,7 +100,6 @@ const CreatePosts = () => {
     defaultValues: {
       title: '',
       content: null,
-      category: null,
       embeddedFiles: null
     }
   })
@@ -107,16 +109,52 @@ const CreatePosts = () => {
   useEffect(() => {
     if (!loadingCreate) {
       if (errorCreate) {
-        showToast('danger', 'Sorry, an error occured during creation of post.')
+        errorHandler(errorCreate)
       }
       if (calledCreate && dataCreate) {
+        let message
+
         reset()
         resetForm()
         goToFormsPageLists()
-        showToast('success', 'You have successfully created a post.')
+
+        switch (selectedStatus) {
+          case 'draft':
+            message = `You have successfully draft a form.`
+            break
+          default:
+            message = `You have successfully created a form.`
+            break
+        }
+
+        showToast('success', message)
       }
     }
   }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
 
   const goToFormsPageLists = () => {
     push('/forms/')
@@ -199,7 +237,6 @@ const CreatePosts = () => {
     } else {
       const createData = {
         type: 'form',
-        categoryId: data.category,
         title: data?.title || 'Untitled',
         content: data?.content,
         audienceType: selectedAudienceType,
@@ -412,20 +449,28 @@ const CreatePosts = () => {
               <div className={style.CreateContentContainer}>
                 <div className={style.CreatePostPublishContent}>
                   <div className={style.CreatePostPublishSubContent}>
-                    <span>
-                      Status: <strong>New</strong>
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Status: </span>
+                      <strong>New</strong>
                     </span>
                     <span className="flex flex-col">
-                      <div>
-                        Audience:
-                        <strong>
-                          {selectedAudienceType === 'allExcept'
-                            ? ' All those registered except: '
-                            : selectedAudienceType === 'specific'
-                            ? ' Only show to those selected: '
-                            : ' All those registered '}
-                        </strong>
-                        {selectedAudienceType === 'all' && (
+                      <div className="flex">
+                        <span className={style.CreatePostSection}>
+                          Audience:{' '}
+                        </span>
+                        <span className="mr-2">
+                          <strong>
+                            {selectedAudienceType === 'allExcept'
+                              ? ' All those registered except: '
+                              : selectedAudienceType === 'specific'
+                              ? ' Only show to those selected: '
+                              : ' All those registered '}
+                          </strong>
+                        </span>
+
+                        {(systemType === 'home' ||
+                          (systemType !== 'home' &&
+                            accountType !== 'complex_admin')) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}
@@ -437,96 +482,65 @@ const CreatePosts = () => {
 
                       {(selectedAudienceType === 'allExcept' ||
                         selectedAudienceType === 'specific') && (
-                        <div className="ml-20">
-                          <strong>
-                            {selectedCompanyExcept && (
-                              <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
-                            )}
-                            {selectedCompanySpecific && (
-                              <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
-                            )}
-                            {selectedComplexExcept && (
-                              <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
-                            )}
-                            {selectedComplexSpecific && (
-                              <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
-                            )}
-                            {selectedBuildingExcept && (
-                              <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
-                            )}
-                            {selectedBuildingSpecific && (
-                              <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
-                            )}
-                          </strong>
-                          <span
-                            className={style.CreatePostLink}
-                            onClick={handleShowAudienceModal}
-                          >
-                            Edit
+                        <div className="flex">
+                          <span className={style.CreatePostSection} />
+                          <span>
+                            <strong>
+                              {selectedCompanyExcept && (
+                                <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                              )}
+                              {selectedCompanySpecific && (
+                                <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+                              )}
+                              {selectedComplexExcept && (
+                                <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                              )}
+                              {selectedComplexSpecific && (
+                                <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                              )}
+                              {selectedBuildingExcept && (
+                                <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                              )}
+                              {selectedBuildingSpecific && (
+                                <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                              )}
+                            </strong>
+                            <span
+                              className={style.CreatePostLink}
+                              onClick={handleShowAudienceModal}
+                            >
+                              Edit
+                            </span>
                           </span>
                         </div>
                       )}
                     </span>
                   </div>
-
-                  <div className={style.CreatePostPublishMarginContainer}>
-                    Publish:
-                    <strong>
-                      {selectedPublishTimeType === 'later'
-                        ? ` Scheduled, ${moment(selectedPublishDateTime).format(
-                            'MMM DD, YYYY - hh:mm A'
-                          )} `
-                        : ' Immediately '}
-                    </strong>
-                    <span
-                      className={style.CreatePostLink}
-                      onClick={handleShowPublishTimeModal}
-                    >
-                      Edit
-                    </span>
-                  </div>
-                  <span />
                 </div>
               </div>
             }
           />
 
           <div className={style.CreatePostFooter}>
-            <Button
-              default
-              type="button"
-              label="Save as Draft"
-              className={style.CreatePostFooterButton}
-              onMouseDown={() => onUpdateStatus('draft')}
-              onClick={handleSubmit(e => {
-                onSubmit(e, 'draft')
-              })}
+            <Can
+              perform="forms:draft"
+              yes={
+                <Button
+                  default
+                  type="button"
+                  label="Save as Draft"
+                  className={style.CreatePostFooterButton}
+                  onMouseDown={() => onUpdateStatus('draft')}
+                  onClick={handleSubmit(e => {
+                    onSubmit(e, 'draft')
+                  })}
+                />
+              }
+              no={
+                <Button type="button" label="Save as Draft" primary disabled />
+              }
             />
             <span>
-              <Can
-                perform="forms:draft"
-                yes={
-                  <Button
-                    default
-                    type="button"
-                    label="Preview"
-                    className={style.CreatePostFooterButton}
-                    onMouseDown={() => onUpdateStatus('draft')}
-                    onClick={handleSubmit(e => {
-                      onSubmit(e, 'draft')
-                    })}
-                  />
-                }
-                no={
-                  <Button
-                    default
-                    type="button"
-                    label="Preview"
-                    className={style.CreatePostFooterButton}
-                    disabled
-                  />
-                }
-              />
               <Can
                 perform="forms:create"
                 yes={
