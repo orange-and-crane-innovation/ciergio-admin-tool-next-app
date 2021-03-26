@@ -148,10 +148,6 @@ const PostComponent = () => {
       width: '30%'
     },
     {
-      name: 'Category',
-      width: ''
-    },
-    {
       name: 'Status',
       width: ''
     },
