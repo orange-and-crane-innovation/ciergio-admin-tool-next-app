@@ -139,6 +139,7 @@ export const GET_UNITS = gql`
           _id
         }
         unitOwner {
+          _id
           accountType
           __typename
           _id

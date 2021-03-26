@@ -30,15 +30,14 @@ function AddVisitorModalContent({ form, buildingId }) {
 
   useEffect(() => {
     if (buildingId && !error && !loadingUnits && data) {
-      console.log(data)
       const hostName = []
       const unitList = data?.getUnits?.data.map(unit => {
         hostName.push({
-          value: unit.name,
+          value: unit?._id,
           label: `${unit?.unitOwner?.user?.firstName} ${unit?.unitOwner?.user?.lastName}`
         })
         return {
-          value: unit?.name,
+          value: unit?._id,
           label: unit.name
         }
       })
@@ -76,7 +75,8 @@ function AddVisitorModalContent({ form, buildingId }) {
   const onRepeatChange = e => setOnSchedule(e.target.checked)
 
   const setHostName = e => {
-    const foundHostName = unitHostName.find(val => val.value === e.label)
+    const foundHostName = unitHostName.find(val => val.value === e.value)
+    console.log(foundHostName)
     setHost([foundHostName])
   }
 
@@ -109,23 +109,13 @@ function AddVisitorModalContent({ form, buildingId }) {
                 />
                 <pre>{JSON.stringify(errors, null, 2)}</pre>
               </div>
-              <Controller
+              <FormSelect
+                label="Host"
                 name="host"
-                control={control}
-                options={host[0]}
-                render={({ name, onChange, value }) => {
-                  return (
-                    <FormSelect
-                      label="Host"
-                      name={name}
-                      options={host}
-                      onChange={onChange}
-                      value={value}
-                      defaultValue={value}
-                      error={errors.host && "Field shouldn't be empty"}
-                    />
-                  )
-                }}
+                placeholder={host && host[0].label}
+                options={host}
+                error={errors.host && "Field shouldn't be empty"}
+                disabled
               />
             </div>
 

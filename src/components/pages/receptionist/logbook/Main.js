@@ -16,6 +16,7 @@ import { AiOutlineMessage, AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
 import useKeyPress from '@app/utils/useKeyPress'
 import AddVisitorModal from '../modals/AddVisitorModal'
+import ViewMoreDetailsModal from '../modals/ViewMoreDetailsModal'
 
 const NUMBEROFCOLUMN = 6
 
@@ -68,10 +69,12 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const [date, setDate] = useState(new Date())
   const [search, setSearch] = useState(null)
   const [searchText, setSearchText] = useState(null)
+  const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
   ])
+
   const keyPressed = useKeyPress('Enter')
   const [showModal, setShowModal] = useState(false)
 
@@ -105,7 +108,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
           {
             label: 'View More Details',
             icon: <AiOutlineFileText />,
-            function: () => console.log('View More Details')
+            function: () => handleViewMoreModal(index)
           },
           {
             label: 'Cancel',
@@ -189,6 +192,13 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const onClearSearch = () => setSearch('')
 
   const handleShowModal = () => setShowModal(show => !show)
+  const handleViewMoreModal = () => setShowViewMoreDetails(show => !show)
+
+  const setSuccess = isSuccess => {
+    if (isSuccess) {
+      setShowModal(show => !show)
+    }
+  }
 
   return (
     <>
@@ -235,6 +245,11 @@ function LogBook({ buildingId, categoryId, status, name }) {
         onShowModal={handleShowModal}
         buildingId={buildingId}
         categoryId={categoryId}
+        success={setSuccess}
+      />
+      <ViewMoreDetailsModal
+        showModal={showViewMoreDetails}
+        onShowModal={handleViewMoreModal}
       />
     </>
   )
