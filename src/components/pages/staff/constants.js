@@ -2,6 +2,8 @@
 import Link from 'next/link'
 import dayjs from '@app/utils/date'
 
+const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+
 export const BUILDING_ADMIN = 'building_admin'
 export const COMPANY_ADMIN = 'company_admin'
 export const COMPLEX_ADMIN = 'complex_admin'
@@ -39,11 +41,11 @@ export const roles = [
     value: SUPER_ADMIN
   },
   {
-    label: 'Parish Head',
+    label: 'Company Admin',
     value: COMPANY_ADMIN
   },
   {
-    label: 'Parish Admin',
+    label: 'Complex Admin',
     value: COMPLEX_ADMIN
   },
   {
@@ -51,6 +53,19 @@ export const roles = [
     value: MEMBER
   }
 ]
+
+export const prayStaffRoles = [
+  {
+    label: 'Parish Head',
+    value: 'company_admin'
+  },
+  {
+    label: 'Parish Admin',
+    value: 'complex_admin'
+  }
+]
+
+export const INVITE_STAFF_ROLES = systemType === 'pray' ? prayStaffRoles : roles
 
 export const ALL_ROLES = [SUPER_ADMIN, COMPLEX_ADMIN, COMPANY_ADMIN, MEMBER]
 

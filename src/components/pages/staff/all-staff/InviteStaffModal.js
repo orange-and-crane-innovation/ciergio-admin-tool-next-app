@@ -8,7 +8,7 @@ import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
 
 import { GET_BUILDINGS, GET_COMPLEXES } from '../queries'
-import { roles } from '../constants'
+import { INVITE_STAFF_ROLES } from '../constants'
 import styles from '../staff.module.css'
 
 function InviteStaffModal({
@@ -103,7 +103,7 @@ function InviteStaffModal({
                 <FormSelect
                   name={name}
                   value={value}
-                  options={roles}
+                  options={INVITE_STAFF_ROLES}
                   onChange={onChange}
                   placeholder="Select Staff Type"
                 />

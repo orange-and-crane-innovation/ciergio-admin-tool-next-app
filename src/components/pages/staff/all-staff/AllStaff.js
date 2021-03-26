@@ -50,11 +50,11 @@ import {
 function AllStaff() {
   const router = useRouter()
   const {
-    handleSubmit: handleSubmitInvite,
     control: inviteControl,
     errors: inviteErrors,
     watch: watchInvite,
-    reset: resetInvite
+    reset: resetInvite,
+    getValues: getInviteStaffValues
   } = useForm({
     resolver: yupResolver(inviteStaffValidationSchema),
     defaultValues: {
@@ -107,8 +107,11 @@ function AllStaff() {
   const { data: companies } = useQuery(GET_COMPANIES)
 
   const handleOnCompleted = () => {
-    handleClearModal()
-    showToast('success', `You have successfully sent a new invite`)
+    handleClearModal('create')
+    showToast(
+      'success',
+      `You have successfully sent a new invite. Registration code was sent to the email.`
+    )
     refetchAccounts({
       variables: {
         where: {
@@ -233,7 +236,9 @@ function AllStaff() {
     handleShowModal(type)
   }
 
-  const handleOk = values => {
+  const handleOk = () => {
+    const values = getInviteStaffValues()
+    console.log({ values })
     const {
       staffType: staff,
       email,
@@ -289,7 +294,7 @@ function AllStaff() {
         })
         break
       default:
-        console.log(new Error('wrong staff type'))
+        console.err(new Error('wrong staff type'))
     }
   }
 
@@ -309,7 +314,6 @@ function AllStaff() {
   }
 
   const handleDeleteStaff = () => {
-    console.log({ selectedStaff })
     deleteUser({
       variables: {
         data: {
@@ -523,7 +527,7 @@ function AllStaff() {
         open={showInviteModal}
         loading={sendingInvite}
         onCancel={() => handleClearModal('create')}
-        onOk={handleSubmitInvite(handleOk)}
+        onOk={handleOk}
         companyOptions={assignments}
         form={{
           watch: watchInvite,
