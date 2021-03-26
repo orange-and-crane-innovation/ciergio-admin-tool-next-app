@@ -22,7 +22,8 @@ function createApolloClient() {
       headers: {
         treat: isBrowser && navigator.userAgent,
         spoil: new Date().getTime(),
-        slave: token
+        slave: token,
+        device: 'web'
       }
     })
 
