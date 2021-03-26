@@ -1,8 +1,9 @@
-import { gql, useMutation } from '@apollo/client'
+import { gql, useMutation, useLazyQuery } from '@apollo/client'
 import { useCallback, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import Login from '@app/components/pages/auth/login'
 
@@ -16,8 +17,29 @@ const LOGIN_MUTATION = gql`
   }
 `
 
+export const GET_PROFILE = gql`
+  query {
+    getProfile {
+      _id
+      email
+      avatar
+      firstName
+      lastName
+      accounts {
+        data {
+          accountType
+          active
+        }
+      }
+    }
+  }
+`
+
 function LoginPage() {
   const router = useRouter()
+  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = system === 'pray'
+
   const [login, { loading, data, client, called, error }] = useMutation(
     LOGIN_MUTATION,
     {
@@ -29,16 +51,39 @@ function LoginPage() {
     }
   )
 
+  const [
+    getProfile,
+    { loading: loadingProfile, data: dataProfile, error: errorProfile }
+  ] = useLazyQuery(GET_PROFILE)
+
   useEffect(() => {
     if (!loading) {
       if (error) {
         errorHandler(error)
       }
       if (called && data) {
-        router.replace('/dashboard')
+        getProfile()
       }
     }
-  }, [loading, called, data, error, router])
+  }, [loading, called, data, error])
+
+  useEffect(() => {
+    if (!loadingProfile) {
+      if (errorProfile) {
+        errorHandler(errorProfile)
+      }
+      if (dataProfile) {
+        const profile = dataProfile ? dataProfile.getProfile : {}
+        const accountType = profile?.accounts?.data[0]?.accountType
+
+        if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
+          router.replace('/messages')
+        } else {
+          router.replace('/properties')
+        }
+      }
+    }
+  }, [loadingProfile, dataProfile, errorProfile, router])
 
   const onLoginSubmit = useCallback(
     values => {
