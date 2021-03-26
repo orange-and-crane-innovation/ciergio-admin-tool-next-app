@@ -7,14 +7,14 @@
   }
 
   .Content {
-    @apply absolute top-14 left-0;
+    @apply absolute top-14 left-0 w-full;
     @apply bg-neutral-200 border border-neutral-300;
-    @apply shadow-md;
+    @apply shadow-md opacity-0;
+    @apply z-10;
     -webkit-transition: all 0.2s ease-out;
     transition: all 0.2s ease-out;
     transform: rotateX(90deg);
     transform-origin: top;
-    opacity: 0;
 
     &:before {
       @apply inline-block absolute right-auto left-3;
@@ -35,7 +35,7 @@
     }
 
     &.Open {
-      opacity: 1;
+      @apply opacity-100;
       transform: rotateX(0deg);
       transform-origin: top;
     }
