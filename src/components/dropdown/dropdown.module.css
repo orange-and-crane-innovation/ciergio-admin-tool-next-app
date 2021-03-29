@@ -1,5 +1,5 @@
 .dropdownContainer {
-  @apply relative;
+  @apply absolute;
   @apply flex justify-end;
   @apply text-base;
 
