@@ -330,7 +330,7 @@ function Contact({ id }) {
 
         <div className="flex items-center">
           <Can
-            perform="directory:create"
+            perform="directory:contact:create"
             yes={
               <Button
                 default
