@@ -28,7 +28,7 @@
 
   .content {
     @apply inline-block mr-8;
-    @apply text-left;
+    @apply text-center;
   }
 
   .button {

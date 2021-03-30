@@ -9,7 +9,6 @@ import axios from 'axios'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import moment from 'moment'
 
 import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'

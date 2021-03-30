@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import isEmpty from 'lodash/isEmpty'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
-import SelectDropdown from '@app/components/select'
+import FormSelect from '@app/components/forms/form-select'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
@@ -15,63 +15,27 @@ import { AiOutlineEllipsis } from 'react-icons/ai'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
-
+import SearchComponent from '@app/components/globals/SearchControl'
 import {
   GET_PENDING_INVITES,
   GET_COMPANIES,
-  BULK_UPDATE_MUTATION,
   CANCEL_INVITE,
   RESEND_INVITE
 } from '../queries'
-
 import {
   BUILDING_ADMIN,
   COMPANY_ADMIN,
   COMPLEX_ADMIN,
   RECEPTIONIST,
-  UNIT_OWNER
+  UNIT_OWNER,
+  roles,
+  ALL_ROLES
 } from '../constants'
-import SearchComponent from '@app/components/globals/SearchControl'
-
-const roles = [
-  {
-    label: 'Company Admin',
-    value: COMPANY_ADMIN
-  },
-  {
-    label: 'Complex Admin',
-    value: COMPLEX_ADMIN
-  },
-  {
-    label: 'Building Administrator',
-    value: BUILDING_ADMIN
-  },
-  {
-    label: 'Unit Owner',
-    value: UNIT_OWNER
-  },
-  {
-    label: 'Receptionist',
-    value: RECEPTIONIST
-  }
-]
-
-const ALL_ROLES = [
-  BUILDING_ADMIN,
-  COMPANY_ADMIN,
-  COMPLEX_ADMIN,
-  RECEPTIONIST,
-  UNIT_OWNER
-]
 
 const bulkOptions = [
   {
-    label: 'Unpublished',
-    value: 'unpublish'
-  },
-  {
-    label: 'Move to Trash',
-    value: 'trash'
+    label: 'Resend Invites',
+    value: 'resend-invites'
   }
 ]
 
@@ -123,10 +87,6 @@ function PendingInvites() {
   })
   const { data: companies } = useQuery(GET_COMPANIES)
 
-  const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
-    BULK_UPDATE_MUTATION
-  )
-
   const [resendInvite, { loading: resendingInvite }] = useMutation(
     RESEND_INVITE,
     {
@@ -148,59 +108,33 @@ function PendingInvites() {
     }
   )
 
-  useEffect(() => {
-    if (calledBulk && dataBulk) {
-      if (dataBulk?.bulkUpdatePost?.message === 'success') {
-        const allCheck = document.getElementsByName('checkbox_select_all')[0]
-        const itemsCheck = document.getElementsByName('checkbox')
+  const onCheck = e => {
+    const data = e.target.getAttribute('data-id')
+    const allCheck = document.getElementsByName('checkbox_select_all')[0]
+    const checkboxes = document.querySelectorAll(
+      'input[name="checkbox"]:checked'
+    )
 
-        if (allCheck.checked) {
-          allCheck.click()
-        }
-
-        for (let i = 0; i < itemsCheck.length; i++) {
-          if (itemsCheck[i].checked) {
-            itemsCheck[i].click()
-          }
-        }
-
+    if (e.target.checked) {
+      if (!selectedData.includes(data)) {
+        setSelectedData(prevState => [...prevState, data])
+      }
+      setIsBulkDisabled(false)
+    } else {
+      setSelectedData(prevState => [...prevState.filter(item => item !== data)])
+      if (checkboxes.length === 0) {
+        setSelectedBulk(null)
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk('')
-
-        showToast('success', `You have successfully updated a contact`)
-        refetchInvites()
-      } else {
-        showToast('danger', `Bulk update failed`)
       }
     }
-  }, [calledBulk, dataBulk, refetchInvites])
 
-  const onCheck = useCallback(
-    e => {
-      const data = e.target.getAttribute('data-id')
-      const checkboxes = document.querySelectorAll(
-        'input[name="checkbox"]:checked'
-      )
-
-      if (e.target.checked) {
-        if (!selectedData.includes(data)) {
-          setSelectedData(prevState => [...prevState, data])
-        }
-        setIsBulkDisabled(false)
-      } else {
-        setSelectedData(prevState => [
-          ...prevState.filter(item => item !== data)
-        ])
-        if (checkboxes.length === 0) {
-          setSelectedBulk('')
-          setIsBulkDisabled(true)
-          setIsBulkButtonDisabled(true)
-        }
-      }
-    },
-    [selectedData]
-  )
+    if (checkboxes.length === limitPage) {
+      allCheck.checked = true
+    } else {
+      allCheck.checked = false
+    }
+  }
 
   const onCheckAll = useCallback(
     e => {
@@ -230,8 +164,13 @@ function PendingInvites() {
   )
 
   const onBulkSubmit = () => {
-    const data = { id: selectedData, status: selectedBulk }
-    bulkUpdate({ variables: data })
+    resendInvite({
+      variables: {
+        data: {
+          inviteIds: selectedData
+        }
+      }
+    })
   }
 
   const onClearBulk = () => {
@@ -323,10 +262,16 @@ function PendingInvites() {
       data:
         invites?.getPendingRegistration?.data?.length > 0
           ? invites.getPendingRegistration.data.map(invite => {
+              const roleType =
+                invite?.accountType === 'company_admin'
+                  ? 'Parish Head'
+                  : invite?.accountType === 'complex_admin'
+                  ? 'Parish Admin'
+                  : invite?.accountType
               const dropdownData = [
                 {
                   label: 'Resend Invite',
-                  icon: <span className="ciergio-edit" />,
+                  icon: <span className="ciergio-mail" />,
                   function: () => {
                     setSelectedData(invite)
                     setShowResendInviteModal(old => !old)
@@ -353,16 +298,12 @@ function PendingInvites() {
                   />
                 ),
                 invites: invite.email,
-                accountType: (
-                  <span className="capitalize">
-                    {invite.accountType.replace('_', ' ')}
-                  </span>
-                ),
+                accountType: <span className="capitalize">{roleType}</span>,
                 assignment: getAssignment(invite),
                 createdAt: friendlyDateTimeFormat(invite.createdAt, 'LL'),
                 dropdown: (
                   <Can
-                    perform="attractions:resend::cancel"
+                    perform="staff:resend::cancel"
                     yes={
                       <Dropdown
                         label={<AiOutlineEllipsis />}
@@ -395,7 +336,7 @@ function PendingInvites() {
       <h1 className="content-title">Pending Staff Invites</h1>
       <div className="flex items-center justify-between mt-6 flex-col md:flex-row">
         <SelectBulk
-          placeholder="Select"
+          placeholder="Bulk Action"
           options={bulkOptions}
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
@@ -405,8 +346,8 @@ function PendingInvites() {
           selected={selectedBulk}
         />
         <div className="flex items-center justify-between w-8/12">
-          <div className="w-full mr-2 relative -top-2">
-            <SelectDropdown
+          <div className="w-full mr-2 relative">
+            <FormSelect
               placeholder="Filter Role"
               options={roles}
               onChange={selectedValue => {
@@ -415,10 +356,12 @@ function PendingInvites() {
                 setLimitPage(10)
                 setOffsetPage(0)
               }}
+              isClearable
+              onClear={() => setSelectedRole(null)}
             />
           </div>
-          <div className="w-full mr-2 relative -top-2">
-            <SelectDropdown
+          <div className="w-full mr-2 relative">
+            <FormSelect
               placeholder="Filter Assignment"
               options={filterOptions}
               onChange={selectedValue => {
@@ -427,6 +370,8 @@ function PendingInvites() {
                 setLimitPage(10)
                 setOffsetPage(0)
               }}
+              isClearable
+              onClear={() => setSelectedAssignment(null)}
             />
           </div>
           <div className="w-full relative">
@@ -439,13 +384,13 @@ function PendingInvites() {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Pending Invites (${
-          invites?.getPendingRegistration?.count || 0
-        })`}</h1>
-      </div>
       <Card
         noPadding
+        title={
+          <h1 className="font-bold text-base px-8 py-4">{`Pending Invites (${
+            invites?.getPendingRegistration?.count || 0
+          })`}</h1>
+        }
         content={
           <PrimaryDataTable
             columns={columns}

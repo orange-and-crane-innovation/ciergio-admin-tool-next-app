@@ -6,8 +6,7 @@ import {
   EditorState,
   convertToRaw,
   ContentState,
-  convertFromHTML,
-  RichUtils
+  convertFromHTML
 } from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
 

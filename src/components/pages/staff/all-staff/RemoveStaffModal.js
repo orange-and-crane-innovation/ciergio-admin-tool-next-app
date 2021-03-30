@@ -14,18 +14,18 @@ function RemoveStaffModal({ user, open, onCancel, onOk, loading }) {
         loading
       }}
       onOk={onOk}
-      width={450}
+      width={550}
     >
       <div className="w-full">
         <div className="mb-4 px-4 pt-4">
-          <p>
+          <p className="text-lg">
             {`Warning: You're about to remove `}
             <span className="font-bold">{`${firstName} ${lastName}`}</span>
             {` as ${jobTitle || 'admin'} of ${companyName}.`}
           </p>
         </div>
         <div className="mb-4 p-4 bg-blue-100">
-          <ul className="list-disc p-4">
+          <ul className="list-disc p-4 text-lg">
             <li className="mb-2">{`${firstName}'s Profile will be removed from the unit.`}</li>
             <li className="mb-2">{`${firstName} won't be able to access this unit from their app.`}</li>
             <li className="mb-2">
@@ -34,9 +34,9 @@ function RemoveStaffModal({ user, open, onCancel, onOk, loading }) {
             </li>
           </ul>
         </div>
-        <p className="px-4 pt-2 pb-8">
+        <p className="px-4 pt-2 pb-8 text-lg">
           {`Are you sure you want to remove `}
-          <span className="font-bold">{`${firstName} ${lastName}`}</span>{' '}
+          <span className="font-bold text-lg">{`${firstName} ${lastName}`}</span>{' '}
           {` from this unit?`}
         </p>
       </div>

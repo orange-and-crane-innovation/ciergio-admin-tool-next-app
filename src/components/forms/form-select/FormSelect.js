@@ -93,6 +93,7 @@ const InputSelect = ({
               }
         }
         menuPlacement="auto"
+        menuPosition="fixed"
         closeMenuOnSelect={!isMulti}
         hideSelectedOptions={false}
         isMulti={isMulti}

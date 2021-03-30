@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { Card } from '@app/components/globals'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
-import SelectDropdown from '@app/components/select'
+import FormSelect from '@app/components/forms/form-select'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchComponent from '@app/components/globals/SearchControl'
 import InviteStaffModal from './InviteStaffModal'
@@ -50,20 +50,21 @@ import {
 function AllStaff() {
   const router = useRouter()
   const {
-    handleSubmit: handleSubmitInvite,
     control: inviteControl,
     errors: inviteErrors,
     watch: watchInvite,
-    reset: resetInvite
+    reset: resetInvite,
+    getValues: getInviteStaffValues,
+    trigger: triggerInviteStaff
   } = useForm({
     resolver: yupResolver(inviteStaffValidationSchema),
     defaultValues: {
-      staffType: '',
+      staffType: undefined,
       email: '',
       jobTitle: '',
-      company: '',
-      complex: '',
-      building: ''
+      company: undefined,
+      complex: undefined,
+      building: undefined
     }
   })
   const {
@@ -85,7 +86,6 @@ function AllStaff() {
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
   const [skipCount, setSkipCount] = useState(0)
-
   const debouncedSearchText = useDebounce(searchText, 700)
 
   const {
@@ -94,10 +94,12 @@ function AllStaff() {
     loading: loadingAccounts
   } = useQuery(GET_ACCOUNTS, {
     variables: {
-      accountTypes:
-        selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
-      companyId: selectedAssignment?.value,
-      search: debouncedSearchText,
+      where: {
+        accountTypes:
+          selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
+        companyId: selectedAssignment?.value,
+        search: debouncedSearchText
+      },
       limit: limitPage,
       skip: skipCount === 0 ? null : skipCount
     }
@@ -105,9 +107,23 @@ function AllStaff() {
   const { data: companies } = useQuery(GET_COMPANIES)
 
   const handleOnCompleted = () => {
-    handleClearModal()
-    showToast('success', `You have successfully sent a new invite`)
-    refetchAccounts()
+    handleClearModal('create')
+    showToast(
+      'success',
+      `You have successfully sent a new invite. Registration code was sent to the email.`
+    )
+    refetchAccounts({
+      variables: {
+        where: {
+          accountTypes:
+            selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
+          companyId: selectedAssignment?.value,
+          search: debouncedSearchText
+        },
+        limit: limitPage,
+        skip: skipCount === 0 ? null : skipCount
+      }
+    })
   }
 
   const [addBuildingAdmin, { loading: addingBuildingAdmin }] = useMutation(
@@ -145,6 +161,18 @@ function AllStaff() {
     onCompleted: () => {
       showToast('success', `Update success!`)
       handleClearModal('edit')
+      refetchAccounts({
+        variables: {
+          where: {
+            accountTypes:
+              selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
+            companyId: selectedAssignment?.value,
+            search: debouncedSearchText
+          },
+          limit: limitPage,
+          skip: skipCount === 0 ? null : skipCount
+        }
+      })
     }
   })
 
@@ -156,6 +184,18 @@ function AllStaff() {
         `You have successfully deleted ${staff.firstname} ${staff.lastName}.`
       )
       handleClearModal('delete')
+      refetchAccounts({
+        variables: {
+          where: {
+            accountTypes:
+              selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
+            companyId: selectedAssignment?.value,
+            search: debouncedSearchText
+          },
+          limit: limitPage,
+          skip: skipCount === 0 ? null : skipCount
+        }
+      })
     }
   })
 
@@ -184,75 +224,80 @@ function AllStaff() {
     }
     if (type === 'create') {
       resetInvite({
-        staffType: '',
+        staffType: undefined,
         email: '',
-        company: '',
         jobTitle: '',
-        complex: '',
-        building: ''
+        company: undefined,
+        complex: undefined,
+        building: undefined
       })
     }
 
     handleShowModal(type)
   }
 
-  const handleOk = values => {
-    const {
-      staffType: staff,
-      email,
-      jobTitle,
-      company,
-      complex,
-      building
-    } = values
+  const handleOk = async () => {
+    const validate = await triggerInviteStaff()
 
-    const data = {
-      email,
-      jobTitle
-    }
-    switch (staff.value) {
-      case BUILDING_ADMIN:
-        addBuildingAdmin({
-          variables: {
-            data,
-            id: building.value
-          }
-        })
-        break
-      case COMPANY_ADMIN:
-        addCompanyAdmin({
-          variables: {
-            data,
-            id: company.value
-          }
-        })
-        break
-      case COMPLEX_ADMIN:
-        addComplexAdmin({
-          variables: {
-            data,
-            id: complex.value
-          }
-        })
-        break
-      case RECEPTIONIST:
-        addReceptionist({
-          variables: {
-            data,
-            id: building.value
-          }
-        })
-        break
-      case UNIT_OWNER:
-        addUnitOwner({
-          variables: {
-            data,
-            id: building.value
-          }
-        })
-        break
-      default:
-        console.log(new Error('wrong staff type'))
+    if (validate) {
+      const values = getInviteStaffValues()
+      const {
+        staffType: staff,
+        email,
+        jobTitle,
+        company,
+        complex,
+        building
+      } = values
+
+      const data = {
+        email,
+        jobTitle
+      }
+      switch (staff.value) {
+        case BUILDING_ADMIN:
+          addBuildingAdmin({
+            variables: {
+              data,
+              id: building.value
+            }
+          })
+          break
+        case COMPANY_ADMIN:
+          addCompanyAdmin({
+            variables: {
+              data,
+              id: company.value
+            }
+          })
+          break
+        case COMPLEX_ADMIN:
+          addComplexAdmin({
+            variables: {
+              data,
+              id: complex.value
+            }
+          })
+          break
+        case RECEPTIONIST:
+          addReceptionist({
+            variables: {
+              data,
+              id: building.value
+            }
+          })
+          break
+        case UNIT_OWNER:
+          addUnitOwner({
+            variables: {
+              data,
+              id: building.value
+            }
+          })
+          break
+        default:
+          console.err(new Error('wrong staff type'))
+      }
     }
   }
 
@@ -275,7 +320,7 @@ function AllStaff() {
     deleteUser({
       variables: {
         data: {
-          accountId: selectedStaff?.user._id
+          accountId: selectedStaff?._id
         }
       }
     })
@@ -301,7 +346,14 @@ function AllStaff() {
       offset: accounts?.getAccounts?.offset || 0,
       data:
         accounts?.getAccounts?.data?.length > 0
-          ? accounts.getAccounts.data.map(({ user, company, accountType }) => {
+          ? accounts.getAccounts.data.map(staff => {
+              const { user, company, accountType } = staff
+              const roleType =
+                accountType === 'company_admin'
+                  ? 'Parish Head'
+                  : accountType === 'complex_admin'
+                  ? 'Parish Admin'
+                  : accountType
               const dropdownData = [
                 {
                   label: 'View Staff',
@@ -312,10 +364,7 @@ function AllStaff() {
                   label: 'Edit Staff',
                   icon: <span className="ciergio-edit" />,
                   function: () => {
-                    setSelectedStaff({
-                      user,
-                      company
-                    })
+                    setSelectedStaff(staff)
                     resetEditStaffForm({
                       staffFirstName: user?.firstName,
                       staffLastName: user.lastName
@@ -327,10 +376,7 @@ function AllStaff() {
                   label: 'Remove Staff',
                   icon: <span className="ciergio-trash" />,
                   function: () => {
-                    setSelectedStaff({
-                      user,
-                      company
-                    })
+                    setSelectedStaff(staff)
                     handleShowModal('delete')
                   }
                 }
@@ -352,11 +398,7 @@ function AllStaff() {
                 name: (
                   <span className="capitalize">{`${user?.firstName} ${user?.lastName}`}</span>
                 ),
-                role: (
-                  <span className="capitalize">
-                    {accountType?.replace('_', ' ') || ''}
-                  </span>
-                ),
+                role: <span className="capitalize">{roleType}</span>,
                 assignment: (
                   <span className="capitalize">{company?.name || ''}</span>
                 ),
@@ -400,7 +442,7 @@ function AllStaff() {
       <div className="flex items-center justify-end mt-12 mx-4 mb-4 w-full">
         <div className="flex items-center justify-between w-7/12 flex-row">
           <div className="w-full max-w-xs mr-2">
-            <SelectDropdown
+            <FormSelect
               placeholder="Filter Role"
               options={roles}
               onChange={selectedValue => {
@@ -409,10 +451,12 @@ function AllStaff() {
                 setLimitPage(10)
                 setSkipCount(0)
               }}
+              isClearable
+              onClear={() => setSelectedRoles(null)}
             />
           </div>
           <div className="w-full max-w-xs mr-2">
-            <SelectDropdown
+            <FormSelect
               placeholder="Filter Assignment"
               options={assignments}
               onChange={selectedValue => {
@@ -421,9 +465,11 @@ function AllStaff() {
                 setLimitPage(10)
                 setSkipCount(0)
               }}
+              isClearable
+              onClear={() => setSelectedAssignment(null)}
             />
           </div>
-          <div className="w-full relative max-w-xs mr-4 top-2">
+          <div className="w-full relative max-w-xs mr-4">
             <SearchComponent
               placeholder="Search"
               inputClassName="pr-8"
@@ -434,36 +480,39 @@ function AllStaff() {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`All Staff (${
-          accounts?.getAccounts?.count || 0
-        })`}</h1>
-        <div className="flex items-center">
+      <Card
+        noPadding
+        title={
+          <h1 className="font-bold text-base px-8 py-4">{`All Staff (${
+            accounts?.getAccounts?.count || 0
+          })`}</h1>
+        }
+        actions={[
           <Button
+            key="print"
             default
             icon={<HiOutlinePrinter />}
             onClick={() => {}}
             className="mr-4 mt-4"
             disabled
-          />
+          />,
           <Button
+            key="download"
             default
             icon={<FiDownload />}
             onClick={() => {}}
             className="mr-4 mt-4"
             disabled
-          />
+          />,
           <Button
+            key="create"
             default
             leftIcon={<FaPlusCircle />}
             label="Invite Staff"
             onClick={() => handleShowModal('create')}
             className="mr-4 mt-4"
           />
-        </div>
-      </div>
-      <Card
-        noPadding
+        ]}
         content={
           <PrimaryDataTable
             data={staffData}
@@ -481,7 +530,7 @@ function AllStaff() {
         open={showInviteModal}
         loading={sendingInvite}
         onCancel={() => handleClearModal('create')}
-        onOk={handleSubmitInvite(handleOk)}
+        onOk={handleOk}
         companyOptions={assignments}
         form={{
           watch: watchInvite,

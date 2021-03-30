@@ -37,12 +37,12 @@
     }
 
     & span {
-      @apply text-neutral-dark font-body font-bold text-sm;
+      @apply text-neutral-dark font-body font-normal text-sm;
     }
   }
 
   .FormError {
-    @apply mb-4;
+    @apply mb-4 mt-1 block;
   }
 
   .FormControl {
@@ -52,7 +52,8 @@
 
 .hasError {
   & [type='text'],
-  & [type='password'] {
+  & [type='password'],
+  & [type='email'] {
     @apply border-red-500;
   }
 

@@ -18,7 +18,8 @@ function Component({
   children,
   okButtonProps,
   loading,
-  modalProps
+  modalProps,
+  width
 }) {
   const customStyles = {
     height: 'auto',
@@ -34,6 +35,7 @@ function Component({
       onClose={onClose}
       customStyles={customStyles}
       closeMaskOnClick={false}
+      width={width}
       {...modalProps}
     >
       <div className="modal">
@@ -51,9 +53,15 @@ function Component({
               default
               label={cancelText}
               onClick={onCancel}
-              className="mr-4"
+              className="mr-4 text-lg"
             />
-            <Button primary label={okText} onClick={onOk} {...okButtonProps} />
+            <Button
+              primary
+              label={okText}
+              onClick={onOk}
+              {...okButtonProps}
+              className="text-lg"
+            />
           </div>
         ) : null}
       </div>
@@ -65,7 +73,8 @@ Component.defaultProps = {
   cancelText: 'Cancel',
   okText: 'Ok',
   height: 'auto',
-  loading: false
+  loading: false,
+  width: 450
 }
 
 Component.propTypes = {
@@ -80,7 +89,8 @@ Component.propTypes = {
   footer: P.bool,
   okButtonProps: P.object,
   loading: P.bool,
-  modalProps: P.object
+  modalProps: P.object,
+  width: P.number
 }
 
 export default Component

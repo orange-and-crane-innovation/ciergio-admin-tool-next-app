@@ -2,11 +2,15 @@
 import Link from 'next/link'
 import dayjs from '@app/utils/date'
 
+const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+
 export const BUILDING_ADMIN = 'building_admin'
 export const COMPANY_ADMIN = 'company_admin'
 export const COMPLEX_ADMIN = 'complex_admin'
 export const RECEPTIONIST = 'receptionist'
 export const UNIT_OWNER = 'unit_owner'
+export const MEMBER = 'member'
+export const SUPER_ADMIN = 'administrator'
 
 export const columns = [
   {
@@ -33,22 +37,37 @@ export const columns = [
 
 export const roles = [
   {
+    label: 'Super Admin',
+    value: SUPER_ADMIN
+  },
+  {
     label: 'Company Admin',
     value: COMPANY_ADMIN
   },
   {
     label: 'Complex Admin',
     value: COMPLEX_ADMIN
+  },
+  {
+    label: 'Member',
+    value: MEMBER
   }
 ]
 
-export const ALL_ROLES = [
-  BUILDING_ADMIN,
-  COMPANY_ADMIN,
-  COMPLEX_ADMIN,
-  RECEPTIONIST,
-  UNIT_OWNER
+export const prayStaffRoles = [
+  {
+    label: 'Parish Head',
+    value: 'company_admin'
+  },
+  {
+    label: 'Parish Admin',
+    value: 'complex_admin'
+  }
 ]
+
+export const INVITE_STAFF_ROLES = systemType === 'pray' ? prayStaffRoles : roles
+
+export const ALL_ROLES = [SUPER_ADMIN, COMPLEX_ADMIN, COMPANY_ADMIN, MEMBER]
 
 const historyMessages = {
   CreateUnitType: data =>

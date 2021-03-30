@@ -191,7 +191,7 @@ select:active {
 }
 
 .modal .modal-header .modal-title span {
-  @apply text-black text-base font-bold;
+  @apply text-black text-lg font-bold;
 }
 
 .modal .modal-content {
@@ -206,6 +206,7 @@ select:active {
 
 .modal .modal-footer button {
   margin-bottom: 0 !important;
+  @apply text-base !important;
 }
 /* CARD CONTENT TABLE */
 .card .content table {

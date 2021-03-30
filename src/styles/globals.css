@@ -520,7 +520,6 @@ td.rdtYear:hover {
 .rodal-dialog {
   @apply pb-10 !important;
   @apply shadow-none !important;
-  @apply w-11/12 md:w-128 !important;
 }
 
 /* END RODAL MODAL */
