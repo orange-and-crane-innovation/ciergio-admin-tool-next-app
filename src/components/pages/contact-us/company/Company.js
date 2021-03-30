@@ -17,9 +17,16 @@ const columns = [
 ]
 
 function Company({ id }) {
-  const { data: complexes } = useQuery(GET_COMPLEXES, {
-    variables: { companyId: id }
-  })
+  const { data: complexes, loading: loadingComplexes } = useQuery(
+    GET_COMPLEXES,
+    {
+      variables: {
+        where: {
+          companyId: id
+        }
+      }
+    }
+  )
   const { data: companies } = useQuery(GET_COMPANY, {
     variables: { companyId: id }
   })
@@ -52,7 +59,13 @@ function Company({ id }) {
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={contactsData} />}
+        content={
+          <Table
+            rowNames={columns}
+            items={contactsData}
+            loading={loadingComplexes}
+          />
+        }
         className="rounded-t-none"
       />
     </section>
