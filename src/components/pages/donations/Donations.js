@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { debounce } from 'lodash'
-import moment from 'moment'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa'
 
 import Tabs from '@app/components/tabs'
@@ -13,6 +12,7 @@ import FormSelect from '@app/components/forms/form-select'
 import Table from '@app/components/table'
 import PageLoader from '@app/components/page-loader'
 import Pagination from '@app/components/pagination'
+import Tooltip from '@app/components/tooltip'
 
 import { DATE, ATTR, TOOLTIP } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -57,7 +57,7 @@ function Donations() {
 
   const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS)
 
-  const DONATIONS = donations?.getDonations
+  const DONATIONS = donations?.getDonationsWeb
   const PAYMENT_METHODS = dataPaymentMethod?.getPaymentMethods
 
   useEffect(() => {
@@ -171,12 +171,12 @@ function Donations() {
     return DONATIONS?.data?.map((donation, index) => [
       <tr key={index}>
         <td colSpan={7} className="text-info-900 font-black bg-white">
-          <span data-tip={donation.date?.year}>
+          <Tooltip text={donation.date?.year} effect="solid">
             {DATE.friendlyDateTimeFormat(
               `${donation.date?.month} ${donation.date?.day}, ${donation.date?.year}`,
               'MMM DD'
             )}
-          </span>
+          </Tooltip>
           <span className="text-sm mx-2">|</span>
           <span className="text-sm mr-4">Total:</span>
           <span className="text-sm">{ATTR.toCurrency(donation?.total)}</span>
@@ -308,15 +308,10 @@ function Donations() {
 
   const onDateApply = () => {
     setAppliedDate({
-      from: moment(selectedDateRange[0].startDate).format(
-        'YYYY-MM-DDTHH:mm:ss.SSSZ'
+      from: DATE.toFriendlyISO(
+        DATE.setInitialTime(selectedDateRange[0].startDate)
       ),
-      to: moment(selectedDateRange[0].endDate)
-        .add(23, 'hours')
-        .add(59, 'minutes')
-        .add(59, 'seconds')
-        .add(999, 'milliseconds')
-        .format('YYYY-MM-DDTHH:mm:ss.SSSZ')
+      to: DATE.toFriendlyISO(DATE.setEndTime(selectedDateRange[0].endDate))
     })
   }
 
@@ -331,11 +326,7 @@ function Donations() {
         )
 
       if (networkError?.result?.errors) {
-        if (networkError?.result?.errors[0]?.code === 4000) {
-          showToast('danger', 'Category name already exists')
-        } else {
-          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
-        }
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
       }
 
       if (
@@ -473,7 +464,6 @@ function Donations() {
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
-      {TOOLTIP.Show()}
     </div>
   )
 }

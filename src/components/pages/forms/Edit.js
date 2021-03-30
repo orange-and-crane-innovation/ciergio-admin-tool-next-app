@@ -57,10 +57,6 @@ const GET_POST_QUERY = gql`
             lastName
           }
         }
-        category {
-          _id
-          name
-        }
         primaryMedia {
           url
           type
@@ -105,9 +101,8 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
-  content: yup.string().label('Content').required(),
-  embeddedFiles: yup.array().label('Image').nullable().required(),
-  category: yup.string().label('Category').nullable().required()
+  content: yup.string().label('Content').nullable(),
+  embeddedFiles: yup.array().label('Image').nullable().required()
 })
 
 const validationSchemaDraft = yup.object().shape({
@@ -116,8 +111,7 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
-  content: yup.mixed(),
-  category: yup.string().nullable()
+  content: yup.mixed().nullable()
 })
 
 const CreatePosts = () => {
@@ -149,6 +143,9 @@ const CreatePosts = () => {
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [isEdit, setIsEdit] = useState(true)
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
 
   const [
     updatePost,
@@ -158,7 +155,9 @@ const CreatePosts = () => {
       data: dataUpdate,
       error: errorUpdate
     }
-  ] = useMutation(UPDATE_POST_MUTATION)
+  ] = useMutation(UPDATE_POST_MUTATION, {
+    onError: _e => {}
+  })
 
   const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
     GET_POST_QUERY,
@@ -179,7 +178,6 @@ const CreatePosts = () => {
       title: '',
       content: null,
       video: '',
-      category: null,
       embeddedFiles: null
     }
   })
@@ -188,7 +186,7 @@ const CreatePosts = () => {
 
   useEffect(() => {
     if (errorPost) {
-      showToast('danger', `Sorry, there's an error occured on fetching.`)
+      errorHandler(errorPost)
     } else if (!loadingPost && dataPost) {
       const itemData = dataPost?.getAllPost?.post[0]
 
@@ -196,10 +194,9 @@ const CreatePosts = () => {
         setPost(itemData)
         setValue('title', itemData?.title)
         setValue('content', itemData?.content)
-        setValue('category', itemData?.category?._id)
         setValue(
           'embeddedFiles',
-          itemData?.primaryMedia.map(item => {
+          itemData?.primaryMedia?.map(item => {
             return item.url
           })
         )
@@ -209,6 +206,7 @@ const CreatePosts = () => {
             itemData?.embeddedMediaFiles[0]?.url) ??
             null
         )
+        setTextCount(itemData?.title?.length)
         setFileUploadedData(
           itemData?.primaryMedia.map(item => {
             return { url: item.url, type: item.type }
@@ -294,17 +292,55 @@ const CreatePosts = () => {
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
-        showToast('danger', 'Sorry, an error occured during updating of post.')
+        errorHandler(errorUpdate)
       }
       if (calledUpdate && dataUpdate) {
+        let message
         reset()
         resetForm()
-        showToast('success', 'You have successfully updated a post.')
+
+        switch (modalType) {
+          case 'unpublished':
+            message = `You have successfully unpublished a form.`
+            break
+          case 'delete':
+            message = `You have successfully sent a form to the trash.`
+            break
+          default:
+            message = `You have successfully updated a form.`
+            break
+        }
+
+        showToast('success', message)
         goToFormsPageLists()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
 
   const goToFormsPageLists = () => {
     push('/forms/')
@@ -329,6 +365,15 @@ const CreatePosts = () => {
           setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
+        case 'unpublished': {
+          setModalTitle('Unpublish Post')
+          setModalContent(
+            <UpdateCard type="unpublished" title={selected[0].title} />
           )
           setModalFooter(true)
           setModalID(selected[0]._id)
@@ -425,7 +470,6 @@ const CreatePosts = () => {
       const updateData = {
         id: query.id,
         data: {
-          categoryId: data.category,
           title: data?.title || 'Untitled',
           content: data?.content,
           audienceType: selectedAudienceType,
@@ -670,11 +714,26 @@ const CreatePosts = () => {
     }
   }
 
+  const onUnpublishPost = async () => {
+    const updateData = {
+      id: modalID,
+      data: {
+        status: 'unpublished'
+      }
+    }
+
+    try {
+      await updatePost({ variables: updateData })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   return (
     <>
       {loadingUpdate && <PageLoader fullPage />}
       <div className={style.CreatePostContainer}>
-        <h1 className={style.CreatePostHeader}>Edit Post</h1>
+        <h1 className={style.CreatePostHeader}>Edit Form</h1>
         <form>
           <Card
             content={
@@ -757,12 +816,23 @@ const CreatePosts = () => {
               <div className={style.CreateContentContainer}>
                 <div className={style.CreatePostPublishContent}>
                   <div className={style.CreatePostPublishSubContent}>
-                    <span>
-                      Status: <strong>New</strong>
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Status: </span>
+                      <strong>
+                        {post?.status === 'published'
+                          ? 'Published'
+                          : post?.status === 'unpublished'
+                          ? 'Unpublished'
+                          : post?.status === 'draft'
+                          ? 'Draft'
+                          : 'New'}
+                      </strong>
                     </span>
                     <span className="flex flex-col">
                       <div>
-                        Audience:
+                        <span className={style.CreatePostSection}>
+                          Audience:{' '}
+                        </span>
                         <strong>
                           {selectedAudienceType === 'allExcept'
                             ? ' All those registered except: '
@@ -770,7 +840,9 @@ const CreatePosts = () => {
                             ? ' Only show to those selected: '
                             : ' All those registered '}
                         </strong>
-                        {selectedAudienceType === 'all' && (
+                        {(systemType === 'home' ||
+                          (systemType !== 'home' &&
+                            accountType !== 'complex_admin')) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}
@@ -782,55 +854,40 @@ const CreatePosts = () => {
 
                       {(selectedAudienceType === 'allExcept' ||
                         selectedAudienceType === 'specific') && (
-                        <div className="ml-20">
-                          <strong>
-                            {selectedCompanyExcept && (
-                              <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
-                            )}
-                            {selectedCompanySpecific && (
-                              <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
-                            )}
-                            {selectedComplexExcept && (
-                              <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
-                            )}
-                            {selectedComplexSpecific && (
-                              <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
-                            )}
-                            {selectedBuildingExcept && (
-                              <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
-                            )}
-                            {selectedBuildingSpecific && (
-                              <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
-                            )}
-                          </strong>
-                          <span
-                            className={style.CreatePostLink}
-                            onClick={handleShowAudienceModal}
-                          >
-                            Edit
+                        <div className="flex">
+                          <span className={style.CreatePostSection} />
+                          <span>
+                            <strong>
+                              {selectedCompanyExcept && (
+                                <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                              )}
+                              {selectedCompanySpecific && (
+                                <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+                              )}
+                              {selectedComplexExcept && (
+                                <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                              )}
+                              {selectedComplexSpecific && (
+                                <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                              )}
+                              {selectedBuildingExcept && (
+                                <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                              )}
+                              {selectedBuildingSpecific && (
+                                <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                              )}
+                            </strong>
+                            <span
+                              className={style.CreatePostLink}
+                              onClick={handleShowAudienceModal}
+                            >
+                              Edit
+                            </span>
                           </span>
                         </div>
                       )}
                     </span>
                   </div>
-
-                  <div className={style.CreatePostPublishMarginContainer}>
-                    Publish:
-                    <strong>
-                      {selectedPublishTimeType === 'later'
-                        ? ` Scheduled, ${moment(selectedPublishDateTime).format(
-                            'MMM DD, YYYY - hh:mm A'
-                          )} `
-                        : ' Immediately '}
-                    </strong>
-                    <span
-                      className={style.CreatePostLink}
-                      onClick={handleShowPublishTimeModal}
-                    >
-                      Edit
-                    </span>
-                  </div>
-                  <span />
                 </div>
               </div>
             }
@@ -848,21 +905,35 @@ const CreatePosts = () => {
                   handleShowModal('delete')
                 })}
               />
-              <Button
-                default
-                type="button"
-                label="Save as Draft"
-                className={style.CreatePostFooterButton}
-                onMouseDown={() => onUpdateStatus('draft')}
-                onClick={handleSubmit(e => {
-                  onSubmit(e, 'draft')
-                })}
-              />
+              {post?.status === 'draft' && (
+                <Button
+                  default
+                  type="button"
+                  label="Save as Draft"
+                  className={style.CreatePostFooterButton}
+                  onMouseDown={() => onUpdateStatus('draft')}
+                  onClick={handleSubmit(e => {
+                    onSubmit(e, 'draft')
+                  })}
+                />
+              )}
+              {post?.status === 'published' && (
+                <Button
+                  default
+                  type="button"
+                  label="Unpublish Form"
+                  className={style.CreatePostFooterButton}
+                  onMouseDown={() => onUpdateStatus('unpublished')}
+                  onClick={handleSubmit(e => {
+                    handleShowModal('unpublished')
+                  })}
+                />
+              )}
             </span>
 
             <Button
               type="button"
-              label="Publish Post"
+              label="Publish Form"
               primary
               onMouseDown={() => onUpdateStatus('active')}
               onClick={handleSubmit(e => {
@@ -916,7 +987,13 @@ const CreatePosts = () => {
               ? 'Save & Continue'
               : 'Yes'
           }
-          onOk={() => (modalType === 'delete' ? onDeletePost() : null)}
+          onOk={() =>
+            modalType === 'delete'
+              ? onDeletePost()
+              : modalType === 'unpublished'
+              ? onUnpublishPost()
+              : null
+          }
           onCancel={() => setShowModal(old => !old)}
         >
           <div className="w-full">{modalContent}</div>

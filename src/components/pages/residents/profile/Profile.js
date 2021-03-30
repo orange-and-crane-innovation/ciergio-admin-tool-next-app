@@ -52,7 +52,6 @@ function Profile() {
       data:
         history?.getAccountHistory?.count > 0
           ? history.getAccountHistory.data.map(history => {
-              // console.log('history', JSON.parse(history?.data))
               const _data = history?.data ? JSON.parse(history.data) : undefined
 
               return {
@@ -61,7 +60,6 @@ function Profile() {
                   'MMMM DD, YYYY - hh:mm A'
                 ),
                 user: fullName,
-                // activity: history?.action,
                 activity:
                   (historyMessages[history.action] &&
                     historyMessages[history.action](_data)) ||

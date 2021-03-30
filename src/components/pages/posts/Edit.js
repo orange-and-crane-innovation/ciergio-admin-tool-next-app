@@ -117,7 +117,7 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
     .required(),
-  content: yup.string().label('Content').required(),
+  content: yup.string().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
   category: yup.string().label('Category').nullable().required()
 })
@@ -128,7 +128,7 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
-  content: yup.mixed(),
+  content: yup.mixed().nullable(),
   category: yup.string().nullable()
 })
 
@@ -140,7 +140,7 @@ const validationSchemaDailyReadings = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
     .required(),
-  content: yup.string().label('Content').required(),
+  content: yup.string().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable()
 })
 
@@ -199,7 +199,9 @@ const CreatePosts = () => {
       data: dataUpdate,
       error: errorUpdate
     }
-  ] = useMutation(UPDATE_POST_MUTATION)
+  ] = useMutation(UPDATE_POST_MUTATION, {
+    onError: _e => {}
+  })
 
   const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
     GET_POST_QUERY,
@@ -241,7 +243,7 @@ const CreatePosts = () => {
 
   useEffect(() => {
     if (errorPost) {
-      showToast('danger', `Sorry, there's an error occured on fetching.`)
+      errorHandler(errorPost)
     } else if (!loadingPost && dataPost) {
       const itemData = dataPost?.getAllPost?.post[0]
 
@@ -252,9 +254,9 @@ const CreatePosts = () => {
         setValue('category', itemData?.category?._id)
         setValue(
           'images',
-          itemData?.primaryMedia.map(item => {
+          itemData?.primaryMedia?.map(item => {
             return item.url
-          })
+          }) ?? []
         )
         setValue(
           'video',
@@ -264,9 +266,9 @@ const CreatePosts = () => {
         )
         setTextCount(itemData?.title?.length)
         setImageUploadedData(
-          itemData?.primaryMedia.map(item => {
+          itemData?.primaryMedia?.map(item => {
             return { url: item.url, type: item.type }
-          })
+          }) ?? []
         )
         setSelectedCategory(itemData?.category?._id)
         setVideoUrl(
@@ -274,7 +276,7 @@ const CreatePosts = () => {
             itemData?.embeddedMediaFiles[0]?.url) ??
             ''
         )
-        setImageUrls(itemData?.primaryMedia.map(item => item.url))
+        setImageUrls(itemData?.primaryMedia?.map(item => item.url) ?? [])
         setSelectedAudienceType(itemData?.audienceType)
         setSelectedCompanyExcept(
           itemData?.audienceExceptions?.company?.length > 0
@@ -350,7 +352,7 @@ const CreatePosts = () => {
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
-        showToast('danger', 'Sorry, an error occured during updating of post.')
+        errorHandler(errorUpdate)
       }
       if (calledUpdate && dataUpdate) {
         showToast('success', 'You have successfully updated a post.')
@@ -363,6 +365,30 @@ const CreatePosts = () => {
       }
     }
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
 
   const goToBulletinPageLists = () => {
     push(`/${routeName}/`)
@@ -397,9 +423,18 @@ const CreatePosts = () => {
           break
         }
         case 'preview': {
-          setModalTitle('Preview Post')
+          setModalTitle('Save & Preview Post')
           setModalContent(
-            <UpdateCard type="preview" title={selected[0].title} />
+            <UpdateCard type="preview-edit" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
+        case 'unpublished': {
+          setModalTitle('Unpublish Post')
+          setModalContent(
+            <UpdateCard type="unpublished" title={selected[0].title} />
           )
           setModalFooter(true)
           setModalID(selected[0]._id)
@@ -486,7 +521,7 @@ const CreatePosts = () => {
   }
 
   const onVideoChange = e => {
-    setVideoLoading(true)
+    setVideoLoading(e.target.value !== '')
     setVideoError(null)
     setVideoUrl(e.target.value)
   }
@@ -523,8 +558,8 @@ const CreatePosts = () => {
           title: data?.title || 'Untitled',
           content: data?.content,
           audienceType: selectedAudienceType,
-          status: status,
-          primaryMedia: imageUploadedData,
+          primaryMedia:
+            imageUploadedData?.length > 0 ? imageUploadedData : null,
           embeddedMediaFiles: videoUrl
             ? [
                 {
@@ -533,6 +568,10 @@ const CreatePosts = () => {
               ]
             : null
         }
+      }
+
+      if (status) {
+        updateData.data.status = status
       }
 
       if (selectedPublishDateTime) {
@@ -606,7 +645,9 @@ const CreatePosts = () => {
       }
 
       if (isDailyReadingsPage) {
-        updateData.data.dailyReadingDate = DATE.getInitialTime(selectedDate)
+        updateData.data.dailyReadingDate = DATE.toFriendlyISO(
+          DATE.setInitialTime(selectedDate)
+        )
       }
 
       updatePost({ variables: updateData })
@@ -766,7 +807,22 @@ const CreatePosts = () => {
   }
 
   const onPreviewPost = () => {
-    onSubmit(getValues(), 'draft')
+    onSubmit(getValues())
+  }
+
+  const onUnpublishPost = async () => {
+    const updateData = {
+      id: modalID,
+      data: {
+        status: 'unpublished'
+      }
+    }
+
+    try {
+      await updatePost({ variables: updateData })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const downloadQR = () => {
@@ -982,6 +1038,9 @@ const CreatePosts = () => {
                           />
                         )}
                       />
+                      {videoError && (
+                        <p className={style.TextError}>{videoError}</p>
+                      )}
                     </div>
                     <FaTimes
                       className={`${style.CreatePostVideoButtonClose} ${
@@ -1003,8 +1062,6 @@ const CreatePosts = () => {
                     onReady={onVideoReady}
                   />
                 )}
-
-                {videoError && <p className={style.TextError}>{videoError}</p>}
               </div>
             }
           />
@@ -1045,7 +1102,15 @@ const CreatePosts = () => {
                   <div className={style.CreatePostPublishSubContent}>
                     <span className="flex">
                       <span className={style.CreatePostSection}>Status: </span>
-                      <strong>New</strong>
+                      <strong>
+                        {post?.status === 'published'
+                          ? 'Published'
+                          : post?.status === 'unpublished'
+                          ? 'Unpublished'
+                          : post?.status === 'draft'
+                          ? 'Draft'
+                          : 'New'}
+                      </strong>
                     </span>
                     <span className="flex flex-col">
                       <div>
@@ -1108,7 +1173,7 @@ const CreatePosts = () => {
                     </span>
                   </div>
 
-                  <div className={style.CreatePostPublishMarginContainer}>
+                  <div className="flex">
                     <span className={style.CreatePostSection}>Publish: </span>
                     <strong>
                       {selectedPublishTimeType === 'later'
@@ -1117,12 +1182,14 @@ const CreatePosts = () => {
                           )} `
                         : ' Immediately'}
                     </strong>
-                    <span
-                      className={style.CreatePostLink}
-                      onClick={handleShowPublishTimeModal}
-                    >
-                      Edit
-                    </span>
+                    {!isDailyReadingsPage && (
+                      <span
+                        className={style.CreatePostLink}
+                        onClick={handleShowPublishTimeModal}
+                      >
+                        Edit
+                      </span>
+                    )}
                   </div>
                   <span />
                 </div>
@@ -1157,7 +1224,7 @@ const CreatePosts = () => {
                 }
               />
 
-              {!isDailyReadingsPage && (
+              {post?.status === 'draft' && (
                 <Can
                   perform="bulletin:draft"
                   yes={
@@ -1183,13 +1250,39 @@ const CreatePosts = () => {
                   }
                 />
               )}
+              {post?.status === 'published' && (
+                <Can
+                  perform="bulletin:unpublish"
+                  yes={
+                    <Button
+                      default
+                      type="button"
+                      label="Unpublish Post"
+                      className={style.CreatePostFooterButton}
+                      onMouseDown={() => onUpdateStatus('unpublished')}
+                      onClick={handleSubmit(e => {
+                        handleShowModal('unpublished')
+                      })}
+                    />
+                  }
+                  no={
+                    <Button
+                      default
+                      disabled
+                      type="button"
+                      label="Unpublish Post"
+                      className={style.CreatePostFooterButton}
+                    />
+                  }
+                />
+              )}
             </span>
 
             <span>
               <Button
                 default
                 type="button"
-                label="Preview"
+                label="Save & Preview"
                 className={style.CreatePostFooterButton}
                 onMouseDown={() => onUpdateStatus('draft')}
                 onClick={handleSubmit(e => {
@@ -1258,6 +1351,8 @@ const CreatePosts = () => {
               ? onDeletePost()
               : modalType === 'preview'
               ? onPreviewPost()
+              : modalType === 'unpublished'
+              ? onUnpublishPost()
               : null
           }
           onCancel={() => setShowModal(old => !old)}

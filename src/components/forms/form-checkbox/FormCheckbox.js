@@ -59,7 +59,7 @@ function FormCheckbox({
 FormCheckbox.propTypes = {
   id: P.string.isRequired,
   name: P.string.isRequired,
-  label: P.string,
+  label: P.any,
   value: P.string,
   primary: P.bool,
   success: P.bool,

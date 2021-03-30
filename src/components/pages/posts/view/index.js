@@ -87,7 +87,7 @@ const Component = () => {
             '',
           date: DATE.displayDateCreated(itemData?.createdAt) ?? '',
           images:
-            itemData?.primaryMedia.map(item => {
+            itemData?.primaryMedia?.map(item => {
               return {
                 original: item.url
               }
@@ -165,7 +165,9 @@ const Component = () => {
             </div>
           )}
 
-          <div className="mb-6">{ReactHtmlParser(post.content)}</div>
+          <div className={styles.PageContent}>
+            {ReactHtmlParser(post.content)}
+          </div>
         </div>
       </div>
     )

@@ -499,6 +499,14 @@ td.rdtYear:hover {
 
 /* END DATETIME PICKER */
 
+/* DATERANGE PICKER */
+
+.rdrDefinedRangesWrapper {
+  @apply w-full !important;
+}
+
+/* END DATERANGE PICKER */
+
 /* RODAL MODAL */
 
 .rodal {

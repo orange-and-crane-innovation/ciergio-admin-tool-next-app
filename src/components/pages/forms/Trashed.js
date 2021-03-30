@@ -123,6 +123,7 @@ const PostComponent = () => {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
 
   const tableRowData = [
     {
@@ -138,19 +139,15 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: '40%'
+      width: '30%'
     },
     {
       name: 'Author',
       width: '30%'
     },
     {
-      name: 'Category',
-      width: ''
-    },
-    {
       name: 'Status',
-      width: ''
+      width: '15%'
     },
     {
       name: '',
@@ -269,7 +266,8 @@ const PostComponent = () => {
                 accountType === 'company_admin') ||
               (item.author.accountType !== 'administrator' &&
                 item.author.accountType !== 'company_admin' &&
-                accountType === 'complex_admin')
+                accountType === 'complex_admin' &&
+                item.author.company._id === companyID)
             ) {
               isMine = true
               checkbox = (
@@ -287,7 +285,7 @@ const PostComponent = () => {
             }
 
             return {
-              checkbox: checkbox,
+              checkbox: checkbox || '',
               title: (
                 <div className="flex flex-col">
                   {item.title}
@@ -327,7 +325,7 @@ const PostComponent = () => {
                 <div className="flex flex-col">
                   <span>{status}</span>
                   <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
+                    {DATE.toFriendlyShortDate(item.createdAt)}
                   </span>
                 </div>
               ),
@@ -527,7 +525,7 @@ const PostComponent = () => {
         case 'delete': {
           setModalTitle('Delete Form')
           setModalContent(
-            <UpdateCard type="trashed" title={selected[0].title} />
+            <UpdateCard type="deleted" title={selected[0].title} />
           )
           setModalFooter(true)
           setModalID(selected[0]._id)
@@ -672,7 +670,7 @@ const PostComponent = () => {
         visible={showModal}
         onClose={handleClearModal}
         footer={modalFooter}
-        okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
+        okText={modalType === 'delete' ? 'Yes, delete permanently' : 'Yes'}
         onOk={() =>
           modalType === 'delete'
             ? onDeletePost()

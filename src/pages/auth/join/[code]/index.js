@@ -18,6 +18,7 @@ const VERIFY_CODE_QUERY = gql`
         lastName
         email
         accountType
+        existingUser
         company {
           name
         }
@@ -49,7 +50,8 @@ function JoinPage() {
     onError: _e => {},
     variables: {
       where: {
-        code: router.query.code
+        code: router.query.code,
+        appType: 'admin'
       }
     }
   })
@@ -93,16 +95,21 @@ function JoinPage() {
 
   const onSubmit = useCallback(
     values => {
+      const createData = {
+        code: router.query.code
+      }
+
+      if (!profile?.existingUser) {
+        createData.data = {
+          firstName: values?.firstName,
+          lastName: values?.lastName,
+          password: values?.password
+        }
+      }
+
       try {
         createAccount({
-          variables: {
-            data: {
-              firstName: values?.firstName,
-              lastName: values?.lastName,
-              password: values?.password
-            },
-            code: router.query.code
-          }
+          variables: createData
         })
       } catch (err) {}
     },

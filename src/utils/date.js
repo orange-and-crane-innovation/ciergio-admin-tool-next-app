@@ -140,14 +140,25 @@ export const toEndOfMonth = data => {
   date.setHours(23)
   date.setMinutes(59)
   date.setSeconds(59)
+  date.setMilliseconds(999)
   return date
 }
 
-export const getInitialTime = data => {
+export const setInitialTime = data => {
   const date = new Date(data)
   date.setHours(0)
   date.setMinutes(0)
   date.setSeconds(0)
+  date.setMilliseconds(0)
+  return date
+}
+
+export const setEndTime = data => {
+  const date = new Date(data)
+  date.setHours(23)
+  date.setMinutes(59)
+  date.setSeconds(59)
+  date.setMilliseconds(999)
   return date
 }
 

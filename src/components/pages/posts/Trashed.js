@@ -20,6 +20,7 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
 import Modal from '@app/components/modal'
+import Tooltip from '@app/components/tooltip'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -45,8 +46,13 @@ const bulkOptions = [
 ]
 
 const GET_ALL_POST_QUERY = gql`
-  query getAllPost($where: AllPostInput, $limit: Int, $offset: Int) {
-    getAllPost(where: $where, limit: $limit, offset: $offset) {
+  query getAllPost(
+    $where: AllPostInput
+    $limit: Int
+    $offset: Int
+    $sort: PostSort
+  ) {
+    getAllPost(where: $where, limit: $limit, offset: $offset, sort: $sort) {
       count
       limit
       offset
@@ -67,12 +73,15 @@ const GET_ALL_POST_QUERY = gql`
           }
           accountType
           company {
+            _id
             name
           }
           complex {
+            _id
             name
           }
           building {
+            _id
             name
           }
         }
@@ -134,12 +143,13 @@ const PostComponent = () => {
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [isBulkButtonHidden, setIsBulkButtonHidden] = useState(false)
-  const [temporaryDate, setTemporaryDate] = useState()
-  const [temporaryMonth, setTemporaryMonth] = useState()
+  const [temporaryDate, setTemporaryDate] = useState('')
+  const [temporaryMonth, setTemporaryMonth] = useState('')
   const [selectedDate, setSelectedDate] = useState()
   const [selectedMonth, setSelectedMonth] = useState()
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
@@ -165,7 +175,7 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: isDailyReadingsPage ? '80%' : '40%'
+      width: isDailyReadingsPage ? '80%' : '30%'
     },
     {
       name: 'Author',
@@ -174,12 +184,12 @@ const PostComponent = () => {
     },
     {
       name: 'Category',
-      width: '',
+      width: '15%',
       hidden: isDailyReadingsPage
     },
     {
       name: 'Status',
-      width: '',
+      width: '15%',
       hidden: isDailyReadingsPage
     },
     {
@@ -222,7 +232,11 @@ const PostComponent = () => {
       variables: {
         where: fetchFilter,
         limit: limitPage,
-        offset: offsetPage
+        offset: offsetPage,
+        sort: {
+          by: isDailyReadingsPage ? 'dailyReadingDate' : 'createdAt',
+          order: 'desc'
+        }
       }
     }
   )
@@ -313,17 +327,22 @@ const PostComponent = () => {
                 status = 'Trashed'
                 break
               }
+              case 'scheduled': {
+                status = 'Scheduled'
+                break
+              }
             }
 
             if (
               user._id === item.author._id ||
               item.author.accountType === accountType ||
               accountType === 'administrator' ||
-              (item.author.accountType !== 'administrator' &&
+              (((item.author.accountType !== 'administrator' &&
                 accountType === 'company_admin') ||
-              (item.author.accountType !== 'administrator' &&
-                item.author.accountType !== 'company_admin' &&
-                accountType === 'complex_admin')
+                (item.author.accountType !== 'administrator' &&
+                  item.author.accountType !== 'company_admin' &&
+                  accountType === 'complex_admin')) &&
+                item.author.company._id === companyID)
             ) {
               isMine = true
               checkbox = (
@@ -341,11 +360,13 @@ const PostComponent = () => {
             }
 
             return {
-              checkbox: checkbox,
+              checkbox: checkbox || '',
               title: (
                 <div className="flex flex-col">
                   {isDailyReadingsPage ? (
-                    DATE.toFriendlyShortDate(item?.dailyReadingDate)
+                    <Tooltip text={item?.title}>
+                      {DATE.toFriendlyShortDate(item?.dailyReadingDate)}
+                    </Tooltip>
                   ) : (
                     <span className={styles.TextWrapper}>{item?.title}</span>
                   )}
@@ -393,7 +414,7 @@ const PostComponent = () => {
                 <div className="flex flex-col">
                   <span>{status}</span>
                   <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
+                    {DATE.toFriendlyShortDate(item.createdAt)}
                   </span>
                 </div>
               ),
@@ -700,11 +721,11 @@ const PostComponent = () => {
 
   const onApplyDate = () => {
     if (temporaryDate && temporaryDate !== '') {
-      setSelectedDate(DATE.toFriendlyISO(DATE.getInitialTime(temporaryDate)))
+      setSelectedDate(DATE.toFriendlyISO(DATE.setInitialTime(temporaryDate)))
       setSelectedMonth('')
     }
 
-    if (temporaryMonth && temporaryMonth !== '') {
+    if (temporaryMonth !== '') {
       setSelectedDate('')
       setSelectedMonth([
         DATE.toFriendlyISO(DATE.toBeginningOfMonth(temporaryMonth)),
@@ -740,6 +761,7 @@ const PostComponent = () => {
           onBulkSubmit={() => handleShowModal('bulk')}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
+          custom={isDailyReadingsPage}
         />
         {isDailyReadingsPage && (
           <div className="mx-2 w-full md:w-72">
@@ -749,6 +771,7 @@ const PostComponent = () => {
                   <div className="relative">
                     <FormInput
                       {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
                       name="date"
                       placeholder="Filter Month"
                       value={
@@ -786,6 +809,7 @@ const PostComponent = () => {
                   <div className="relative">
                     <FormInput
                       {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
                       name="date"
                       placeholder="Choose a date"
                       value={

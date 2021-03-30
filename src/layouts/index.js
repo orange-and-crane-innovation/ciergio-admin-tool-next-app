@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Centered from '@app/layouts/centered'
 import CenteredAuth from '@app/layouts/centered-auth'
 import Layout from '@app/layouts/layout-1'
+import Public from '@app/layouts/public'
 
 const Layouts = ({ children }) => {
   const router = useRouter()
@@ -24,6 +25,8 @@ const Layouts = ({ children }) => {
     ].includes(pathname)
   ) {
     return <Centered>{children}</Centered>
+  } else if (['/terms-and-conditions', '/privacy-policy'].includes(pathname)) {
+    return <Public>{children}</Public>
   } else if (
     [
       '/auth/manage',

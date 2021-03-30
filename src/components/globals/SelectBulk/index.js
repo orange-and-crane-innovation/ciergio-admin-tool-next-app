@@ -15,11 +15,17 @@ const SelectBulkComponent = ({
   isButtonHidden,
   onBulkChange,
   onBulkSubmit,
-  onBulkClear
+  onBulkClear,
+  custom
 }) => {
   return (
-    <div className={styles.BulkControlContainer}>
+    <div
+      className={`${styles.BulkControlContainer} ${
+        custom ? styles.CustomWidth : ''
+      }`}
+    >
       <FormSelect
+        className="min-w-xs"
         id="bulkSelect"
         name="bulkSelect"
         options={options}
@@ -53,7 +59,8 @@ SelectBulkComponent.propTypes = {
   isButtonHidden: PropTypes.bool,
   onBulkChange: PropTypes.func,
   onBulkSubmit: PropTypes.func,
-  onBulkClear: PropTypes.func
+  onBulkClear: PropTypes.func,
+  custom: PropTypes.bool
 }
 
 export default SelectBulkComponent

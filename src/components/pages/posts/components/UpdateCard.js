@@ -54,6 +54,13 @@ const Component = ({ type, title, data }) => {
             drafts first.
           </p>
         </>
+      ) : type === 'preview-edit' ? (
+        <>
+          <p>
+            To capture all the changes made in your post, we need to save it
+            first.
+          </p>
+        </>
       ) : type === 'download-qr' ? (
         <div className="qrCode flex flex-col items-center justify-center">
           <QRCode

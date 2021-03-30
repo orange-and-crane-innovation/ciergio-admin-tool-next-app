@@ -2,6 +2,10 @@
   @apply w-full md:w-1/4;
   @apply flex items-center;
 
+  &.CustomWidth {
+    @apply md:w-128;
+  }
+
   .BulkControlButton {
     @apply ml-2;
 

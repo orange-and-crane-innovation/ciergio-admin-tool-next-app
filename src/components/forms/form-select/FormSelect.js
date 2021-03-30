@@ -1,9 +1,44 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable jsx-a11y/no-onchange */
 import React from 'react'
 import PropTypes from 'prop-types'
 import Select, { components } from 'react-select'
 
 import styles from './FormSelect.module.css'
+
+const ValueContainer = ({ children, ...props }) => {
+  const {
+    getValue,
+    hasValue,
+    isMulti,
+    selectProps: { valueholder, inputValue }
+  } = props
+  const selected = getValue()
+  const content = (length => {
+    switch (length) {
+      case 0:
+        return children
+      case 1:
+        return selected[0].label
+      default:
+        return `${valueholder} (${selected.length})`
+    }
+  })(selected.length)
+
+  if (!hasValue || !isMulti) {
+    return (
+      <components.ValueContainer {...props}>
+        {children}
+      </components.ValueContainer>
+    )
+  }
+  return (
+    <components.ValueContainer {...props}>
+      {!inputValue && content}
+      {children[1]}
+    </components.ValueContainer>
+  )
+}
 
 const InputSelect = ({
   id,
@@ -17,7 +52,6 @@ const InputSelect = ({
   onChange,
   onClear,
   disabled,
-  noCloseIcon,
   className,
   isMulti,
   isClearable,
@@ -25,25 +59,6 @@ const InputSelect = ({
   loading,
   label
 }) => {
-  // eslint-disable-next-line react/prop-types
-  const ValueContainer = ({ children, ...props }) => {
-    // eslint-disable-next-line react/prop-types
-    const { getValue, hasValue } = props
-    const count = getValue().length
-    if (!hasValue) {
-      return (
-        <components.ValueContainer {...props}>
-          {children}
-        </components.ValueContainer>
-      )
-    }
-    return (
-      <components.ValueContainer {...props}>
-        {`${valueholder} (${count})`}
-      </components.ValueContainer>
-    )
-  }
-
   return (
     <div className={`${styles.FormSelectContainer} ${className}`}>
       {label ? (
@@ -57,10 +72,11 @@ const InputSelect = ({
             borderColor: error ? 'red' : styles.borderColor
           })
         }}
-        classNamePrefix="FormSelect"
+        classNamePrefix={styles.FormSelect}
         id={id}
         name={name}
         placeholder={placeholder}
+        valueholder={valueholder}
         options={options}
         noOptionsMessage={() => 'No item found.'}
         value={value}
@@ -69,7 +85,7 @@ const InputSelect = ({
         components={
           isMulti
             ? {
-                ValueContainer,
+                ValueContainer: ValueContainer,
                 IndicatorSeparator: () => null
               }
             : {
@@ -110,7 +126,6 @@ InputSelect.propTypes = {
   onChange: PropTypes.func,
   onClear: PropTypes.func,
   disabled: PropTypes.bool,
-  noCloseIcon: PropTypes.bool,
   className: PropTypes.string,
   isMulti: PropTypes.bool,
   isClearable: PropTypes.bool,
