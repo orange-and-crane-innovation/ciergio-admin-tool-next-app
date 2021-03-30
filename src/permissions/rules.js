@@ -53,6 +53,7 @@ const rules = {
         'forms:update::trash',
         'forms:restore::delete',
         'directory:contact:create',
+        'directory:contact:update::delete',
         'directory:contact:view',
         'directory:contact:update',
         'directory:contact:delete',

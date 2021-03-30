@@ -40,7 +40,7 @@ function Company({ id }) {
           ? complexes.getComplexes.data.map(item => {
               return {
                 name: (
-                  <Link href={`/directory/complex/${item._id}`}>
+                  <Link href={`/directory/complex/${item._id}?companyId=${id}`}>
                     <span className="text-blue-600 cursor-pointer">
                       {item.name}
                     </span>

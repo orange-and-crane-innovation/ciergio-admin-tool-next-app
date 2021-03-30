@@ -39,6 +39,29 @@ const validationSchema = yup.object().shape({
   category: yup.string().required
 })
 
+const columns = [
+  {
+    name: '',
+    width: ''
+  },
+  {
+    name: 'Name',
+    width: '35%'
+  },
+  {
+    name: 'Category',
+    width: ''
+  },
+  {
+    name: 'Address',
+    width: ''
+  },
+  {
+    name: '',
+    width: ''
+  }
+]
+
 function Contact({ id }) {
   const { handleSubmit, control, errors, reset, setValue } = useForm({
     resolver: yupResolver(validationSchema),
@@ -220,28 +243,6 @@ function Contact({ id }) {
     setImageUrl(null)
   }
 
-  const columns = useMemo(
-    () => [
-      {
-        name: 'Name',
-        width: '35%'
-      },
-      {
-        name: 'Category',
-        width: ''
-      },
-      {
-        name: 'Address',
-        width: ''
-      },
-      {
-        name: '',
-        width: ''
-      }
-    ],
-    []
-  )
-
   const getMapValue = e => {
     setValue('location', e?.address?.formattedAddress)
     setValue('address', e?.address)
@@ -274,19 +275,21 @@ function Contact({ id }) {
           ]
 
           return {
+            image: (
+              <div className="flex justify-end">
+                <img
+                  className="w-12 h-12 rounded-full border-4 border-white"
+                  src={
+                    contact?.logo ??
+                    `https://ui-avatars.com/api/?name=${contact.name}`
+                  }
+                  alt="contact-avatar"
+                />
+              </div>
+            ),
             name: (
               <div className="flex items-center justify-start">
                 <div>
-                  <img
-                    className="w-8 h-8 rounded-full"
-                    src={
-                      contact?.logo ??
-                      `https://ui-avatars.com/api/?name=${contact.name}&rounded=true&size=32`
-                    }
-                    alt="contact-avatar"
-                  />
-                </div>
-                <div className="ml-4">
                   <p>{contact.name}</p>
                   <p className="text-gray-600">{contact.contactNumber}</p>
                 </div>
@@ -309,7 +312,7 @@ function Contact({ id }) {
           }
         }) || []
     }
-  }, [contacts?.getContacts])
+  }, [contacts?.getContacts?.count])
 
   const categoryOptions = useMemo(() => {
     if (categories?.getContactCategories?.data?.length > 0) {
