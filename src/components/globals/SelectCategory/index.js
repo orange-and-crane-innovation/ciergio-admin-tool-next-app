@@ -59,6 +59,8 @@ const SelectCategoryComponent = ({
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const company = user?.accounts?.data[0]?.company?._id
+  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = system === 'pray'
 
   const [
     getCategories,
@@ -101,7 +103,7 @@ const SelectCategoryComponent = ({
   })
 
   useEffect(() => {
-    if (accountType === ACCOUNT_TYPES.SUP.value) {
+    if (isSystemPray || accountType === ACCOUNT_TYPES.SUP.value) {
       getCategories()
     } else {
       getAllowedCategories()
