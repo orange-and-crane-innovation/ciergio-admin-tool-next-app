@@ -130,6 +130,63 @@ export const GET_REGISTRYRECORDS = gql`
     }
   }
 `
+
+export const GET_REGISTRYRECORD = gql`
+  query getRegistryRecord($recordId: String) {
+    getRegistryRecord(recordId: $recordId) {
+      _id
+      checkedInAt
+      checkInSchedule
+      checkedOutAt
+      visitor {
+        firstName
+        lastName
+        company
+        __typename
+      }
+      author {
+        accountType
+        user {
+          _id
+          firstName
+          lastName
+        }
+      }
+      building {
+        name
+        _id
+        __typename
+      }
+      company {
+        name
+        _id
+        __typename
+      }
+      building {
+        name
+        _id
+        __typename
+      }
+      category {
+        name
+        _id
+        __typename
+      }
+      forWho {
+        _id
+        accountType
+        user {
+          _id
+          firstName
+          lastName
+        }
+        unit {
+          name
+        }
+      }
+    }
+  }
+`
 export const GET_UNITS = gql`
   query getUnits($where: GetUnitsParams) {
     getUnits(where: $where) {

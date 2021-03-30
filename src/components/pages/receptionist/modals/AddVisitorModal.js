@@ -17,7 +17,8 @@ function AddVisitorModal({
   onShowModal,
   buildingId,
   categoryId,
-  success
+  success,
+  refetch
 }) {
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
@@ -65,7 +66,6 @@ function AddVisitorModal({
         mediaAttachments: []
       }
 
-      console.log(createRegisterRecord)
       await createRegistryRecord({
         variables: {
           data: createRegisterRecord,
@@ -73,7 +73,6 @@ function AddVisitorModal({
         }
       })
     } catch (e) {
-      console.log(e)
       showToast('warning', 'error on creating record')
       success(true)
     }
@@ -81,11 +80,11 @@ function AddVisitorModal({
 
   useEffect(() => {
     if (!loading && called && data) {
-      console.log(data)
       if (data?.createRegistryRecord?.message === 'success') {
         showModal = false
         success(true)
         showToast('success', 'successfully submitted')
+        refetch(true)
       }
     }
   }, [loading, called, data])
@@ -112,7 +111,8 @@ AddVisitorModal.propTypes = {
   onShowModal: P.func,
   buildingId: P.string,
   categoryId: P.string,
-  success: P.func
+  success: P.func,
+  refetch: P.func
 }
 
 export default AddVisitorModal

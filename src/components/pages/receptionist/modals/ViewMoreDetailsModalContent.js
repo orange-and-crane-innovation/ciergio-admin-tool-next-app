@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import P from 'prop-types'
 import { useQuery } from '@apollo/client'
-import { GET_UNITS } from '../query'
+import { GET_REGISTRYRECORD } from '../query'
 
 function RowStyle({ header, child, child2 }) {
   return (
@@ -20,8 +20,8 @@ function RowStyle({ header, child, child2 }) {
   )
 }
 
-function ModalContent({ unitId }) {
-  const { loading, data, error } = useQuery(GET_UNITS, {
+function ModalContent({ recordId }) {
+  const { loading, data, error } = useQuery(GET_REGISTRYRECORD, {
     variables: { where: null }
   })
   return (
@@ -55,7 +55,7 @@ RowStyle.propTypes = {
 }
 
 ModalContent.propTypes = {
-  unitId: P.oneOfType[(P.string, null)]
+  recordId: P.string
 }
 
 export default ModalContent

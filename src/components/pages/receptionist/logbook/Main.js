@@ -211,6 +211,12 @@ function LogBook({ buildingId, categoryId, status, name }) {
     }
   }
 
+  const willRefetch = will => {
+    if (will) {
+      refetch()
+    }
+  }
+
   return (
     <>
       <DateAndSearch
@@ -228,7 +234,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
             <b className={styles.ReceptionistCardHeader}>
               {search
                 ? `Search results from "${search}"`
-                : `${name} Logbook (${data?.getRegistryRecords?.count})`}
+                : `${name} Logbook (${data?.getRegistryRecords?.count || 0})`}
             </b>
             <Button
               primary
@@ -257,6 +263,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         buildingId={buildingId}
         categoryId={categoryId}
         success={setSuccess}
+        refetch={willRefetch}
       />
       <Modal
         title="Details"
