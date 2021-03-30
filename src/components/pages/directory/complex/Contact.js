@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
 import P from 'prop-types'
 import * as yup from 'yup'
-
+import { useRouter } from 'next/router'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
@@ -63,6 +63,7 @@ const columns = [
 ]
 
 function Contact({ id }) {
+  const router = useRouter()
   const { handleSubmit, control, errors, reset, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -94,6 +95,7 @@ function Contact({ id }) {
     loading: loadingContacts
   } = useQuery(GET_CONTACTS, {
     variables: {
+      companyId: router?.query?.companyId,
       complexId: id,
       limit: pageLimit,
       offset
@@ -329,7 +331,9 @@ function Contact({ id }) {
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title capitalize">{`${name} Directory`}</h1>
       <div className="flex items-center justify-between bg-white border rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Directory (${contacts?.getContacts?.count})`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`Directory (${
+          contacts?.getContacts?.count ?? 0
+        })`}</h1>
 
         <div className="flex items-center">
           <Can

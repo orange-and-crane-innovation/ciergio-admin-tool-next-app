@@ -2,13 +2,11 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
-import { useRouter } from 'next/router'
 import P from 'prop-types'
 import * as yup from 'yup'
-import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
-import Table from '@app/components/table'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
@@ -34,7 +32,6 @@ const validationSchema = yup.object().shape({
 })
 
 function Contact({ id }) {
-  const router = useRouter()
   const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -43,18 +40,31 @@ function Contact({ id }) {
       email: ''
     }
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageLimit, setPageLimit] = useState(10)
+  const [pageOffset, setPageOffset] = useState(0)
 
   const { data: complexes } = useQuery(GET_COMPLEX, {
     variables: {
       id: id
     }
   })
-  const { data: contacts, refetch: refetchContacts } = useQuery(GET_CONTACTS, {
+  const {
+    data: contacts,
+    refetch: refetchContacts,
+    loading: loadingContacts
+  } = useQuery(GET_CONTACTS, {
     variables: {
+      limit: 100,
+      skip: 0,
       where: {
-        companyId: router?.query?.companyId,
+        type: 'contactus'
+      },
+      contactWhere: {
         complexId: id
-      }
+      },
+      contactsLimit: pageLimit,
+      contactsSkip: pageOffset
     }
   })
 
@@ -214,49 +224,54 @@ function Contact({ id }) {
 
   const contactsData = useMemo(() => {
     return {
-      count: contacts?.getContacts?.count || 0,
-      limit: contacts?.getContacts?.limit || 0,
-      offset: contacts?.getContacts?.offset || 0,
+      count: contacts?.getContactCategories?.data[0]?.contacts?.count || 0,
+      limit: contacts?.getContactCategories?.data[0]?.contacts?.limit || 0,
+      offset: contacts?.getContactCategories?.data[0]?.contacts?.skip || 0,
       data:
-        contacts?.getContacts?.data?.map(contact => {
-          const dropdownData = [
-            {
-              label: 'Edit Contact',
-              icon: <span className="ciergio-edit" />,
-              function: () => {
-                setSelectedContact(contact)
-                handleShowModal('edit')
-              }
-            },
-            {
-              label: 'Delete Contact',
-              icon: <span className="ciergio-trash" />,
-              function: () => {
-                setSelectedContact(contact)
-                handleShowModal('delete')
-              }
-            }
-          ]
-
-          return {
-            title: contact.description ?? 'n/a',
-            name: contact.name ?? 'n/a',
-            email: contact.email ?? 'n/a',
-            button: (
-              <Can
-                perform="contactus:update::delete"
-                yes={
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
-                  />
+        contacts?.getContactCategories?.data[0]?.contacts?.data?.map(
+          contact => {
+            const dropdownData = [
+              {
+                label: 'Edit Contact',
+                icon: <span className="ciergio-edit" />,
+                function: () => {
+                  setSelectedContact(contact)
+                  handleShowModal('edit')
                 }
-              />
-            )
+              },
+              {
+                label: 'Delete Contact',
+                icon: <span className="ciergio-trash" />,
+                function: () => {
+                  setSelectedContact(contact)
+                  handleShowModal('delete')
+                }
+              }
+            ]
+
+            return {
+              title: contact.description ?? 'n/a',
+              name: contact.name ?? 'n/a',
+              email: contact.email ?? 'n/a',
+              button: (
+                <Can
+                  perform="contactus:update::delete"
+                  yes={
+                    <Dropdown
+                      label={<AiOutlineEllipsis />}
+                      items={dropdownData}
+                    />
+                  }
+                />
+              )
+            }
           }
-        }) || []
+        ) || []
     }
-  }, [contacts?.getContacts?.count, handleShowModal])
+  }, [
+    contacts?.getContactCategories?.data[0]?.contacts?.count,
+    handleShowModal
+  ])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
@@ -266,7 +281,9 @@ function Contact({ id }) {
       </p>
 
       <div className="flex items-center justify-between bg-white border rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Contacts (${contacts?.getContacts?.data?.length})`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`Contacts (${
+          contacts?.getContactCategories?.data[0]?.contacts?.count ?? 0
+        })`}</h1>
 
         <div className="flex items-center">
           <Can
@@ -285,14 +302,19 @@ function Contact({ id }) {
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={contactsData} />}
+        content={
+          <PrimaryDataTable
+            columns={columns}
+            data={contactsData}
+            loading={loadingContacts}
+            currentPage={currentPage}
+            pageLimit={pageLimit}
+            setCurrentPage={setCurrentPage}
+            setPageLimit={setPageLimit}
+            setPageOffset={setPageOffset}
+          />
+        }
         className="rounded-t-none"
-      />
-      <Pagination
-        items={contactsData}
-        activePage={1}
-        onPageClick={e => alert('Page ' + e)}
-        onLimitChange={e => alert('Show ' + e.target.value)}
       />
       <Modal
         title="Add a Contact"

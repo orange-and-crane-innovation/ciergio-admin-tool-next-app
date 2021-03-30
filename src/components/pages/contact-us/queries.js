@@ -1,15 +1,44 @@
 import gql from 'graphql-tag'
 
 export const GET_CONTACTS = gql`
-  query getContacts($where: GetContactsParams) {
-    getContacts(where: $where) {
+  query getContacts(
+    $where: GetContactCategoriesParams
+    $contactWhere: GetContactsParams
+    $contactsSkip: Int
+    $contactsLimit: Int
+    $limit: Int
+    $skip: Int
+  ) {
+    getContactCategories(where: $where, limit: $limit, skip: $skip) {
       count
       limit
       data {
         _id
         name
-        email
-        description
+        order
+        contacts(
+          where: $contactWhere
+          limit: $contactsLimit
+          skip: $contactsSkip
+        ) {
+          count
+          limit
+          skip
+          data {
+            _id
+            name
+            email
+            contactNumber
+            description
+            building {
+              _id
+              name
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
         __typename
       }
       __typename
