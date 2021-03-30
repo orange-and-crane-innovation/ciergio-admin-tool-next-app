@@ -24,7 +24,6 @@ function InviteStaffModal({
   const staffType = watch('staffType')?.value
   const companyId = watch('company')?.value
   const complexId = watch('complex')?.value
-
   const isComplex = staffType === 'complex_admin'
   const isUnit =
     staffType === 'building_admin' ||
@@ -34,30 +33,30 @@ function InviteStaffModal({
 
   useEffect(() => {
     if (companyId && isComplex) {
-      getComplexes()
+      getComplexes({
+        variables: {
+          id: companyId
+        }
+      })
     }
   }, [companyId, isComplex])
 
   useEffect(() => {
     if (complexId && isUnit) {
-      getBuildings()
+      getBuildings({
+        variables: {
+          id: complexId
+        }
+      })
     }
   }, [isUnit, complexId])
 
-  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES, {
-    variables: {
-      id: companyId
-    }
-  })
+  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES)
 
-  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS, {
-    variables: {
-      id: complexId
-    }
-  })
+  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS)
 
   const complexOptions = useMemo(() => {
-    if (complexes?.getComplexes?.data?.length > 0) {
+    if (complexes?.getComplexes?.count > 0) {
       return complexes.getComplexes.data.map(complex => ({
         label: complex.name,
         value: complex._id
@@ -65,10 +64,10 @@ function InviteStaffModal({
     }
 
     return []
-  }, [complexes?.getComplexes])
+  }, [complexes?.getComplexes?.count])
 
   const buildingOptions = useMemo(() => {
-    if (buildings?.getBuildings?.data?.length > 0) {
+    if (buildings?.getBuildings?.count > 0) {
       return buildings.getBuildings.data.map(building => ({
         label: building.name,
         value: building._id
@@ -76,8 +75,8 @@ function InviteStaffModal({
     }
 
     return []
-  }, [buildings?.getBuildings])
-
+  }, [buildings?.getBuildings?.count])
+  console.log({ errors })
   return (
     <Modal
       title="Invite Staff"
@@ -104,6 +103,10 @@ function InviteStaffModal({
                   name={name}
                   value={value}
                   options={INVITE_STAFF_ROLES}
+                  error={
+                    errors?.staffType?.message ??
+                    errors?.staffType?.value?.message
+                  }
                   onChange={onChange}
                   placeholder="Select Staff Type"
                 />
@@ -167,7 +170,10 @@ function InviteStaffModal({
                         onChange={onChange}
                         options={companyOptions}
                         placeholder="Select a company"
-                        error={errors?.company?.message}
+                        error={
+                          errors?.company?.message ??
+                          errors?.company?.value?.message
+                        }
                         subLabel={<p className="mb-2">Company</p>}
                         containerClasses="mb-4"
                       />
@@ -185,7 +191,10 @@ function InviteStaffModal({
                           value={value}
                           onChange={onChange}
                           options={complexOptions}
-                          error={errors?.complex?.message}
+                          error={
+                            errors?.complex?.message ??
+                            errors?.complex?.value?.message
+                          }
                           subLabel={<p className="mb-2">Complex</p>}
                           placeholder="Select a complex"
                           containerClasses="mb-4"

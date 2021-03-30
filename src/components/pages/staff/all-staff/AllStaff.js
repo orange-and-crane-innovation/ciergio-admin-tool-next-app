@@ -54,16 +54,18 @@ function AllStaff() {
     errors: inviteErrors,
     watch: watchInvite,
     reset: resetInvite,
-    getValues: getInviteStaffValues
+    getValues: getInviteStaffValues,
+    trigger: triggerInviteStaff,
+    setError: setInviteStaffError
   } = useForm({
     resolver: yupResolver(inviteStaffValidationSchema),
     defaultValues: {
-      staffType: '',
+      staffType: undefined,
       email: '',
       jobTitle: '',
-      company: '',
-      complex: '',
-      building: ''
+      company: undefined,
+      complex: undefined,
+      building: undefined
     }
   })
   const {
@@ -85,9 +87,8 @@ function AllStaff() {
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
   const [skipCount, setSkipCount] = useState(0)
-
   const debouncedSearchText = useDebounce(searchText, 700)
-  console.log({ selectedRoles })
+
   const {
     data: accounts,
     refetch: refetchAccounts,
@@ -224,77 +225,88 @@ function AllStaff() {
     }
     if (type === 'create') {
       resetInvite({
-        staffType: '',
+        staffType: undefined,
         email: '',
-        company: '',
         jobTitle: '',
-        complex: '',
-        building: ''
+        company: undefined,
+        complex: undefined,
+        building: undefined
       })
     }
 
     handleShowModal(type)
   }
 
-  const handleOk = () => {
-    const values = getInviteStaffValues()
-    console.log({ values })
-    const {
-      staffType: staff,
-      email,
-      jobTitle,
-      company,
-      complex,
-      building
-    } = values
+  const handleOk = async () => {
+    const validate = await triggerInviteStaff()
+    console.log({ validate })
+    if (validate) {
+      const values = getInviteStaffValues()
+      console.log({ values })
+      const {
+        staffType: staff,
+        email,
+        jobTitle,
+        company,
+        complex,
+        building
+      } = values
 
-    const data = {
-      email,
-      jobTitle
-    }
-    switch (staff.value) {
-      case BUILDING_ADMIN:
-        addBuildingAdmin({
-          variables: {
-            data,
-            id: building.value
+      const data = {
+        email,
+        jobTitle
+      }
+      switch (staff.value) {
+        case BUILDING_ADMIN:
+          addBuildingAdmin({
+            variables: {
+              data,
+              id: building.value
+            }
+          })
+          break
+        case COMPANY_ADMIN:
+          addCompanyAdmin({
+            variables: {
+              data,
+              id: company.value
+            }
+          })
+          break
+        case COMPLEX_ADMIN:
+          if (!complex.value) {
+            setInviteStaffError({
+              type: 'manual',
+              message: 'Select a complex first'
+            })
+            return
           }
-        })
-        break
-      case COMPANY_ADMIN:
-        addCompanyAdmin({
-          variables: {
-            data,
-            id: company.value
-          }
-        })
-        break
-      case COMPLEX_ADMIN:
-        addComplexAdmin({
-          variables: {
-            data,
-            id: complex.value
-          }
-        })
-        break
-      case RECEPTIONIST:
-        addReceptionist({
-          variables: {
-            data,
-            id: building.value
-          }
-        })
-        break
-      case UNIT_OWNER:
-        addUnitOwner({
-          variables: {
-            data,
-            id: building.value
-          }
-        })
-        break
-      default:
-        console.err(new Error('wrong staff type'))
+          addComplexAdmin({
+            variables: {
+              data,
+              id: complex.value
+            }
+          })
+          break
+        case RECEPTIONIST:
+          addReceptionist({
+            variables: {
+              data,
+              id: building.value
+            }
+          })
+          break
+        case UNIT_OWNER:
+          addUnitOwner({
+            variables: {
+              data,
+              id: building.value
+            }
+          })
+          break
+        default:
+          console.err(new Error('wrong staff type'))
+      }
     }
   }
 

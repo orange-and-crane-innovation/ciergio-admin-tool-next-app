@@ -5,13 +5,8 @@ import { useQuery } from '@apollo/client'
 import Tabs from '@app/components/tabs'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
-
 import { toFriendlyDate, friendlyDateTimeFormat } from '@app/utils/date'
 import HISTORY_MESSAGES from '../constants'
-
-// import Button from '@app/components/button'
-// import { GoKebabHorizontal } from 'react-icons/go'
-
 import { GET_ACCOUNT } from '../queries'
 
 const columns = [
@@ -71,7 +66,7 @@ function Profile() {
     }),
     [data]
   )
-  console.log({ data })
+
   return (
     <section className="content-wrap">
       <div className="w-full flex align-center justify-between mb-10">

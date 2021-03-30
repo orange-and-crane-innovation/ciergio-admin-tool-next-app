@@ -75,6 +75,7 @@ export const GET_COMPANIES = gql`
 export const GET_COMPLEXES = gql`
   query getComplexesByCompanyId($id: String!) {
     getComplexes(where: { companyId: $id, status: "active" }) {
+      count
       data {
         _id
         name
@@ -86,6 +87,7 @@ export const GET_COMPLEXES = gql`
 export const GET_BUILDINGS = gql`
   query getBuildingByComplexId($id: String!) {
     getBuildings(where: { complexId: $id, status: "active" }) {
+      count
       data {
         _id
         name
