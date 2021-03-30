@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 
 export const GET_DONATIONS = gql`
-  query getDonations(
+  query getDonationsWeb(
     $date: PaymentDateFilterInput
     $companyId: String
     $complexId: String
@@ -11,7 +11,7 @@ export const GET_DONATIONS = gql`
     $sort: Int
     $offset: Int
   ) {
-    getDonations(
+    getDonationsWeb(
       where: {
         srcRef: { companyId: $companyId, complexId: $complexId }
         date: $date

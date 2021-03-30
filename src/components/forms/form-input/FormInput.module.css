@@ -75,3 +75,10 @@
     }
   }
 }
+
+.Readonly {
+  & [type='text'],
+  & [type='password'] {
+    @apply bg-neutral-100;
+  }
+}

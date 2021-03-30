@@ -12,6 +12,7 @@ import FormSelect from '@app/components/forms/form-select'
 import Table from '@app/components/table'
 import PageLoader from '@app/components/page-loader'
 import Pagination from '@app/components/pagination'
+import Tooltip from '@app/components/tooltip'
 
 import { DATE, ATTR, TOOLTIP } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -56,7 +57,7 @@ function Donations() {
 
   const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS)
 
-  const DONATIONS = donations?.getDonations
+  const DONATIONS = donations?.getDonationsWeb
   const PAYMENT_METHODS = dataPaymentMethod?.getPaymentMethods
 
   useEffect(() => {
@@ -170,12 +171,12 @@ function Donations() {
     return DONATIONS?.data?.map((donation, index) => [
       <tr key={index}>
         <td colSpan={7} className="text-info-900 font-black bg-white">
-          <span data-tip={donation.date?.year}>
+          <Tooltip text={donation.date?.year} effect="solid">
             {DATE.friendlyDateTimeFormat(
               `${donation.date?.month} ${donation.date?.day}, ${donation.date?.year}`,
               'MMM DD'
             )}
-          </span>
+          </Tooltip>
           <span className="text-sm mx-2">|</span>
           <span className="text-sm mr-4">Total:</span>
           <span className="text-sm">{ATTR.toCurrency(donation?.total)}</span>
@@ -463,7 +464,6 @@ function Donations() {
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
-      {TOOLTIP.Show()}
     </div>
   )
 }

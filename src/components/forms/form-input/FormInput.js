@@ -32,7 +32,8 @@ function FormInput({
   const containerClasses = useMemo(
     () =>
       clsx(styles.FormInput, containerClassName, {
-        [styles.hasError]: !!error
+        [styles.hasError]: !!error,
+        [styles.Readonly]: !!readOnly
       }),
     [containerClassName, error]
   )

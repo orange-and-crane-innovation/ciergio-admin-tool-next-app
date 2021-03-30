@@ -8,12 +8,14 @@ import PasswordStrengthBar from 'react-password-strength-bar'
 
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
-import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
-import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
 import PageLoader from '@app/components/page-loader'
+import Checkbox from '@app/components/forms/form-checkbox'
 
 import { ACCOUNT_TYPES } from '@app/constants'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
+
+import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
+import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
 
 import style from './Join.module.css'
 
@@ -36,14 +38,21 @@ const validationSchema = yup.object().shape({
     )
 })
 
+const validationSchemaExistingUser = yup.object().shape({
+  email: yup.string().email().label('Email Address').required()
+})
+
 function Join({ onSubmit, isSubmitting, data }) {
   const [isDisabled, setIsDisabled] = useState(true)
   const [property, setProperty] = useState()
   const [accountType, setAccountType] = useState()
   const [password, setPassword] = useState()
+  const [isCheck, setIsCheck] = useState()
 
   const { handleSubmit, control, errors, setValue } = useForm({
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(
+      data?.existingUser ? validationSchemaExistingUser : validationSchema
+    ),
     defaultValues: {
       email: '',
       firstName: '',
@@ -68,10 +77,16 @@ function Join({ onSubmit, isSubmitting, data }) {
 
   const onChangeText = e => {
     if (e.target.value !== '') {
-      setIsDisabled(false)
+      if (isCheck) {
+        setIsDisabled(false)
+      }
     } else {
       setIsDisabled(true)
     }
+  }
+
+  const onCheck = e => {
+    setIsCheck(e.target.checked)
   }
 
   return (
@@ -109,77 +124,103 @@ function Join({ onSubmit, isSubmitting, data }) {
                 )}
               />
 
-              <div className={style.JoinName}>
-                <Controller
-                  name="firstName"
-                  control={control}
-                  render={({ name, value, onChange, ...props }) => (
-                    <FormInput
-                      name={name}
-                      value={value}
-                      label="First Name"
-                      placeholder="Enter your first name"
-                      error={errors?.firstName?.message ?? null}
-                      onChange={e => {
-                        onChange(e)
-                        onChangeText(e)
-                      }}
-                      inputProps={props}
+              {!data?.existingUser && (
+                <>
+                  <div className={style.JoinName}>
+                    <Controller
+                      name="firstName"
+                      control={control}
+                      render={({ name, value, onChange, ...props }) => (
+                        <FormInput
+                          name={name}
+                          value={value}
+                          label="First Name"
+                          placeholder="Enter your first name"
+                          error={errors?.firstName?.message ?? null}
+                          onChange={e => {
+                            onChange(e)
+                            onChangeText(e)
+                          }}
+                          inputProps={props}
+                        />
+                      )}
                     />
-                  )}
-                />
 
-                <Controller
-                  name="lastName"
-                  control={control}
-                  render={({ name, value, onChange, ...props }) => (
-                    <FormInput
-                      name={name}
-                      value={value}
-                      label="Last Name"
-                      placeholder="Enter your last name"
-                      error={errors?.lastName?.message ?? null}
-                      onChange={e => {
-                        onChange(e)
-                        onChangeText(e)
-                      }}
-                      inputProps={props}
+                    <Controller
+                      name="lastName"
+                      control={control}
+                      render={({ name, value, onChange, ...props }) => (
+                        <FormInput
+                          name={name}
+                          value={value}
+                          label="Last Name"
+                          placeholder="Enter your last name"
+                          error={errors?.lastName?.message ?? null}
+                          onChange={e => {
+                            onChange(e)
+                            onChangeText(e)
+                          }}
+                          inputProps={props}
+                        />
+                      )}
                     />
-                  )}
-                />
-              </div>
+                  </div>
 
-              <Controller
-                name="password"
-                control={control}
-                render={({ name, value, onChange, ...props }) => (
-                  <>
-                    <FormInput
-                      type="password"
-                      name={name}
-                      value={value}
-                      maxLength={16}
-                      label="Password"
-                      placeholder="Create your password"
-                      error={errors?.password?.message ?? null}
-                      onChange={e => {
-                        onChange(e)
-                        setPassword(e.target.value)
-                      }}
-                      inputProps={props}
-                    />
-                    {value && <PasswordStrengthBar password={password} />}
-                  </>
-                )}
-              />
+                  <Controller
+                    name="password"
+                    control={control}
+                    render={({ name, value, onChange, ...props }) => (
+                      <>
+                        <FormInput
+                          type="password"
+                          name={name}
+                          value={value}
+                          maxLength={16}
+                          label="Password"
+                          placeholder="Create your password"
+                          error={errors?.password?.message ?? null}
+                          onChange={e => {
+                            onChange(e)
+                            setPassword(e.target.value)
+                          }}
+                          inputProps={props}
+                        />
+                        {value && <PasswordStrengthBar password={password} />}
+                      </>
+                    )}
+                  />
+                </>
+              )}
 
               <br />
+
+              <div className="flex items-center mb-6">
+                <Checkbox
+                  primary
+                  id="terms"
+                  name="terms"
+                  label={
+                    <span className="font-body leading-7">
+                      <span>I have read and accepted the </span>
+                      <Link href="/terms-and-conditions">
+                        <a
+                          className="text-info-900 hover:underline"
+                          target="_blank"
+                        >
+                          Terms and Conditions
+                        </a>
+                      </Link>
+                    </span>
+                  }
+                  onChange={e => onCheck(e)}
+                />
+              </div>
 
               <Button
                 label="Submit"
                 type="submit"
                 loading={isSubmitting}
-                disabled={isDisabled}
+                disabled={isDisabled && !isCheck}
                 fluid
                 primary
               />
