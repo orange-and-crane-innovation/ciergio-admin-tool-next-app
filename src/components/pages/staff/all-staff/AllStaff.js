@@ -55,8 +55,7 @@ function AllStaff() {
     watch: watchInvite,
     reset: resetInvite,
     getValues: getInviteStaffValues,
-    trigger: triggerInviteStaff,
-    setError: setInviteStaffError
+    trigger: triggerInviteStaff
   } = useForm({
     resolver: yupResolver(inviteStaffValidationSchema),
     defaultValues: {
@@ -239,10 +238,9 @@ function AllStaff() {
 
   const handleOk = async () => {
     const validate = await triggerInviteStaff()
-    console.log({ validate })
+
     if (validate) {
       const values = getInviteStaffValues()
-      console.log({ values })
       const {
         staffType: staff,
         email,
@@ -274,13 +272,6 @@ function AllStaff() {
           })
           break
         case COMPLEX_ADMIN:
-          if (!complex.value) {
-            setInviteStaffError({
-              type: 'manual',
-              message: 'Select a complex first'
-            })
-            return
-          }
           addComplexAdmin({
             variables: {
               data,
