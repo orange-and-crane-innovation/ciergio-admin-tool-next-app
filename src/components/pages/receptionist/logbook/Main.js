@@ -71,7 +71,8 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const [search, setSearch] = useState(null)
   const [searchText, setSearchText] = useState(null)
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
-  const [viewDetailsID, setViewDetailsID] = useState(null)
+
+  const [ids, setIds] = useState([])
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
@@ -79,6 +80,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
 
   const keyPressed = useKeyPress('Enter')
   const [showModal, setShowModal] = useState(false)
+  const [modalContent, setModalContent] = useState(null)
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -99,8 +101,9 @@ function LogBook({ buildingId, categoryId, status, name }) {
     if (!loading && !error && data) {
       console.log(data)
       const tableData = []
+      const tempIds = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
-        console.log(registry._id)
+        tempIds.push(registry._id)
         const dropdownData = [
           {
             label: 'Message Resident',
@@ -148,6 +151,8 @@ function LogBook({ buildingId, categoryId, status, name }) {
           options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
         })
       })
+
+      setIds(tempIds)
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
@@ -197,10 +202,15 @@ function LogBook({ buildingId, categoryId, status, name }) {
   }
   const onClearSearch = () => setSearch('')
 
+  useEffect(() => {
+    console.log({ ids })
+  }, [ids])
   const handleShowModal = () => setShowModal(show => !show)
-  const handleViewMoreModal = id => {
-    if (id) {
-      setViewDetailsID(id)
+  const handleViewMoreModal = recordId => {
+    const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
+    console.log({ found, recordId })
+    if (found) {
+      setModalContent(<ViewMoreDetailsModalContent recordId={found} />)
     }
     setShowViewMoreDetails(show => !show)
   }
@@ -272,7 +282,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         onCancel={handleClearModal}
         onShowModal={handleViewMoreModal}
       >
-        <ViewMoreDetailsModalContent unitId={viewDetailsID} />
+        {modalContent}
       </Modal>
     </>
   )

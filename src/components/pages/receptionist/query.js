@@ -135,9 +135,15 @@ export const GET_REGISTRYRECORD = gql`
   query getRegistryRecord($recordId: String) {
     getRegistryRecord(recordId: $recordId) {
       _id
+      createdAt
+      updatedAt
       checkedInAt
       checkInSchedule
       checkedOutAt
+      mediaAttachments {
+        url
+        type
+      }
       visitor {
         firstName
         lastName
@@ -150,6 +156,8 @@ export const GET_REGISTRYRECORD = gql`
           _id
           firstName
           lastName
+          avatar
+          coverPhoto
         }
       }
       building {
@@ -212,6 +220,15 @@ export const GET_UNITS = gql`
           }
         }
       }
+    }
+  }
+`
+
+export const CANCEL_RECORD = gql`
+  query updateRegistryRecord(data: CreateRecordInput, id: String){
+    updateRegistryRecord(data: $data, id: $id){
+      message
+      _id
     }
   }
 `
