@@ -62,6 +62,9 @@ export const GET_REGISTRYRECORDS = gql`
             firstName
             lastName
           }
+          unit {
+            name
+          }
         }
         forWhat {
           building {

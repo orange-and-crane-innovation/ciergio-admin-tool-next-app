@@ -4,17 +4,14 @@ import P from 'prop-types'
 
 import ViewMoreDetailsModal from './ViewMoreDetailsModal'
 
-function AddVisitorModal({ showModal, onShowModal }) {
-  const handleShowModal = () => onShowModal(old => !old)
-  const handleClearModal = () => {
-    handleShowModal()
-  }
+function AddVisitorModal({ showModal, onShowModal, handleClearModal }) {
   return (
     <Modal
       title="Details"
       visible={showModal}
       onClose={handleClearModal}
       onCancel={handleClearModal}
+      onShowModal={onShowModal}
     >
       <ViewMoreDetailsModal />
     </Modal>
@@ -23,7 +20,8 @@ function AddVisitorModal({ showModal, onShowModal }) {
 
 AddVisitorModal.propTypes = {
   showModal: P.bool,
-  onShowModal: P.func
+  onShowModal: P.func,
+  handleClearModal: P.func
 }
 
 export default AddVisitorModal

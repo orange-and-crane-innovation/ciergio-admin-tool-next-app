@@ -32,12 +32,13 @@ function AddVisitorModalContent({ form, buildingId }) {
     if (buildingId && !error && !loadingUnits && data) {
       const hostName = []
       const unitList = data?.getUnits?.data.map(unit => {
+        console.log(unit)
         hostName.push({
-          value: unit?._id,
+          value: unit?.unitOwner?._id || unit?._id,
           label: `${unit?.unitOwner?.user?.firstName} ${unit?.unitOwner?.user?.lastName}`
         })
         return {
-          value: unit?._id,
+          value: unit?.unitOwner?._id || unit?._id,
           label: unit.name
         }
       })
@@ -71,6 +72,10 @@ function AddVisitorModalContent({ form, buildingId }) {
     //   return image !== e.currentTarget.dataset.id
     // })
   }
+
+  useEffect(() => {
+    console.log(host)
+  }, [host])
 
   const onRepeatChange = e => setOnSchedule(e.target.checked)
 
@@ -112,7 +117,7 @@ function AddVisitorModalContent({ form, buildingId }) {
               <FormSelect
                 label="Host"
                 name="host"
-                placeholder={host && host[0].label}
+                placeholder={host ? host[0].label : ''}
                 options={host}
                 error={errors.host && "Field shouldn't be empty"}
                 disabled

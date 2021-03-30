@@ -16,7 +16,8 @@ import { AiOutlineMessage, AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
 import useKeyPress from '@app/utils/useKeyPress'
 import AddVisitorModal from '../modals/AddVisitorModal'
-import ViewMoreDetailsModal from '../modals/ViewMoreDetailsModal'
+import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
+import Modal from '@app/components/modal'
 
 const NUMBEROFCOLUMN = 6
 
@@ -54,8 +55,8 @@ const TableColStyle = ({ top, bottom }) => {
         top
       ) : (
         <div className="flex flex-col">
-          <p className="text-gray-900 font-bold">{top}</p>
-          <p className="text-gray-900">{bottom}</p>
+          <p className="text-gray-900 font-bold">{top || ''}</p>
+          <p className="text-gray-900">{bottom || ''}</p>
         </div>
       )}
     </>
@@ -70,6 +71,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const [search, setSearch] = useState(null)
   const [searchText, setSearchText] = useState(null)
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
+  const [viewDetailsID, setViewDetailsID] = useState(null)
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
@@ -85,9 +87,8 @@ function LogBook({ buildingId, categoryId, status, name }) {
       sort: 1,
       sortBy: 'checkedIn',
       where: {
-        buildingId,
-        categoryId,
         status,
+        categoryId,
         checkedInAt: checkedInAtTime,
         keyword: search
       }
@@ -99,6 +100,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
       console.log(data)
       const tableData = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
+        console.log(registry._id)
         const dropdownData = [
           {
             label: 'Message Resident',
@@ -108,7 +110,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
           {
             label: 'View More Details',
             icon: <AiOutlineFileText />,
-            function: () => handleViewMoreModal(index)
+            function: () => handleViewMoreModal(registry._id)
           },
           {
             label: 'Cancel',
@@ -121,8 +123,12 @@ function LogBook({ buildingId, categoryId, status, name }) {
           unitNumberAndOwner: (
             <TableColStyle
               key={index}
-              top={`${registry.forWhat.name}`}
-              bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+              top={registry.forWho ? `${registry.forWho.unit.name}` : ''}
+              bottom={
+                registry.forWho
+                  ? `${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`
+                  : ''
+              }
             />
           ),
           personCompany: (
@@ -192,8 +198,13 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const onClearSearch = () => setSearch('')
 
   const handleShowModal = () => setShowModal(show => !show)
-  const handleViewMoreModal = () => setShowViewMoreDetails(show => !show)
-
+  const handleViewMoreModal = id => {
+    if (id) {
+      setViewDetailsID(id)
+    }
+    setShowViewMoreDetails(show => !show)
+  }
+  const handleClearModal = () => setShowViewMoreDetails(false)
   const setSuccess = isSuccess => {
     if (isSuccess) {
       setShowModal(show => !show)
@@ -247,10 +258,15 @@ function LogBook({ buildingId, categoryId, status, name }) {
         categoryId={categoryId}
         success={setSuccess}
       />
-      <ViewMoreDetailsModal
-        showModal={showViewMoreDetails}
+      <Modal
+        title="Details"
+        visible={showViewMoreDetails}
+        onClose={handleClearModal}
+        onCancel={handleClearModal}
         onShowModal={handleViewMoreModal}
-      />
+      >
+        <ViewMoreDetailsModalContent unitId={viewDetailsID} />
+      </Modal>
     </>
   )
 }

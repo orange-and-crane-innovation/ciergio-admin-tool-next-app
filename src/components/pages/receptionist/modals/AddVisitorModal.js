@@ -72,8 +72,6 @@ function AddVisitorModal({
           note: data.note || null
         }
       })
-
-      event.target.reset()
     } catch (e) {
       console.log(e)
       showToast('warning', 'error on creating record')
