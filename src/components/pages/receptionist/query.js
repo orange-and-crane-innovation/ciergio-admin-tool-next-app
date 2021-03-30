@@ -223,12 +223,3 @@ export const GET_UNITS = gql`
     }
   }
 `
-
-export const CANCEL_RECORD = gql`
-  query updateRegistryRecord(data: CreateRecordInput, id: String){
-    updateRegistryRecord(data: $data, id: $id){
-      message
-      _id
-    }
-  }
-`

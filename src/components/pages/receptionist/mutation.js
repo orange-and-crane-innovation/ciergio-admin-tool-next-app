@@ -9,3 +9,12 @@ export const CREATE_REGISTRYRECORD = gql`
     }
   }
 `
+
+export const CANCEL_RECORD = gql`
+  mutation($data: CreateRecordInput, $id: String) {
+    updateRegistryRecord(data: $data, id: $id) {
+      message
+      _id
+    }
+  }
+`

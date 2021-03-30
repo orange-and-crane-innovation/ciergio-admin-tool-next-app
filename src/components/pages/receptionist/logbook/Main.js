@@ -7,8 +7,9 @@ import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Pagination from '@app/components/pagination'
 import { BsPlusCircle, BsTrash } from 'react-icons/bs'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
+import { CANCEL_RECORD } from '../mutation'
 import P from 'prop-types'
 import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
@@ -18,6 +19,7 @@ import useKeyPress from '@app/utils/useKeyPress'
 import AddVisitorModal from '../modals/AddVisitorModal'
 import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
 import Modal from '@app/components/modal'
+import showToast from '@app/utils/toast'
 
 const NUMBEROFCOLUMN = 6
 
@@ -71,7 +73,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const [search, setSearch] = useState(null)
   const [searchText, setSearchText] = useState(null)
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
-
+  const [recordId, setRecordId] = useState('')
   const [ids, setIds] = useState([])
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
@@ -81,6 +83,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const keyPressed = useKeyPress('Enter')
   const [showModal, setShowModal] = useState(false)
   const [modalContent, setModalContent] = useState(null)
+  const [modalType, setModalType] = useState('')
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -97,6 +100,31 @@ function LogBook({ buildingId, categoryId, status, name }) {
     }
   })
 
+  const [
+    cancelRecord,
+    {
+      loading: loadingCancelRecord,
+      called: calledCancelRecord,
+      data: dataCancelRecord
+    }
+  ] = useMutation(CANCEL_RECORD)
+
+  useEffect(() => {
+    if (!loadingCancelRecord && dataCancelRecord && calledCancelRecord) {
+      if (dataCancelRecord.updateRegistryRecord?.message === 'success') {
+        showToast('success', 'Visitor Cancelled')
+        setRecordId('')
+        refetch()
+        setShowViewMoreDetails(false)
+      } else {
+        showToast('success', 'Visitor Cancelled')
+        setRecordId('')
+        refetch()
+        setShowViewMoreDetails(false)
+      }
+    }
+  }, [loadingCancelRecord, calledCancelRecord, dataCancelRecord])
+
   useEffect(() => {
     if (!loading && !error && data) {
       console.log(data)
@@ -108,17 +136,17 @@ function LogBook({ buildingId, categoryId, status, name }) {
           {
             label: 'Message Resident',
             icon: <AiOutlineMessage />,
-            function: () => console.log('Message Resident')
+            function: () => console.log('wew')
           },
           {
             label: 'View More Details',
             icon: <AiOutlineFileText />,
-            function: () => handleViewMoreModal(registry._id)
+            function: () => handleViewMoreModal('details', registry._id)
           },
           {
             label: 'Cancel',
             icon: <BsTrash />,
-            function: () => console.log('Cancel')
+            function: () => handleViewMoreModal('cancel', registry._id)
           }
         ]
         const dateUTC = new Date(+registry.checkedInAt)
@@ -164,6 +192,19 @@ function LogBook({ buildingId, categoryId, status, name }) {
     }
   }, [loading, error, data])
 
+  const handleCancelRecord = async () => {
+    try {
+      if (recordId !== '') {
+        await cancelRecord({
+          variables: { data: { status: 'cancelled' }, id: recordId }
+        })
+      }
+    } catch (e) {
+      showToast('warning', 'Problem saving visitor cancelled')
+      setShowViewMoreDetails(false)
+    }
+  }
+
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
@@ -206,11 +247,26 @@ function LogBook({ buildingId, categoryId, status, name }) {
     console.log({ ids })
   }, [ids])
   const handleShowModal = () => setShowModal(show => !show)
-  const handleViewMoreModal = recordId => {
+  const handleViewMoreModal = (type, recordId) => {
     const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
     console.log({ found, recordId })
     if (found) {
-      setModalContent(<ViewMoreDetailsModalContent recordId={found} />)
+      switch (type) {
+        case 'details':
+          setModalContent(<ViewMoreDetailsModalContent recordId={found} />)
+          setModalType('details')
+          break
+        case 'cancel':
+          setModalType('cancel')
+          setModalContent(
+            <div className="text-muted lead text-xl align-center">
+              Do you want to delete this entry?
+            </div>
+          )
+          setRecordId(found)
+          break
+        default:
+      }
     }
     setShowViewMoreDetails(show => !show)
   }
@@ -276,11 +332,11 @@ function LogBook({ buildingId, categoryId, status, name }) {
         refetch={willRefetch}
       />
       <Modal
-        title="Details"
+        title={modalType === 'details' && 'Details'}
         visible={showViewMoreDetails}
         onClose={handleClearModal}
-        onCancel={handleClearModal}
         onShowModal={handleViewMoreModal}
+        onOk={modalType === 'cancel' && handleCancelRecord}
       >
         {modalContent}
       </Modal>
