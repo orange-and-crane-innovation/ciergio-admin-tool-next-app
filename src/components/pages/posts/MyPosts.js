@@ -7,17 +7,20 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { debounce } from 'lodash'
-import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
+import { FaPlusCircle, FaEllipsisH, FaTimes } from 'react-icons/fa'
 import { FiFileText, FiEye } from 'react-icons/fi'
+import Datetime from 'react-datetime'
 
 import PageLoader from '@app/components/page-loader'
 import Card from '@app/components/card'
+import FormInput from '@app/components/forms/form-input'
 import Checkbox from '@app/components/forms/form-checkbox'
 import Button from '@app/components/button'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
 import Modal from '@app/components/modal'
+import Tooltip from '@app/components/tooltip'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -85,6 +88,7 @@ const GET_ALL_POST_QUERY = gql`
             }
           }
         }
+        dailyReadingDate
       }
     }
   }
@@ -128,13 +132,23 @@ const PostComponent = () => {
   const [selectedBulk, setSelectedBulk] = useState()
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
+  const [isBulkButtonHidden, setIsBulkButtonHidden] = useState(false)
+  const [temporaryDate, setTemporaryDate] = useState('')
+  const [temporaryMonth, setTemporaryMonth] = useState('')
+  const [selectedDate, setSelectedDate] = useState()
+  const [selectedMonth, setSelectedMonth] = useState()
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
+  const isQRCodePage = router.pathname === '/qr-code'
+  const isDailyReadingsPage = router.pathname === '/daily-readings'
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
-    : router.pathname === '/qr-code'
+    : isQRCodePage
     ? 'qr-code'
+    : isDailyReadingsPage
+    ? 'daily-readings'
     : 'posts'
 
   const tableRowData = [
@@ -151,19 +165,22 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: '40%'
+      width: isDailyReadingsPage ? '80%' : '30%'
     },
     {
       name: 'Author',
-      width: '30%'
+      width: '30%',
+      hidden: isDailyReadingsPage
     },
     {
       name: 'Category',
-      width: ''
+      width: '15%',
+      hidden: isDailyReadingsPage
     },
     {
       name: 'Status',
-      width: ''
+      width: '15%',
+      hidden: isDailyReadingsPage
     },
     {
       name: '',
@@ -186,8 +203,22 @@ const PostComponent = () => {
     }
   }
 
-  if (routeName === 'qr-code') {
+  if (isQRCodePage) {
     fetchFilter.qr = true
+  }
+
+  if (isDailyReadingsPage) {
+    fetchFilter.type = 'daily_reading'
+
+    if (selectedDate && selectedDate !== '') {
+      fetchFilter.filter = {}
+      fetchFilter.filter.dailyReadingDate = selectedDate
+    }
+
+    if (selectedMonth && selectedMonth !== '') {
+      fetchFilter.filter = {}
+      fetchFilter.filter.dailyReadingDateRange = selectedMonth
+    }
   }
 
   const { loading, data, error, refetch: refetchPosts } = useQuery(
@@ -223,6 +254,7 @@ const PostComponent = () => {
   ] = useMutation(UPDATE_POST_MUTATION)
 
   useEffect(() => {
+    setIsBulkButtonHidden(isDailyReadingsPage)
     refetchPosts()
   }, [])
 
@@ -238,7 +270,9 @@ const PostComponent = () => {
             let buildingName, status
             const dropdownData = [
               {
-                label: 'Article Details',
+                label: isDailyReadingsPage
+                  ? 'Daily Reading Details'
+                  : 'Article Details',
                 icon: <FiFileText />,
                 function: () => handleShowModal('details', item._id)
               },
@@ -299,7 +333,8 @@ const PostComponent = () => {
                 accountType === 'company_admin') ||
               (item.author.accountType !== 'administrator' &&
                 item.author.accountType !== 'company_admin' &&
-                accountType === 'complex_admin')
+                accountType === 'complex_admin' &&
+                item.author.company._id === companyID)
             ) {
               isMine = true
               checkbox = (
@@ -317,18 +352,24 @@ const PostComponent = () => {
             }
 
             return {
-              checkbox: checkbox,
+              checkbox: checkbox || '',
               title: (
                 <div className="flex flex-col">
-                  <span className={styles.TextWrapper}>{item?.title}</span>
+                  {isDailyReadingsPage ? (
+                    <Tooltip text={item?.title}>
+                      {DATE.toFriendlyShortDate(item?.dailyReadingDate)}
+                    </Tooltip>
+                  ) : (
+                    <span className={styles.TextWrapper}>{item?.title}</span>
+                  )}
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
                       <Link href={`/${routeName}/edit/${item._id}`}>
-                        <a className="mx-2 hover:underline">Edit</a>
+                        <a className="mr-2 hover:underline">Edit</a>
                       </Link>
                       {` | `}
                       <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline">View</a>
+                        <a className="mx-2 hover:underline">View</a>
                       </Link>
                       {` | `}
                       <span
@@ -347,7 +388,7 @@ const PostComponent = () => {
                   )}
                 </div>
               ),
-              author: (
+              author: !isDailyReadingsPage && (
                 <div className="flex flex-col">
                   <span>{buildingName}</span>
                   <span className="text-neutral-500 text-sm">
@@ -355,12 +396,14 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              category: item.category?.name ?? 'Uncategorized',
-              status: (
+              category:
+                (!isDailyReadingsPage && item.category?.name) ??
+                'Uncategorized',
+              status: !isDailyReadingsPage && (
                 <div className="flex flex-col">
                   <span>{status}</span>
                   <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
+                    {DATE.toFriendlyShortDate(item.createdAt)}
                   </span>
                 </div>
               ),
@@ -611,8 +654,10 @@ const PostComponent = () => {
     setSelectedBulk(e.value)
     if (e.value !== '') {
       setIsBulkButtonDisabled(false)
+      setIsBulkButtonHidden(false)
     } else {
       setIsBulkButtonDisabled(true)
+      setIsBulkButtonHidden(isDailyReadingsPage)
     }
   }
 
@@ -641,6 +686,41 @@ const PostComponent = () => {
     }
   }
 
+  const handleDateChange = e => {
+    setTemporaryDate(e)
+    setTemporaryMonth('')
+  }
+
+  const handleMonthChange = e => {
+    setTemporaryDate('')
+    setTemporaryMonth(e)
+  }
+
+  const onApplyDate = () => {
+    if (temporaryDate !== '') {
+      setSelectedDate(DATE.toFriendlyISO(DATE.setInitialTime(temporaryDate)))
+      setSelectedMonth('')
+    }
+
+    if (temporaryMonth !== '') {
+      setSelectedDate('')
+      setSelectedMonth([
+        DATE.toFriendlyISO(DATE.toBeginningOfMonth(temporaryMonth)),
+        DATE.toFriendlyISO(DATE.toEndOfMonth(temporaryMonth))
+      ])
+    }
+  }
+
+  const handleClearDate = () => {
+    setSelectedDate('')
+    setTemporaryDate('')
+  }
+
+  const handleClearMonth = () => {
+    setSelectedMonth('')
+    setTemporaryMonth('')
+  }
+
   return (
     <>
       <div className={styles.MainControl}>
@@ -649,11 +729,101 @@ const PostComponent = () => {
           options={bulkOptions}
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
+          isButtonHidden={isBulkButtonHidden}
           onBulkChange={onBulkChange}
           onBulkSubmit={() => handleShowModal('bulk')}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
+          custom={isDailyReadingsPage}
         />
+        {isDailyReadingsPage && (
+          <div className="mx-2 w-full md:w-72">
+            <Datetime
+              renderInput={(props, openCalendar) => (
+                <>
+                  <div className="relative">
+                    <FormInput
+                      {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
+                      name="date_month"
+                      placeholder="Filter Month"
+                      value={
+                        temporaryMonth &&
+                        DATE.toFriendlyYearMonth(temporaryMonth)
+                      }
+                      readOnly
+                    />
+                    {temporaryMonth !== '' && (
+                      <FaTimes
+                        className="cursor-pointer absolute top-3 right-10"
+                        onClick={handleClearMonth}
+                      />
+                    )}
+                    <i
+                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                      onClick={openCalendar}
+                    />
+                  </div>
+                </>
+              )}
+              dateFormat="YYYY-MMMM"
+              timeFormat={false}
+              value={temporaryMonth}
+              closeOnSelect
+              onChange={handleMonthChange}
+            />
+          </div>
+        )}
+
+        {isDailyReadingsPage && (
+          <div className="w-full md:w-72">
+            <Datetime
+              renderInput={(props, openCalendar) => (
+                <>
+                  <div className="relative">
+                    <FormInput
+                      {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
+                      id="date"
+                      name="date"
+                      placeholder="Choose a date"
+                      value={
+                        temporaryDate && DATE.toFriendlyShortDate(temporaryDate)
+                      }
+                      readOnly
+                    />
+                    {temporaryDate !== '' && (
+                      <FaTimes
+                        className="cursor-pointer absolute top-3 right-10"
+                        onClick={handleClearDate}
+                      />
+                    )}
+                    <i
+                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                      onClick={openCalendar}
+                    />
+                  </div>
+                </>
+              )}
+              dateFormat="MMM DD, YYYY"
+              timeFormat={false}
+              value={temporaryDate}
+              closeOnSelect
+              onChange={handleDateChange}
+            />
+          </div>
+        )}
+
+        {isDailyReadingsPage && (
+          <div className="mx-2 w-full md:w-72">
+            <Button
+              type="button"
+              label="Apply"
+              onClick={onApplyDate}
+              disabled={!temporaryDate && !temporaryMonth}
+            />
+          </div>
+        )}
 
         <div className={styles.CategoryControl}>
           <SelectStatus
@@ -662,13 +832,17 @@ const PostComponent = () => {
             onClear={onClearStatus}
             selected={selectedStatus}
           />
-          <SelectCategory
-            placeholder="Filter Category"
-            type="post"
-            onChange={onCategorySelect}
-            onClear={onClearCategory}
-            selected={selectedCategory}
-          />
+
+          {!isDailyReadingsPage && (
+            <SelectCategory
+              placeholder="Filter Category"
+              type="post"
+              onChange={onCategorySelect}
+              onClear={onClearCategory}
+              selected={selectedCategory}
+            />
+          )}
+
           <Can
             perform={
               isAttractionsEventsPage ? 'attractions:view' : 'bulletin:view'
@@ -707,8 +881,10 @@ const PostComponent = () => {
                     default
                     leftIcon={<FaPlusCircle />}
                     label={
-                      routeName === 'qr-code'
+                      isQRCodePage
                         ? 'Generate QR Code'
+                        : isDailyReadingsPage
+                        ? 'Add Daily Reading'
                         : 'Create Post'
                     }
                     onClick={goToCreatePage}
@@ -720,8 +896,10 @@ const PostComponent = () => {
                     default
                     leftIcon={<FaPlusCircle />}
                     label={
-                      routeName === 'qr-code'
+                      isQRCodePage
                         ? 'Generate QR Code'
+                        : isDailyReadingsPage
+                        ? 'Add Daily Reading'
                         : 'Create Post'
                     }
                     onClick={goToCreatePage}

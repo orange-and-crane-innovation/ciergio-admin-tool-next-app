@@ -26,6 +26,7 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
 import Modal from '@app/components/modal'
+import Tooltip from '@app/components/tooltip'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -44,13 +45,6 @@ const bulkOptions = [
     label: 'Unpublished',
     value: 'unpublished'
   },
-  {
-    label: 'Move to Trash',
-    value: 'trashed'
-  }
-]
-
-const bulkOptionsDailyReadings = [
   {
     label: 'Move to Trash',
     value: 'trashed'
@@ -169,6 +163,7 @@ const PostComponent = () => {
   const [selectedMonth, setSelectedMonth] = useState()
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
@@ -183,7 +178,7 @@ const PostComponent = () => {
     ? 'Active QR Codes'
     : isDailyReadingsPage
     ? 'Daily Readings'
-    : 'All Posts'
+    : 'Bulletin Board'
 
   const tableRowData = [
     {
@@ -200,7 +195,7 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: isDailyReadingsPage ? '80%' : '40%'
+      width: isDailyReadingsPage ? '80%' : '30%'
     },
     {
       name: 'Author',
@@ -209,12 +204,12 @@ const PostComponent = () => {
     },
     {
       name: 'Category',
-      width: '',
+      width: '15%',
       hidden: isDailyReadingsPage
     },
     {
       name: reorder ? 'Reorder' : isQRCodePage ? 'QR Code' : 'Status',
-      width: '',
+      width: '15%',
       hidden: isDailyReadingsPage
     },
     {
@@ -376,7 +371,8 @@ const PostComponent = () => {
                   accountType === 'company_admin') ||
                 (item.author.accountType !== 'administrator' &&
                   item.author.accountType !== 'company_admin' &&
-                  accountType === 'complex_admin'))
+                  accountType === 'complex_admin' &&
+                  item.author.company._id === companyID))
             ) {
               isMine = true
               checkbox = (
@@ -395,18 +391,18 @@ const PostComponent = () => {
 
             return {
               id: item._id,
-              checkbox: checkbox,
+              checkbox: checkbox || '',
               title: (
                 <div className="flex flex-col">
                   {item.title}
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
                       <Link href={`/${routeName}/edit/${item._id}`}>
-                        <a className="mx-2 hover:underline">Edit</a>
+                        <a className="mr-2 hover:underline">Edit</a>
                       </Link>
                       {` | `}
                       <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline">View</a>
+                        <a className="mx-2 hover:underline">View</a>
                       </Link>
                       {` | `}
                       <Can
@@ -478,7 +474,7 @@ const PostComponent = () => {
                 <div className="flex flex-col">
                   <span>{status}</span>
                   <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
+                    {DATE.toFriendlyShortDate(item.createdAt)}
                   </span>
                 </div>
               ),
@@ -989,18 +985,20 @@ const PostComponent = () => {
           <td>
             <div className="flex flex-col">
               {isDailyReadingsPage ? (
-                DATE.toFriendlyShortDate(item?.dailyReadingDate)
+                <Tooltip text={item?.title}>
+                  {DATE.toFriendlyShortDate(item?.dailyReadingDate)}
+                </Tooltip>
               ) : (
                 <span className={styles.TextWrapper}>{item?.title}</span>
               )}
               {isMine ? (
                 <div className="flex text-info-500 text-sm">
                   <Link href={`/${routeName}/edit/${item._id}`}>
-                    <a className="mx-2 hover:underline">Edit</a>
+                    <a className="mr-2 hover:underline">Edit</a>
                   </Link>
                   {` | `}
                   <Link href={`/${routeName}/view/${item._id}`}>
-                    <a className="mr-2 hover:underline">View</a>
+                    <a className="mx-2 hover:underline">View</a>
                   </Link>
                   {` | `}
                   <Can
@@ -1077,7 +1075,7 @@ const PostComponent = () => {
                 <div className="flex flex-col">
                   <span>{status}</span>
                   <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
+                    {DATE.toFriendlyShortDate(item.createdAt)}
                   </span>
                 </div>
               )}
@@ -1107,7 +1105,7 @@ const PostComponent = () => {
       <div className={styles.MainControl}>
         <SelectBulk
           placeholder="Bulk Action"
-          options={isDailyReadingsPage ? bulkOptionsDailyReadings : bulkOptions}
+          options={bulkOptions}
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
           isButtonHidden={isBulkButtonHidden}
@@ -1115,6 +1113,7 @@ const PostComponent = () => {
           onBulkSubmit={() => handleShowModal('bulk')}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
+          custom={isDailyReadingsPage}
         />
         {isDailyReadingsPage && (
           <div className="mx-2 w-full md:w-72">
@@ -1124,6 +1123,7 @@ const PostComponent = () => {
                   <div className="relative">
                     <FormInput
                       {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
                       name="date_month"
                       placeholder="Filter Month"
                       value={
@@ -1162,6 +1162,7 @@ const PostComponent = () => {
                   <div className="relative">
                     <FormInput
                       {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
                       id="date"
                       name="date"
                       placeholder="Choose a date"

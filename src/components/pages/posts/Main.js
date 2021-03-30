@@ -26,7 +26,7 @@ const PostComponent = () => {
     ? 'Active QR Posts'
     : isDailyReadingsPage
     ? 'Daily Readings'
-    : 'All Posts'
+    : 'Bulletin Board'
 
   return (
     <div className={styles.PostContainer}>
@@ -35,9 +35,7 @@ const PostComponent = () => {
       <Tabs defaultTab="1">
         <Tabs.TabLabels>
           <Tabs.TabLabel id="1">{tabName}</Tabs.TabLabel>
-          <Tabs.TabLabel id="2" isHidden={isDailyReadingsPage}>
-            My Posts
-          </Tabs.TabLabel>
+          <Tabs.TabLabel id="2">My Posts</Tabs.TabLabel>
           <Tabs.TabLabel id="3">Trash</Tabs.TabLabel>
         </Tabs.TabLabels>
         <Tabs.TabPanels>
