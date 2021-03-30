@@ -1,0 +1,57 @@
+.PageContainer {
+  @apply mt-12 pt-4 pb-8 px-8 max-w-5xl;
+
+  .PageContent {
+    @apply mb-12 pt-4 pb-16 px-8;
+    @apply font-body;
+    @apply text-neutral-dark text-base leading-7;
+    @apply bg-white;
+    @apply border;
+    @apply rounded-md;
+    @apply text-justify;
+
+    a {
+      @apply text-info-900 hover:underline;
+    }
+
+    p {
+      @apply m-0 !important;
+    }
+
+    p:first-child {
+      @apply text-neutral-500;
+      @apply text-left !important;
+
+      strong {
+        @apply -ml-2;
+        @apply text-neutral-dark;
+        @apply text-4xl leading-10;
+      }
+    }
+
+    p:nth-child(2) {
+      @apply text-left !important;
+
+      em {
+        @apply text-neutral-500;
+        @apply not-italic !important;
+      }
+    }
+
+    ol {
+      li {
+        @apply ml-16;
+        list-style-type: lower-alpha;
+      }
+    }
+
+    ol[start],
+    ol:nth-child(3) {
+      li {
+        @apply mt-8 ml-8;
+        @apply font-semibold text-xl leading-10;
+        list-style-type: decimal-leading-zero;
+      }
+    }
+  }
+}
