@@ -18,7 +18,11 @@ const columns = [
 
 function Company({ id }) {
   const { data: complexes } = useQuery(GET_COMPLEXES, {
-    variables: { companyId: id }
+    variables: {
+      where: {
+        companyId: id
+      }
+    }
   })
   const { data: companies } = useQuery(GET_COMPANY, {
     variables: { companyId: id }
@@ -26,22 +30,24 @@ function Company({ id }) {
 
   const directoryData = useMemo(
     () => ({
-      count: complexes?.getComplexes.count || 0,
-      limit: complexes?.getComplexes.limit || 0,
+      count: complexes?.getComplexes?.count || 0,
+      limit: complexes?.getComplexes?.limit || 0,
       data:
-        complexes?.getComplexes?.data?.map(item => {
-          return {
-            name: (
-              <Link href={`/directory/complex/${item._id}`}>
-                <span className="text-blue-600 cursor-pointer">
-                  {item.name}
-                </span>
-              </Link>
-            )
-          }
-        }) || []
+        complexes?.getComplexes?.count > 0
+          ? complexes.getComplexes.data.map(item => {
+              return {
+                name: (
+                  <Link href={`/directory/complex/${item._id}`}>
+                    <span className="text-blue-600 cursor-pointer">
+                      {item.name}
+                    </span>
+                  </Link>
+                )
+              }
+            })
+          : []
     }),
-    [complexes?.getComplexes]
+    [complexes?.getComplexes?.count]
   )
   const name = companies?.getCompanies?.data[0]?.name
   return (

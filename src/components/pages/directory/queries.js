@@ -25,8 +25,8 @@ export const GET_COMPANY = gql`
 `
 
 export const GET_COMPLEXES = gql`
-  {
-    getComplexes {
+  query getComplexes($where: GetComplexesParams) {
+    getComplexes(where: $where) {
       count
       limit
       skip
