@@ -2,9 +2,9 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Controller, useForm } from 'react-hook-form'
+import { useRouter } from 'next/router'
 import P from 'prop-types'
 import * as yup from 'yup'
-
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
@@ -13,10 +13,8 @@ import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 import Can from '@app/permissions/can'
-
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
 import { initializeApollo } from '@app/lib/apollo/client'
 import {
   GET_COMPLEXES,
@@ -36,6 +34,7 @@ const validationSchema = yup.object().shape({
 })
 
 function Contact({ id }) {
+  const router = useRouter()
   const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -52,7 +51,10 @@ function Contact({ id }) {
   })
   const { data: contacts, refetch: refetchContacts } = useQuery(GET_CONTACTS, {
     variables: {
-      complexId: id
+      where: {
+        companyId: router?.query?.companyId,
+        complexId: id
+      }
     }
   })
 
@@ -237,9 +239,9 @@ function Contact({ id }) {
           ]
 
           return {
-            title: contact.description,
-            name: contact.name,
-            email: contact.email,
+            title: contact.description ?? 'n/a',
+            name: contact.name ?? 'n/a',
+            email: contact.email ?? 'n/a',
             button: (
               <Can
                 perform="contactus:update::delete"
@@ -254,7 +256,7 @@ function Contact({ id }) {
           }
         }) || []
     }
-  }, [contacts?.getContacts, handleShowModal])
+  }, [contacts?.getContacts?.count, handleShowModal])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>

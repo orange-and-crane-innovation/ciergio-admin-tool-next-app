@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
 export const GET_CONTACTS = gql`
-  {
-    getContacts(where: { type: contactus }) {
+  query getContacts($where: GetContactsParams) {
+    getContacts(where: $where) {
       count
       limit
       data {
@@ -10,6 +10,7 @@ export const GET_CONTACTS = gql`
         name
         email
         description
+        __typename
       }
       __typename
     }
@@ -24,7 +25,9 @@ export const GET_COMPANIES = gql`
       data {
         _id
         name
+        __typename
       }
+      __typename
     }
   }
 `
@@ -35,7 +38,9 @@ export const GET_COMPANY = gql`
       data {
         name
         _id
+        __typename
       }
+      __typename
     }
   }
 `
@@ -49,7 +54,9 @@ export const GET_COMPLEXES = gql`
       data {
         _id
         name
+        __typename
       }
+      __typename
     }
   }
 `
@@ -62,8 +69,11 @@ export const GET_COMPLEX = gql`
         name
         company {
           _id
+          __typename
         }
+        __typename
       }
+      __typename
     }
   }
 `
@@ -74,7 +84,9 @@ export const GET_BUILDINGS = gql`
       data {
         _id
         name
+        __typename
       }
+      __typename
     }
   }
 `
@@ -92,6 +104,7 @@ export const GET_CONTACT_CATEGORY = gql`
         _id
         name
         order
+        __typename
       }
       __typename
     }
