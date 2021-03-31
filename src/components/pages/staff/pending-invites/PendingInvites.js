@@ -28,8 +28,9 @@ import {
   COMPLEX_ADMIN,
   RECEPTIONIST,
   UNIT_OWNER,
-  roles,
-  ALL_ROLES
+  STAFF_ROLES,
+  ALL_ROLES,
+  parseAccountType
 } from '../constants'
 
 const bulkOptions = [
@@ -101,7 +102,12 @@ function PendingInvites() {
     CANCEL_INVITE,
     {
       onCompleted: () => {
-        showToast('success', 'Invitation has been cancelled.')
+        showToast(
+          'success',
+          `You have successfully removed ${
+            selectedData?.email
+          } as ${parseAccountType(selectedData?.accountType)}`
+        )
         handleClearModal('cancel')
         refetchInvites()
       }
@@ -253,12 +259,7 @@ function PendingInvites() {
       data:
         invites?.getPendingRegistration?.data?.length > 0
           ? invites.getPendingRegistration.data.map(invite => {
-              const roleType =
-                invite?.accountType === 'company_admin'
-                  ? 'Parish Head'
-                  : invite?.accountType === 'complex_admin'
-                  ? 'Parish Admin'
-                  : invite?.accountType
+              const roleType = parseAccountType(invite?.accountType)
               const dropdownData = [
                 {
                   label: 'Resend Invite',
@@ -340,7 +341,7 @@ function PendingInvites() {
           <div className="w-full mr-2 relative">
             <FormSelect
               placeholder="Filter Role"
-              options={roles}
+              options={STAFF_ROLES}
               onChange={selectedValue => {
                 setSelectedRole(selectedValue)
                 setActivePage(1)
