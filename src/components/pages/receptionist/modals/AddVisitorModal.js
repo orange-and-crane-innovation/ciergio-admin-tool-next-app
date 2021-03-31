@@ -7,6 +7,7 @@ import { CREATE_REGISTRYRECORD } from '../mutation'
 import { useMutation } from '@apollo/client'
 import moment from 'moment'
 import showToast from '@app/utils/toast'
+import { toFriendlyTime, toFriendlyDate } from '@app/utils/date'
 
 import validationSchema from './schema'
 
@@ -20,7 +21,7 @@ function AddVisitorModal({
   success,
   refetch
 }) {
-  const { handleSubmit, control, errors } = useForm({
+  const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       unit_number: '',
@@ -44,9 +45,16 @@ function AddVisitorModal({
 
   const handleOk = async (data, event) => {
     try {
-      const checkInSchedule = data?.time_of_visit
-        ? String(moment.utc(data?.time_of_visit).local().format())
-        : null
+      const time =
+        data?.time_of_visit && toFriendlyTime(new Date(data?.time_of_visit))
+      const dateOfVisit =
+        data?.date_of_visit && toFriendlyDate(new Date(data?.date_of_visit))
+
+      const checkInSchedule =
+        time && dateOfVisit
+          ? String(moment(dateOfVisit + ' ' + time).format())
+          : null
+
       const checkedInAt = !data?.date_of_visit
         ? String(moment.utc(new Date()).local().format())
         : null

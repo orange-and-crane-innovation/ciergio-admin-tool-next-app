@@ -186,7 +186,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             <b className={styles.ReceptionistCardHeader}>
               {search
                 ? `Search results from "${search}"`
-                : `Upcoming ${name} (${data?.getRegistryRecords?.count})`}
+                : `Upcoming ${name} (${data?.getRegistryRecords?.count || 0})`}
             </b>
             <Button
               primary
