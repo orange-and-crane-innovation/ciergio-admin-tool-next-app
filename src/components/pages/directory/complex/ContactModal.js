@@ -7,7 +7,7 @@ import FormSelect from '@app/components/forms/form-select'
 import FormAddress from '@app/components/forms/form-address'
 import PhoneNumberInput from '@app/components/globals/PhoneNumberInput'
 
-function AddContactModal({
+function ContactModal({
   form,
   open,
   onOk,
@@ -17,10 +17,12 @@ function AddContactModal({
   onGetMapValue,
   imageURLs,
   onUploadImage,
-  onRemoveImage
+  onRemoveImage,
+  uploading,
+  selected
 }) {
   const { control, errors } = form
-
+  console.log({ selected })
   return (
     <Modal
       title="Add a Contact"
@@ -44,11 +46,12 @@ function AddContactModal({
           <div>
             <UploaderImage
               images={imageURLs}
-              loading={loading}
+              loading={uploading}
               onUploadImage={onUploadImage}
               onRemoveImage={onRemoveImage}
               maxImages={1}
               circle
+              defaultValue={selected?.logo}
             />
           </div>
         </div>
@@ -66,6 +69,7 @@ function AddContactModal({
                 onChange={onChange}
                 value={value}
                 error={errors?.category?.value?.message}
+                defaultValue={selected?.category?._id}
               />
             )}
           />
@@ -81,6 +85,7 @@ function AddContactModal({
                 name={name}
                 value={value}
                 error={errors?.name?.message}
+                defaultValue={selected?.name}
               />
             )}
           />
@@ -95,26 +100,26 @@ function AddContactModal({
                 onPhoneChange={onChange}
                 name={name}
                 error={errors?.contactNumber?.message}
+                defaultValue={selected?.contactNumber}
               />
             )}
           />
           <Controller
             name="address"
             control={control}
-            render={({ name, value, onChange }) =>
-              console.log({ value }) || (
-                <FormAddress
-                  label="Contact Address"
-                  labelClassName="mb-2 font-bold text-neutral-500 block"
-                  placeholder="(optional) Enter contact address"
-                  name={name}
-                  onChange={onChange}
-                  value={value?.formattedAddress}
-                  error={errors?.address?.message}
-                  getValue={onGetMapValue}
-                />
-              )
-            }
+            render={({ name, value, onChange }) => (
+              <FormAddress
+                label="Contact Address"
+                labelClassName="mb-2 font-bold text-neutral-500 block"
+                placeholder="(optional) Enter contact address"
+                name={name}
+                onChange={onChange}
+                value={value?.formattedAddress}
+                error={errors?.address?.message}
+                getValue={onGetMapValue}
+                defaultValue={selected?.address?.formattedAddress}
+              />
+            )}
           />
         </form>
       </div>
@@ -122,7 +127,7 @@ function AddContactModal({
   )
 }
 
-AddContactModal.propTypes = {
+ContactModal.propTypes = {
   form: P.object.isRequired,
   open: P.bool.isRequired,
   onOk: P.func.isRequired,
@@ -130,9 +135,11 @@ AddContactModal.propTypes = {
   categoryOptions: P.array.isRequired,
   onGetMapValue: P.func.isRequired,
   loading: P.bool,
+  uploading: P.bool,
   imageURLs: P.array,
   onRemoveImage: P.func,
-  onUploadImage: P.func
+  onUploadImage: P.func,
+  selected: P.object
 }
 
-export default AddContactModal
+export default ContactModal

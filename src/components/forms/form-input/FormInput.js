@@ -25,7 +25,8 @@ function FormInput({
   inputProps,
   icon,
   iconOnClick,
-  readOnly
+  readOnly,
+  defaultValue
 }) {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -70,6 +71,7 @@ function FormInput({
           maxLength={maxLength}
           readOnly={readOnly}
           onChange={onChange}
+          defaultValue={defaultValue}
           {...inputProps}
         />
         {type !== 'password' && icon && (
@@ -153,7 +155,8 @@ FormInput.propTypes = {
   description: P.node || P.string,
   icon: P.any,
   iconOnClick: P.func,
-  readOnly: P.bool
+  readOnly: P.bool,
+  defaultValue: P.string
 }
 
 export default FormInput

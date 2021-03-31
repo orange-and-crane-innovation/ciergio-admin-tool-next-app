@@ -15,7 +15,8 @@ const FormAddress = ({
   onChange,
   getValue,
   label,
-  labelClassName
+  labelClassName,
+  defaultValue
 }) => {
   const [modal, setModal] = useState({
     modalOpen: false,
@@ -106,6 +107,7 @@ const FormAddress = ({
         error={error}
         icon={<FaRegMap />}
         iconOnClick={showMap}
+        defaultValue={defaultValue}
       />
 
       <Modal
@@ -129,7 +131,8 @@ FormAddress.propTypes = {
   onChange: PropTypes.func,
   getValue: PropTypes.any,
   label: PropTypes.string,
-  labelClassName: PropTypes.string
+  labelClassName: PropTypes.string,
+  defaultValue: PropTypes.string
 }
 
 export default GoogleApiWrapper({

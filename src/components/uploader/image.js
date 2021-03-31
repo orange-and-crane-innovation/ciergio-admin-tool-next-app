@@ -18,7 +18,8 @@ const UploaderImage = ({
   maxImages,
   circle,
   onUploadImage,
-  onRemoveImage
+  onRemoveImage,
+  defaultValue
 }) => {
   const [isOver, setIsOver] = useState(false)
   let uploadedImages
@@ -93,6 +94,7 @@ const UploaderImage = ({
               multiple={multiple}
               onChange={onUploadImage}
               accept="image/jpg, image/jpeg, image/png"
+              defaultValue={defaultValue}
             />
             <div
               className={`${styles.imageUploaderImage} ${
@@ -130,7 +132,8 @@ UploaderImage.propTypes = {
   maxImages: PropTypes.number,
   circle: PropTypes.bool,
   onUploadImage: PropTypes.func,
-  onRemoveImage: PropTypes.func
+  onRemoveImage: PropTypes.func,
+  defaultValue: PropTypes.string
 }
 
 export default UploaderImage
