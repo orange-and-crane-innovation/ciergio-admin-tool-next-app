@@ -13,7 +13,9 @@ const FormAddress = ({
   placeholder,
   error,
   onChange,
-  getValue
+  getValue,
+  label,
+  labelClassName
 }) => {
   const [modal, setModal] = useState({
     modalOpen: false,
@@ -86,6 +88,11 @@ const FormAddress = ({
   }
   return (
     <>
+      {label ? (
+        <label className={labelClassName} htmlFor={name}>
+          {label}
+        </label>
+      ) : null}
       <FormInput
         id={name}
         name={name}
@@ -120,7 +127,9 @@ FormAddress.propTypes = {
   placeholder: PropTypes.string,
   error: PropTypes.string,
   onChange: PropTypes.func,
-  getValue: PropTypes.any
+  getValue: PropTypes.any,
+  label: PropTypes.string,
+  labelClassName: PropTypes.string
 }
 
 export default GoogleApiWrapper({

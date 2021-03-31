@@ -1,0 +1,17 @@
+.phoneNumberContainer {
+	@apply w-full mb-4;
+
+	.phoneInput {
+		@apply w-full border rounded border-gray-300;
+	}
+
+	
+}
+
+.hasError {
+	@apply w-full mb-4;
+	
+	.phoneInput {
+		@apply w-full border rounded border-red-500;
+	}
+}

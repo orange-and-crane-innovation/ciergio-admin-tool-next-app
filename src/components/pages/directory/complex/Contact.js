@@ -5,22 +5,21 @@ import { Controller, useForm } from 'react-hook-form'
 import P from 'prop-types'
 import * as yup from 'yup'
 import { useRouter } from 'next/router'
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import Button from '@app/components/button'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import FormAddress from '@app/components/forms/form-address'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
-
 import showToast from '@app/utils/toast'
-
+import axios from '@app/utils/axios'
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
 import { initializeApollo } from '@app/lib/apollo/client'
+import AddContactModal from './AddContactModal'
 import {
   GET_COMPLEXES,
   GET_COMPLEX,
@@ -33,10 +32,16 @@ import {
 import Can from '@app/permissions/can'
 
 const validationSchema = yup.object().shape({
-  name: yup.string().label('Contact Name').required(),
-  contactNumber: yup.string().label('Contact Number').required(),
-  address: yup.string().label('Contact Address'),
-  category: yup.string().required
+  name: yup.string().required('This field is required'),
+  contactNumber: yup.string().required('This field is required'),
+  address: yup.object().shape({
+    formattedAddress: yup.string(),
+    city: yup.string()
+  }),
+  category: yup.object().shape({
+    label: yup.string(),
+    value: yup.string().required('This field is required')
+  })
 })
 
 const columns = [
@@ -64,18 +69,26 @@ const columns = [
 
 function Contact({ id }) {
   const router = useRouter()
-  const { handleSubmit, control, errors, reset, setValue } = useForm({
+  const {
+    getValues,
+    control,
+    errors,
+    reset,
+    setValue,
+    trigger,
+    setError
+  } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       name: '',
       contactNumber: '',
-      address: '',
-      category: ''
+      address: undefined,
+      category: undefined
     }
   })
 
-  const [showModal, setShowModal] = useState(false)
-  const [imageUrl, setImageUrl] = useState([])
+  const [showAddContactModal, setShowAddContactModal] = useState(false)
+  const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedContact, setSelectedContact] = useState(undefined)
   const [showEditContactModal, setShowEditContactModal] = useState(false)
@@ -83,6 +96,7 @@ function Contact({ id }) {
   const [pageLimit, setPageLimit] = useState(10)
   const [offset, setPageOffset] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
+  const [fileUploadedData, setFileUploadedData] = useState([])
 
   const { data: complexes } = useQuery(GET_COMPLEX, {
     variables: {
@@ -152,7 +166,7 @@ function Contact({ id }) {
   const handleShowModal = view => {
     switch (view) {
       case 'create':
-        setShowModal(old => !old)
+        setShowAddContactModal(old => !old)
         break
       case 'edit':
         setShowEditContactModal(old => !old)
@@ -166,55 +180,74 @@ function Contact({ id }) {
   }
 
   const handleClearModal = type => {
-    setSelectedContact(undefined)
+    if (selectedContact) setSelectedContact(undefined)
     reset({
-      category: '',
+      category: undefined,
       name: '',
       contactNumber: '',
-      address: ''
+      address: undefined
     })
+    setImageUrls([])
+    setValue('images', null)
     handleShowModal(type)
   }
 
-  const handleCreateContact = values => {
+  const handleCreateContact = async () => {
+    const values = getValues()
     const { category, name, contactNumber, address } = values
+    const validated = await trigger()
+    const phoneNumber = parsePhoneNumberFromString(contactNumber, 'PH')
+
+    if (validated && !phoneNumber.isValid()) {
+      setError('contactNumber', {
+        type: 'manual',
+        message:
+          'Invalid phone/mobile number, must be a valid Philippine phone or mobile number'
+      })
+    }
 
     const contactData = {
       name,
-      logo: null,
-      description: 'Test description',
+      logo: fileUploadedData[0].url ?? null,
       contactNumber,
-      address: address !== '' ? address : null,
-      categoryId: category || categories?.getContactCategories?.data[0]._id
+      address: address ?? null,
+      categoryId:
+        category.value || categories?.getContactCategories?.data[0]._id
     }
 
-    createContact({
-      variables: {
-        data: contactData,
-        companyId,
-        complexId: id
-      }
-    })
+    if (validated && phoneNumber.isValid()) {
+      createContact({
+        variables: {
+          data: contactData,
+          companyId,
+          complexId: id
+        }
+      })
+    }
   }
 
-  const handleEditContact = values => {
+  const handleEditContact = async () => {
+    const values = getValues()
     const { category, name, contactNumber, address } = values
+    const validated = await trigger()
 
     const contactData = {
       name,
-      logo: null,
-      description: 'Test description',
       contactNumber,
-      address: address !== '' ? address : null,
-      categoryId: category || categories?.getContactCategories?.data[0]._id
+      address: address ?? null,
+      categoryId:
+        category?.value ?? categories?.getContactCategories?.data[0]._id,
+      logo: fileUploadedData[0].url ?? null
     }
 
-    editContact({
-      variables: {
-        data: contactData,
-        contactId: selectedContact._id
-      }
-    })
+    if (validated) {
+      editContact({
+        variables: {
+          data: contactData,
+          contactId: selectedContact._id
+        }
+      })
+    }
   }
 
   const handleDeleteContact = () => {
@@ -225,24 +258,52 @@ function Contact({ id }) {
     })
   }
 
-  const handleUploadImage = e => {
-    const reader = new FileReader()
-    const formData = new FormData()
-    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0]
+  const uploadApi = async payload => {
+    const response = await axios.post('/', payload)
 
-    setLoading(true)
-    if (file) {
-      reader.onloadend = () => {
-        setImageUrl(reader.result)
-      }
-      reader.readAsDataURL(file)
-      formData.append('photos', file)
-      setLoading(false)
+    if (response.data) {
+      const imageData = response.data.map(item => {
+        return {
+          url: item.location,
+          type: item.mimetype
+        }
+      })
+
+      setFileUploadedData(imageData)
     }
   }
 
-  const handleRemoveImage = () => {
-    setImageUrl(null)
+  const handleUploadImage = e => {
+    const files = e.target.files ? e.target.files : e.dataTransfer.files
+    const formData = new FormData()
+    const fileList = []
+
+    if (files) {
+      setLoading(true)
+      for (const file of files) {
+        const reader = new FileReader()
+
+        reader.onloadend = () => {
+          setImageUrls(imageUrls => [...imageUrls, reader.result])
+          setLoading(false)
+        }
+        reader.readAsDataURL(file)
+
+        formData.append('photos', file)
+        fileList.push(file)
+      }
+      setValue('images', fileList)
+
+      uploadApi(formData)
+    }
+  }
+
+  const handleRemoveImage = e => {
+    const images = imageUrls.filter(image => {
+      return image !== e.currentTarget.dataset.id
+    })
+    setImageUrls(images)
+    setValue('images', images.length !== 0 ? images : null)
   }
 
   const getMapValue = e => {
@@ -343,7 +404,7 @@ function Contact({ id }) {
                 default
                 leftIcon={<FaPlusCircle />}
                 label="Add Contact"
-                onClick={() => setShowModal(old => !old)}
+                onClick={() => setShowAddContactModal(old => !old)}
                 className="my-4 mx-4"
               />
             }
@@ -367,102 +428,28 @@ function Contact({ id }) {
         }
         className="rounded-t-none"
       />
-      <Modal
-        title="Add a Contact"
-        okText="Okay"
-        visible={showModal}
-        onClose={() => handleClearModal('create')}
+      <AddContactModal
+        open={showAddContactModal}
+        onUploadImage={handleUploadImage}
+        onRemoveImage={handleRemoveImage}
         onCancel={() => handleClearModal('create')}
-        onOk={handleSubmit(handleCreateContact)}
-        cancelText="Close"
-        okButtonProps={{
-          loading: creatingContact
+        onOk={handleCreateContact}
+        categoryOptions={categoryOptions}
+        onGetMapValue={getMapValue}
+        imageURLs={imageUrls}
+        form={{
+          control,
+          errors
         }}
-      >
-        <div className="w-full p-4">
-          <h1 className="text-base font-bold mb-4">Contact Details</h1>
-          <form>
-            <div className="flex justify-between mb-4">
-              <p>
-                Upload a photo that’s easily recognizable by your residents.
-              </p>
-
-              <div>
-                <UploaderImage
-                  imageUrls={imageUrl}
-                  loading={loading}
-                  onUploadImage={handleUploadImage}
-                  onRemoveImage={handleRemoveImage}
-                  maxImages={3}
-                />
-              </div>
-            </div>
-            <Controller
-              name="category"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormSelect
-                  name={name}
-                  options={categoryOptions}
-                  placeholder="Choose a contact category"
-                  onChange={onChange}
-                  value={value}
-                />
-              )}
-            />
-            <Controller
-              name="name"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Name"
-                  placeholder="Enter contact name"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  error={errors?.contact_name?.message ?? null}
-                />
-              )}
-            />
-            <Controller
-              name="contactNumber"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Number"
-                  placeholder="Enter contact number"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_number?.message}
-                />
-              )}
-            />
-            <Controller
-              name="address"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormAddress
-                  label="Contact Address"
-                  placeholder="(optional) Enter contact address"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_address?.message}
-                  getValue={getMapValue}
-                />
-              )}
-            />
-          </form>
-        </div>
-      </Modal>
+        loading={creatingContact}
+      />
       <Modal
         title="Edit Contact"
         okText="Okay"
         visible={showEditContactModal}
         onClose={() => handleClearModal('edit')}
         onCancel={() => handleClearModal('edit')}
-        onOk={handleSubmit(handleEditContact)}
+        onOk={handleEditContact}
         cancelText="Close"
         okButtonProps={{
           loading: editingContact
@@ -479,7 +466,7 @@ function Contact({ id }) {
 
               <div>
                 <UploaderImage
-                  imageUrls={imageUrl}
+                  imageUrls={imageUrls}
                   loading={loading}
                   onUploadImage={handleUploadImage}
                   onRemoveImage={handleRemoveImage}

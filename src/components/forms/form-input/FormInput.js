@@ -119,12 +119,10 @@ function FormInput({
   return (
     <div className={containerClasses}>
       <div className={styles.FormInputContainer}>
-        <label htmlFor={id || name}>
-          {renderLabel}
-          {description || null}
-          {renderInput}
-          {renderError}
-        </label>
+        <label htmlFor={id || name}>{renderLabel}</label>
+        {description || null}
+        {renderInput}
+        {renderError}
       </div>
     </div>
   )
