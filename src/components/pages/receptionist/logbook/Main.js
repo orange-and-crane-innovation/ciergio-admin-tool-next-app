@@ -127,7 +127,6 @@ function LogBook({ buildingId, categoryId, status, name }) {
 
   useEffect(() => {
     if (!loading && !error && data) {
-      console.log(data)
       const tableData = []
       const tempIds = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
@@ -243,13 +242,10 @@ function LogBook({ buildingId, categoryId, status, name }) {
   }
   const onClearSearch = () => setSearch('')
 
-  useEffect(() => {
-    console.log({ ids })
-  }, [ids])
   const handleShowModal = () => setShowModal(show => !show)
   const handleViewMoreModal = (type, recordId) => {
     const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
-    console.log({ found, recordId })
+
     if (found) {
       switch (type) {
         case 'details':

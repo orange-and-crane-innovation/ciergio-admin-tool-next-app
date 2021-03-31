@@ -14,6 +14,8 @@ import P from 'prop-types'
 import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
+import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
+import Modal from '@app/components/modal'
 import AddVisitorModal from '../modals/AddVisitorModal'
 
 const dummyRow = [
@@ -61,9 +63,11 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
   ])
+  const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [ids, setIds] = useState([])
 
-  const { loading, error, data } = useQuery(GET_REGISTRYRECORDS, {
+  const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
       limit: limitPage,
       offset: offsetPage,
@@ -83,12 +87,13 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     if (!loading && !error && data) {
       console.log(data)
       const tableData = []
+      const tempIds = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
         const dropdownData = [
           {
             label: 'View More Details',
             icon: <AiOutlineFileText />,
-            function: () => console.log('View More Details')
+            function: () => handleViewMoreModal('details', registry._id)
           }
         ]
 
@@ -104,7 +109,9 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           addNote: <Button label="Add Note" />,
           options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
         })
+        tempIds.push(registry._id)
       })
+      setIds(tempIds)
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
@@ -115,6 +122,14 @@ function Cancelled({ buildingId, categoryId, status, name }) {
       setTableData(table)
     }
   }, [loading, error, data])
+
+  const handleViewMoreModal = (type, recordId) => {
+    const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
+
+    if (found) {
+      setShowViewMoreDetails(show => !show)
+    }
+  }
 
   const onPageClick = e => {
     setActivePage(e)
@@ -147,6 +162,20 @@ function Cancelled({ buildingId, categoryId, status, name }) {
   }
 
   const handleShowModal = () => setShowModal(show => !show)
+
+  const setSuccess = isSuccess => {
+    if (isSuccess) {
+      setShowModal(show => !show)
+    }
+  }
+
+  const willRefetch = will => {
+    if (will) {
+      refetch()
+    }
+  }
+
+  const handleClearModal = () => setShowViewMoreDetails(false)
 
   return (
     <>
@@ -192,11 +221,23 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           onLimitChange={onLimitChange}
         />
       )}
+
       <AddVisitorModal
-        buildingId={buildingId}
         showModal={showModal}
         onShowModal={handleShowModal}
+        buildingId={buildingId}
+        categoryId={categoryId}
+        success={setSuccess}
+        refetch={willRefetch}
       />
+      <Modal
+        title="Details"
+        visible={showViewMoreDetails}
+        onClose={handleClearModal}
+        onShowModal={handleViewMoreModal}
+      >
+        <ViewMoreDetailsModalContent />
+      </Modal>
     </>
   )
 }

@@ -32,7 +32,6 @@ function AddVisitorModalContent({ form, buildingId }) {
     if (buildingId && !error && !loadingUnits && data) {
       const hostName = []
       const unitList = data?.getUnits?.data.map(unit => {
-        console.log(unit)
         hostName.push({
           value: unit?.unitOwner?._id || unit?._id,
           label: `${unit?.unitOwner?.user?.firstName} ${unit?.unitOwner?.user?.lastName}`
@@ -73,15 +72,11 @@ function AddVisitorModalContent({ form, buildingId }) {
     // })
   }
 
-  useEffect(() => {
-    console.log(host)
-  }, [host])
-
   const onRepeatChange = e => setOnSchedule(e.target.checked)
 
   const setHostName = e => {
     const foundHostName = unitHostName.find(val => val.value === e.value)
-    console.log(foundHostName)
+
     setHost([foundHostName])
   }
 

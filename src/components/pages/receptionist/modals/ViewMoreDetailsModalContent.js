@@ -45,13 +45,12 @@ function ModalContent({ recordId }) {
         checkedOutAt,
         visitor,
         author,
-        forWho,
-        mediaAttachments
+        forWho
       } = data?.getRegistryRecord
       const sched = new Date(+checkInSchedule)
       const checkedIn = new Date(+checkedInAt)
       const checkedO = new Date(+checkedOutAt)
-      console.log({ author })
+
       setRecordData({
         unit: forWho ? forWho?.unit?.name : '',
         host: forWho
@@ -76,10 +75,6 @@ function ModalContent({ recordId }) {
       })
     }
   }, [loading, data, error])
-
-  useEffect(() => {
-    console.log(recordData)
-  }, [recordData])
 
   return (
     <>

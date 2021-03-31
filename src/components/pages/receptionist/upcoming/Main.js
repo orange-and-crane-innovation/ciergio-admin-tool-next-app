@@ -7,8 +7,9 @@ import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Pagination from '@app/components/pagination'
 import { BsPlusCircle, BsTrash } from 'react-icons/bs'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
+import { CANCEL_RECORD } from '../mutation'
 import P from 'prop-types'
 import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
@@ -16,6 +17,9 @@ import { AiOutlineMessage, AiOutlineFileText } from 'react-icons/ai'
 import moment from 'moment'
 import useKeyPress from '@app/utils/useKeyPress'
 import AddVisitorModal from '../modals/AddVisitorModal'
+import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
+import Modal from '@app/components/modal'
+import showToast from '@app/utils/toast'
 
 const COLCOUNT = 6
 const dummyRow = [
@@ -67,9 +71,12 @@ function Upcoming({ buildingId, categoryId, status, name }) {
   const [search, setSearch] = useState(null)
   const [searchText, setSearchText] = useState(null)
   const [showModal, setShowModal] = useState(false)
-
+  const [recordId, setRecordId] = useState('')
+  const [modalContent, setModalContent] = useState(null)
+  const [modalType, setModalType] = useState('')
   const keyPressed = useKeyPress('Enter')
-  console.log(status)
+  const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
+  const [ids, setIds] = useState([])
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -87,6 +94,31 @@ function Upcoming({ buildingId, categoryId, status, name }) {
     }
   })
 
+  const [
+    cancelRecord,
+    {
+      loading: loadingCancelRecord,
+      called: calledCancelRecord,
+      data: dataCancelRecord
+    }
+  ] = useMutation(CANCEL_RECORD)
+
+  useEffect(() => {
+    if (!loadingCancelRecord && dataCancelRecord && calledCancelRecord) {
+      if (dataCancelRecord.updateRegistryRecord?.message === 'success') {
+        showToast('success', 'Visitor Cancelled')
+        setRecordId('')
+        refetch()
+        setShowViewMoreDetails(false)
+      } else {
+        showToast('success', 'Visitor Cancelled')
+        setRecordId('')
+        refetch()
+        setShowViewMoreDetails(false)
+      }
+    }
+  }, [loadingCancelRecord, calledCancelRecord, dataCancelRecord])
+
   useEffect(() => {
     if (!loading && !error && data) {
       const tableData = []
@@ -94,23 +126,24 @@ function Upcoming({ buildingId, categoryId, status, name }) {
       const tableTomorrow = []
       const tableYesterday = []
       const talbeDates = []
-
+      const tempIds = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
+        tempIds.push(registry._id)
         const dropdownData = [
           {
             label: 'Message Resident',
             icon: <AiOutlineMessage />,
-            function: () => console.log('Message Resident')
+            function: () => console.log('wew')
           },
           {
             label: 'View More Details',
             icon: <AiOutlineFileText />,
-            function: () => console.log('View More Details')
+            function: () => handleViewMoreModal('details', registry._id)
           },
           {
             label: 'Cancel',
             icon: <BsTrash />,
-            function: () => console.log('Cancel')
+            function: () => handleViewMoreModal('cancel', registry._id)
           }
         ]
         const dateUTC = new Date(+registry.checkInSchedule)
@@ -124,7 +157,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           )
         }
         const momentDate = DATE.toFriendlyDate(moment(dateUTC).format())
-        console.log({ tom: dates.tomorrow, momentDate })
 
         if (dates.today === momentDate) {
           tableToday.push({
@@ -267,7 +299,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           )
         }
       })
-
+      setIds(tempIds)
       if (tableTomorrow.length > 0) {
         tableTomorrow.unshift({
           date: <div className="text-gray-900 font-bold">Tomorrow</div>,
@@ -303,6 +335,8 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         })
       }
 
+      // this is only temporary function, to divide the dates by tomorrow, today, yesterday or other dates
+
       tableData.push(
         ...tableToday,
         ...tableTomorrow,
@@ -310,20 +344,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         ...tableYesterday
       )
 
-      // {
-      //   table: (
-      //     <div className="text-gray-900 font-bold">
-      //       {dates.today === momentDate && 'Today'}
-      //       {dates.tomorrow === momentDate && 'Tomorrow'}
-      //       {dates.yesterday === momentDate && 'Yester Day'}
-      //       {dates.today !== momentDate &&
-      //       dates.tomorrow !== momentDate &&
-      //       dates.yesterday !== momentDate
-      //         ? DATE.toFriendlyDate(momentDate)
-      //         : ''}
-      //     </div>
-      //   )
-      // }
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
@@ -342,6 +362,43 @@ function Upcoming({ buildingId, categoryId, status, name }) {
 
   const onLimitChange = e => {
     setLimitPage(parseInt(e.value))
+  }
+
+  const handleViewMoreModal = (type, recordId) => {
+    const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
+    console.log({ found, recordId })
+    if (found) {
+      switch (type) {
+        case 'details':
+          setModalContent(<ViewMoreDetailsModalContent recordId={found} />)
+          setModalType('details')
+          break
+        case 'cancel':
+          setModalType('cancel')
+          setModalContent(
+            <div className="text-muted lead text-xl align-center">
+              Do you want to delete this entry?
+            </div>
+          )
+          setRecordId(found)
+          break
+        default:
+      }
+    }
+    setShowViewMoreDetails(show => !show)
+  }
+
+  const handleCancelRecord = async () => {
+    try {
+      if (recordId !== '') {
+        await cancelRecord({
+          variables: { data: { status: 'cancelled' }, id: recordId }
+        })
+      }
+    } catch (e) {
+      showToast('warning', 'Problem saving visitor cancelled')
+      setShowViewMoreDetails(false)
+    }
   }
 
   useEffect(() => {
@@ -363,7 +420,19 @@ function Upcoming({ buildingId, categoryId, status, name }) {
     setSearch('')
   }
 
-  const handleShowModal = () => setShowModal(show => !show)
+  const setSuccess = isSuccess => {
+    if (isSuccess) {
+      setShowModal(show => !show)
+    }
+  }
+
+  const willRefetch = will => {
+    if (will) {
+      refetch()
+    }
+  }
+  const handleClearModal = () => setShowViewMoreDetails(false)
+  const handleShowModal = e => setShowModal(show => !show)
 
   return (
     <>
@@ -404,16 +473,28 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         />
       )}
       <AddVisitorModal
-        buildingId={buildingId}
         showModal={showModal}
         onShowModal={handleShowModal}
+        buildingId={buildingId}
+        categoryId={categoryId}
+        success={setSuccess}
+        refetch={willRefetch}
       />
+      <Modal
+        title={modalType === 'details' && 'Details'}
+        visible={showViewMoreDetails}
+        onClose={handleClearModal}
+        onShowModal={handleViewMoreModal}
+        onOk={modalType === 'cancel' && handleCancelRecord}
+      >
+        {modalContent}
+      </Modal>
     </>
   )
 }
 
 TableColStyle.propTypes = {
-  top: P.oneOfType(P.string, P.array),
+  top: P.string,
   bottom: P.string
 }
 
