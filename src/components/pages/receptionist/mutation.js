@@ -18,3 +18,11 @@ export const CANCEL_RECORD = gql`
     }
   }
 `
+
+export const ADD_NOTE = gql`
+  mutation createRegistryNote($data: CreateNoteInput) {
+    createRegistryNote(data: $data) {
+      message
+    }
+  }
+`
