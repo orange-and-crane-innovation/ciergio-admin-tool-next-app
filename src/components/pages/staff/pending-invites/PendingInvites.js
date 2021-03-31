@@ -9,7 +9,7 @@ import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
 import CancelInviteModal from './CancelInviteModal'
-import ResendInviteModal from './ResendInviteModal'
+import ResendInviteModal from '@app/components/globals/ResendBulkInvite'
 import Can from '@app/permissions/can'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { friendlyDateTimeFormat } from '@app/utils/date'
@@ -34,7 +34,7 @@ import {
 
 const bulkOptions = [
   {
-    label: 'Resend Invites',
+    label: 'Resend Invite',
     value: 'resend-invites'
   }
 ]
@@ -195,15 +195,6 @@ function PendingInvites() {
       }
     })
   }
-  const handleResendInvite = () => {
-    resendInvite({
-      variables: {
-        data: {
-          inviteIds: [selectedData?._id]
-        }
-      }
-    })
-  }
 
   const handleClearModal = type => {
     switch (type) {
@@ -341,7 +332,7 @@ function PendingInvites() {
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
           onBulkChange={onBulkChange}
-          onBulkSubmit={onBulkSubmit}
+          onBulkSubmit={() => setShowResendInviteModal(old => !old)}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
         />
@@ -407,10 +398,10 @@ function PendingInvites() {
       />
       <ResendInviteModal
         onCancel={() => handleClearModal('resend')}
-        onOk={handleResendInvite}
-        data={selectedData}
+        onOk={onBulkSubmit}
         open={showResendInviteModal}
         loading={resendingInvite}
+        module="staff"
       />
       <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}
