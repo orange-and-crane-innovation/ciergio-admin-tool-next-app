@@ -8,9 +8,7 @@ function AddNote({ forms }) {
   return (
     <>
       <div className="w-full h-1/4">
-        <p className="text-neutral-dark font-body font-bold text-sm">
-          Note (Optional)
-        </p>
+        <p className="text-neutral-dark font-body font-bold text-sm">Note</p>
         <form>
           <Controller
             name="note"

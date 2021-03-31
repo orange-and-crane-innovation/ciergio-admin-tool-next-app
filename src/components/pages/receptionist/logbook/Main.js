@@ -9,7 +9,7 @@ import Pagination from '@app/components/pagination'
 import { BsPlusCircle, BsTrash } from 'react-icons/bs'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
-import { CANCEL_RECORD } from '../mutation'
+import { CANCEL_RECORD, ADD_NOTE } from '../mutation'
 import P from 'prop-types'
 import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
@@ -20,6 +20,10 @@ import AddVisitorModal from '../modals/AddVisitorModal'
 import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
 import Modal from '@app/components/modal'
 import showToast from '@app/utils/toast'
+import AddNoteModal from '../modals/AddNoteModal'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const NUMBEROFCOLUMN = 6
 
@@ -64,6 +68,10 @@ const TableColStyle = ({ top, bottom }) => {
     </>
   )
 }
+
+const validationSchema = yup.object().shape({
+  note: yup.string().required()
+})
 function LogBook({ buildingId, categoryId, status, name }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
@@ -75,6 +83,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [recordId, setRecordId] = useState('')
   const [ids, setIds] = useState([])
+  const [modalTitle, setModalTitle] = useState('')
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
@@ -84,6 +93,13 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const [showModal, setShowModal] = useState(false)
   const [modalContent, setModalContent] = useState(null)
   const [modalType, setModalType] = useState('')
+
+  const { handleSubmit, control, errors } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      email: ''
+    }
+  })
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -108,6 +124,22 @@ function LogBook({ buildingId, categoryId, status, name }) {
       data: dataCancelRecord
     }
   ] = useMutation(CANCEL_RECORD)
+
+  const [
+    addNote,
+    { loading: loadingAddNote, called: calledAddNote, data: dataAddNote }
+  ] = useMutation(ADD_NOTE)
+
+  useEffect(() => {
+    if (!loadingAddNote && dataAddNote && calledAddNote) {
+      if (dataAddNote.createRegistryNote?.message === 'success') {
+        showToast('success', 'Note Added Successfully')
+        setRecordId('')
+        refetch()
+        setShowViewMoreDetails(false)
+      }
+    }
+  }, [loadingAddNote, calledAddNote, dataAddNote])
 
   useEffect(() => {
     if (!loadingCancelRecord && dataCancelRecord && calledCancelRecord) {
@@ -174,7 +206,12 @@ function LogBook({ buildingId, categoryId, status, name }) {
           ) : (
             <Button label="Checked Out" />
           ),
-          addNote: <Button label="Add Note" />,
+          addNote: (
+            <Button
+              label="Add Note"
+              onClick={e => handleViewMoreModal('addnote', registry._id)}
+            />
+          ),
           options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
         })
       })
@@ -242,6 +279,24 @@ function LogBook({ buildingId, categoryId, status, name }) {
   }
   const onClearSearch = () => setSearch('')
 
+  const handleAddNote = async data => {
+    try {
+      const content = data.note.replace(/(<([^>]+)>)/gi, '')
+
+      await addNote({
+        variables: {
+          data: {
+            content,
+            recordId
+          }
+        }
+      })
+    } catch (e) {
+      showToast('warning', 'Problem adding note')
+      setShowViewMoreDetails(false)
+    }
+  }
+
   const handleShowModal = () => setShowModal(show => !show)
   const handleViewMoreModal = (type, recordId) => {
     const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
@@ -249,16 +304,25 @@ function LogBook({ buildingId, categoryId, status, name }) {
     if (found) {
       switch (type) {
         case 'details':
+          setModalTitle('Details')
           setModalContent(<ViewMoreDetailsModalContent recordId={found} />)
           setModalType('details')
           break
         case 'cancel':
+          setModalTitle('Cancel')
           setModalType('cancel')
           setModalContent(
             <div className="text-muted lead text-xl align-center">
               Do you want to delete this entry?
             </div>
           )
+          setRecordId(found)
+          break
+        case 'addnote':
+          setModalTitle('Add Note')
+          setModalContent(<AddNoteModal forms={{ control, errors }} />)
+          setModalTitle('Add Note')
+          setModalType('addnote')
           setRecordId(found)
           break
         default:
@@ -328,11 +392,14 @@ function LogBook({ buildingId, categoryId, status, name }) {
         refetch={willRefetch}
       />
       <Modal
-        title={modalType === 'details' && 'Details'}
+        title={modalTitle}
         visible={showViewMoreDetails}
         onClose={handleClearModal}
         onShowModal={handleViewMoreModal}
-        onOk={modalType === 'cancel' && handleCancelRecord}
+        onOk={
+          (modalType === 'cancel' && handleCancelRecord) ||
+          (modalType === 'addnote' && handleSubmit(handleAddNote))
+        }
       >
         {modalContent}
       </Modal>
