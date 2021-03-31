@@ -43,7 +43,7 @@ function AddVisitorModal({
     handleShowModal()
   }
 
-  const handleOk = async (data, event) => {
+  const handleOk = async data => {
     try {
       const time =
         data?.time_of_visit && toFriendlyTime(new Date(data?.time_of_visit))
@@ -93,6 +93,15 @@ function AddVisitorModal({
         success(true)
         showToast('success', 'successfully submitted')
         refetch(true)
+        reset({
+          company: '',
+          date_of_visit: '',
+          first_name: '',
+          last_name: '',
+          note: '',
+          time_of_visit: '',
+          unit_number: ''
+        })
       }
     }
   }, [loading, called, data])

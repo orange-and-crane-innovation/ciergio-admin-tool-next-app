@@ -44,13 +44,18 @@ const dummyRow = [
     width: `${COLCOUNT / 100}%`
   }
 ]
-
 const TableColStyle = ({ top, bottom }) => {
   return (
-    <div className="flex flex-col">
-      <p className="text-gray-900">{top}</p>
-      <p className="text-gray-400">{bottom}</p>
-    </div>
+    <>
+      {!bottom ? (
+        top
+      ) : (
+        <div className="flex flex-col">
+          <p className="text-gray-900 font-bold">{top || ''}</p>
+          <p className="text-gray-900">{bottom || ''}</p>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -84,8 +89,12 @@ function Upcoming({ buildingId, categoryId, status, name }) {
 
   useEffect(() => {
     if (!loading && !error && data) {
-      console.log(data)
       const tableData = []
+      const tableToday = []
+      const tableTomorrow = []
+      const tableYesterday = []
+      const talbeDates = []
+
       data?.getRegistryRecords?.data.forEach((registry, index) => {
         const dropdownData = [
           {
@@ -104,32 +113,217 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             function: () => console.log('Cancel')
           }
         ]
-        const dateUTC = new Date(+registry.checkedInAt)
-        tableData.push({
-          unitNumberAndOwner: (
-            <TableColStyle
-              key={index}
-              top={`${registry.forWhat.name}`}
-              bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
-            />
+        const dateUTC = new Date(+registry.checkInSchedule)
+        const dates = {
+          today: DATE.toFriendlyDate(moment(new Date()).format()),
+          tomorrow: DATE.toFriendlyDate(
+            moment(new Date()).add(1, 'days').format()
           ),
-          personCompany: (
-            <TableColStyle
-              key={index}
-              top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
-              bottom={registry.visitor.company}
-            />
-          ),
-          checkedIn: DATE.toFriendlyTime(dateUTC.toUTCString()),
-          checkedOut: registry.checkedOutAt ? (
-            DATE.toFriendlyTime(registry.checkedOutAt)
-          ) : (
-            <Button label="Checked Out" />
-          ),
-          addNote: <Button label="Add Note" />,
-          options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-        })
+          yesterday: DATE.toFriendlyDate(
+            moment(new Date()).subtract(1, 'days').startOf('day').format()
+          )
+        }
+        const momentDate = DATE.toFriendlyDate(moment(dateUTC).format())
+        console.log({ tom: dates.tomorrow, momentDate })
+
+        if (dates.today === momentDate) {
+          tableToday.push({
+            unitNumberAndOwner: (
+              <TableColStyle
+                key={index}
+                top={`${registry.forWhat.name}`}
+                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+              />
+            ),
+            personCompany: (
+              <TableColStyle
+                key={index}
+                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+                bottom={registry.visitor.company}
+              />
+            ),
+            checkedIn: (
+              <TableColStyle
+                key={index}
+                top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
+                bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
+              />
+            ),
+            checkedOut: registry.checkedOutAt ? (
+              DATE.toFriendlyTime(registry.checkedOutAt)
+            ) : (
+              <Button label="Checked Out" />
+            ),
+            addNote: <Button label="Add Note" />,
+            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          })
+        } else if (dates.tomorrow === momentDate) {
+          tableTomorrow.push({
+            unitNumberAndOwner: (
+              <TableColStyle
+                key={index}
+                top={`${registry.forWhat.name}`}
+                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+              />
+            ),
+            personCompany: (
+              <TableColStyle
+                key={index}
+                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+                bottom={registry.visitor.company}
+              />
+            ),
+            checkedIn: (
+              <TableColStyle
+                key={index}
+                top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
+                bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
+              />
+            ),
+            checkedOut: registry.checkedOutAt ? (
+              DATE.toFriendlyTime(registry.checkedOutAt)
+            ) : (
+              <Button label="Checked Out" />
+            ),
+            addNote: <Button label="Add Note" />,
+            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          })
+        } else if (dates.yesterday === momentDate) {
+          tableYesterday.push({
+            unitNumberAndOwner: (
+              <TableColStyle
+                key={index}
+                top={`${registry.forWhat.name}`}
+                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+              />
+            ),
+            personCompany: (
+              <TableColStyle
+                key={index}
+                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+                bottom={registry.visitor.company}
+              />
+            ),
+            checkedIn: (
+              <TableColStyle
+                key={index}
+                top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
+                bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
+              />
+            ),
+            checkedOut: registry.checkedOutAt ? (
+              DATE.toFriendlyTime(registry.checkedOutAt)
+            ) : (
+              <Button label="Checked Out" />
+            ),
+            addNote: <Button label="Add Note" />,
+            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          })
+        } else {
+          talbeDates.push(
+            {
+              date: (
+                <div className="text-gray-900 font-bold">
+                  {DATE.toFriendlyDate(dateUTC)}
+                </div>
+              ),
+              blank: '',
+              blank1: '',
+              blank2: '',
+              blank3: '',
+              blank4: ''
+              // temporary
+            },
+            {
+              unitNumberAndOwner: (
+                <TableColStyle
+                  key={index}
+                  top={`${registry.forWhat.name}`}
+                  bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+                />
+              ),
+              personCompany: (
+                <TableColStyle
+                  key={index}
+                  top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+                  bottom={registry.visitor.company}
+                />
+              ),
+              checkedIn: (
+                <TableColStyle
+                  key={index}
+                  top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
+                  bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
+                />
+              ),
+              checkedOut: registry.checkedOutAt ? (
+                DATE.toFriendlyTime(registry.checkedOutAt)
+              ) : (
+                <Button label="Checked Out" />
+              ),
+              addNote: <Button label="Add Note" />,
+              options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            }
+          )
+        }
       })
+
+      if (tableTomorrow.length > 0) {
+        tableTomorrow.unshift({
+          date: <div className="text-gray-900 font-bold">Tomorrow</div>,
+          blank: '',
+          blank1: '',
+          blank2: '',
+          blank3: '',
+          blank4: ''
+          // temporary
+        })
+      }
+
+      if (tableToday.length > 0) {
+        tableToday.unshift({
+          date: <div className="text-gray-900 font-bold">Today</div>,
+          blank: '',
+          blank1: '',
+          blank2: '',
+          blank3: '',
+          blank4: ''
+          // temporary
+        })
+      }
+      if (tableYesterday.length > 0) {
+        tableYesterday.unshift({
+          date: <div className="text-gray-900 font-bold w-full">Yesterday</div>,
+          blank: '',
+          blank1: '',
+          blank2: '',
+          blank3: '',
+          blank4: ''
+          // temporary
+        })
+      }
+
+      tableData.push(
+        ...tableToday,
+        ...tableTomorrow,
+        ...talbeDates,
+        ...tableYesterday
+      )
+
+      // {
+      //   table: (
+      //     <div className="text-gray-900 font-bold">
+      //       {dates.today === momentDate && 'Today'}
+      //       {dates.tomorrow === momentDate && 'Tomorrow'}
+      //       {dates.yesterday === momentDate && 'Yester Day'}
+      //       {dates.today !== momentDate &&
+      //       dates.tomorrow !== momentDate &&
+      //       dates.yesterday !== momentDate
+      //         ? DATE.toFriendlyDate(momentDate)
+      //         : ''}
+      //     </div>
+      //   )
+      // }
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
