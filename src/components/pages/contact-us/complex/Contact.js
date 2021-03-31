@@ -1,11 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import P from 'prop-types'
 import * as yup from 'yup'
 import Button from '@app/components/button'
-import FormInput from '@app/components/forms/form-input'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
@@ -24,15 +23,38 @@ import {
   DELETE_CONTACT
 } from '../queries'
 import showToast from '@app/utils/toast'
+import ContactModal from './ContactModal'
 
 const validationSchema = yup.object().shape({
-  title: yup.string().label('Title').required(),
-  name: yup.string().label('Contact Name').required(),
-  email: yup.string().email().label('Contact Email')
+  title: yup.string().required('This field is required'),
+  name: yup.string().required('This field is required'),
+  email: yup
+    .string()
+    .email('Please enter a valid email')
+    .required('This field is required')
 })
 
+const columns = [
+  {
+    name: 'Title',
+    width: ''
+  },
+  {
+    name: 'Name',
+    width: ''
+  },
+  {
+    name: 'Email',
+    width: ''
+  },
+  {
+    name: '',
+    width: ''
+  }
+]
+
 function Contact({ id }) {
-  const { handleSubmit, control, errors, reset } = useForm({
+  const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       title: '',
@@ -76,7 +98,7 @@ function Contact({ id }) {
     CREATE_CONTACT,
     {
       onCompleted: () => {
-        handleClearModal('create')
+        handleContactModal()
         showToast('success', `You have successfully added a new contact`)
         refetchContacts()
       }
@@ -84,7 +106,7 @@ function Contact({ id }) {
   )
   const [editContact, { loading: editingContact }] = useMutation(EDIT_CONTACT, {
     onCompleted: () => {
-      handleClearModal('edit')
+      handleContactModal()
       showToast('success', `You have successfully updated a contact`)
       refetchContacts()
     }
@@ -93,16 +115,15 @@ function Contact({ id }) {
     DELETE_CONTACT,
     {
       onCompleted: () => {
-        handleClearModal('delete')
+        setShowDeleteContactModal(old => !old)
         showToast('success', `You have successfully deleted a contact`)
         refetchContacts()
       }
     }
   )
 
-  const [showModal, setShowModal] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
   const [selectedContact, setSelectedContact] = useState(undefined)
-  const [showEditContactModal, setShowEditContactModal] = useState(false)
   const [showDeleteContactModal, setShowDeleteContactModal] = useState(false)
 
   const name = complexes?.getComplexes?.data[0]?.name || ''
@@ -118,35 +139,20 @@ function Contact({ id }) {
     }
   }, [reset, selectedContact])
 
-  const handleShowModal = useCallback(view => {
-    switch (view) {
-      case 'create':
-        setShowModal(old => !old)
-        break
-      case 'edit':
-        setShowEditContactModal(old => !old)
-        break
-      case 'delete':
-        setShowDeleteContactModal(old => !old)
-        break
-      default:
-        break
-    }
-  }, [])
-
-  const handleClearModal = type => {
-    setSelectedContact(undefined)
+  const handleContactModal = () => {
+    if (selectedContact) setSelectedContact(undefined)
     reset({
       title: '',
       name: '',
       email: ''
     })
-    handleShowModal(type)
+    setShowContactModal(old => !old)
   }
 
-  const handleCreateContact = values => {
+  const handleContactForm = async () => {
     const categoryId = contactCategories?.getContactCategories?.data[0]?._id
-    const { title, name, email } = values
+    const { title, name, email } = getValues()
+    const validated = await trigger()
 
     const contactData = {
       name,
@@ -158,38 +164,25 @@ function Contact({ id }) {
       categoryId
     }
 
-    createContact({
-      variables: {
-        data: contactData,
-        companyId,
-        complexId: id
+    if (validated) {
+      if (selectedContact) {
+        editContact({
+          variables: {
+            data: contactData,
+            contactId: selectedContact._id
+          }
+        })
+        return
       }
-    })
-  }
 
-  const handleEditContact = values => {
-    const { title, name, email } = values
-
-    const contactData = {
-      name,
-      logo: null,
-      description: title,
-      address: null,
-      email: email
+      createContact({
+        variables: {
+          data: contactData,
+          companyId,
+          complexId: id
+        }
+      })
     }
-
-    reset({
-      title,
-      name,
-      email
-    })
-
-    editContact({
-      variables: {
-        data: contactData,
-        contactId: selectedContact._id
-      }
-    })
   }
 
   const handleDeleteContact = () => {
@@ -199,29 +192,6 @@ function Contact({ id }) {
       }
     })
   }
-
-  const columns = useMemo(
-    () => [
-      {
-        name: 'Title',
-        width: ''
-      },
-      {
-        name: 'Name',
-        width: ''
-      },
-      {
-        name: 'Email',
-        width: ''
-      },
-      {
-        name: '',
-        width: ''
-      }
-    ],
-    []
-  )
-
   const contactsData = useMemo(() => {
     return {
       count: contacts?.getContactCategories?.data[0]?.contacts?.count || 0,
@@ -236,7 +206,7 @@ function Contact({ id }) {
                 icon: <span className="ciergio-edit" />,
                 function: () => {
                   setSelectedContact(contact)
-                  handleShowModal('edit')
+                  setShowContactModal(old => !old)
                 }
               },
               {
@@ -244,7 +214,7 @@ function Contact({ id }) {
                 icon: <span className="ciergio-trash" />,
                 function: () => {
                   setSelectedContact(contact)
-                  handleShowModal('delete')
+                  setShowDeleteContactModal(old => !old)
                 }
               }
             ]
@@ -268,10 +238,7 @@ function Contact({ id }) {
           }
         ) || []
     }
-  }, [
-    contacts?.getContactCategories?.data[0]?.contacts?.count,
-    handleShowModal
-  ])
+  }, [contacts?.getContactCategories?.data[0]?.contacts?.count])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
@@ -293,7 +260,7 @@ function Contact({ id }) {
                 default
                 leftIcon={<FaPlusCircle />}
                 label="Add Contact"
-                onClick={() => setShowModal(old => !old)}
+                onClick={handleContactModal}
                 className="my-4 mx-4"
               />
             }
@@ -316,142 +283,23 @@ function Contact({ id }) {
         }
         className="rounded-t-none"
       />
-      <Modal
-        title="Add a Contact"
-        okText="Okay"
-        visible={showModal}
-        onClose={() => handleClearModal('create')}
-        onCancel={() => handleClearModal('create')}
-        onOk={handleSubmit(handleCreateContact)}
-        cancelText="Close"
-        okButtonProps={{
-          loading: creatingContact
+      <ContactModal
+        loading={creatingContact || editingContact}
+        onOk={handleContactForm}
+        onCancel={handleContactModal}
+        open={showContactModal}
+        form={{
+          errors,
+          control
         }}
-        width={450}
-      >
-        <div className="w-full p-4">
-          <form>
-            <Controller
-              name="title"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Title"
-                  labelClassName="text-base font-bold"
-                  placeholder="Enter title of contact"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  error={errors?.contact_name?.message ?? null}
-                />
-              )}
-            />
-            <Controller
-              name="name"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Name"
-                  labelClassName="text-base font-bold"
-                  placeholder="Enter name of contact"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  error={errors?.contact_name?.message ?? null}
-                />
-              )}
-            />
-            <Controller
-              name="email"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Email"
-                  labelClassName="text-base font-bold"
-                  placeholder="Enter email of contact"
-                  type="email"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_number?.message}
-                  inputClassName="w-full rounded border-gray-300"
-                />
-              )}
-            />
-          </form>
-        </div>
-      </Modal>
-      <Modal
-        title="Edit Contact"
-        okText="Okay"
-        visible={showEditContactModal}
-        onClose={() => handleClearModal('edit')}
-        onCancel={() => handleClearModal('edit')}
-        onOk={handleSubmit(handleEditContact)}
-        cancelText="Close"
-        okButtonProps={{
-          loading: editingContact
-        }}
-        width={450}
-      >
-        <div className="w-full p-4">
-          <form>
-            <Controller
-              name="title"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Title"
-                  labelClassName="text-base font-bold"
-                  placeholder="Enter title of contact"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  error={errors?.contact_name?.message ?? null}
-                />
-              )}
-            />
-            <Controller
-              name="name"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Name"
-                  labelClassName="text-base font-bold"
-                  placeholder="Enter name of contact"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  error={errors?.contact_name?.message ?? null}
-                />
-              )}
-            />
-            <Controller
-              name="email"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Email"
-                  labelClassName="text-base font-bold"
-                  placeholder="Enter email of contact"
-                  type="email"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_number?.message}
-                  inputClassName="w-full rounded border-gray-300"
-                />
-              )}
-            />
-          </form>
-        </div>
-      </Modal>
+        selected={selectedContact}
+      />
       <Modal
         title="Delete Contact"
         okText="Yes, delete"
         visible={showDeleteContactModal}
-        onClose={() => handleClearModal('delete')}
-        onCancel={() => handleClearModal('delete')}
+        onClose={() => setShowDeleteContactModal(old => !old)}
+        onCancel={() => setShowDeleteContactModal(old => !old)}
         onOk={handleDeleteContact}
         okButtonProps={{
           loading: deletingContact
