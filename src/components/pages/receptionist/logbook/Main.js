@@ -82,7 +82,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const [searchText, setSearchText] = useState(null)
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [recordId, setRecordId] = useState('')
-  const [ids, setIds] = useState([])
+
   const [modalTitle, setModalTitle] = useState('')
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
@@ -97,7 +97,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      email: ''
+      note: ''
     }
   })
 
@@ -216,7 +216,6 @@ function LogBook({ buildingId, categoryId, status, name }) {
         })
       })
 
-      setIds(tempIds)
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
@@ -298,14 +297,12 @@ function LogBook({ buildingId, categoryId, status, name }) {
   }
 
   const handleShowModal = () => setShowModal(show => !show)
-  const handleViewMoreModal = (type, recordId) => {
-    const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
-
-    if (found) {
+  const handleViewMoreModal = (type, rcrdID) => {
+    if (rcrdID) {
       switch (type) {
         case 'details':
           setModalTitle('Details')
-          setModalContent(<ViewMoreDetailsModalContent recordId={found} />)
+          setModalContent(<ViewMoreDetailsModalContent recordId={rcrdID} />)
           setModalType('details')
           break
         case 'cancel':
@@ -316,14 +313,14 @@ function LogBook({ buildingId, categoryId, status, name }) {
               Do you want to delete this entry?
             </div>
           )
-          setRecordId(found)
+          setRecordId(rcrdID)
           break
         case 'addnote':
           setModalTitle('Add Note')
           setModalContent(<AddNoteModal forms={{ control, errors }} />)
           setModalTitle('Add Note')
           setModalType('addnote')
-          setRecordId(found)
+          setRecordId(rcrdID)
           break
         default:
       }

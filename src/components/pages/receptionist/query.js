@@ -144,6 +144,7 @@ export const GET_REGISTRYRECORD = gql`
         url
         type
       }
+
       visitor {
         firstName
         lastName

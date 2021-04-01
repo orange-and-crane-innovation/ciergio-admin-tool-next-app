@@ -21,6 +21,7 @@ function AddVisitorModal({
   success,
   refetch
 }) {
+  const [uploadImage, setUploadImage] = React.useState(null)
   const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -71,7 +72,7 @@ function AddVisitorModal({
           lastName: data.last_name,
           company
         },
-        mediaAttachments: []
+        mediaAttachments: uploadImage || []
       }
 
       await createRegistryRecord({
@@ -86,12 +87,19 @@ function AddVisitorModal({
     }
   }
 
+  const getImage = image => {
+    if (image) {
+      setUploadImage(image)
+    }
+  }
+
   useEffect(() => {
     if (!loading && called && data) {
       if (data?.createRegistryRecord?.message === 'success') {
         showModal = false
         success(true)
         showToast('success', 'successfully submitted')
+        setUploadImage(null)
         refetch(true)
         reset({
           company: '',
@@ -118,6 +126,7 @@ function AddVisitorModal({
       <AddVisitorModalContent
         form={{ control, errors }}
         buildingId={buildingId}
+        getImage={getImage}
       />
     </Modal>
   )

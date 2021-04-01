@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/img-redundant-alt */
 import { useEffect, useState } from 'react'
 import P from 'prop-types'
 import { useQuery } from '@apollo/client'
@@ -29,14 +30,18 @@ function RowStyle({ header, child, child2, avatarImg }) {
 }
 
 function ModalContent({ recordId }) {
-  const [recordData, setRecordData] = useState({})
+  const [recordData, setRecordData] = useState(null)
 
   const { loading, data, error } = useQuery(GET_REGISTRYRECORD, {
     variables: { recordId }
   })
 
   useEffect(() => {
-    if (!loading && !error && data) {
+    console.log({ recordId })
+  }, [recordId])
+
+  useEffect(() => {
+    if (!loading && data && !error) {
       const {
         createdAt,
         updatedAt,
@@ -45,7 +50,8 @@ function ModalContent({ recordId }) {
         checkedOutAt,
         visitor,
         author,
-        forWho
+        forWho,
+        mediaAttachments
       } = data?.getRegistryRecord
       const sched = new Date(+checkInSchedule)
       const checkedIn = new Date(+checkedInAt)
@@ -71,10 +77,11 @@ function ModalContent({ recordId }) {
           ? `${author?.user?.firstName} ${author?.user?.lastName}`
           : '',
         updated: updatedAt ? DATE.toFriendlyDateTime(updatedAt) : '',
-        avatar: author ? author?.user?.avatar : null
+        avatar: author ? author?.user?.avatar : null,
+        image: mediaAttachments ? mediaAttachments[0] : {}
       })
     }
-  }, [loading, data, error])
+  }, [loading, data])
 
   return (
     <>
@@ -82,64 +89,85 @@ function ModalContent({ recordId }) {
         className="w-full flex flex-col p-0 m-0"
         style={{ margin: '0 !important', padding: '0 !important' }}
       >
-        <div className="w-full grid grid-cols-2">
-          <RowStyle header="Unit" child={recordData.unit} />
-          <RowStyle header="Host" child={recordData.host} />
-        </div>
-        <div className="w-full grid grid-cols-2">
-          <RowStyle header="Schedule" child={recordData.schedule} />
-          <RowStyle header="Vistor" child={recordData.visitor} />
-        </div>
-        <div className="w-full grid grid-cols-2">
-          <RowStyle header="Check In" child={recordData.checkedIn} />
-          <RowStyle header="Check Out" child={recordData.checkedOut} />
-        </div>
-
-        <div className="w-full grid grid-cols-2">
-          <RowStyle header="Attached Photo" child="None" />
-        </div>
-
-        <hr />
-
-        <div className="w-full pt-5">
-          <div className="p-0 mb-8 leading-5 text-neutral-dark font-body font-bold text-base">
-            Notes
-          </div>
-          {/* {recordData.notes.map((note, index) => {
-            return <RowStyle header="Note" key={index} child={note} />
-          })} */}
-          <RowStyle header="Note" child="notes" />
-        </div>
-        <hr />
-
-        <div className="w-full pt-5">
-          <div className="p-0 mb-8 leading-5 text-neutral-dark font-body font-bold text-base">
-            Edit History
-          </div>
-          <div className="w-full grid grid-cols-2">
-            <RowStyle header="Date Created" child={recordData.createAt} />
-            <RowStyle
-              header="Created By"
-              child={recordData.author}
-              avatarImg={recordData.avatar}
-            />
-          </div>
-        </div>
-
-        <hr />
-
-        <div className="w-full m-0 pt-10">
-          <div className="grid grid-cols-2 ">
-            <p>Date</p>
-            <p>Edited By</p>
-          </div>
-          <div className="w-full bg-gray-300 pt-4 border-gray-200">
-            <div className="grid grid-cols-2 ">
-              <p>{recordData.updated}</p>
-              <p>{recordData.author}</p>
+        {recordData && (
+          <>
+            {' '}
+            <div className="w-full grid grid-cols-2">
+              <RowStyle header="Unit" child={recordData.unit} />
+              <RowStyle header="Host" child={recordData.host} />
             </div>
-          </div>
-        </div>
+            <div className="w-full grid grid-cols-2">
+              <RowStyle header="Schedule" child={recordData.schedule} />
+              <RowStyle header="Vistor" child={recordData.visitor} />
+            </div>
+            <div className="w-full grid grid-cols-2">
+              <RowStyle header="Check In" child={recordData.checkedIn} />
+              <RowStyle header="Check Out" child={recordData.checkedOut} />
+            </div>
+            <div className="w-full grid grid-cols-2">
+              {recordData.image ? (
+                <div>
+                  <RowStyle header="Attached Photo" />
+
+                  <img
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '8px',
+                      marginRight: '8px',
+                      marginVottom: '8px',
+                      objectFit: 'cover',
+                      cursor: 'pointer',
+                      border: '1px solid rgb(221, 221, 221)'
+                    }}
+                    src={recordData.image.url}
+                    alt="attached image"
+                  />
+                </div>
+              ) : (
+                <RowStyle header="Attached Photo" child="None" />
+              )}
+            </div>
+            <br />
+            <hr />
+            <div className="w-full pt-5">
+              <div className="p-0 mb-8 leading-5 text-neutral-dark font-body font-bold text-base">
+                Notes
+              </div>
+              {/* {recordData.notes.map((note, index) => {
+        return <RowStyle header="Note" key={index} child={note} />
+      })} */}
+              <RowStyle header="Note" child="notes" />
+            </div>
+            <hr />
+            <div className="w-full pt-5">
+              <div className="p-0 mb-8 leading-5 text-neutral-dark font-body font-bold text-base">
+                Edit History
+              </div>
+              <div className="w-full grid grid-cols-2">
+                <RowStyle header="Date Created" child={recordData.createAt} />
+                <RowStyle
+                  header="Created By"
+                  child={recordData.author}
+                  avatarImg={recordData.avatar}
+                />
+              </div>
+            </div>
+            <hr />
+            <div className="w-full m-0 pt-10">
+              <div className="grid grid-cols-2 ">
+                <p>Date</p>
+                <p>Edited By</p>
+              </div>
+              <div className="w-full bg-gray-300 pt-4 border-gray-200">
+                <div className="grid grid-cols-2 ">
+                  <p>{recordData.updated}</p>
+                  <p>{recordData.author}</p>
+                </div>
+              </div>
+            </div>{' '}
+          </>
+        )}
       </div>
     </>
   )

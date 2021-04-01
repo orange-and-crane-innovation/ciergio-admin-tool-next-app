@@ -10,8 +10,9 @@ import { DateInput, TimeInput } from '@app/components/datetime'
 import UploaderImage from '@app/components/uploader/image'
 import { GET_UNITS } from '../query'
 import { useQuery } from '@apollo/client'
+import axios from 'axios'
 
-function AddVisitorModalContent({ form, buildingId }) {
+function AddVisitorModalContent({ form, buildingId, getImage }) {
   const [loading, setLoading] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [onSchedule, setOnSchedule] = useState(false)
@@ -19,6 +20,7 @@ function AddVisitorModalContent({ form, buildingId }) {
   const [units, setUnits] = useState([])
   const [unitHostName, setUnitHostName] = useState([])
   const [host, setHost] = useState('')
+  const [image, setImage] = useState(null)
 
   const { data, error, loading: loadingUnits } = useQuery(GET_UNITS, {
     variables: {
@@ -46,6 +48,28 @@ function AddVisitorModalContent({ form, buildingId }) {
     }
   }, [data, error, loadingUnits])
 
+  const uploadApi = async payload => {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_UPLOAD_API,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
+    if (response) {
+      const imageData = response.data.map(item => {
+        return {
+          url: item.location,
+          type: item.mimetype
+        }
+      })
+      setImage(imageData)
+    }
+  }
+
   const onUploadImage = e => {
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
@@ -63,14 +87,25 @@ function AddVisitorModalContent({ form, buildingId }) {
 
       formData.append('photos', file)
       fileList.push(file)
+      console.log(fileList)
     }
+    uploadApi(formData)
+    setLoading(false)
   }
 
   const onRemoveImage = e => {
-    // const images = imageUrls.filter(image => {
-    //   return image !== e.currentTarget.dataset.id
-    // })
+    const images = imageUrls.filter(image => {
+      return image !== e.currentTarget.dataset.id
+    })
+    setImageUrls(images)
+    setImage(null)
   }
+
+  useEffect(() => {
+    if (image) {
+      getImage(image)
+    }
+  }, [image])
 
   const onRepeatChange = e => setOnSchedule(e.target.checked)
 
@@ -107,7 +142,6 @@ function AddVisitorModalContent({ form, buildingId }) {
                     )
                   }}
                 />
-                <pre>{JSON.stringify(errors, null, 2)}</pre>
               </div>
               <FormSelect
                 label="Host"
@@ -238,8 +272,8 @@ function AddVisitorModalContent({ form, buildingId }) {
               <p className="text-neutral-dark font-body font-bold text-sm">
                 Attach Image (Optional)
               </p>
+
               <UploaderImage
-                name="image"
                 maxImages={1}
                 images={imageUrls}
                 loading={loading}
@@ -256,6 +290,7 @@ function AddVisitorModalContent({ form, buildingId }) {
 
 AddVisitorModalContent.propTypes = {
   form: P.object,
-  buildingId: P.string.isRequired
+  buildingId: P.string.isRequired,
+  getImage: P.func.isRequired
 }
 export default AddVisitorModalContent
