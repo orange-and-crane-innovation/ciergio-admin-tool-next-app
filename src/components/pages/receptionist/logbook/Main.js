@@ -9,7 +9,7 @@ import Pagination from '@app/components/pagination'
 import { BsPlusCircle, BsTrash } from 'react-icons/bs'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
-import { CANCEL_RECORD, ADD_NOTE } from '../mutation'
+import { CANCEL_RECORD, ADD_NOTE, UPDATE_RECORD } from '../mutation'
 import P from 'prop-types'
 import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
@@ -130,6 +130,24 @@ function LogBook({ buildingId, categoryId, status, name }) {
     { loading: loadingAddNote, called: calledAddNote, data: dataAddNote }
   ] = useMutation(ADD_NOTE)
 
+  const [
+    updateRecord,
+    {
+      loading: loadingUpdateRecord,
+      called: calledUpdateRecord,
+      data: dataUpdateRecord
+    }
+  ] = useMutation(UPDATE_RECORD)
+
+  useEffect(() => {
+    if (!loadingUpdateRecord && calledUpdateRecord && dataUpdateRecord) {
+      if (dataUpdateRecord?.updateRegistryRecord?.message === 'success') {
+        showToast('success', `${name} checked out`)
+        refetch()
+      }
+    }
+  }, [loadingUpdateRecord, calledUpdateRecord, dataUpdateRecord])
+
   useEffect(() => {
     if (!loadingAddNote && dataAddNote && calledAddNote) {
       if (dataAddNote.createRegistryNote?.message === 'success') {
@@ -204,7 +222,10 @@ function LogBook({ buildingId, categoryId, status, name }) {
           checkedOut: registry.checkedOutAt ? (
             DATE.toFriendlyTime(registry.checkedOutAt)
           ) : (
-            <Button label="Checked Out" />
+            <Button
+              label="Checked Out"
+              onClick={e => updateMyRecord(e, registry._id)}
+            />
           ),
           addNote: (
             <Button
@@ -237,6 +258,24 @@ function LogBook({ buildingId, categoryId, status, name }) {
     } catch (e) {
       showToast('warning', 'Problem saving visitor cancelled')
       setShowViewMoreDetails(false)
+    }
+  }
+
+  const updateMyRecord = async (e, id) => {
+    e.preventDefault()
+    try {
+      if (id) {
+        await updateRecord({
+          variables: {
+            id,
+            data: {
+              status: 'checkedOut'
+            }
+          }
+        })
+      }
+    } catch (error) {
+      showToast('warning', 'Unexpected error occur. Plase try again')
     }
   }
 
@@ -291,7 +330,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         }
       })
     } catch (e) {
-      showToast('warning', 'Problem adding note')
+      showToast('warning', 'Unecpected error occur. Please try again')
       setShowViewMoreDetails(false)
     }
   }

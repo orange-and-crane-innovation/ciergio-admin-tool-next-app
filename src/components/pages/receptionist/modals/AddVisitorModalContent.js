@@ -121,7 +121,7 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
         <form>
           <div className="w-full flex flex-col justify-between">
             <div className="w-full flex justify-between align-center">
-              <div className="w-2/5 mr-4">
+              <div className="w-5/12 mr-4">
                 <Controller
                   name="unit_number"
                   control={control}
@@ -156,7 +156,7 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
             <div className="w-full mb-5">
               <FormCheckBox
                 label="Scheduled Visit"
-                name="schedule"
+                name="4"
                 value={onSchedule}
                 isChecked={onSchedule}
                 onChange={onRepeatChange}

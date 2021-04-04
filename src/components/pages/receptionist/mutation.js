@@ -26,3 +26,11 @@ export const ADD_NOTE = gql`
     }
   }
 `
+
+export const UPDATE_RECORD = gql`
+  mutation updateRegistryRecord($id: String, $data: CreateRecordInput) {
+    updateRegistryRecord(id: $id, data: $data) {
+      message
+    }
+  }
+`
