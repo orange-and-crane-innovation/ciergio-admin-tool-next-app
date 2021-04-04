@@ -8,15 +8,22 @@ import Dropdown from '@app/components/dropdown'
 import Pagination from '@app/components/pagination'
 import { FiPrinter, FiDownload } from 'react-icons/fi'
 import { BsPlusCircle } from 'react-icons/bs'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
 import P from 'prop-types'
 import { FaEllipsisH } from 'react-icons/fa'
 import { AiOutlineFileText } from 'react-icons/ai'
+import { ADD_NOTE } from '../mutation'
 import moment from 'moment'
 import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
 import Modal from '@app/components/modal'
 import AddVisitorModal from '../modals/AddVisitorModal'
+import showToast from '@app/utils/toast'
+import AddNoteModal from '../modals/AddNoteModal'
+import ViewNotesModalContent from '../modals/ViewNotesModalContent'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const dummyRow = [
   {
@@ -36,6 +43,10 @@ const dummyRow = [
     width: `${4 / 100}%`
   }
 ]
+
+const validationSchema = yup.object().shape({
+  note: yup.string().required()
+})
 
 const TableColStyle = ({ top, bottom }) => {
   return (
@@ -66,6 +77,22 @@ function Cancelled({ buildingId, categoryId, status, name }) {
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [ids, setIds] = useState([])
+  const [modalContent, setModalContent] = useState(null)
+  const [modalTitle, setModalTitle] = useState(null)
+  const [recordId, setRecordId] = useState(null)
+  const [modalType, setModalType] = useState(null)
+
+  const { handleSubmit, control, errors } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      note: ''
+    }
+  })
+
+  const [
+    addNote,
+    { loading: loadingAddNote, called: calledAddNote, data: dataAddNote }
+  ] = useMutation(ADD_NOTE)
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -84,8 +111,18 @@ function Cancelled({ buildingId, categoryId, status, name }) {
   })
 
   useEffect(() => {
+    if (!loadingAddNote && dataAddNote && calledAddNote) {
+      if (dataAddNote.createRegistryNote?.message === 'success') {
+        refetch()
+        showToast('success', 'Note Added')
+        setRecordId('')
+        setShowViewMoreDetails(false)
+      }
+    }
+  }, [loadingAddNote, calledAddNote, dataAddNote])
+
+  useEffect(() => {
     if (!loading && !error && data) {
-      console.log(data)
       const tableData = []
       const tempIds = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
@@ -106,7 +143,21 @@ function Cancelled({ buildingId, categoryId, status, name }) {
             />
           ),
           personCompany: `${registry.visitor.firstName} ${registry.visitor.lastName}`,
-          addNote: <Button label="Add Note" />,
+          addOrView: (
+            <div>
+              <Button
+                label={`View ${
+                  registry.notesCount > 0 ? registry.notesCount : ''
+                }`}
+                onClick={e => handleModals('viewnotes', registry._id)}
+              />{' '}
+              |{' '}
+              <Button
+                label="Add Note"
+                onClick={e => handleModals('addnotes', registry._id)}
+              />
+            </div>
+          ),
           options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
         })
         tempIds.push(registry._id)
@@ -175,6 +226,49 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     }
   }
 
+  const handleModals = (type, id) => {
+    if (id) {
+      switch (type) {
+        case 'details':
+          setModalTitle('Details')
+          setModalContent(<ViewMoreDetailsModalContent recordId={id} />)
+          break
+        case 'viewnotes':
+          setModalTitle('Notes')
+          console.log({ view: id })
+          setModalContent(<ViewNotesModalContent id={id} />)
+          break
+        case 'addnotes':
+          setModalTitle('Add Note')
+          setModalContent(<AddNoteModal forms={{ control, errors }} />)
+          setModalTitle('Add Note')
+          setModalType('addnotes')
+          setRecordId(id)
+          break
+        default:
+      }
+    }
+    setShowViewMoreDetails(show => !show)
+  }
+
+  const handleAddNote = async data => {
+    try {
+      const content = data.note.replace(/(<([^>]+)>)/gi, '')
+
+      await addNote({
+        variables: {
+          data: {
+            content,
+            recordId
+          }
+        }
+      })
+    } catch (e) {
+      showToast('warning', 'Unecpected error occur. Please try again')
+      setShowViewMoreDetails(false)
+    }
+  }
+
   const handleClearModal = () => setShowViewMoreDetails(false)
 
   return (
@@ -194,7 +288,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
             <b className={styles.ReceptionistCardHeader}>
               {search
                 ? `Search results from "${search}"`
-                : `Cancelled ${name} (${data?.getRegistryRecords?.count})`}
+                : `Cancelled ${name} (${data?.getRegistryRecords?.count || 0})`}
             </b>
             <div className={styles.ReceptionistButtonCard}>
               <Button icon={<FiPrinter />} />
@@ -231,12 +325,13 @@ function Cancelled({ buildingId, categoryId, status, name }) {
         refetch={willRefetch}
       />
       <Modal
-        title="Details"
+        title={modalTitle}
         visible={showViewMoreDetails}
         onClose={handleClearModal}
-        onShowModal={handleViewMoreModal}
+        onShowModal={handleModals}
+        onOk={modalType === 'addnotes' && handleSubmit(handleAddNote)}
       >
-        <ViewMoreDetailsModalContent />
+        {modalContent}
       </Modal>
     </>
   )

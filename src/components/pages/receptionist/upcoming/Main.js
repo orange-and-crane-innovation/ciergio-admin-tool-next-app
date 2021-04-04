@@ -430,7 +430,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           setModalTitle('Cancel')
           setModalContent(
             <div className="text-muted lead text-xl align-center">
-              Do you want to delete this entry?
+              Do you want to cancel this entry?
             </div>
           )
           setRecordId(found)

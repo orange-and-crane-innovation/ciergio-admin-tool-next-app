@@ -151,9 +151,9 @@ function LogBook({ buildingId, categoryId, status, name }) {
   useEffect(() => {
     if (!loadingAddNote && dataAddNote && calledAddNote) {
       if (dataAddNote.createRegistryNote?.message === 'success') {
-        showToast('success', 'Note Added Successfully')
-        setRecordId('')
         refetch()
+        showToast('success', 'Note Added')
+        setRecordId('')
         setShowViewMoreDetails(false)
       }
     }
@@ -199,6 +199,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
           }
         ]
         const dateUTC = new Date(+registry.checkedInAt)
+        const dateCheckoutUTC = new Date(+registry.checkedOutAt)
         tableData.push({
           unitNumberAndOwner: (
             <TableColStyle
@@ -220,7 +221,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
           ),
           checkedIn: DATE.toFriendlyTime(dateUTC.toUTCString()),
           checkedOut: registry.checkedOutAt ? (
-            DATE.toFriendlyTime(registry.checkedOutAt)
+            DATE.toFriendlyTime(dateCheckoutUTC.toUTCString())
           ) : (
             <Button
               label="Checked Out"
@@ -349,7 +350,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
           setModalType('cancel')
           setModalContent(
             <div className="text-muted lead text-xl align-center">
-              Do you want to delete this entry?
+              Do you want to cancel this entry?
             </div>
           )
           setRecordId(rcrdID)

@@ -98,7 +98,7 @@ function AddVisitorModal({
       if (data?.createRegistryRecord?.message === 'success') {
         showModal = false
         success(true)
-        showToast('success', 'successfully submitted')
+        showToast('success', 'Record Added')
         setUploadImage(null)
         refetch(true)
         reset({

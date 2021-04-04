@@ -52,7 +52,7 @@ export const GET_REGISTRYRECORDS = gql`
         checkedInAt
         checkInSchedule
         checkedOutAt
-
+        notesCount
         status
         forWho {
           _id
@@ -144,7 +144,20 @@ export const GET_REGISTRYRECORD = gql`
         url
         type
       }
-
+      notes {
+        data {
+          _id
+          author {
+            user {
+              firstName
+              lastName
+            }
+          }
+          content
+          createdAt
+          updatedAt
+        }
+      }
       visitor {
         firstName
         lastName

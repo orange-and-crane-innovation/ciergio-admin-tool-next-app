@@ -4,6 +4,7 @@ import P from 'prop-types'
 import { useQuery } from '@apollo/client'
 import { GET_REGISTRYRECORD } from '../query'
 import { DATE } from '@app/utils'
+import moment from 'moment'
 
 function RowStyle({ header, child, child2, avatarImg }) {
   return (
@@ -37,10 +38,6 @@ function ModalContent({ recordId }) {
   })
 
   useEffect(() => {
-    console.log({ recordId })
-  }, [recordId])
-
-  useEffect(() => {
     if (!loading && data && !error) {
       const {
         createdAt,
@@ -51,7 +48,8 @@ function ModalContent({ recordId }) {
         visitor,
         author,
         forWho,
-        mediaAttachments
+        mediaAttachments,
+        notes
       } = data?.getRegistryRecord
       const sched = new Date(+checkInSchedule)
       const checkedIn = new Date(+checkedInAt)
@@ -78,10 +76,11 @@ function ModalContent({ recordId }) {
           : '',
         updated: updatedAt ? DATE.toFriendlyDateTime(updatedAt) : '',
         avatar: author ? author?.user?.avatar : null,
-        image: mediaAttachments ? mediaAttachments[0] : {}
+        image: mediaAttachments ? mediaAttachments[0] : {},
+        notes: notes ? notes?.data : ''
       })
     }
-  }, [loading, data])
+  }, [loading, data, error])
 
   return (
     <>
@@ -137,7 +136,18 @@ function ModalContent({ recordId }) {
               {/* {recordData.notes.map((note, index) => {
         return <RowStyle header="Note" key={index} child={note} />
       })} */}
-              <RowStyle header="Note" child="notes" />
+              {recordData.notes.length > 0 &&
+                recordData.notes.map(note => {
+                  return (
+                    <RowStyle
+                      key={note._id}
+                      header={`${note.content}`}
+                      child={`Added by ${note.author.user.firstName} ${
+                        note.author.user.lastName
+                      } ${moment(note.createdAt).fromNow()}`}
+                    />
+                  )
+                })}
             </div>
             <hr />
             <div className="w-full pt-5">
