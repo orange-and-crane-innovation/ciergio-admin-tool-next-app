@@ -8,7 +8,7 @@ import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
 
 import { GET_BUILDINGS, GET_COMPLEXES } from '../queries'
-import { INVITE_STAFF_ROLES } from '../constants'
+import { ROLES } from '../constants'
 import styles from '../staff.module.css'
 
 function InviteStaffModal({
@@ -76,7 +76,7 @@ function InviteStaffModal({
 
     return []
   }, [buildings?.getBuildings?.count])
-  console.log({ errors })
+
   return (
     <Modal
       title="Invite Staff"
@@ -92,138 +92,134 @@ function InviteStaffModal({
       width={450}
     >
       <div className={styles.inviteStaffContainer}>
-        <form>
-          <div className="mb-4">
-            <p className="font-bold text-base text-gray-500 mb-2">Staff Type</p>
-            <Controller
-              control={control}
-              name="staffType"
-              render={({ name, onChange, value }) => (
-                <FormSelect
-                  name={name}
-                  value={value}
-                  options={INVITE_STAFF_ROLES}
-                  error={
-                    errors?.staffType?.message ??
-                    errors?.staffType?.value?.message
-                  }
-                  onChange={onChange}
-                  placeholder="Select Staff Type"
-                />
-              )}
-            />
-          </div>
-          <div className="mb-4">
-            <p className="font-bold text-base text-gray-500 mb-2">Email</p>
-            <Controller
-              name="email"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  placeholder="Enter email of contact"
-                  type="email"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.email?.message}
-                  inputClassName="w-full rounded border-gray-300"
-                  description={
-                    <p className="mb-2">
-                      An invite will be sent to this email.
-                    </p>
-                  }
-                />
-              )}
-            />
-          </div>
-          {staffType !== undefined ? (
-            <>
+        <div className="mb-4">
+          <p className="font-bold text-base text-gray-500 mb-2">Staff Type</p>
+          <Controller
+            control={control}
+            name="staffType"
+            render={({ name, onChange, value }) => (
+              <FormSelect
+                name={name}
+                value={value}
+                options={ROLES}
+                error={
+                  errors?.staffType?.message ??
+                  errors?.staffType?.value?.message
+                }
+                onChange={onChange}
+                placeholder="Select Staff Type"
+              />
+            )}
+          />
+        </div>
+        <div className="mb-4">
+          <p className="font-bold text-base text-gray-500 mb-2">Email</p>
+          <Controller
+            name="email"
+            control={control}
+            render={({ name, value, onChange }) => (
+              <FormInput
+                placeholder="Enter email of contact"
+                type="email"
+                name={name}
+                onChange={onChange}
+                value={value}
+                error={errors?.email?.message}
+                inputClassName="w-full rounded border-gray-300"
+                description={
+                  <p className="mb-2">An invite will be sent to this email.</p>
+                }
+              />
+            )}
+          />
+        </div>
+        {staffType ? (
+          <>
+            <div>
+              <p className="font-bold text-base text-gray-500 mb-2">
+                Job Title of Point of Contact
+              </p>
+              <Controller
+                name="jobTitle"
+                control={control}
+                render={({ name, value, onChange }) => (
+                  <FormInput
+                    placeholder="Enter Job Title"
+                    name={name}
+                    onChange={onChange}
+                    value={value}
+                    error={errors?.jobTitle?.message}
+                    inputClassName="w-full rounded border-gray-300"
+                  />
+                )}
+              />
               <div>
                 <p className="font-bold text-base text-gray-500 mb-2">
-                  Job Title of Point of Contact
+                  Assign To
                 </p>
                 <Controller
-                  name="jobTitle"
+                  name="company"
                   control={control}
-                  render={({ name, value, onChange }) => (
-                    <FormInput
-                      placeholder="Enter Job Title"
+                  render={({ value, onChange, name }) => (
+                    <FormSelect
                       name={name}
-                      onChange={onChange}
                       value={value}
-                      error={errors?.jobTitle?.message}
-                      inputClassName="w-full rounded border-gray-300"
+                      onChange={onChange}
+                      options={companyOptions}
+                      placeholder="Select a company"
+                      error={
+                        errors?.company?.message ??
+                        errors?.company?.value?.message
+                      }
+                      subLabel={<p className="mb-2">Company</p>}
+                      containerClasses="mb-4"
                     />
                   )}
                 />
+              </div>
+              {(isComplex || isUnit) && complexOptions?.length > 0 ? (
                 <div>
-                  <p className="font-bold text-base text-gray-500 mb-2">
-                    Assign To
-                  </p>
                   <Controller
-                    name="company"
+                    name="complex"
                     control={control}
                     render={({ value, onChange, name }) => (
                       <FormSelect
                         name={name}
                         value={value}
                         onChange={onChange}
-                        options={companyOptions}
-                        placeholder="Select a company"
+                        options={complexOptions}
                         error={
-                          errors?.company?.message ??
-                          errors?.company?.value?.message
+                          errors?.complex?.message ??
+                          errors?.complex?.value?.message
                         }
-                        subLabel={<p className="mb-2">Company</p>}
+                        subLabel={<p className="mb-2">Complex</p>}
+                        placeholder="Select a complex"
                         containerClasses="mb-4"
                       />
                     )}
                   />
                 </div>
-                {(isComplex || isUnit) && complexOptions?.length > 0 ? (
-                  <div>
-                    <Controller
-                      name="complex"
-                      control={control}
-                      render={({ value, onChange, name }) => (
-                        <FormSelect
-                          name={name}
-                          value={value}
-                          onChange={onChange}
-                          options={complexOptions}
-                          error={
-                            errors?.complex?.message ??
-                            errors?.complex?.value?.message
-                          }
-                          subLabel={<p className="mb-2">Complex</p>}
-                          placeholder="Select a complex"
-                          containerClasses="mb-4"
-                        />
-                      )}
+              ) : null}
+              {isUnit && buildingOptions?.length > 0 ? (
+                <Controller
+                  name="building"
+                  control={control}
+                  render={({ value, onChange, name }) => (
+                    <FormSelect
+                      name={name}
+                      value={value}
+                      onChange={onChange}
+                      options={buildingOptions}
+                      error={errors?.building?.message || undefined}
+                      subLabel={<p className="mb-2">Building</p>}
+                      placeholder="Select a building"
                     />
-                  </div>
-                ) : null}
-                {isUnit && buildingOptions?.length > 0 ? (
-                  <Controller
-                    name="building"
-                    control={control}
-                    render={({ value, onChange, name }) => (
-                      <FormSelect
-                        name={name}
-                        value={value}
-                        onChange={onChange}
-                        options={buildingOptions}
-                        error={errors?.building?.message || undefined}
-                        subLabel={<p className="mb-2">Building</p>}
-                        placeholder="Select a building"
-                      />
-                    )}
-                  />
-                ) : null}
-              </div>
-            </>
-          ) : null}
-        </form>
+                  )}
+                />
+              ) : null}
+            </div>
+          </>
+        ) : null}
       </div>
     </Modal>
   )

@@ -33,16 +33,12 @@
     @apply block;
 
     & .formLabel {
-      @apply block mb-4;
-    }
-
-    & span {
-      @apply text-neutral-dark font-body font-normal text-sm;
+      @apply block mb-2;
     }
   }
 
   .FormError {
-    @apply mb-4 mt-1 block;
+    @apply mb-2 block text-red-500;
   }
 
   .FormControl {
@@ -68,12 +64,6 @@
 
   &:focus {
     @apply outline-none;
-  }
-
-  & label {
-    & span {
-      @apply text-red-500;
-    }
   }
 }
 

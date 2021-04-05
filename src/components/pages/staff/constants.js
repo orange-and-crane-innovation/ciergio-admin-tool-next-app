@@ -37,7 +37,7 @@ export const columns = [
 
 export const roles = [
   {
-    label: 'Super Admin',
+    label: 'Super User',
     value: SUPER_ADMIN
   },
   {
@@ -47,10 +47,6 @@ export const roles = [
   {
     label: 'Complex Admin',
     value: COMPLEX_ADMIN
-  },
-  {
-    label: 'Member',
-    value: MEMBER
   }
 ]
 
@@ -65,9 +61,34 @@ export const prayStaffRoles = [
   }
 ]
 
-export const INVITE_STAFF_ROLES = systemType === 'pray' ? prayStaffRoles : roles
+export const ROLES = systemType === 'pray' ? prayStaffRoles : roles
+export const STAFF_ROLES = [
+  {
+    label: 'Super User',
+    value: 'administrator'
+  },
+  ...ROLES
+]
 
 export const ALL_ROLES = [SUPER_ADMIN, COMPLEX_ADMIN, COMPANY_ADMIN, MEMBER]
+
+export const parseAccountType = type => {
+  const system = systemType?.toLowerCase()
+  if (system === 'pray') {
+    switch (type) {
+      case 'company_admin':
+        return 'Parish Head'
+      case 'complex_admin':
+        return 'Parish Admin'
+      case 'administrator':
+        return 'Super Admin'
+      default:
+        return type
+    }
+  } else {
+    return type.replace('_', ' ')
+  }
+}
 
 const historyMessages = {
   CreateUnitType: data =>

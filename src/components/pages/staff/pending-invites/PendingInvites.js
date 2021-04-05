@@ -9,7 +9,7 @@ import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
 import CancelInviteModal from './CancelInviteModal'
-import ResendInviteModal from './ResendInviteModal'
+import ResendInviteModal from '@app/components/globals/ResendBulkInvite'
 import Can from '@app/permissions/can'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { friendlyDateTimeFormat } from '@app/utils/date'
@@ -28,13 +28,14 @@ import {
   COMPLEX_ADMIN,
   RECEPTIONIST,
   UNIT_OWNER,
-  roles,
-  ALL_ROLES
+  STAFF_ROLES,
+  ALL_ROLES,
+  parseAccountType
 } from '../constants'
 
 const bulkOptions = [
   {
-    label: 'Resend Invites',
+    label: 'Resend Invite',
     value: 'resend-invites'
   }
 ]
@@ -101,7 +102,12 @@ function PendingInvites() {
     CANCEL_INVITE,
     {
       onCompleted: () => {
-        showToast('success', 'Invitation has been cancelled.')
+        showToast(
+          'success',
+          `You have successfully removed ${
+            selectedData?.email
+          } as ${parseAccountType(selectedData?.accountType)}`
+        )
         handleClearModal('cancel')
         refetchInvites()
       }
@@ -195,15 +201,6 @@ function PendingInvites() {
       }
     })
   }
-  const handleResendInvite = () => {
-    resendInvite({
-      variables: {
-        data: {
-          inviteIds: [selectedData?._id]
-        }
-      }
-    })
-  }
 
   const handleClearModal = type => {
     switch (type) {
@@ -262,12 +259,7 @@ function PendingInvites() {
       data:
         invites?.getPendingRegistration?.data?.length > 0
           ? invites.getPendingRegistration.data.map(invite => {
-              const roleType =
-                invite?.accountType === 'company_admin'
-                  ? 'Parish Head'
-                  : invite?.accountType === 'complex_admin'
-                  ? 'Parish Admin'
-                  : invite?.accountType
+              const roleType = parseAccountType(invite?.accountType)
               const dropdownData = [
                 {
                   label: 'Resend Invite',
@@ -341,7 +333,7 @@ function PendingInvites() {
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
           onBulkChange={onBulkChange}
-          onBulkSubmit={onBulkSubmit}
+          onBulkSubmit={() => setShowResendInviteModal(old => !old)}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
         />
@@ -349,7 +341,7 @@ function PendingInvites() {
           <div className="w-full mr-2 relative">
             <FormSelect
               placeholder="Filter Role"
-              options={roles}
+              options={STAFF_ROLES}
               onChange={selectedValue => {
                 setSelectedRole(selectedValue)
                 setActivePage(1)
@@ -407,10 +399,10 @@ function PendingInvites() {
       />
       <ResendInviteModal
         onCancel={() => handleClearModal('resend')}
-        onOk={handleResendInvite}
-        data={selectedData}
+        onOk={onBulkSubmit}
         open={showResendInviteModal}
         loading={resendingInvite}
+        module="staff"
       />
       <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}

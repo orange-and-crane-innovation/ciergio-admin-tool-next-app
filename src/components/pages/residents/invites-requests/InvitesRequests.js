@@ -15,7 +15,7 @@ import {
   CANCEL_INVITE
 } from '../queries'
 import AddResidentModal from '../components/AddResidentModal'
-import ResendBulkInviteModal from '../components/ResendBulkInviteModal'
+import ResendBulkInviteModal from '@app/components/globals/ResendBulkInvite'
 import SearchComponent from '@app/components/globals/SearchControl'
 import CancelInviteModal from '../components/CancelInviteModal'
 

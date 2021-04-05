@@ -39,8 +39,9 @@ import {
   RECEPTIONIST,
   UNIT_OWNER,
   columns,
-  roles,
-  ALL_ROLES
+  ALL_ROLES,
+  STAFF_ROLES,
+  parseAccountType
 } from '../constants'
 import {
   editStaffValidationSchema,
@@ -55,16 +56,17 @@ function AllStaff() {
     watch: watchInvite,
     reset: resetInvite,
     getValues: getInviteStaffValues,
-    trigger: triggerInviteStaff
+    trigger: triggerInviteStaff,
+    register: registerInviteStaff
   } = useForm({
     resolver: yupResolver(inviteStaffValidationSchema),
     defaultValues: {
-      staffType: undefined,
+      staffType: null,
       email: '',
       jobTitle: '',
-      company: undefined,
-      complex: undefined,
-      building: undefined
+      company: null,
+      complex: null,
+      building: null
     }
   })
   const {
@@ -221,17 +223,17 @@ function AllStaff() {
         staffFirstName: '',
         staffLastName: ''
       })
+      return
     }
-    if (type === 'create') {
-      resetInvite({
-        staffType: undefined,
-        email: '',
-        jobTitle: '',
-        company: undefined,
-        complex: undefined,
-        building: undefined
-      })
-    }
+
+    resetInvite({
+      staffType: null,
+      email: '',
+      jobTitle: '',
+      company: null,
+      complex: null,
+      building: null
+    })
 
     handleShowModal(type)
   }
@@ -348,12 +350,8 @@ function AllStaff() {
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
               const { user, company, accountType } = staff
-              const roleType =
-                accountType === 'company_admin'
-                  ? 'Parish Head'
-                  : accountType === 'complex_admin'
-                  ? 'Parish Admin'
-                  : accountType
+              const roleType = parseAccountType(accountType)
+
               const dropdownData = [
                 {
                   label: 'View Staff',
@@ -444,7 +442,7 @@ function AllStaff() {
           <div className="w-full max-w-xs mr-2">
             <FormSelect
               placeholder="Filter Role"
-              options={roles}
+              options={STAFF_ROLES}
               onChange={selectedValue => {
                 setSelectedRoles(selectedValue)
                 setActivePage(1)
@@ -535,7 +533,8 @@ function AllStaff() {
         form={{
           watch: watchInvite,
           errors: inviteErrors,
-          control: inviteControl
+          control: inviteControl,
+          register: registerInviteStaff
         }}
       />
       <EditStaffModal

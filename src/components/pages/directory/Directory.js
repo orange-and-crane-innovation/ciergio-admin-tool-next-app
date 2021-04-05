@@ -41,7 +41,7 @@ const columns = [
 ]
 
 function Directory() {
-  const { handleSubmit, control } = useForm({
+  const { handleSubmit, control, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       category_name: ''
@@ -99,7 +99,9 @@ function Directory() {
     if (newCategory !== '') {
       setNewCategory('')
     }
-
+    reset({
+      category_name: ''
+    })
     handleShowModal(type, '')
   }
 

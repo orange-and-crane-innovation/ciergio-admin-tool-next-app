@@ -17,9 +17,16 @@ const columns = [
 ]
 
 function Company({ id }) {
-  const { data: complexes } = useQuery(GET_COMPLEXES, {
-    variables: { companyId: id }
-  })
+  const { data: complexes, loading: loadingComplexes } = useQuery(
+    GET_COMPLEXES,
+    {
+      variables: {
+        where: {
+          companyId: id
+        }
+      }
+    }
+  )
   const { data: companies } = useQuery(GET_COMPANY, {
     variables: { companyId: id }
   })
@@ -32,7 +39,7 @@ function Company({ id }) {
         complexes?.getComplexes?.data?.map(item => {
           return {
             name: (
-              <Link href={`/contact-us/complex/${item._id}`}>
+              <Link href={`/contact-us/complex/${item._id}?companyId=${id}`}>
                 <span className="text-blue-600 cursor-pointer">
                   {item.name}
                 </span>
@@ -52,7 +59,13 @@ function Company({ id }) {
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={contactsData} />}
+        content={
+          <Table
+            rowNames={columns}
+            items={contactsData}
+            loading={loadingComplexes}
+          />
+        }
         className="rounded-t-none"
       />
     </section>
