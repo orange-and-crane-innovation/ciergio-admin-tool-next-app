@@ -530,7 +530,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label="Add Visitor"
+              label={`Add ${name}`}
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />

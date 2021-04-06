@@ -295,7 +295,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
               <Button icon={<FiDownload />} />
               <Button
                 primary
-                label="Add Visitor"
+                label={`Add ${name}`}
                 leftIcon={<BsPlusCircle />}
                 onClick={handleShowModal}
               />

@@ -401,7 +401,13 @@ function LogBook({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label="Add Visitors"
+              label={`Add ${
+                (name === 'Deliveries' && 'Delivery') ||
+                (name === 'Pick-ups' && 'Package') ||
+                (name === 'Services' && 'Service') ||
+                (name === 'Visitors' && 'Visitor') ||
+                name
+              }`}
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />

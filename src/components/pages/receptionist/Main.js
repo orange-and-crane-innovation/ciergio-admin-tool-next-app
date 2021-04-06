@@ -39,7 +39,7 @@ const SETTINGS = {
       cancelled: 'cancelled'
     },
     mark: '_SVC_WORKERS_',
-    name: 'Seliveries'
+    name: 'Services'
   },
   'pick-ups': {
     tabs: ['Logbook', 'Cancelled'],
