@@ -220,6 +220,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             ),
             addNote: (
               <Button
+                link
                 label="Add Note"
                 onClick={e => handleViewMoreModal('addnote', registry._id)}
               />

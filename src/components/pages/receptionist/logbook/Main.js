@@ -230,11 +230,16 @@ function LogBook({ buildingId, categoryId, status, name }) {
           ),
           addNote: (
             <Button
+              link
               label="Add Note"
               onClick={e => handleViewMoreModal('addnote', registry._id)}
             />
           ),
-          options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          options: (
+            <div className="flex justify-center items-center h-full w-full bg-black">
+              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            </div>
+          )
         })
       })
 

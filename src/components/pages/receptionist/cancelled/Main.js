@@ -146,6 +146,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           addOrView: (
             <div>
               <Button
+                link
                 label={`View ${
                   registry.notesCount > 0 ? registry.notesCount : ''
                 }`}
@@ -153,6 +154,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
               />{' '}
               |{' '}
               <Button
+                link
                 label="Add Note"
                 onClick={e => handleModals('addnotes', registry._id)}
               />
