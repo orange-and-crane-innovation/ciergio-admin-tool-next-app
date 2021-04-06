@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
-import Link from 'next/link'
+
 import styles from './main.module.css'
 import LogBook from './logbook'
 import Cancelled from './cancelled'
@@ -86,11 +86,7 @@ export default function Main() {
               SETTINGS[routerName].tabs.map((tab, index) => {
                 return (
                   <Tabs.TabLabel key={index} id={String(index + 1)}>
-                    <Link
-                      href={`/receptionist/${routerName}?${tab.toLowerCase()}`}
-                    >
-                      <a>{tab}</a>
-                    </Link>
+                    {tab}
                   </Tabs.TabLabel>
                 )
               })}

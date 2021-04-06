@@ -24,6 +24,7 @@ import AddNoteModal from '../modals/AddNoteModal'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
+import PageLoader from '@app/components/page-loader'
 
 const NUMBEROFCOLUMN = 6
 
@@ -419,8 +420,11 @@ function LogBook({ buildingId, categoryId, status, name }) {
           </div>
         }
         content={
-          !loading &&
-          tableData && <Table rowNames={dummyRow} items={tableData} />
+          loading && !tableData ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={dummyRow} items={tableData} />
+          )
         }
       />
       {!loading && tableData && (

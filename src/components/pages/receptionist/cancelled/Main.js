@@ -23,6 +23,7 @@ import AddNoteModal from '../modals/AddNoteModal'
 import ViewNotesModalContent from '../modals/ViewNotesModalContent'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
+import PageLoader from '@app/components/page-loader'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 const dummyRow = [
@@ -305,8 +306,11 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           </div>
         }
         content={
-          !loading &&
-          tableData && <Table rowNames={dummyRow} items={tableData} />
+          loading && !tableData ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={dummyRow} items={tableData} />
+          )
         }
       />
       {!loading && tableData && (
