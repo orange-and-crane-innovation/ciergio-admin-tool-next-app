@@ -1,0 +1,21 @@
+.MessageInputContainer {
+	@apply flex flex-col w-full;
+  
+	.MessageInputSubContainer {
+	  @apply border rounded-md overflow-auto min-h-5xs;
+	  max-height: 16rem;
+  
+	  a {
+		@apply text-info-900 hover:underline;
+	  }
+	}
+  
+	.hasError {
+	  @apply border-danger-500;
+	}
+  
+	.MessageInputContainer {
+	  @apply flex items-center justify-between;
+	}
+  }
+  

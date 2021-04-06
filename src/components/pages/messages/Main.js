@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
-import axios from 'axios'
+import axios from '@app/utils/axios'
 import Dropdown from '@app/components/dropdown'
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
@@ -274,15 +274,11 @@ export default function Main() {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+    const response = await axios.post('/', payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-    )
+    })
 
     if (response.data) {
       const data = response.data.map(item => {
@@ -339,7 +335,7 @@ export default function Main() {
     >
       <div className={styles.messagesListContainer}>
         <div className={styles.messagesListHeader}>
-          <h3 className="text-base font-bold">Residents</h3>
+          <h3 className="text-lg font-bold">Members</h3>
           <div className="flex items-center">
             <button className={styles.messagesButton}>
               <GoSettings />

@@ -1,5 +1,5 @@
 .messagesContainer {
-  @apply grid grid-cols-3 gap-0 -m-4;
+  @apply grid grid-cols-3 gap-0 -m-4 text-lg;
 
   .messagesListContainer {
     @apply col-span-1 border-r border-b border-neutral-300 bg-white shadow-md;
@@ -15,10 +15,6 @@
 
   .pendingToggleContainer {
     @apply w-full flex items-center justify-between p-4 border-b border-neutral-300;
-
-    span {
-      font-size: 14px;
-    }
   }
 
   .messagesListItems {
@@ -65,7 +61,7 @@
   }
 
   .messageBoxInput {
-    @apply bg-white border border-neutral-300 h-14 box-border;
+    @apply bg-white border border-neutral-300 box-border p-4;
     @apply grid grid-cols-12;
   }
 }
