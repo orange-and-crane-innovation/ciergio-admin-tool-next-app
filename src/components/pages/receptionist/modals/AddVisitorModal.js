@@ -19,7 +19,8 @@ function AddVisitorModal({
   buildingId,
   categoryId,
   success,
-  refetch
+  refetch,
+  name
 }) {
   const [uploadImage, setUploadImage] = React.useState(null)
   const { handleSubmit, control, errors, reset } = useForm({
@@ -116,7 +117,13 @@ function AddVisitorModal({
 
   return (
     <Modal
-      title="Add Visitor"
+      title={`Add ${
+        (name === 'Deliveries' && 'Delivery') ||
+        (name === 'Pick-ups' && 'Pick-up') ||
+        (name === 'Services' && 'Service') ||
+        (name === 'Visitors' && 'Visitor') ||
+        name
+      }`}
       okText="Add"
       visible={showModal}
       onClose={handleClearModal}
@@ -127,6 +134,7 @@ function AddVisitorModal({
         form={{ control, errors }}
         buildingId={buildingId}
         getImage={getImage}
+        type={name}
       />
     </Modal>
   )
@@ -138,7 +146,8 @@ AddVisitorModal.propTypes = {
   buildingId: P.string,
   categoryId: P.string,
   success: P.func,
-  refetch: P.func
+  refetch: P.func,
+  name: P.string.isRequired
 }
 
 export default AddVisitorModal

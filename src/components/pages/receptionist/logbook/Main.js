@@ -433,6 +433,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         categoryId={categoryId}
         success={setSuccess}
         refetch={willRefetch}
+        name={name}
       />
       <Modal
         title={modalTitle}

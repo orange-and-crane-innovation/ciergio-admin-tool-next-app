@@ -530,7 +530,13 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label={`Add ${name}`}
+              label={`Add ${
+                (name === 'Deliveries' && 'Delivery') ||
+                (name === 'Pick-ups' && 'Package') ||
+                (name === 'Services' && 'Service') ||
+                (name === 'Visitors' && 'Visitor') ||
+                name
+              }`}
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />
@@ -556,6 +562,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         categoryId={categoryId}
         success={setSuccess}
         refetch={willRefetch}
+        name={name}
       />
       <Modal
         title={modalTitle}
