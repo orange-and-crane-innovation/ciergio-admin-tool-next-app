@@ -1,6 +1,6 @@
 import Datetime from 'react-datetime'
 import P from 'prop-types'
-
+import moment from 'moment'
 import FormInput from '@app/components/forms/form-input'
 import {
   friendlyDateTimeFormat,
@@ -12,11 +12,24 @@ import { FiClock } from 'react-icons/fi'
 
 import 'react-datetime/css/react-datetime.css'
 
-function DateInput({ date, onDateChange, dateFormat, name, label, disabled }) {
+function DateInput({
+  date,
+  onDateChange,
+  dateFormat,
+  name,
+  label,
+  disabled,
+  constraints
+}) {
   let dateValue = toFriendlyDateTime(date)
 
   if (dateFormat) {
     dateValue = friendlyDateTimeFormat(date, dateFormat)
+  }
+
+  const yesterday = moment().subtract(1, 'day')
+  const valid = current => {
+    return current.isAfter(yesterday)
   }
 
   return (
@@ -36,6 +49,7 @@ function DateInput({ date, onDateChange, dateFormat, name, label, disabled }) {
           </div>
         </>
       )}
+      isValidDate={constraints && valid}
       dateFormat={dateFormat}
       timeFormat={false}
       value={date}
@@ -86,7 +100,8 @@ DateInput.propTypes = {
   dateFormat: P.string,
   name: P.string,
   label: P.string,
-  disabled: P.bool
+  disabled: P.bool,
+  constraints: P.bool
 }
 
 TimeInput.defaultProps = {

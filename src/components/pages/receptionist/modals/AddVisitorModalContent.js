@@ -175,6 +175,7 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
                       onDateChange={onChange}
                       dateFormat="MMMM DD, YYYY"
                       value={value}
+                      constraints={true}
                     />
                   )}
                 />
