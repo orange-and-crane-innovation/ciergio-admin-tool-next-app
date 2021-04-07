@@ -79,7 +79,7 @@ function AddVisitorModal({
       await createRegistryRecord({
         variables: {
           data: createRegisterRecord,
-          note: data.note || null
+          note: (data.note && data.note.replace(/(<([^>]+)>)/gi, '')) || null
         }
       })
     } catch (e) {
