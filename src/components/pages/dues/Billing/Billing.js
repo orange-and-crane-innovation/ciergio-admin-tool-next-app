@@ -12,7 +12,7 @@ const Billing = ({ categoriesBiling, buildingName }) => {
   const router = useRouter()
   const { buildingID } = router.query
   const [selectedDate, setSelectedDate] = useState(new Date())
-  // const [activeTab, setActiveTab] = useState(1)
+
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [year, setYear] = useState(new Date().getFullYear())
 

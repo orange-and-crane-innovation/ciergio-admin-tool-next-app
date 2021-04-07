@@ -40,7 +40,7 @@ function Dues() {
   })
 
   useEffect(() => {
-    if (!_.isEmpty(categories)) {
+    if (buildingID && !_.isEmpty(categories)) {
       router.push(`/dues/billing/${buildingID}/${categories[0]._id}`)
     }
   }, [categories])
