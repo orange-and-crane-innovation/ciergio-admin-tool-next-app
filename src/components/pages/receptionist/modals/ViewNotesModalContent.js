@@ -15,7 +15,6 @@ function ViewNotes({ id }) {
   useEffect(() => {
     if (!loading && data && !error) {
       const { notes } = data?.getRegistryRecord
-      console.log({ rec: data?.getRegistryRecord })
       setNotes(notes ? notes?.data : [])
     }
   }, [loading, data, error])

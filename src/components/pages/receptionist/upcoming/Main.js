@@ -157,7 +157,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
       const tableData = []
       const tableToday = []
       const tableTomorrow = []
-      const tableYesterday = []
       const talbeDates = []
       const tempIds = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
@@ -184,9 +183,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           today: DATE.toFriendlyDate(moment(new Date()).format()),
           tomorrow: DATE.toFriendlyDate(
             moment(new Date()).add(1, 'days').format()
-          ),
-          yesterday: DATE.toFriendlyDate(
-            moment(new Date()).subtract(1, 'days').startOf('day').format()
           )
         }
         const momentDate = DATE.toFriendlyDate(moment(dateUTC).format())
@@ -226,7 +222,11 @@ function Upcoming({ buildingId, categoryId, status, name }) {
                 onClick={e => handleViewMoreModal('addnote', registry._id)}
               />
             ),
-            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            options: (
+              <div className="h-full w-full flex justify-center items-center">
+                <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              </div>
+            )
           })
         } else if (dates.tomorrow === momentDate) {
           tableTomorrow.push({
@@ -258,47 +258,16 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             ),
             addNote: (
               <Button
+                link
                 label="Add Note"
                 onClick={e => handleViewMoreModal('addnote', registry._id)}
               />
             ),
-            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-          })
-        } else if (dates.yesterday === momentDate) {
-          tableYesterday.push({
-            unitNumberAndOwner: (
-              <TableColStyle
-                key={index}
-                top={`${registry.forWhat.name}`}
-                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
-              />
-            ),
-            personCompany: (
-              <TableColStyle
-                key={index}
-                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
-                bottom={registry.visitor.company}
-              />
-            ),
-            checkedIn: (
-              <TableColStyle
-                key={index}
-                top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
-                bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
-              />
-            ),
-            checkedOut: registry.checkedOutAt ? (
-              DATE.toFriendlyTime(registry.checkedOutAt)
-            ) : (
-              <Button label="Checked Out" />
-            ),
-            addNote: (
-              <Button
-                label="Add Note"
-                onClick={e => handleViewMoreModal('addnote', registry._id)}
-              />
-            ),
-            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            options: (
+              <div className="h-full w-full flex justify-center items-center">
+                <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              </div>
+            )
           })
         } else {
           talbeDates.push(
@@ -344,11 +313,16 @@ function Upcoming({ buildingId, categoryId, status, name }) {
               ),
               addNote: (
                 <Button
+                  link
                   label="Add Note"
                   onClick={e => handleViewMoreModal('addnote', registry._id)}
                 />
               ),
-              options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              options: (
+                <div className="h-full w-full flex justify-center items-center">
+                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                </div>
+              )
             }
           )
         }
@@ -377,26 +351,10 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           // temporary
         })
       }
-      if (tableYesterday.length > 0) {
-        tableYesterday.unshift({
-          date: <div className="text-gray-900 font-bold w-full">Yesterday</div>,
-          blank: '',
-          blank1: '',
-          blank2: '',
-          blank3: '',
-          blank4: ''
-          // temporary
-        })
-      }
 
       // this is only temporary function, to divide the dates by tomorrow, today, yesterday or other dates
 
-      tableData.push(
-        ...tableToday,
-        ...tableTomorrow,
-        ...talbeDates,
-        ...tableYesterday
-      )
+      tableData.push(...tableToday, ...tableTomorrow, ...talbeDates)
 
       const table = {
         count: data?.getRegistryRecords.count || 0,

@@ -237,7 +237,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
             />
           ),
           options: (
-            <div className="flex justify-center items-center h-full w-full bg-black">
+            <div className="h-full w-full flex justify-center items-center">
               <Dropdown label={<FaEllipsisH />} items={dropdownData} />
             </div>
           )

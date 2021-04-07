@@ -161,7 +161,11 @@ function Cancelled({ buildingId, categoryId, status, name }) {
               />
             </div>
           ),
-          options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          options: (
+            <div className="h-full w-full flex justify-center items-center">
+              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            </div>
+          )
         })
         tempIds.push(registry._id)
       })
