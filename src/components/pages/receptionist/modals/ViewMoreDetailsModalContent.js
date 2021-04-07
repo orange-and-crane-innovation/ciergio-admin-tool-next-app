@@ -70,11 +70,11 @@ function ModalContent({ recordId }) {
           ? DATE.toFriendlyDateTime(sched.toUTCString())
           : DATE.toFriendlyDateTime(checkedIn.toUTCString()),
         visitor: visitor ? `${visitor?.firstName} ${visitor?.lastName}` : '',
-        checkedIn: !sched
+        checkedIn: checkedInAt
           ? DATE.toFriendlyDateTime(checkedIn.toUTCString())
           : '----',
         checkedOut: checkedOutAt
-          ? checkedO.toFriendlyDateTime(sched.toUTCString())
+          ? DATE.toFriendlyDateTime(checkedO.toUTCString())
           : '----',
         createAt: createdAt ? DATE.toFriendlyDateTime(createdAt) : '',
         author: author
