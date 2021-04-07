@@ -112,7 +112,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         status,
         categoryId,
         checkedInAt: checkedInAtTime,
-        keyword: search
+        keyword: search || search !== '' ? search : null
       }
     }
   })

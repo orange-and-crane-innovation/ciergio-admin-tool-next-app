@@ -67,7 +67,7 @@ function SelectDate({
           }
         >
           <SearchControl
-            placeholder="Search by title"
+            placeholder="Search All"
             searchText={search}
             onSearch={handleSearchChange}
             className={styles.SearchControl}

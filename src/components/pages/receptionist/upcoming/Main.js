@@ -99,7 +99,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         categoryId,
         status,
         checkInSchedule: moment(new Date()).startOf('day').format(),
-        keyword: search
+        keyword: search || search !== '' ? search : null
       }
     }
   })

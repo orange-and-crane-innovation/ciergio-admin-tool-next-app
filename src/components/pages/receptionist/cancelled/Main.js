@@ -25,6 +25,7 @@ import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import PageLoader from '@app/components/page-loader'
 import { yupResolver } from '@hookform/resolvers/yup'
+import useKeyPress from '@app/utils/useKeyPress'
 
 const rowName = [
   {
@@ -75,6 +76,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
   ])
+  const [searchText, setSearchText] = useState('')
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [ids, setIds] = useState([])
@@ -82,7 +84,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
   const [modalTitle, setModalTitle] = useState(null)
   const [recordId, setRecordId] = useState(null)
   const [modalType, setModalType] = useState(null)
-
+  const keyPressed = useKeyPress('Enter')
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -106,7 +108,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
         categoryId,
         status,
         checkedInAt: checkedInAtTime,
-        keyword: null
+        keyword: search || search !== '' ? search : null
       }
     }
   })
@@ -211,8 +213,19 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     }
   }
 
+  useEffect(() => {
+    if (keyPressed) {
+      setSearch(searchText)
+      refetch()
+    }
+  }, [keyPressed, searchText])
+
   const handleSearch = e => {
-    setSearch(e.target.value)
+    if (e.target.value === '') {
+      setSearch(null)
+    } else {
+      setSearchText(e.target.value)
+    }
   }
 
   const onClearSearch = () => {
