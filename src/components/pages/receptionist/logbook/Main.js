@@ -70,6 +70,15 @@ const TableColStyle = ({ top, bottom }) => {
   )
 }
 
+const singularName = pluralName => {
+  const singularName =
+    (pluralName === 'Deliveries' && 'Delivery') ||
+    (pluralName === 'Pick-ups' && 'Package') ||
+    (pluralName === 'Services' && 'Service') ||
+    (pluralName === 'Visitors' && 'Visitor')
+  return singularName
+}
+
 const validationSchema = yup.object().shape({
   note: yup.string().required()
 })
@@ -101,6 +110,10 @@ function LogBook({ buildingId, categoryId, status, name }) {
       note: ''
     }
   })
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -143,7 +156,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   useEffect(() => {
     if (!loadingUpdateRecord && calledUpdateRecord && dataUpdateRecord) {
       if (dataUpdateRecord?.updateRegistryRecord?.message === 'success') {
-        showToast('success', `${name} checked out`)
+        showToast('success', `${singularName(name)} checked out`)
         refetch()
       }
     }
@@ -163,12 +176,12 @@ function LogBook({ buildingId, categoryId, status, name }) {
   useEffect(() => {
     if (!loadingCancelRecord && dataCancelRecord && calledCancelRecord) {
       if (dataCancelRecord.updateRegistryRecord?.message === 'success') {
-        showToast('success', 'Visitor Cancelled')
+        showToast('success', `${singularName(name)} Cancelled`)
         setRecordId('')
         refetch()
         setShowViewMoreDetails(false)
       } else {
-        showToast('success', 'Visitor Cancelled')
+        showToast('success', `${singularName(name)} Cancelled`)
         setRecordId('')
         refetch()
         setShowViewMoreDetails(false)
@@ -407,13 +420,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label={`Add ${
-                (name === 'Deliveries' && 'Delivery') ||
-                (name === 'Pick-ups' && 'Package') ||
-                (name === 'Services' && 'Service') ||
-                (name === 'Visitors' && 'Visitor') ||
-                name
-              }`}
+              label={`Add ${singularName(name) || name}`}
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />

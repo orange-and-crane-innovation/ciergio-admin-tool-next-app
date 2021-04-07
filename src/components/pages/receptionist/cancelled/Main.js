@@ -183,6 +183,10 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     }
   }, [loading, error, data])
 
+  useEffect(() => {
+    refetch()
+  }, [])
+
   const handleViewMoreModal = (type, recordId) => {
     const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
 

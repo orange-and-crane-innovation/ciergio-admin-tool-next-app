@@ -13,6 +13,14 @@ import validationSchema from './schema'
 
 import AddVisitorModalContent from './AddVisitorModalContent'
 
+const singularName = pluralName => {
+  const singularName =
+    (pluralName === 'Deliveries' && 'Delivery') ||
+    (pluralName === 'Pick-ups' && 'Package') ||
+    (pluralName === 'Services' && 'Service') ||
+    (pluralName === 'Visitors' && 'Visitor')
+  return singularName
+}
 function AddVisitorModal({
   showModal,
   onShowModal,
@@ -99,7 +107,7 @@ function AddVisitorModal({
       if (data?.createRegistryRecord?.message === 'success') {
         showModal = false
         success(true)
-        showToast('success', 'Record Added')
+        showToast('success', `${singularName(name)} Added`)
         setUploadImage(null)
         refetch(true)
         reset({
@@ -117,13 +125,7 @@ function AddVisitorModal({
 
   return (
     <Modal
-      title={`Add ${
-        (name === 'Deliveries' && 'Delivery') ||
-        (name === 'Pick-ups' && 'Pick-up') ||
-        (name === 'Services' && 'Service') ||
-        (name === 'Visitors' && 'Visitor') ||
-        name
-      }`}
+      title={`Add ${singularName(name) || name}`}
       okText="Add"
       visible={showModal}
       onClose={handleClearModal}

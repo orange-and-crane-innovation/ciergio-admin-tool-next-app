@@ -9,7 +9,7 @@ import Pagination from '@app/components/pagination'
 import { BsPlusCircle, BsTrash } from 'react-icons/bs'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
-import { CANCEL_RECORD, ADD_NOTE } from '../mutation'
+import { CANCEL_RECORD, ADD_NOTE, UPDATE_RECORD } from '../mutation'
 import P from 'prop-types'
 import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
@@ -68,6 +68,15 @@ const TableColStyle = ({ top, bottom }) => {
   )
 }
 
+const singularName = pluralName => {
+  const singularName =
+    (pluralName === 'Deliveries' && 'Delivery') ||
+    (pluralName === 'Pick-ups' && 'Package') ||
+    (pluralName === 'Services' && 'Service') ||
+    (pluralName === 'Visitors' && 'Visitor')
+  return singularName
+}
+
 const validationSchema = yup.object().shape({
   note: yup.string().required()
 })
@@ -112,6 +121,15 @@ function Upcoming({ buildingId, categoryId, status, name }) {
   })
 
   const [
+    updateRecord,
+    {
+      loading: loadingUpdateRecord,
+      called: calledUpdateRecord,
+      data: dataUpdateRecord
+    }
+  ] = useMutation(UPDATE_RECORD)
+
+  const [
     cancelRecord,
     {
       loading: loadingCancelRecord,
@@ -126,6 +144,15 @@ function Upcoming({ buildingId, categoryId, status, name }) {
   ] = useMutation(ADD_NOTE)
 
   useEffect(() => {
+    if (!loadingUpdateRecord && calledUpdateRecord && dataUpdateRecord) {
+      if (dataUpdateRecord?.updateRegistryRecord?.message === 'success') {
+        showToast('success', `${singularName(name)} checked in`)
+        refetch()
+      }
+    }
+  }, [loadingUpdateRecord, calledUpdateRecord, dataUpdateRecord])
+
+  useEffect(() => {
     if (!loadingAddNote && dataAddNote && calledAddNote) {
       if (dataAddNote.createRegistryNote?.message === 'success') {
         showToast('success', 'Note Added Successfully')
@@ -135,6 +162,10 @@ function Upcoming({ buildingId, categoryId, status, name }) {
       }
     }
   }, [loadingAddNote, calledAddNote, dataAddNote])
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   useEffect(() => {
     if (!loadingCancelRecord && dataCancelRecord && calledCancelRecord) {
@@ -210,10 +241,11 @@ function Upcoming({ buildingId, categoryId, status, name }) {
                 bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
               />
             ),
-            checkedOut: registry.checkedOutAt ? (
-              DATE.toFriendlyTime(registry.checkedOutAt)
-            ) : (
-              <Button label="Checked Out" />
+            checkedOut: (
+              <Button
+                label="Checked In"
+                onClick={e => updateMyRecord(e, registry._id)}
+              />
             ),
             addNote: (
               <Button
@@ -251,10 +283,11 @@ function Upcoming({ buildingId, categoryId, status, name }) {
                 bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
               />
             ),
-            checkedOut: registry.checkedOutAt ? (
-              DATE.toFriendlyTime(registry.checkedOutAt)
-            ) : (
-              <Button label="Checked Out" />
+            checkedOut: (
+              <Button
+                label="Checked In"
+                onClick={e => updateMyRecord(e, registry._id)}
+              />
             ),
             addNote: (
               <Button
@@ -306,10 +339,11 @@ function Upcoming({ buildingId, categoryId, status, name }) {
                   bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
                 />
               ),
-              checkedOut: registry.checkedOutAt ? (
-                DATE.toFriendlyTime(registry.checkedOutAt)
-              ) : (
-                <Button label="Checked Out" />
+              checkedOut: (
+                <Button
+                  label="Checked In"
+                  onClick={e => updateMyRecord(e, registry._id)}
+                />
               ),
               addNote: (
                 <Button
@@ -471,6 +505,24 @@ function Upcoming({ buildingId, categoryId, status, name }) {
     }
   }
 
+  const updateMyRecord = async (e, id) => {
+    e.preventDefault()
+    try {
+      if (id) {
+        await updateRecord({
+          variables: {
+            id,
+            data: {
+              status: 'checkedIn'
+            }
+          }
+        })
+      }
+    } catch (error) {
+      showToast('warning', 'Unexpected error occur. Plase try again')
+    }
+  }
+
   return (
     <>
       <DateAndSearch
@@ -490,13 +542,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label={`Add ${
-                (name === 'Deliveries' && 'Delivery') ||
-                (name === 'Pick-ups' && 'Package') ||
-                (name === 'Services' && 'Service') ||
-                (name === 'Visitors' && 'Visitor') ||
-                name
-              }`}
+              label={`Add ${singularName(name) || name}`}
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />
