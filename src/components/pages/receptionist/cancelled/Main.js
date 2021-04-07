@@ -26,7 +26,7 @@ import * as yup from 'yup'
 import PageLoader from '@app/components/page-loader'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-const dummyRow = [
+const rowName = [
   {
     name: 'Unit',
     width: `${4 / 100}%`
@@ -309,7 +309,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           loading && !tableData ? (
             <PageLoader />
           ) : (
-            <Table rowNames={dummyRow} items={tableData} />
+            <Table rowNames={rowName} items={tableData} />
           )
         }
       />

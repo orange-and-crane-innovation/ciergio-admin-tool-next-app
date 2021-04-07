@@ -27,7 +27,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import PageLoader from '@app/components/page-loader'
 
 const COLCOUNT = 6
-const dummyRow = [
+const rowName = [
   {
     name: 'Unit',
     width: `${COLCOUNT / 100}%`
@@ -548,7 +548,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           loading && !tableData ? (
             <PageLoader />
           ) : (
-            <Table rowNames={dummyRow} items={tableData} />
+            <Table rowNames={rowName} items={tableData} />
           )
         }
       />

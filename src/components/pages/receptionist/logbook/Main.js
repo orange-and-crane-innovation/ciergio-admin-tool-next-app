@@ -28,7 +28,7 @@ import PageLoader from '@app/components/page-loader'
 
 const NUMBEROFCOLUMN = 6
 
-const dummyRow = [
+const rowName = [
   {
     name: 'Unit',
     width: `${NUMBEROFCOLUMN / 100}%`
@@ -423,7 +423,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
           loading && !tableData ? (
             <PageLoader />
           ) : (
-            <Table rowNames={dummyRow} items={tableData} />
+            <Table rowNames={rowName} items={tableData} />
           )
         }
       />
