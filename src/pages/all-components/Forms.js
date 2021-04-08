@@ -28,7 +28,7 @@ function Components() {
         setImageUrl(reader.result)
       }
       reader.readAsDataURL(file)
-      formData.append('photos', file)
+      formData.append('files', file)
       setLoading(false)
     }
   }
