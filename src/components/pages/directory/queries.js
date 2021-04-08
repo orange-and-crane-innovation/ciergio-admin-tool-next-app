@@ -83,14 +83,9 @@ export const GET_CONTACT_CATEGORY = gql`
 `
 
 export const GET_CONTACTS = gql`
-  query getContactsByComplexId(
-    $companyId: String
-    $complexId: String
-    $limit: Int
-    $offset: Int
-  ) {
+  query getContactsByComplexId($complexId: String, $limit: Int, $offset: Int) {
     getContacts(
-      where: { complexId: $complexId, companyId: $companyId, type: directory }
+      where: { complexId: $complexId }
       limit: $limit
       skip: $offset
     ) {

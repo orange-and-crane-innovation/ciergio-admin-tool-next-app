@@ -22,7 +22,7 @@ function ContactModal({
   selected
 }) {
   const { control, errors } = form
-  console.log({ selected })
+
   return (
     <Modal
       title="Add a Contact"

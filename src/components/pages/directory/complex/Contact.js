@@ -4,7 +4,6 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 import P from 'prop-types'
 import * as yup from 'yup'
-import { useRouter } from 'next/router'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import Button from '@app/components/button'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -68,7 +67,6 @@ const columns = [
 ]
 
 function Contact({ id }) {
-  const router = useRouter()
   const {
     getValues,
     control,
@@ -108,7 +106,6 @@ function Contact({ id }) {
     loading: loadingContacts
   } = useQuery(GET_CONTACTS, {
     variables: {
-      companyId: router?.query?.companyId,
       complexId: id,
       limit: pageLimit,
       offset
