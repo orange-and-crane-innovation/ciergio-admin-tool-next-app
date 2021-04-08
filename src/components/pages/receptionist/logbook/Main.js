@@ -24,10 +24,11 @@ import AddNoteModal from '../modals/AddNoteModal'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
+import PageLoader from '@app/components/page-loader'
 
 const NUMBEROFCOLUMN = 6
 
-const dummyRow = [
+const rowName = [
   {
     name: 'Unit',
     width: `${NUMBEROFCOLUMN / 100}%`
@@ -69,6 +70,15 @@ const TableColStyle = ({ top, bottom }) => {
   )
 }
 
+const singularName = pluralName => {
+  const singularName =
+    (pluralName === 'Deliveries' && 'Delivery') ||
+    (pluralName === 'Pick-ups' && 'Package') ||
+    (pluralName === 'Services' && 'Service') ||
+    (pluralName === 'Visitors' && 'Visitor')
+  return singularName
+}
+
 const validationSchema = yup.object().shape({
   note: yup.string().required()
 })
@@ -101,6 +111,10 @@ function LogBook({ buildingId, categoryId, status, name }) {
     }
   })
 
+  useEffect(() => {
+    refetch()
+  }, [])
+
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
       limit: limitPage,
@@ -111,7 +125,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         status,
         categoryId,
         checkedInAt: checkedInAtTime,
-        keyword: search
+        keyword: search || search !== '' ? search : null
       }
     }
   })
@@ -142,7 +156,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
   useEffect(() => {
     if (!loadingUpdateRecord && calledUpdateRecord && dataUpdateRecord) {
       if (dataUpdateRecord?.updateRegistryRecord?.message === 'success') {
-        showToast('success', `${name} checked out`)
+        showToast('success', `${singularName(name)} checked out`)
         refetch()
       }
     }
@@ -162,12 +176,12 @@ function LogBook({ buildingId, categoryId, status, name }) {
   useEffect(() => {
     if (!loadingCancelRecord && dataCancelRecord && calledCancelRecord) {
       if (dataCancelRecord.updateRegistryRecord?.message === 'success') {
-        showToast('success', 'Visitor Cancelled')
+        showToast('success', `${singularName(name)} Cancelled`)
         setRecordId('')
         refetch()
         setShowViewMoreDetails(false)
       } else {
-        showToast('success', 'Visitor Cancelled')
+        showToast('success', `${singularName(name)} Cancelled`)
         setRecordId('')
         refetch()
         setShowViewMoreDetails(false)
@@ -230,11 +244,16 @@ function LogBook({ buildingId, categoryId, status, name }) {
           ),
           addNote: (
             <Button
+              link
               label="Add Note"
               onClick={e => handleViewMoreModal('addnote', registry._id)}
             />
           ),
-          options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          options: (
+            <div className="h-full w-full flex justify-center items-center">
+              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            </div>
+          )
         })
       })
 
@@ -401,15 +420,18 @@ function LogBook({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label="Add Visitors"
+              label={`Add ${singularName(name) || name}`}
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />
           </div>
         }
         content={
-          !loading &&
-          tableData && <Table rowNames={dummyRow} items={tableData} />
+          loading && !tableData ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={rowName} items={tableData} />
+          )
         }
       />
       {!loading && tableData && (
@@ -427,6 +449,7 @@ function LogBook({ buildingId, categoryId, status, name }) {
         categoryId={categoryId}
         success={setSuccess}
         refetch={willRefetch}
+        name={name}
       />
       <Modal
         title={modalTitle}

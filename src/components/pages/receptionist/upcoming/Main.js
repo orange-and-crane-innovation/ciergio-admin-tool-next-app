@@ -9,7 +9,7 @@ import Pagination from '@app/components/pagination'
 import { BsPlusCircle, BsTrash } from 'react-icons/bs'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
-import { CANCEL_RECORD, ADD_NOTE } from '../mutation'
+import { CANCEL_RECORD, ADD_NOTE, UPDATE_RECORD } from '../mutation'
 import P from 'prop-types'
 import { DATE } from '@app/utils'
 import { FaEllipsisH } from 'react-icons/fa'
@@ -24,9 +24,10 @@ import AddNoteModal from '../modals/AddNoteModal'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
+import PageLoader from '@app/components/page-loader'
 
 const COLCOUNT = 6
-const dummyRow = [
+const rowName = [
   {
     name: 'Unit',
     width: `${COLCOUNT / 100}%`
@@ -67,6 +68,15 @@ const TableColStyle = ({ top, bottom }) => {
   )
 }
 
+const singularName = pluralName => {
+  const singularName =
+    (pluralName === 'Deliveries' && 'Delivery') ||
+    (pluralName === 'Pick-ups' && 'Package') ||
+    (pluralName === 'Services' && 'Service') ||
+    (pluralName === 'Visitors' && 'Visitor')
+  return singularName
+}
+
 const validationSchema = yup.object().shape({
   note: yup.string().required()
 })
@@ -98,7 +108,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         categoryId,
         status,
         checkInSchedule: moment(new Date()).startOf('day').format(),
-        keyword: search
+        keyword: search || search !== '' ? search : null
       }
     }
   })
@@ -109,6 +119,15 @@ function Upcoming({ buildingId, categoryId, status, name }) {
       email: ''
     }
   })
+
+  const [
+    updateRecord,
+    {
+      loading: loadingUpdateRecord,
+      called: calledUpdateRecord,
+      data: dataUpdateRecord
+    }
+  ] = useMutation(UPDATE_RECORD)
 
   const [
     cancelRecord,
@@ -125,6 +144,15 @@ function Upcoming({ buildingId, categoryId, status, name }) {
   ] = useMutation(ADD_NOTE)
 
   useEffect(() => {
+    if (!loadingUpdateRecord && calledUpdateRecord && dataUpdateRecord) {
+      if (dataUpdateRecord?.updateRegistryRecord?.message === 'success') {
+        showToast('success', `${singularName(name)} checked in`)
+        refetch()
+      }
+    }
+  }, [loadingUpdateRecord, calledUpdateRecord, dataUpdateRecord])
+
+  useEffect(() => {
     if (!loadingAddNote && dataAddNote && calledAddNote) {
       if (dataAddNote.createRegistryNote?.message === 'success') {
         showToast('success', 'Note Added Successfully')
@@ -134,6 +162,10 @@ function Upcoming({ buildingId, categoryId, status, name }) {
       }
     }
   }, [loadingAddNote, calledAddNote, dataAddNote])
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   useEffect(() => {
     if (!loadingCancelRecord && dataCancelRecord && calledCancelRecord) {
@@ -156,7 +188,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
       const tableData = []
       const tableToday = []
       const tableTomorrow = []
-      const tableYesterday = []
       const talbeDates = []
       const tempIds = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
@@ -183,9 +214,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           today: DATE.toFriendlyDate(moment(new Date()).format()),
           tomorrow: DATE.toFriendlyDate(
             moment(new Date()).add(1, 'days').format()
-          ),
-          yesterday: DATE.toFriendlyDate(
-            moment(new Date()).subtract(1, 'days').startOf('day').format()
           )
         }
         const momentDate = DATE.toFriendlyDate(moment(dateUTC).format())
@@ -213,18 +241,24 @@ function Upcoming({ buildingId, categoryId, status, name }) {
                 bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
               />
             ),
-            checkedOut: registry.checkedOutAt ? (
-              DATE.toFriendlyTime(registry.checkedOutAt)
-            ) : (
-              <Button label="Checked Out" />
+            checkedOut: (
+              <Button
+                label="Checked In"
+                onClick={e => updateMyRecord(e, registry._id)}
+              />
             ),
             addNote: (
               <Button
+                link
                 label="Add Note"
                 onClick={e => handleViewMoreModal('addnote', registry._id)}
               />
             ),
-            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            options: (
+              <div className="h-full w-full flex justify-center items-center">
+                <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              </div>
+            )
           })
         } else if (dates.tomorrow === momentDate) {
           tableTomorrow.push({
@@ -249,54 +283,24 @@ function Upcoming({ buildingId, categoryId, status, name }) {
                 bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
               />
             ),
-            checkedOut: registry.checkedOutAt ? (
-              DATE.toFriendlyTime(registry.checkedOutAt)
-            ) : (
-              <Button label="Checked Out" />
+            checkedOut: (
+              <Button
+                label="Checked In"
+                onClick={e => updateMyRecord(e, registry._id)}
+              />
             ),
             addNote: (
               <Button
+                link
                 label="Add Note"
                 onClick={e => handleViewMoreModal('addnote', registry._id)}
               />
             ),
-            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-          })
-        } else if (dates.yesterday === momentDate) {
-          tableYesterday.push({
-            unitNumberAndOwner: (
-              <TableColStyle
-                key={index}
-                top={`${registry.forWhat.name}`}
-                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
-              />
-            ),
-            personCompany: (
-              <TableColStyle
-                key={index}
-                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
-                bottom={registry.visitor.company}
-              />
-            ),
-            checkedIn: (
-              <TableColStyle
-                key={index}
-                top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
-                bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
-              />
-            ),
-            checkedOut: registry.checkedOutAt ? (
-              DATE.toFriendlyTime(registry.checkedOutAt)
-            ) : (
-              <Button label="Checked Out" />
-            ),
-            addNote: (
-              <Button
-                label="Add Note"
-                onClick={e => handleViewMoreModal('addnote', registry._id)}
-              />
-            ),
-            options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            options: (
+              <div className="h-full w-full flex justify-center items-center">
+                <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              </div>
+            )
           })
         } else {
           talbeDates.push(
@@ -335,18 +339,24 @@ function Upcoming({ buildingId, categoryId, status, name }) {
                   bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
                 />
               ),
-              checkedOut: registry.checkedOutAt ? (
-                DATE.toFriendlyTime(registry.checkedOutAt)
-              ) : (
-                <Button label="Checked Out" />
+              checkedOut: (
+                <Button
+                  label="Checked In"
+                  onClick={e => updateMyRecord(e, registry._id)}
+                />
               ),
               addNote: (
                 <Button
+                  link
                   label="Add Note"
                   onClick={e => handleViewMoreModal('addnote', registry._id)}
                 />
               ),
-              options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              options: (
+                <div className="h-full w-full flex justify-center items-center">
+                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                </div>
+              )
             }
           )
         }
@@ -375,26 +385,10 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           // temporary
         })
       }
-      if (tableYesterday.length > 0) {
-        tableYesterday.unshift({
-          date: <div className="text-gray-900 font-bold w-full">Yesterday</div>,
-          blank: '',
-          blank1: '',
-          blank2: '',
-          blank3: '',
-          blank4: ''
-          // temporary
-        })
-      }
 
       // this is only temporary function, to divide the dates by tomorrow, today, yesterday or other dates
 
-      tableData.push(
-        ...tableToday,
-        ...tableTomorrow,
-        ...talbeDates,
-        ...tableYesterday
-      )
+      tableData.push(...tableToday, ...tableTomorrow, ...talbeDates)
 
       const table = {
         count: data?.getRegistryRecords.count || 0,
@@ -511,6 +505,24 @@ function Upcoming({ buildingId, categoryId, status, name }) {
     }
   }
 
+  const updateMyRecord = async (e, id) => {
+    e.preventDefault()
+    try {
+      if (id) {
+        await updateRecord({
+          variables: {
+            id,
+            data: {
+              status: 'checkedIn'
+            }
+          }
+        })
+      }
+    } catch (error) {
+      showToast('warning', 'Unexpected error occur. Plase try again')
+    }
+  }
+
   return (
     <>
       <DateAndSearch
@@ -530,15 +542,18 @@ function Upcoming({ buildingId, categoryId, status, name }) {
             </b>
             <Button
               primary
-              label="Add Visitor"
+              label={`Add ${singularName(name) || name}`}
               leftIcon={<BsPlusCircle />}
               onClick={handleShowModal}
             />
           </div>
         }
         content={
-          !loading &&
-          tableData && <Table rowNames={dummyRow} items={tableData} />
+          loading && !tableData ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={rowName} items={tableData} />
+          )
         }
       />
       {!loading && tableData && (
@@ -556,6 +571,7 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         categoryId={categoryId}
         success={setSuccess}
         refetch={willRefetch}
+        name={name}
       />
       <Modal
         title={modalTitle}

@@ -23,9 +23,11 @@ import AddNoteModal from '../modals/AddNoteModal'
 import ViewNotesModalContent from '../modals/ViewNotesModalContent'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
+import PageLoader from '@app/components/page-loader'
 import { yupResolver } from '@hookform/resolvers/yup'
+import useKeyPress from '@app/utils/useKeyPress'
 
-const dummyRow = [
+const rowName = [
   {
     name: 'Unit',
     width: `${4 / 100}%`
@@ -74,6 +76,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
   ])
+  const [searchText, setSearchText] = useState('')
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [ids, setIds] = useState([])
@@ -81,7 +84,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
   const [modalTitle, setModalTitle] = useState(null)
   const [recordId, setRecordId] = useState(null)
   const [modalType, setModalType] = useState(null)
-
+  const keyPressed = useKeyPress('Enter')
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -105,7 +108,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
         categoryId,
         status,
         checkedInAt: checkedInAtTime,
-        keyword: null
+        keyword: search || search !== '' ? search : null
       }
     }
   })
@@ -146,6 +149,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           addOrView: (
             <div>
               <Button
+                link
                 label={`View ${
                   registry.notesCount > 0 ? registry.notesCount : ''
                 }`}
@@ -153,12 +157,17 @@ function Cancelled({ buildingId, categoryId, status, name }) {
               />{' '}
               |{' '}
               <Button
+                link
                 label="Add Note"
                 onClick={e => handleModals('addnotes', registry._id)}
               />
             </div>
           ),
-          options: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          options: (
+            <div className="h-full w-full flex justify-center items-center">
+              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            </div>
+          )
         })
         tempIds.push(registry._id)
       })
@@ -173,6 +182,10 @@ function Cancelled({ buildingId, categoryId, status, name }) {
       setTableData(table)
     }
   }, [loading, error, data])
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   const handleViewMoreModal = (type, recordId) => {
     const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
@@ -204,8 +217,19 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     }
   }
 
+  useEffect(() => {
+    if (keyPressed) {
+      setSearch(searchText)
+      refetch()
+    }
+  }, [keyPressed, searchText])
+
   const handleSearch = e => {
-    setSearch(e.target.value)
+    if (e.target.value === '') {
+      setSearch(null)
+    } else {
+      setSearchText(e.target.value)
+    }
   }
 
   const onClearSearch = () => {
@@ -295,7 +319,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
               <Button icon={<FiDownload />} />
               <Button
                 primary
-                label="Add Visitor"
+                label={`Add ${name}`}
                 leftIcon={<BsPlusCircle />}
                 onClick={handleShowModal}
               />
@@ -303,8 +327,11 @@ function Cancelled({ buildingId, categoryId, status, name }) {
           </div>
         }
         content={
-          !loading &&
-          tableData && <Table rowNames={dummyRow} items={tableData} />
+          loading && !tableData ? (
+            <PageLoader />
+          ) : (
+            <Table rowNames={rowName} items={tableData} />
+          )
         }
       />
       {!loading && tableData && (
@@ -323,6 +350,7 @@ function Cancelled({ buildingId, categoryId, status, name }) {
         categoryId={categoryId}
         success={setSuccess}
         refetch={willRefetch}
+        name={name}
       />
       <Modal
         title={modalTitle}

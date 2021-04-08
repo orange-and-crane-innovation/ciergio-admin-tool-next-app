@@ -33,9 +33,15 @@ function RowStyle({ header, child, child2, avatarImg }) {
 function ModalContent({ recordId }) {
   const [recordData, setRecordData] = useState(null)
 
-  const { loading, data, error } = useQuery(GET_REGISTRYRECORD, {
+  const { loading, data, error, refetch } = useQuery(GET_REGISTRYRECORD, {
     variables: { recordId }
   })
+
+  useEffect(() => {
+    if (recordId) {
+      refetch()
+    }
+  }, [recordId])
 
   useEffect(() => {
     if (!loading && data && !error) {
@@ -64,11 +70,11 @@ function ModalContent({ recordId }) {
           ? DATE.toFriendlyDateTime(sched.toUTCString())
           : DATE.toFriendlyDateTime(checkedIn.toUTCString()),
         visitor: visitor ? `${visitor?.firstName} ${visitor?.lastName}` : '',
-        checkedIn: checkedIn
+        checkedIn: checkedInAt
           ? DATE.toFriendlyDateTime(checkedIn.toUTCString())
-          : '',
+          : '----',
         checkedOut: checkedOutAt
-          ? checkedO.toFriendlyDateTime(sched.toUTCString())
+          ? DATE.toFriendlyDateTime(checkedO.toUTCString())
           : '----',
         createAt: createdAt ? DATE.toFriendlyDateTime(createdAt) : '',
         author: author

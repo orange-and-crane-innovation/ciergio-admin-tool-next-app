@@ -12,7 +12,7 @@ import { GET_UNITS } from '../query'
 import { useQuery } from '@apollo/client'
 import axios from 'axios'
 
-function AddVisitorModalContent({ form, buildingId, getImage }) {
+function AddVisitorModalContent({ form, buildingId, getImage, type }) {
   const [loading, setLoading] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [onSchedule, setOnSchedule] = useState(false)
@@ -70,6 +70,12 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
     }
   }
 
+  useEffect(() => {
+    if (image) {
+      getImage(image)
+    }
+  }, [image])
+
   const onUploadImage = e => {
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
@@ -100,12 +106,6 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
     setImageUrls(images)
     setImage(null)
   }
-
-  useEffect(() => {
-    if (image) {
-      getImage(image)
-    }
-  }, [image])
 
   const onRepeatChange = e => setOnSchedule(e.target.checked)
 
@@ -153,15 +153,18 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
               />
             </div>
 
-            <div className="w-full mb-5">
-              <FormCheckBox
-                label="Scheduled Visit"
-                name="4"
-                value={onSchedule}
-                isChecked={onSchedule}
-                onChange={onRepeatChange}
-              />
-            </div>
+            {(type === 'Deliveries' || type === 'Visitors') && (
+              <div className="w-full mb-5">
+                <FormCheckBox
+                  label="Scheduled Visit"
+                  name="4"
+                  value={onSchedule}
+                  isChecked={onSchedule}
+                  onChange={onRepeatChange}
+                />
+              </div>
+            )}
+
             {onSchedule && (
               <div className="w-full flex justify-between align-center">
                 <Controller
@@ -175,6 +178,7 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
                       onDateChange={onChange}
                       dateFormat="MMMM DD, YYYY"
                       value={value}
+                      constraints={true}
                     />
                   )}
                 />
@@ -189,6 +193,7 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
                       name={name}
                       onTimeChange={onChange}
                       value={value}
+                      placeholder="Enter Time"
                     />
                   )}
                 />
@@ -291,6 +296,7 @@ function AddVisitorModalContent({ form, buildingId, getImage }) {
 AddVisitorModalContent.propTypes = {
   form: P.object,
   buildingId: P.string.isRequired,
-  getImage: P.func.isRequired
+  getImage: P.func.isRequired,
+  type: P.string.isRequired
 }
 export default AddVisitorModalContent

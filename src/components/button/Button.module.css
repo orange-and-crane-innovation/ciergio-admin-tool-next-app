@@ -18,6 +18,10 @@
     @apply bg-warning-500 text-white border-warning-500 hover:bg-warning-700 active:bg-warning-900;
   }
 
+  &.isLink {
+    @apply bg-transparent text-blue-500 text-base border-0 font-body;
+  }
+
   &.isInfo {
     @apply bg-info-500 text-white border-info-500 hover:bg-info-700 active:bg-info-900;
   }

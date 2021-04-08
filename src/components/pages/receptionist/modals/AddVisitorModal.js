@@ -13,13 +13,22 @@ import validationSchema from './schema'
 
 import AddVisitorModalContent from './AddVisitorModalContent'
 
+const singularName = pluralName => {
+  const singularName =
+    (pluralName === 'Deliveries' && 'Delivery') ||
+    (pluralName === 'Pick-ups' && 'Package') ||
+    (pluralName === 'Services' && 'Service') ||
+    (pluralName === 'Visitors' && 'Visitor')
+  return singularName
+}
 function AddVisitorModal({
   showModal,
   onShowModal,
   buildingId,
   categoryId,
   success,
-  refetch
+  refetch,
+  name
 }) {
   const [uploadImage, setUploadImage] = React.useState(null)
   const { handleSubmit, control, errors, reset } = useForm({
@@ -78,7 +87,7 @@ function AddVisitorModal({
       await createRegistryRecord({
         variables: {
           data: createRegisterRecord,
-          note: data.note || null
+          note: (data.note && data.note.replace(/(<([^>]+)>)/gi, '')) || null
         }
       })
     } catch (e) {
@@ -98,7 +107,7 @@ function AddVisitorModal({
       if (data?.createRegistryRecord?.message === 'success') {
         showModal = false
         success(true)
-        showToast('success', 'Record Added')
+        showToast('success', `${singularName(name)} Added`)
         setUploadImage(null)
         refetch(true)
         reset({
@@ -116,7 +125,7 @@ function AddVisitorModal({
 
   return (
     <Modal
-      title="Add Visitor"
+      title={`Add ${singularName(name) || name}`}
       okText="Add"
       visible={showModal}
       onClose={handleClearModal}
@@ -127,6 +136,7 @@ function AddVisitorModal({
         form={{ control, errors }}
         buildingId={buildingId}
         getImage={getImage}
+        type={name}
       />
     </Modal>
   )
@@ -138,7 +148,8 @@ AddVisitorModal.propTypes = {
   buildingId: P.string,
   categoryId: P.string,
   success: P.func,
-  refetch: P.func
+  refetch: P.func,
+  name: P.string.isRequired
 }
 
 export default AddVisitorModal
