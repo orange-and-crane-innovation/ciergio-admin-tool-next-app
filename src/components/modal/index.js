@@ -53,15 +53,9 @@ function Component({
               default
               label={cancelText}
               onClick={onCancel}
-              className="mr-4 text-lg"
+              className="mr-4"
             />
-            <Button
-              primary
-              label={okText}
-              onClick={onOk}
-              {...okButtonProps}
-              className="text-lg"
-            />
+            <Button primary label={okText} onClick={onOk} {...okButtonProps} />
           </div>
         ) : null}
       </div>
