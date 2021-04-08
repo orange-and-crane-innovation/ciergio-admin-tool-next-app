@@ -1,6 +1,4 @@
 .tableContainer {
-  @apply overflow-x-auto;
-
   .tableControl {
     @apply w-full;
     @apply font-body font-normal text-base leading-relaxed;
@@ -44,16 +42,6 @@
 
       td:first-child {
         @apply px-8 py-4;
-      }
-    }
-
-    .customBody {
-      @apply font-body font-normal;
-
-      td {
-        @apply px-8 py-4 max-w-lg;
-        @apply border-b;
-        @apply break-words;
       }
     }
   }
