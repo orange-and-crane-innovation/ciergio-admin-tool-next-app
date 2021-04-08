@@ -14,7 +14,7 @@ function DownloadCSV({
 }) {
   return (
     <>
-      <CSVLink data={data} fileName={fileName} headers={headers}>
+      <CSVLink data={data} filename={`${fileName}.csv`} headers={headers}>
         <Button icon={<FiDownload />} variant {...rest} label={label} />
       </CSVLink>
     </>
@@ -24,9 +24,9 @@ function DownloadCSV({
 DownloadCSV.propTypes = {
   fileName: P.string.isRequired,
   data: P.array.isRequired,
-  headers: P.array.isRequired,
-  title: P.string.isRequired,
-  label: P.string.isRequired,
+  headers: P.array,
+  title: P.string,
+  label: P.string,
   variant: P.oneOf(['primary', 'success', 'danger', 'warning', 'info', 'link'])
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import DateAndSearch from '../DateAndSearch'
 import Table from '@app/components/table'
 import Card from '@app/components/card'
@@ -6,7 +6,7 @@ import styles from '../main.module.css'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Pagination from '@app/components/pagination'
-import { FiPrinter, FiDownload } from 'react-icons/fi'
+import { FiPrinter } from 'react-icons/fi'
 import { BsPlusCircle } from 'react-icons/bs'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
@@ -195,6 +195,7 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
         tempIds.push(registry._id)
       })
       setIds(tempIds)
+      setCsvData(prevState => [...prevState, ...tempCSV])
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
@@ -340,11 +341,11 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
             <div className={styles.ReceptionistButtonCard}>
               <Button icon={<FiPrinter />} />
               <DownloadCSV
-                data={[]}
+                data={csvData}
                 title="Cancelled Visitor"
-                fileName="Cancelled Visitor"
+                fileName="Cancelled"
               />
-              {/* <Button icon={<FiDownload />} /> */}
+
               <Button
                 primary
                 label={`Add ${name}`}
