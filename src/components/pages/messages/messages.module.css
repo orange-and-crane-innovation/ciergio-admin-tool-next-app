@@ -1,12 +1,14 @@
 .messagesContainer {
   @apply grid grid-cols-3 gap-0 -m-4 text-lg;
+  font-size: 14px;
 
   .messagesListContainer {
     @apply col-span-1 border-r border-b border-neutral-300 bg-white shadow-md;
   }
 
   .messagesListHeader {
-    @apply flex justify-between items-center px-4 py-2 border-b border-neutral-300 h-16 box-border;
+    height: 65px;
+    @apply flex justify-between items-center px-4 py-4 border-b border-neutral-300 box-border;
   }
 
   .messagesButton {
@@ -25,6 +27,11 @@
     height: 80px;
     border-bottom-color: #dee1e9;
     @apply flex p-4 relative border-b;
+
+    .updateDate {
+      @apply uppercase;
+      font-size: 10px;
+    }
   }
 
   .messagePreviewItem:hover {
@@ -36,7 +43,8 @@
   }
 
   .messageBoxHeader {
-    @apply p-4 box-border shadow-sm bg-white h-16;
+    height: 65px;
+    @apply p-4 box-border shadow-sm bg-white;
     @apply flex items-center justify-between;
   }
 
@@ -61,8 +69,18 @@
   }
 
   .messageBoxInput {
-    @apply bg-white border border-neutral-300 box-border p-4;
+    min-height: 80px;
+    @apply bg-white border border-neutral-300 box-border p-0;
     @apply grid grid-cols-12;
+  }
+
+  .messageDateStamp {
+    @apply text-right uppercase;
+    font-size: 10px;
+  }
+
+  .viewerAvatar {
+    @apply h-4 w-4 rounded-full ml-1;
   }
 }
 

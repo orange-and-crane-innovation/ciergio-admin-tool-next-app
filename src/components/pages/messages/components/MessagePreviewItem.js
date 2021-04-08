@@ -1,5 +1,5 @@
 import P from 'prop-types'
-import { displayDateCreated } from '@app/utils/date'
+import { displayDays } from '@app/utils/date'
 import styles from '../messages.module.css'
 
 export default function MessagePreviewItem({
@@ -8,18 +8,16 @@ export default function MessagePreviewItem({
   isSelected,
   currentUserid
 }) {
-  const participant = data?.participants?.data?.[1]?.user
-  const participantName = `${participant?.firstName} ${participant?.lastName}`
-  const previewHead = `${
-    participant?.unit?.name || 'Unit 000'
-  } - ${participantName}`
+  const author = data?.author?.user
+  const authorName = `${author?.firstName} ${author?.lastName}`
+  const previewHead = `${data?.author?.accountType} - ${authorName}`
   const newestMessage = data?.messages?.data[0]?.message
   const isSeen =
     data?.messages?.viewers?.data?.findIndex(
       viewer => parseInt(viewer?.user?._id) === currentUserid
     ) !== -1
   const previewTextState = isSeen ? 'font-normal' : 'font-bold'
-  const defaultAvatarUri = `https://ui-avatars.com/api/?name=${participantName}&size=32`
+  const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
 
   return (
     <div
@@ -35,19 +33,23 @@ export default function MessagePreviewItem({
     >
       <div className="mr-4">
         <img
-          src={participant?.avatar || defaultAvatarUri}
-          alt={participantName}
-          className="rounded-full h-8 w-8"
+          src={author?.avatar ?? defaultAvatarUri}
+          alt={authorName}
+          className="rounded-full h-12 w-12"
         />
       </div>
       <div>
-        <p className={`${previewTextState} capitalize`}>{previewHead}</p>
-        <p className={`${previewTextState} truncate`}>
+        <p className={`${previewTextState} capitalize truncate max-2xs`}>
+          {previewHead}
+        </p>
+        <p className={`${previewTextState} truncate max-w-2xs`}>
           {newestMessage ?? 'Start writing a message'}
         </p>
       </div>
-      <div className="absolute right-4 top-2 text-neutral-500">
-        <span>{displayDateCreated(data?.updatedAt)}</span>
+      <div className="absolute right-8 text-neutral-500">
+        <span className={styles.updateDate}>
+          {displayDays(data?.updatedAt)}
+        </span>
       </div>
       {!isSeen && !isSelected ? (
         <div className="w-3 h-3 bg-primary-500 rounded-full absolute right-4 bottom-10" />

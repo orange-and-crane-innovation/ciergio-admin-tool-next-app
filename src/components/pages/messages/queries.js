@@ -111,6 +111,7 @@ export const getMessages = gql`
       data {
         _id
         message
+        createdAt
         author {
           user {
             _id
@@ -130,6 +131,7 @@ export const getMessages = gql`
             count
             data {
               _id
+              createdAt
               message
               __typename
             }

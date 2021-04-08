@@ -86,6 +86,21 @@ export const toFriendlyYearMonth = data => {
   return convertedDate
 }
 
+export const displayDays = data => {
+  const inputDate = dayjs(data)
+  const currentDate = dayjs(new Date())
+  const difference = dayjs.duration(currentDate.diff(inputDate))
+  const dateData = difference.$d
+  const { days } = dateData
+  let returnData
+  if (days <= 7) {
+    returnData = friendlyDateTimeFormat(data, 'ddd')
+  } else {
+    returnData = friendlyDateTimeFormat(data, 'LL')
+  }
+  return returnData
+}
+
 export const displayDateCreated = data => {
   const inputDate = dayjs(data)
   const currentDate = dayjs(new Date())

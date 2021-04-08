@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import axios from '@app/utils/axios'
-import Dropdown from '@app/components/dropdown'
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
 import useWindowDimensions from '@app/utils/useWindowDimensions'
@@ -10,8 +9,6 @@ import MessageBox from './components/MessageBox'
 import NewMessageModal from './components/NewMessageModal'
 import useDebounce from '@app/utils/useDebounce'
 import showToast from '@app/utils/toast'
-import { AiOutlineEllipsis } from 'react-icons/ai'
-import { GoSettings } from 'react-icons/go'
 import { FiEdit } from 'react-icons/fi'
 import styles from './messages.module.css'
 
@@ -24,6 +21,18 @@ import {
   updateConversation,
   seenMessage
 } from './queries'
+import { FormSelect } from '@app/components/globals'
+
+const convoOptions = [
+  {
+    label: 'Group',
+    value: 'group'
+  },
+  {
+    label: 'Personal',
+    value: 'private'
+  }
+]
 
 export default function Main() {
   const { height } = useWindowDimensions()
@@ -40,6 +49,7 @@ export default function Main() {
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState(null)
   const [conversations, setConversations] = useState(null)
+  const [hasFetched, setHasFetched] = useState(false)
   const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
 
@@ -62,8 +72,8 @@ export default function Main() {
 
   const {
     data: convos,
-    loading: loadingConvo
-    // refetch: refetchConversations
+    loading: loadingConvo,
+    refetch: refetchConversations
   } = useQuery(getConversations, {
     variables: {
       where: {
@@ -74,9 +84,23 @@ export default function Main() {
       }
     }
   })
+  const [
+    fetchMessages,
+    { data: messages, loading: loadingMessages, refetch: refetchMessages }
+  ] = useLazyQuery(getMessages)
   const [updateConvo] = useMutation(updateConversation)
   const [sendNewMessage] = useMutation(sendMessage, {
     onCompleted: () => {
+      refetchConversations({
+        variables: {
+          where: {
+            participants: [accountId],
+            includeEmptyConversation: false,
+            pending: showPendingMessages,
+            type: localStorage.getItem('convoType') ?? convoType
+          }
+        }
+      })
       refetchMessages({
         variables: {
           limit: 10,
@@ -86,11 +110,16 @@ export default function Main() {
           }
         }
       })
+      setHasFetched(true)
     }
   })
   const [seenNewMessage] = useMutation(seenMessage)
 
-  const firstConvo = conversations?.data[0]
+  const firstConvo = useMemo(() => {
+    if (convos?.getConversations?.count > 0) {
+      return convos?.getConversations?.data[0]
+    }
+  })
 
   useEffect(() => {
     if (convos?.getConversations) {
@@ -99,11 +128,11 @@ export default function Main() {
   }, [convos?.getConversations])
 
   useEffect(() => {
-    if (selectedConvo) {
+    if (selectedConvo && !hasFetched) {
       if (selectedConvo?.messages?.data[0]?._id) {
         seenNewMessage({
           variables: {
-            messageId: selectedConvo?.messages?.data[0]?._id
+            messageId: selectedConvo.messages.data[0]._id
           }
         })
       }
@@ -121,6 +150,9 @@ export default function Main() {
           convoId: selectedConvo?._id
         }
       })
+    }
+    if (hasFetched) {
+      setHasFetched(old => !old)
     }
   }, [selectedConvo])
 
@@ -192,30 +224,26 @@ export default function Main() {
     }
   }, [createdConvo, calledCreateConvo])
 
-  const [
-    fetchMessages,
-    { data: messages, loading: loadingMessages, refetch: refetchMessages }
-  ] = useLazyQuery(getMessages)
-
   const convoMessages = messages?.getMessages
-  const dropdownData = [
-    {
-      label: 'Group',
-      icon: null,
-      function: () => {
-        setConvoType('group')
-        localStorage.setItem('convoType', 'group')
-      }
-    },
-    {
-      label: 'Personal',
-      icon: null,
-      function: () => {
-        setConvoType('private')
-        localStorage.setItem('convoType', 'private')
-      }
-    }
-  ]
+
+  // const dropdownData = [
+  //   {
+  //     label: 'Group',
+  //     icon: null,
+  //     function: () => {
+  //       setConvoType('group')
+  //       localStorage.setItem('convoType', 'group')
+  //     }
+  //   },
+  //   {
+  //     label: 'Personal',
+  //     icon: null,
+  //     function: () => {
+  //       setConvoType('private')
+  //       localStorage.setItem('convoType', 'private')
+  //     }
+  //   }
+  // ]
 
   const togglePendingMessages = checked => setShowPendingMessages(checked)
 
@@ -335,11 +363,17 @@ export default function Main() {
     >
       <div className={styles.messagesListContainer}>
         <div className={styles.messagesListHeader}>
-          <h3 className="text-lg font-bold">Members</h3>
+          {/* <h3 className="text-lg font-bold">Members</h3> */}
+          <div className="w-3/4">
+            <FormSelect
+              options={convoOptions}
+              onChange={e => console.log({ e }) || setConvoType(e.target.value)}
+            />
+          </div>
           <div className="flex items-center">
-            <button className={styles.messagesButton}>
+            {/* <button className={styles.messagesButton}>
               <GoSettings />
-            </button>
+            </button> */}
             <button
               className={styles.messagesButton}
               onClick={() => {
@@ -359,11 +393,11 @@ export default function Main() {
             >
               <FiEdit className="text-orange-600" />
             </button>
-            <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+            {/* <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} /> */}
           </div>
         </div>
         <div className={styles.pendingToggleContainer}>
-          <span>Show pending messages</span>
+          <span>Show only pending &amp; active messages </span>
           <Toggle onChange={togglePendingMessages} />
         </div>
         <div
