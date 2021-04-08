@@ -2,17 +2,20 @@ import React, { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import P from 'prop-types'
 import dynamic from 'next/dynamic'
-import {
-  EditorState,
-  convertToRaw,
-  ContentState,
-  convertFromHTML
-} from 'draft-js'
+import { EditorState, convertToRaw, ContentState } from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
+import htmlToDraft from 'html-to-draftjs'
 
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 
 import styles from './FormTextArea.module.css'
+
+const Editor = dynamic(
+  () => {
+    return import('react-draft-wysiwyg').then(mod => mod.Editor)
+  },
+  { ssr: false }
+)
 
 const FormTextArea = ({
   maxLength,
@@ -25,6 +28,7 @@ const FormTextArea = ({
   onChange,
   isEdit,
   toolbarHidden,
+  stripHtmls,
   editorClassName
 }) => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
@@ -37,23 +41,21 @@ const FormTextArea = ({
     [error]
   )
 
-  const Editor = dynamic(
-    () => {
-      return import('react-draft-wysiwyg').then(mod => mod.Editor)
-    },
-    { ssr: false }
-  )
-
   const onEditorStateChange = e => {
     setEditorState(e)
-    onChange(draftToHtml(convertToRaw(e.getCurrentContent())))
+
+    if (stripHtmls) {
+      onChange(e.getCurrentContent().getPlainText())
+    } else {
+      onChange(draftToHtml(convertToRaw(e.getCurrentContent())))
+    }
   }
 
   useEffect(() => {
     if (isEdit && value !== null) {
       setEditorState(
         EditorState.createWithContent(
-          ContentState.createFromBlockArray(convertFromHTML(value))
+          ContentState.createFromBlockArray(htmlToDraft(value))
         )
       )
     }
@@ -104,14 +106,6 @@ const FormTextArea = ({
               .length
             return val.length + textLength >= maxLength
           }}
-          // handleReturn={(e, editorState) => {
-          //   onEditorStateChange(
-          //     RichUtils.insertSoftNewline(editorState),
-          //     'content'
-          //   )
-
-          //   return 'handled'
-          // }}
         />
       </div>
 
@@ -141,7 +135,8 @@ const FormTextArea = ({
 }
 
 FormTextArea.defaultProps = {
-  toolbarHidden: false
+  toolbarHidden: false,
+  stripHtmls: false
 }
 
 FormTextArea.propTypes = {
@@ -156,6 +151,7 @@ FormTextArea.propTypes = {
   onChange: P.func,
   isEdit: P.bool,
   toolbarHidden: P.bool,
+  stripHtmls: P.bool,
   editorClassName: P.string
 }
 
