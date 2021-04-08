@@ -10,7 +10,9 @@ const images = {
   BUILDING_AVATAR:
     'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/default-avatar.png',
   PROPERTY_AVATAR:
-    'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/icon.png'
+    'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/icon.png',
+  DEFAULT_NOTIF_IMAGE:
+    'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/img-announcement.png'
 }
 
 export default images
