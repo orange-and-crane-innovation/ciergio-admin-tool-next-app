@@ -1,9 +1,9 @@
 import P from 'prop-types'
 
-function EditButton({ handleClick }) {
+function EditButton({ onClick }) {
   return (
     <span
-      onClick={handleClick}
+      onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={() => {}}
@@ -15,7 +15,7 @@ function EditButton({ handleClick }) {
 }
 
 EditButton.propTypes = {
-  handleClick: P.func
+  onClick: P.func
 }
 
 export default EditButton

@@ -3,15 +3,15 @@ import P from 'prop-types'
 
 import styles from './Tabs.module.css'
 
-const TabPanels = ({ activeId, children }) => {
+const TabPanels = ({ activeid, children }) => {
   const _children = React.Children.map(children, child =>
-    React.cloneElement(child, { activeId })
+    React.cloneElement(child, { activeid })
   )
   return <div className={styles.tabPanel}>{_children}</div>
 }
 
 TabPanels.propTypes = {
-  activeId: P.string,
+  activeid: P.string,
   children: P.any
 }
 

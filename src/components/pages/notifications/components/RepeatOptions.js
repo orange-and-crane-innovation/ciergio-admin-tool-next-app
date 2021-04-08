@@ -1,7 +1,11 @@
 import P from 'prop-types'
+import moment from 'moment'
+
 import RadioBox from '@app/components/forms/form-radio'
 import { DateInput } from '@app/components/datetime'
 import FormInput from '@app/components/forms/form-input'
+
+import { ATTR } from '@app/utils'
 
 function RepeatOptions({
   repeat,
@@ -19,7 +23,8 @@ function RepeatOptions({
   return (
     <div className="flex flex-col p-4 justify-center">
       <h4 className="text-base font-bold text-gray-500">End</h4>
-      <div className="w-1/4 mb-2">
+      {/* Removed: not supported in backend */}
+      {/* <div className="w-1/4 mb-2">
         <RadioBox
           primary
           id="never"
@@ -29,8 +34,8 @@ function RepeatOptions({
           onChange={onSelectRepeat}
           isChecked={repeatEndOption === 'never'}
         />
-      </div>
-      <div className="flex items-center mb-2">
+      </div> */}
+      <div className="flex items-center mb-2 -mt-4">
         <div className="w-1/4">
           <RadioBox
             primary
@@ -43,16 +48,18 @@ function RepeatOptions({
           />
         </div>
 
-        <div className="w-1/2">
+        <div className="w-1/2 mt-4">
           <DateInput
+            label=""
             disabled={repeatEndOption !== 'on'}
             date={repeatDate}
             onDateChange={onRepeatDateChange}
             dateFormat="MMMM DD, YYYY"
+            minDate={new Date()}
           />
         </div>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center -mt-8">
         <div className="w-1/4">
           <RadioBox
             primary
@@ -64,16 +71,20 @@ function RepeatOptions({
             isChecked={repeatEndOption === 'after'}
           />
         </div>
-        <div className="flex items-center w-1/2">
+        <div className="flex items-center w-36 mt-4">
           <FormInput
+            type="text"
             value={instance}
             inputProps={{
-              disabled: repeatEndOption !== 'after'
+              style: { paddingRight: '1rem', textAlign: 'right' }
             }}
+            disabled={repeatEndOption !== 'after'}
             onChange={onChangeInstance}
+            onKeyPress={ATTR.numericOnly}
             name="instances"
+            maxLength={4}
           />
-          <p className="ml-4">instance</p>
+          <span className="-mt-4 ml-2"> instance</span>
         </div>
       </div>
     </div>
@@ -85,8 +96,8 @@ RepeatOptions.propTypes = {
   repeatEndOption: P.string,
   onSelectRepeat: P.func,
   onChangeInstance: P.func,
-  instance: P.string,
-  repeatDate: P.instanceOf(Date),
+  instance: P.oneOfType([P.number, P.string]),
+  repeatDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
   onRepeatDateChange: P.func
 }
 

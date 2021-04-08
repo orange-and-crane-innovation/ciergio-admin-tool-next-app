@@ -155,12 +155,12 @@ const Dropdown = () => {
               <div className="section-title">My Account</div>
               <MenuItem
                 url={'/account/profile'}
-                icon={'ciergio-employees'}
+                icon={'ciergio-user'}
                 title={'My Profile'}
               />
               <MenuItem
                 url={'/dashboard'}
-                icon={'ciergio-settings'}
+                icon={'ciergio-gear'}
                 title={'Preferences'}
               />
             </div>
@@ -273,7 +273,7 @@ const Dropdown = () => {
             <div className="dropdown-section">
               <MenuItem
                 url={'/auth/manage'}
-                icon={'ciergio-teams'}
+                icon={'ciergio-user-group'}
                 title={'Manage Accounts'}
               />
               <MenuItem

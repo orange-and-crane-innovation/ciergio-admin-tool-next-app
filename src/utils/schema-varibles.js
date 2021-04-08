@@ -437,6 +437,17 @@ export const MutationResponse = `
       _id
       name
     }
+    recurringSchedule {
+          type
+          properties {
+            dayOfWeek
+            date
+          }
+          end {
+            date
+            instance
+          }
+        }
   }
 `,
   PRAYER_REQUESTS_RESPONSE = `

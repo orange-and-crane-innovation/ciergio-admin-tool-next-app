@@ -48,7 +48,7 @@ function FormCheckbox({
         {...rest}
       />
       {label && (
-        <label htmlFor={id} className="ml-2 cursor-pointer">
+        <label htmlFor={id} className={styles.FormCheckboxLabel}>
           {label}
         </label>
       )}
@@ -60,7 +60,7 @@ FormCheckbox.propTypes = {
   id: P.string.isRequired,
   name: P.string.isRequired,
   label: P.any,
-  value: P.string,
+  value: P.oneOfType([P.string, P.bool]),
   primary: P.bool,
   success: P.bool,
   danger: P.bool,

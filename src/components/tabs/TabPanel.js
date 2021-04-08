@@ -1,11 +1,11 @@
 import P from 'prop-types'
 
-const TabPanel = ({ activeId, id, children }) => {
-  return activeId === id ? children : null
+const TabPanel = ({ activeid, id, children }) => {
+  return activeid === id ? children : null
 }
 
 TabPanel.propTypes = {
-  activeId: P.string,
+  activeid: P.string,
   id: P.string,
   children: P.any
 }

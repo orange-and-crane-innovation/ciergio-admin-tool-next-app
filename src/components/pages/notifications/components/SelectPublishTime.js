@@ -1,5 +1,6 @@
 import P from 'prop-types'
 import { DateInput, TimeInput } from '@app/components/datetime'
+import moment from 'moment'
 
 function SelectPublishTime({ publishType, date, onDateChange }) {
   if (publishType === 'now') return null
@@ -15,6 +16,7 @@ function SelectPublishTime({ publishType, date, onDateChange }) {
           date={date}
           onDateChange={onDateChange}
           dateFormat="MMMM DD, YYYY"
+          minDate={new Date()}
         />
         <TimeInput
           timeFormat="h:mm A"
@@ -32,7 +34,7 @@ function SelectPublishTime({ publishType, date, onDateChange }) {
 SelectPublishTime.propTypes = {
   publishType: P.string.isRequired,
   onDateChange: P.func,
-  date: P.instanceOf(Date)
+  date: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)])
 }
 
 export default SelectPublishTime

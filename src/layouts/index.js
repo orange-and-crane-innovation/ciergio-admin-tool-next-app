@@ -19,13 +19,18 @@ const Layouts = ({ children }) => {
       '/auth/forgot-password',
       '/auth/reset',
       '/auth/reset/verify',
-      '/auth/reset/password',
-      '/auth/join/[code]',
-      '/auth/verify-email/[code]'
+      '/auth/reset/password'
     ].includes(pathname)
   ) {
     return <Centered>{children}</Centered>
-  } else if (['/terms-and-conditions', '/privacy-policy'].includes(pathname)) {
+  } else if (
+    [
+      '/auth/join/[code]',
+      '/auth/verify-email/[code]',
+      '/terms-and-conditions',
+      '/privacy-policy'
+    ].includes(pathname)
+  ) {
     return <Public>{children}</Public>
   } else if (
     [

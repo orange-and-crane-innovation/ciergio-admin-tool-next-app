@@ -42,7 +42,7 @@ const validationSchemaExistingUser = yup.object().shape({
   email: yup.string().email().label('Email Address').required()
 })
 
-function Join({ onSubmit, isSubmitting, data }) {
+function Join({ onSubmit, isLoading, isSubmitting, data }) {
   const [isDisabled, setIsDisabled] = useState(true)
   const [property, setProperty] = useState()
   const [accountType, setAccountType] = useState()
@@ -97,7 +97,7 @@ function Join({ onSubmit, isSubmitting, data }) {
         </div>
 
         <div className={style.JoinCard}>
-          {isSubmitting && <PageLoader />}
+          {isLoading && <PageLoader />}
           {data && (
             <form className={style.JoinForm} onSubmit={handleSubmit(onSubmit)}>
               <h2>Register</h2>
@@ -226,7 +226,7 @@ function Join({ onSubmit, isSubmitting, data }) {
               />
             </form>
           )}
-          {!data && !isSubmitting && (
+          {!data && !isLoading && (
             <p className={style.PageError}>
               The code is invalid, make sure you have entered the valid invite
               code from your email.
@@ -248,11 +248,13 @@ function Join({ onSubmit, isSubmitting, data }) {
 }
 
 Join.defaultProps = {
+  isLoading: false,
   isSubmitting: false
 }
 
 Join.propTypes = {
   onSubmit: P.func.isRequired,
+  isLoading: P.bool,
   isSubmitting: P.bool,
   data: P.object
 }

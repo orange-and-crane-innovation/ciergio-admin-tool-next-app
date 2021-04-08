@@ -48,6 +48,7 @@ function JoinPage() {
 
   const { loading, data, error } = useQuery(VERIFY_CODE_QUERY, {
     onError: _e => {},
+    skip: router.query.code === undefined,
     variables: {
       where: {
         code: router.query.code,
@@ -113,7 +114,7 @@ function JoinPage() {
         })
       } catch (err) {}
     },
-    [createAccount]
+    [router, profile, createAccount]
   )
 
   const errorHandler = data => {
@@ -140,7 +141,14 @@ function JoinPage() {
     }
   }
 
-  return <Join onSubmit={onSubmit} isSubmitting={loading} data={profile} />
+  return (
+    <Join
+      onSubmit={onSubmit}
+      isLoading={loading}
+      isSubmitting={loadingCreate}
+      data={profile}
+    />
+  )
 }
 
 export default JoinPage

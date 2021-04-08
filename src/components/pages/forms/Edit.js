@@ -20,6 +20,7 @@ import Modal from '@app/components/modal'
 import PageLoader from '@app/components/page-loader'
 
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
@@ -69,23 +70,29 @@ const GET_POST_QUERY = gql`
         audienceExpanse {
           company {
             _id
+            name
           }
           complex {
             _id
+            name
           }
           building {
             _id
+            name
           }
         }
         audienceExceptions {
           company {
             _id
+            name
           }
           complex {
             _id
+            name
           }
           building {
             _id
+            name
           }
         }
       }
@@ -121,7 +128,9 @@ const CreatePosts = () => {
   const [post, setPost] = useState([])
   const [fileUrls, setFileUrls] = useState([])
   const [fileUploadedData, setFileUploadedData] = useState([])
+  const [fileUploadError, setFileUploadError] = useState()
   const [videoUrl, setVideoUrl] = useState()
+  const [fileMaxSize] = useState(1572864)
   const [inputMaxLength] = useState(65)
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
@@ -289,6 +298,8 @@ const CreatePosts = () => {
     }
   }, [loadingPost, dataPost, errorPost, setValue])
 
+  console.log(selectedCompanySpecific)
+
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
@@ -304,7 +315,7 @@ const CreatePosts = () => {
             message = `You have successfully unpublished a form.`
             break
           case 'delete':
-            message = `You have successfully sent a form to the trash.`
+            message = `You have successfully sent an item to the trash.`
             break
           default:
             message = `You have successfully updated a form.`
@@ -315,7 +326,6 @@ const CreatePosts = () => {
         goToFormsPageLists()
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
 
   const errorHandler = data => {
@@ -389,33 +399,34 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    )
-
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
+      })
+      .then(function (response) {
+        if (response.data) {
+          const imageData = response.data.map(item => {
+            return {
+              url: item.location,
+              type: item.mimetype
+            }
+          })
+          setFileUploadedData(imageData)
+          setFileUploadError(null)
         }
       })
-
-      const combinedImages = [].concat(
-        fileUrls,
-        response.data.map(item => item.location)
-      )
-      const combinedUploadedImages = [].concat(fileUploadedData, imageData)
-
-      setFileUrls(combinedImages)
-      setFileUploadedData(combinedUploadedImages)
-    }
+      .catch(function (error) {
+        const errMsg = 'Failed to upload file. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('embeddedFiles', null)
+      })
+      .then(() => {
+        setLoading(false)
+      })
   }
 
   const onUploadFile = e => {
@@ -424,20 +435,37 @@ const CreatePosts = () => {
     const fileList = []
 
     if (files) {
+      let maxSize = 0
+      for (const file of files) {
+        if (file.size > fileMaxSize) {
+          maxSize++
+        }
+      }
+
       if (files.length > maxFiles) {
         showToast('info', `Maximum of ${maxFiles} files only`)
+      } else if (maxSize > 0) {
+        showToast(
+          'info',
+          `Maximum size of ${(fileMaxSize / 1024 / 1024).toFixed(1)}mb only`
+        )
       } else {
         setLoading(true)
+        setFileUploadError(null)
+
+        if (errors?.embeddedFiles?.message) {
+          errors.embeddedFiles.message = null
+        }
+
         for (const file of files) {
           const reader = new FileReader()
 
           reader.onloadend = () => {
             setFileUploadedData(prevArr => [...prevArr, file])
-            setLoading(false)
           }
           reader.readAsDataURL(file)
 
-          formData.append('photos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
         setValue('embeddedFiles', fileList)
@@ -560,6 +588,10 @@ const CreatePosts = () => {
 
   const onSelectType = data => {
     setSelectedAudienceType(data)
+
+    if (data === 'all') {
+      resetAudienceSpecific()
+    }
   }
 
   const onSelectCompanyExcept = data => {
@@ -689,10 +721,34 @@ const CreatePosts = () => {
     setShowPublishTimeModal(false)
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
+    setSelectedComplexExcept(null)
+    setSelectedBuildingExcept(null)
     setSelectedPublishTimeType('now')
     setSelectedPublishDateTime(null)
     setSelectedStatus('active')
+    resetAudienceSpecific()
+  }
+
+  const resetAudienceSpecific = () => {
+    if (accountType === ACCOUNT_TYPES.COMPYAD.value) {
+      const companyID = user?.accounts?.data[0]?.company?._id
+      setSelectedCompanySpecific([{ value: companyID }])
+      setSelectedComplexSpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
+      const complexID = user?.accounts?.data[0]?.complex?._id
+      setSelectedComplexSpecific([{ value: complexID }])
+      setSelectedCompanySpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.BUIGAD.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+    } else if (accountType === ACCOUNT_TYPES.RECEP.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+      setSelectedCompanySpecific(null)
+      setSelectedComplexSpecific(null)
+    }
   }
 
   const onUpdateStatus = data => {
@@ -772,8 +828,11 @@ const CreatePosts = () => {
                   control={control}
                   render={({ name, value, onChange }) => (
                     <FormTextArea
-                      options={['link', 'history']}
+                      maxLength={500}
+                      options={['history']}
                       placeholder="Write your text here"
+                      withCounter
+                      stripHtmls
                       value={value}
                       error={errors?.content?.message ?? null}
                       onChange={e => {
@@ -792,15 +851,20 @@ const CreatePosts = () => {
             header={<span className={style.CardHeader}>Files</span>}
             content={
               <div className={style.CreateContentContainer}>
-                <p>You may upload PDFs or DOCs with max file size of 1.5MB.</p>
-                <p>Maximum of 3 files only.</p>
+                <p>
+                  You may upload PDFs or DOCs with max file size of{' '}
+                  {(fileMaxSize / 1024 / 1024).toFixed(1)}MB.
+                </p>
+                <p>Maximum of {maxFiles} files only.</p>
                 <br />
                 <Uploader
                   multiple
                   files={fileUploadedData}
                   fileUrls={fileUrls}
                   loading={loading}
-                  error={errors?.embeddedFiles?.message ?? null}
+                  error={
+                    errors?.embeddedFiles?.message ?? fileUploadError ?? null
+                  }
                   maxFiles={maxFiles}
                   accept=".pdf, .doc, .docx"
                   onUpload={onUploadFile}
@@ -852,40 +916,45 @@ const CreatePosts = () => {
                         )}
                       </div>
 
-                      {(selectedAudienceType === 'allExcept' ||
-                        selectedAudienceType === 'specific') && (
-                        <div className="flex">
-                          <span className={style.CreatePostSection} />
-                          <span>
-                            <strong>
-                              {selectedCompanyExcept && (
-                                <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
-                              )}
-                              {selectedCompanySpecific && (
-                                <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
-                              )}
-                              {selectedComplexExcept && (
-                                <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
-                              )}
-                              {selectedComplexSpecific && (
-                                <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
-                              )}
-                              {selectedBuildingExcept && (
-                                <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
-                              )}
-                              {selectedBuildingSpecific && (
-                                <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
-                              )}
-                            </strong>
-                            <span
-                              className={style.CreatePostLink}
-                              onClick={handleShowAudienceModal}
-                            >
-                              Edit
-                            </span>
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex">
+                        <span className={style.CreatePostSection} />
+                        <span>
+                          <strong>
+                            {accountType !== ACCOUNT_TYPES.COMPYAD.value && (
+                              <>
+                                {selectedCompanyExcept && (
+                                  <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                                )}
+                                {selectedCompanySpecific && (
+                                  <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+                                )}
+                              </>
+                            )}
+
+                            {accountType !== ACCOUNT_TYPES.COMPXAD.value && (
+                              <>
+                                {selectedComplexExcept && (
+                                  <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                                )}
+                                {selectedComplexSpecific && (
+                                  <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                                )}
+                              </>
+                            )}
+
+                            {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
+                              <>
+                                {selectedBuildingExcept && (
+                                  <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                                )}
+                                {selectedBuildingSpecific && (
+                                  <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                                )}
+                              </>
+                            )}
+                          </strong>
+                        </span>
+                      </div>
                     </span>
                   </div>
                 </div>

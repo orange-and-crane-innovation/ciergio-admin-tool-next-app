@@ -33,12 +33,17 @@
     @apply block;
 
     & .formLabel {
-      @apply block mb-2;
+      @apply block mb-4;
+    }
+
+    & span {
+      @apply text-neutral-dark font-body font-normal text-sm;
     }
   }
 
   .FormError {
-    @apply mb-2 block text-red-500;
+    @apply mb-4 mt-1 block;
+    @apply text-danger-500 text-md font-bold;
   }
 
   .FormControl {
@@ -50,26 +55,40 @@
   & [type='text'],
   & [type='password'],
   & [type='email'] {
-    @apply border-red-500;
+    @apply border-danger-500;
   }
 
   &:hover {
-    @apply border-red-700;
+    @apply border-danger-700;
   }
 
   &:active {
     @apply outline-none;
-    @apply border-red-700;
+    @apply border-danger-700;
   }
 
   &:focus {
     @apply outline-none;
+  }
+
+  & label {
+    & span {
+      @apply text-danger-500;
+    }
   }
 }
 
 .Readonly {
   & [type='text'],
   & [type='password'] {
-    @apply bg-neutral-100;
+    @apply bg-neutral-200;
+  }
+}
+
+.Disabled {
+  & [type='text'],
+  & [type='password'] {
+    @apply bg-neutral-200;
+    @apply cursor-not-allowed pointer-events-none;
   }
 }

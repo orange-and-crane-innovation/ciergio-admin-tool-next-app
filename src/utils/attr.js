@@ -26,3 +26,8 @@ export const toCurrency = (amount, noUnit) => {
     return formatter.format(amount).replace(/^(\D+)/, '$1 ')
   }
 }
+
+export const numericOnly = e => {
+  const ASCIICode = e.which ? e.which : e.charCode
+  if (ASCIICode > 31 && (ASCIICode < 48 || ASCIICode > 57)) e.preventDefault()
+}

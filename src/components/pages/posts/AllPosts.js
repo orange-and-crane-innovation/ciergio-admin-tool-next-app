@@ -235,13 +235,11 @@ const PostComponent = () => {
     fetchFilter.type = 'daily_reading'
 
     if (selectedDate && selectedDate !== '') {
-      fetchFilter.filter = {}
-      fetchFilter.filter.dailyReadingDate = selectedDate
+      fetchFilter.dailyReadingDate = selectedDate
     }
 
     if (selectedMonth && selectedMonth !== '') {
-      fetchFilter.filter = {}
-      fetchFilter.filter.dailyReadingDateRange = selectedMonth
+      fetchFilter.dailyReadingDateRange = selectedMonth
     }
   }
 
