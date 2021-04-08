@@ -119,6 +119,7 @@ export default function Main() {
                   categoryId={categoryIds[SETTINGS[routerName].mark]}
                   status={SETTINGS[routerName].status.cancelled}
                   name={SETTINGS[routerName].name}
+                  buildingName={buildingName}
                 />
               )}
             </Tabs.TabPanel>

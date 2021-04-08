@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import DateAndSearch from '../DateAndSearch'
 import Table from '@app/components/table'
 import Card from '@app/components/card'
@@ -26,6 +26,8 @@ import * as yup from 'yup'
 import PageLoader from '@app/components/page-loader'
 import { yupResolver } from '@hookform/resolvers/yup'
 import useKeyPress from '@app/utils/useKeyPress'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
+import { DATE } from '@app/utils'
 
 const rowName = [
   {
@@ -65,7 +67,7 @@ const TableColStyle = ({ top, bottom }) => {
   )
 }
 
-function Cancelled({ buildingId, categoryId, status, name }) {
+function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -91,6 +93,13 @@ function Cancelled({ buildingId, categoryId, status, name }) {
       note: ''
     }
   })
+  const [csvData, setCsvData] = useState([
+    ['Cancelled Visitor'],
+    ['Building', buildingName],
+    ['Date', DATE.toFriendlyDate(new Date())],
+    [''],
+    ['#', 'Unit No.', 'Unit Owner', "Visitor's Name", "Visitor's Company"]
+  ])
 
   const [
     addNote,
@@ -128,7 +137,15 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     if (!loading && !error && data) {
       const tableData = []
       const tempIds = []
+      const tempCSV = []
       data?.getRegistryRecords?.data.forEach((registry, index) => {
+        tempCSV.push([
+          index + 1,
+          registry.forWhat.name,
+          `${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`,
+          `${registry.visitor.firstName} ${registry.visitor.lastName}`,
+          registry.visitor.company
+        ])
         const dropdownData = [
           {
             label: 'View More Details',
@@ -145,7 +162,13 @@ function Cancelled({ buildingId, categoryId, status, name }) {
               bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
             />
           ),
-          personCompany: `${registry.visitor.firstName} ${registry.visitor.lastName}`,
+          personCompany: (
+            <TableColStyle
+              key={index}
+              top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+              bottom={registry.visitor.company}
+            />
+          ),
           addOrView: (
             <div>
               <Button
@@ -316,7 +339,12 @@ function Cancelled({ buildingId, categoryId, status, name }) {
             </b>
             <div className={styles.ReceptionistButtonCard}>
               <Button icon={<FiPrinter />} />
-              <Button icon={<FiDownload />} />
+              <DownloadCSV
+                data={[]}
+                title="Cancelled Visitor"
+                fileName="Cancelled Visitor"
+              />
+              {/* <Button icon={<FiDownload />} /> */}
               <Button
                 primary
                 label={`Add ${name}`}
@@ -374,7 +402,8 @@ Cancelled.propTypes = {
   buildingId: P.string.isRequired,
   categoryId: P.string.isRequired,
   status: P.oneOfType[(P.string, P.array)],
-  name: P.string.isRequired
+  name: P.string.isRequired,
+  buildingName: P.string
 }
 
 export default Cancelled
