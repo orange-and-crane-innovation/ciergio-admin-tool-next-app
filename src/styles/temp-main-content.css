@@ -203,7 +203,6 @@ select:active {
 
 .modal .modal-footer button {
   margin-bottom: 0 !important;
-  @apply text-base !important;
 }
 
 /* CARD CONTENT TABLE */
