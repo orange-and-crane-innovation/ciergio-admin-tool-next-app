@@ -23,6 +23,7 @@ import Modal from '@app/components/modal'
 import PageLoader from '@app/components/page-loader'
 
 import { DATE } from '@app/utils'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import VideoPlayer from '@app/components/globals/VideoPlayer'
 import SelectCategory from '@app/components/globals/SelectCategory'
@@ -86,6 +87,7 @@ const CreatePosts = () => {
   const [maxImages] = useState(3)
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
+  const [fileUploadError, setFileUploadError] = useState()
   const [videoUrl, setVideoUrl] = useState()
   const [videoError, setVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
@@ -163,6 +165,10 @@ const CreatePosts = () => {
   })
 
   register({ name: 'images' })
+
+  useEffect(() => {
+    resetAudienceSpecific()
+  }, [])
 
   useEffect(() => {
     if (!loadingCreate) {
@@ -243,26 +249,34 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    )
-
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
+      })
+      .then(function (response) {
+        if (response.data) {
+          const imageData = response.data.map(item => {
+            return {
+              url: item.location,
+              type: item.mimetype
+            }
+          })
+          setImageUploadedData(imageData)
+          setFileUploadError(null)
         }
       })
-
-      setImageUploadedData(imageData)
-    }
+      .catch(function (error) {
+        const errMsg = 'Failed to upload image. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('images', null)
+      })
+      .then(() => {
+        setLoading(false)
+      })
   }
 
   const onUploadImage = e => {
@@ -275,16 +289,21 @@ const CreatePosts = () => {
         showToast('info', `Maximum of ${maxImages} files only`)
       } else {
         setLoading(true)
+        setFileUploadError(null)
+
+        if (errors?.images?.message) {
+          errors.images.message = null
+        }
+
         for (const file of files) {
           const reader = new FileReader()
 
           reader.onloadend = () => {
             setImageUrls(imageUrls => [...imageUrls, reader.result])
-            setLoading(false)
           }
           reader.readAsDataURL(file)
 
-          formData.append('photos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
         setValue('images', fileList)
@@ -337,7 +356,7 @@ const CreatePosts = () => {
         type: 'post',
         categoryId: data.category,
         title: data?.title || 'Untitled',
-        content: data?.content,
+        content: data?.content?.replace(/(&nbsp;)+/g, ''),
         audienceType: selectedAudienceType,
         status: status,
         primaryMedia: imageUploadedData,
@@ -406,6 +425,10 @@ const CreatePosts = () => {
 
   const onSelectType = data => {
     setSelectedAudienceType(data)
+
+    if (data === 'all') {
+      resetAudienceSpecific()
+    }
   }
 
   const onSelectCompanyExcept = data => {
@@ -443,11 +466,9 @@ const CreatePosts = () => {
   const onCancelAudience = () => {
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
     setSelectedComplexExcept(null)
-    setSelectedComplexSpecific(null)
     setSelectedBuildingExcept(null)
-    setSelectedBuildingSpecific(null)
+    resetAudienceSpecific()
     handleShowAudienceModal()
   }
 
@@ -485,14 +506,34 @@ const CreatePosts = () => {
     setSelectedCategory(null)
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
     setSelectedComplexExcept(null)
-    setSelectedComplexSpecific(null)
     setSelectedBuildingExcept(null)
-    setSelectedBuildingSpecific(null)
     setSelectedPublishTimeType('now')
     setSelectedPublishDateTime(null)
     setSelectedStatus('active')
+    resetAudienceSpecific()
+  }
+
+  const resetAudienceSpecific = () => {
+    if (accountType === ACCOUNT_TYPES.COMPYAD.value) {
+      const companyID = user?.accounts?.data[0]?.company?._id
+      setSelectedCompanySpecific([{ value: companyID }])
+      setSelectedComplexSpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
+      const complexID = user?.accounts?.data[0]?.complex?._id
+      setSelectedComplexSpecific([{ value: complexID }])
+      setSelectedCompanySpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.BUIGAD.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+    } else if (accountType === ACCOUNT_TYPES.RECEP.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+      setSelectedCompanySpecific(null)
+      setSelectedComplexSpecific(null)
+    }
   }
 
   const onUpdateStatus = data => {
@@ -529,7 +570,7 @@ const CreatePosts = () => {
                   maxImages={maxImages}
                   images={imageUrls}
                   loading={loading}
-                  error={errors?.images?.message ?? null}
+                  error={errors?.images?.message ?? fileUploadError ?? null}
                   onUploadImage={onUploadImage}
                   onRemoveImage={onRemoveImage}
                 />
@@ -557,6 +598,9 @@ const CreatePosts = () => {
                                   <div className="relative">
                                     <FormInput
                                       {...props}
+                                      inputProps={{
+                                        style: { backgroundColor: 'white' }
+                                      }}
                                       inputClassName={
                                         style.CreatePostInputCustom
                                       }
@@ -777,23 +821,37 @@ const CreatePosts = () => {
                           <span className={style.CreatePostSection} />
                           <span>
                             <strong>
-                              {selectedCompanyExcept && (
-                                <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                              {accountType !== ACCOUNT_TYPES.COMPYAD.value && (
+                                <>
+                                  {selectedCompanyExcept && (
+                                    <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                                  )}
+                                  {selectedCompanySpecific && (
+                                    <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+                                  )}
+                                </>
                               )}
-                              {selectedCompanySpecific && (
-                                <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+
+                              {accountType !== ACCOUNT_TYPES.COMPXAD.value && (
+                                <>
+                                  {selectedComplexExcept && (
+                                    <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                                  )}
+                                  {selectedComplexSpecific && (
+                                    <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                                  )}
+                                </>
                               )}
-                              {selectedComplexExcept && (
-                                <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
-                              )}
-                              {selectedComplexSpecific && (
-                                <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
-                              )}
-                              {selectedBuildingExcept && (
-                                <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
-                              )}
-                              {selectedBuildingSpecific && (
-                                <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+
+                              {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
+                                <>
+                                  {selectedBuildingExcept && (
+                                    <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                                  )}
+                                  {selectedBuildingSpecific && (
+                                    <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                                  )}
+                                </>
                               )}
                             </strong>
                           </span>

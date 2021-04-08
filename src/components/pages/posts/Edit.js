@@ -29,6 +29,7 @@ import SelectCategory from '@app/components/globals/SelectCategory'
 
 import showToast from '@app/utils/toast'
 import { DATE } from '@app/utils'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
@@ -128,7 +129,7 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
-  content: yup.mixed().nullable(),
+  content: yup.string().nullable(),
   category: yup.string().nullable()
 })
 
@@ -151,6 +152,7 @@ const CreatePosts = () => {
   const [post, setPost] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
+  const [fileUploadError, setFileUploadError] = useState()
   const [videoUrl, setVideoUrl] = useState()
   const [videoError, setVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
@@ -355,7 +357,21 @@ const CreatePosts = () => {
         errorHandler(errorUpdate)
       }
       if (calledUpdate && dataUpdate) {
-        showToast('success', 'You have successfully updated a post.')
+        let message
+
+        switch (modalType) {
+          case 'unpublished':
+            message = 'You have successfully unpublished a post.'
+            break
+          case 'delete':
+            message = 'You have successfully sent an item to the trash.'
+            break
+          default:
+            message = 'You have successfully updated a post.'
+            break
+        }
+
+        showToast('success', message)
 
         if (modalType === 'preview') {
           goToPreviewPage()
@@ -450,33 +466,34 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    )
-
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
+      })
+      .then(function (response) {
+        if (response.data) {
+          const imageData = response.data.map(item => {
+            return {
+              url: item.location,
+              type: item.mimetype
+            }
+          })
+          setImageUploadedData(imageData)
+          setFileUploadError(null)
         }
       })
-
-      const combinedImages = [].concat(
-        imageUrls,
-        response.data.map(item => item.location)
-      )
-      const combinedUploadedImages = [].concat(imageUploadedData, imageData)
-
-      setImageUrls(combinedImages)
-      setImageUploadedData(combinedUploadedImages)
-    }
+      .catch(function (error) {
+        const errMsg = 'Failed to upload image. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('images', null)
+      })
+      .then(() => {
+        setLoading(false)
+      })
   }
 
   const onUploadImage = e => {
@@ -489,16 +506,21 @@ const CreatePosts = () => {
         showToast('info', `Maximum of ${maxImages} files only`)
       } else {
         setLoading(true)
+        setFileUploadError(null)
+
+        if (errors?.images?.message) {
+          errors.images.message = null
+        }
+
         for (const file of files) {
           const reader = new FileReader()
 
           reader.onloadend = () => {
             // setImageUrls(imageUrls => [...imageUrls, reader.result])
-            setLoading(false)
           }
           reader.readAsDataURL(file)
 
-          formData.append('photos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
         setValue('images', fileList)
@@ -556,7 +578,7 @@ const CreatePosts = () => {
         data: {
           categoryId: data.category,
           title: data?.title || 'Untitled',
-          content: data?.content,
+          content: data?.content?.replace(/(&nbsp;)+/g, ''),
           audienceType: selectedAudienceType,
           primaryMedia:
             imageUploadedData?.length > 0 ? imageUploadedData : null,
@@ -664,6 +686,10 @@ const CreatePosts = () => {
 
   const onSelectType = data => {
     setSelectedAudienceType(data)
+
+    if (data === 'all') {
+      resetAudienceSpecific()
+    }
   }
 
   const onSelectCompanyExcept = data => {
@@ -843,6 +869,28 @@ const CreatePosts = () => {
     setSelectedDate(e)
   }
 
+  const resetAudienceSpecific = () => {
+    if (accountType === ACCOUNT_TYPES.COMPYAD.value) {
+      const companyID = user?.accounts?.data[0]?.company?._id
+      setSelectedCompanySpecific([{ value: companyID }])
+      setSelectedComplexSpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
+      const complexID = user?.accounts?.data[0]?.complex?._id
+      setSelectedComplexSpecific([{ value: complexID }])
+      setSelectedCompanySpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.BUIGAD.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+    } else if (accountType === ACCOUNT_TYPES.RECEP.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+      setSelectedCompanySpecific(null)
+      setSelectedComplexSpecific(null)
+    }
+  }
+
   return (
     <>
       {loadingUpdate && <PageLoader fullPage />}
@@ -890,7 +938,7 @@ const CreatePosts = () => {
                   maxImages={maxImages}
                   images={imageUrls}
                   loading={loading}
-                  error={errors?.images?.message ?? null}
+                  error={errors?.images?.message ?? fileUploadError ?? null}
                   onUploadImage={onUploadImage}
                   onRemoveImage={onRemoveImage}
                 />
@@ -918,6 +966,9 @@ const CreatePosts = () => {
                                   <div className="relative">
                                     <FormInput
                                       {...props}
+                                      inputProps={{
+                                        style: { backgroundColor: 'white' }
+                                      }}
                                       inputClassName={
                                         style.CreatePostInputCustom
                                       }
@@ -1136,40 +1187,45 @@ const CreatePosts = () => {
                         )}
                       </div>
 
-                      {(selectedAudienceType === 'allExcept' ||
-                        selectedAudienceType === 'specific') && (
-                        <div className="flex">
-                          <span className={style.CreatePostSection} />
-                          <span>
-                            <strong>
-                              {selectedCompanyExcept &&
-                                selectedAudienceType === 'allExcept' && (
+                      <div className="flex">
+                        <span className={style.CreatePostSection} />
+                        <span>
+                          <strong>
+                            {accountType !== ACCOUNT_TYPES.COMPYAD.value && (
+                              <>
+                                {selectedCompanyExcept && (
                                   <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
                                 )}
-                              {selectedCompanySpecific &&
-                                selectedAudienceType === 'specific' && (
+                                {selectedCompanySpecific && (
                                   <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
                                 )}
-                              {selectedComplexExcept &&
-                                selectedAudienceType === 'allExcept' && (
+                              </>
+                            )}
+
+                            {accountType !== ACCOUNT_TYPES.COMPXAD.value && (
+                              <>
+                                {selectedComplexExcept && (
                                   <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
                                 )}
-                              {selectedComplexSpecific &&
-                                selectedAudienceType === 'specific' && (
+                                {selectedComplexSpecific && (
                                   <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
                                 )}
-                              {selectedBuildingExcept &&
-                                selectedAudienceType === 'allExcept' && (
+                              </>
+                            )}
+
+                            {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
+                              <>
+                                {selectedBuildingExcept && (
                                   <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
                                 )}
-                              {selectedBuildingSpecific &&
-                                selectedAudienceType === 'specific' && (
+                                {selectedBuildingSpecific && (
                                   <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
                                 )}
-                            </strong>
-                          </span>
-                        </div>
-                      )}
+                              </>
+                            )}
+                          </strong>
+                        </span>
+                      </div>
                     </span>
                   </div>
 
@@ -1289,9 +1345,10 @@ const CreatePosts = () => {
                   handleShowModal('preview')
                 })}
               />
+
               <Button
                 type="button"
-                label="Update Post"
+                label={modalType === 'draft' ? 'Publish' : 'Update Post'}
                 primary
                 onMouseDown={() => onUpdateStatus('active')}
                 onClick={handleSubmit(e => {
