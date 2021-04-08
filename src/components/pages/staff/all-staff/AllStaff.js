@@ -181,9 +181,10 @@ function AllStaff() {
   const [deleteUser, { loading: deletingUser }] = useMutation(DELETE_USER, {
     onCompleted: () => {
       const staff = selectedStaff?.user
+      const accountType = parseAccountType(selectedStaff?.accountType)
       showToast(
         'success',
-        `You have successfully deleted ${staff.firstname} ${staff.lastName}.`
+        `You have successfully remove ${staff.firstName} ${staff.lastName} as ${accountType}`
       )
       handleClearModal('delete')
       refetchAccounts({
