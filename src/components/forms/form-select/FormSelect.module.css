@@ -32,6 +32,6 @@
 
   .FormSelectError {
     @apply mb-4;
-    @apply text-danger-500 text-sm font-normal;
+    @apply text-danger-500 text-md font-bold;
   }
 }
