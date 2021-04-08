@@ -80,7 +80,6 @@ export const GET_NOTIFICATION = gql`
         primaryMedia {
           url
           type
-          __typename
         }
       }
     }
@@ -100,16 +99,57 @@ export const GET_POST_CATEGORIES = gql`
 
 export const GET_FLASH_NOTIFICATION = gql`
   query getFlashNotif($id: String) {
-    getAllFlashNotifications(where: { _id: $id, limit: 1 }) {
+    getAllFlashNotifications(where: { _id: $id }, limit: 1) {
       ${Pagev2}
       post {
         _id
         status
+        title
         content
+        createdAt
+        updatedAt
+        publishedAt
+        category {
+          _id
+          name
+        }
         primaryMedia {
           url
           type
-          __typename
+        }
+        audienceType
+        audienceExpanse {
+          company {
+            _id
+          }
+          complex {
+            _id
+          }
+          building {
+            _id
+          }
+        }
+        audienceExceptions {
+          company {
+            _id
+          }
+          complex {
+            _id
+          }
+          building {
+            _id
+          }
+        }
+        recurringSchedule {
+          type
+          properties {
+            dayOfWeek
+            date
+          }
+          end {
+            date
+            instance
+          }
         }
       }
     }
@@ -123,9 +163,7 @@ export const GET_POST_HISTORY = gql`
         action
         data
         date
-        __typename
       }
-      __typename
     }
   }
 `
@@ -150,9 +188,7 @@ export const GET_VIEW_HISTORY = gql`
             line2
           }
           email
-          __typename
         }
-        __typename
       }
     }
   }
@@ -161,6 +197,7 @@ export const GET_VIEW_HISTORY = gql`
 export const BULK_UPDATE_MUTATION = gql`
   mutation bulkUpdatePost($id: [String], $status: postStatus) {
     bulkUpdatePost(id: $id, status: $status) {
+      _id
       processId
       message
     }
@@ -171,8 +208,8 @@ export const TRASH_NOTIFICATION = gql`
   mutation trashNotif($id: String!) {
     updatePost(id: $id, data: { status: trashed }) {
       _id
+      processId
       message
-      __typename
     }
   }
 `
@@ -181,8 +218,8 @@ export const DELETE_NOTIFICATION = gql`
   mutation trashNotif($id: String!) {
     updatePost(id: $id, data: { status: deleted }) {
       _id
+      processId
       message
-      __typename
     }
   }
 `
@@ -190,6 +227,16 @@ export const DELETE_NOTIFICATION = gql`
 export const CREATE_POST_MUTATION = gql`
   mutation($data: PostInput) {
     createPost(data: $data) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
+export const UPDATE_POST_MUTATION = gql`
+  mutation($id: String, $data: PostInput) {
+    updatePost(id: $id, data: $data) {
       _id
       processId
       message

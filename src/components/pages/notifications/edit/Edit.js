@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { useMutation } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import axios from '@app/utils/axios'
 import dayjs from 'dayjs'
 
@@ -16,7 +16,7 @@ import SelectCategory from '@app/components/globals/SelectCategory'
 
 import showToast from '@app/utils/toast'
 import { DATE } from '@app/utils'
-import { CREATE_POST_MUTATION } from '../queries'
+import { GET_FLASH_NOTIFICATION, UPDATE_POST_MUTATION } from '../queries'
 import { ACCOUNT_TYPES } from '@app/constants'
 
 import AudienceModal from '../components/AudienceModal'
@@ -26,7 +26,7 @@ import AudienceType from '../components/AudienceType'
 import PublishType from '../components/PublishType'
 
 import Can from '@app/permissions/can'
-import style from './Create.module.css'
+import style from './Edit.module.css'
 
 const validationSchema = yup.object().shape({
   title: yup
@@ -36,7 +36,7 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
-  content: yup.mixed().label('Content').nullable().required(),
+  content: yup.string().label('Content').nullable().required(),
   embeddedFiles: yup.array().label('Image').nullable().required(),
   category: yup.string().label('Category').nullable().required()
 })
@@ -47,15 +47,17 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
-  content: yup.mixed().label('Content').nullable(),
+  content: yup.string().label('Content').nullable(),
   embeddedFiles: yup.array().label('Image').nullable(),
   category: yup.string().label('Category').nullable()
 })
 
 function CreateNotification() {
-  const { push } = useRouter()
+  const { push, query } = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const [post, setPost] = useState([])
+  const [isEdit, setIsEdit] = useState(true)
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [fileUploadError, setFileUploadError] = useState()
   const [fileUploadedData, setFileUploadedData] = useState([])
@@ -105,28 +107,138 @@ function CreateNotification() {
 
   register({ name: 'embeddedFiles' })
 
-  const [
-    createPost,
+  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
+    GET_FLASH_NOTIFICATION,
     {
-      loading: loadingCreate,
-      called: calledCreate,
-      data: dataCreate,
-      error: errorCreate
+      fetchPolicy: 'network-only',
+      variables: {
+        id: query.id
+      }
     }
-  ] = useMutation(CREATE_POST_MUTATION, {
+  )
+
+  const [
+    updatePost,
+    {
+      loading: loadingUpdate,
+      called: calledUpdate,
+      data: dataUpdate,
+      error: errorUpdate
+    }
+  ] = useMutation(UPDATE_POST_MUTATION, {
     onError: _e => {}
   })
 
   useEffect(() => {
-    resetAudienceSpecific()
-  }, [])
+    if (errorPost) {
+      errorHandler(errorPost)
+    } else if (!loadingPost && dataPost) {
+      const itemData = dataPost?.getAllFlashNotifications?.post[0]
+
+      if (itemData) {
+        setPost(itemData)
+        setValue('title', itemData?.title)
+        setValue('content', itemData?.content)
+        setValue('category', itemData?.category?._id)
+        setValue(
+          'embeddedFiles',
+          itemData?.primaryMedia?.map(item => {
+            return item.url
+          }) ?? []
+        )
+        setTextCount(itemData?.title?.length)
+        setFileUploadedData(
+          itemData?.primaryMedia?.map(item => {
+            return { url: item.url, type: item.type }
+          }) ?? []
+        )
+        setSelectedCategory(itemData?.category?._id)
+        setImageUrls(itemData?.primaryMedia?.map(item => item.url) ?? [])
+        setSelectedAudienceType(itemData?.audienceType)
+        setSelectedCompanyExcept(
+          itemData?.audienceExceptions?.company?.length > 0
+            ? itemData?.audienceExceptions?.company.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedCompanySpecific(
+          itemData?.audienceExpanse?.company?.length > 0
+            ? itemData?.audienceExpanse?.company.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedComplexExcept(
+          itemData?.audienceExceptions?.complex?.length > 0
+            ? itemData?.audienceExceptions?.complex.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedComplexSpecific(
+          itemData?.audienceExpanse?.complex?.length > 0
+            ? itemData?.audienceExpanse?.complex.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedBuildingExcept(
+          itemData?.audienceExceptions?.building?.length > 0
+            ? itemData?.audienceExceptions?.building.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedBuildingSpecific(
+          itemData?.audienceExpanse?.building?.length > 0
+            ? itemData?.audienceExpanse?.building.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedPublishTimeType(
+          dayjs().isAfter(dayjs(new Date(itemData?.publishedAt)))
+            ? 'now'
+            : 'later'
+        )
+        setSelectedPublishDateTime(new Date(itemData?.publishedAt))
+
+        if (itemData?.recurringSchedule) {
+          const recurringData = {
+            isEdit: true,
+            ...itemData.recurringSchedule
+          }
+          setSelectedRecurring(recurringData)
+        }
+      }
+    }
+  }, [loadingPost, dataPost, errorPost, setValue])
 
   useEffect(() => {
-    if (!loadingCreate) {
-      if (errorCreate) {
-        errorHandler(errorCreate)
+    if (!loadingUpdate) {
+      if (errorUpdate) {
+        errorHandler(errorUpdate)
       }
-      if (calledCreate && dataCreate) {
+      if (calledUpdate && dataUpdate) {
         let message
 
         reset()
@@ -145,7 +257,7 @@ function CreateNotification() {
         showToast('success', message)
       }
     }
-  }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
+  }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
 
   const goToPageLists = () => {
     let pageType
@@ -235,77 +347,78 @@ function CreateNotification() {
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
-      const createData = {
-        type: 'flash',
-        categoryId: data.category,
-        title: data?.title || 'Untitled',
-        content: data?.content?.replace(/(&nbsp;)+/g, ''),
-        audienceType: selectedAudienceType,
-        status:
-          !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
-          status !== 'draft'
-            ? 'scheduled'
-            : status,
-        primaryMedia: fileUploadedData
+      const updateData = {
+        id: query.id,
+        data: {
+          categoryId: data.category,
+          title: data?.title || 'Untitled',
+          content: data?.content?.replace(/(&nbsp;)+/g, ''),
+          audienceType: selectedAudienceType,
+          status: status,
+          primaryMedia: fileUploadedData?.length > 0 ? fileUploadedData : null
+        }
       }
-
       if (selectedPublishDateTime) {
-        createData.publishedAt = DATE.toFriendlyISO(selectedPublishDateTime)
+        updateData.data.publishedAt =
+          selectedPublishTimeType === 'now'
+            ? new Date()
+            : selectedPublishDateTime
       }
       if (selectedCompanySpecific) {
-        createData.audienceExpanse = {
+        updateData.data.audienceExpanse = {
           companyIds: selectedCompanySpecific.map(item => item.value)
         }
       }
       if (selectedCompanyExcept) {
-        createData.audienceExceptions = {
+        updateData.data.audienceExceptions = {
           companyIds: selectedCompanyExcept.map(item => item.value)
         }
       }
       if (selectedComplexSpecific) {
-        createData.audienceExpanse = {
+        updateData.data.audienceExpanse = {
           complexIds: selectedComplexSpecific.map(item => item.value)
         }
       }
       if (selectedComplexExcept) {
-        createData.audienceExceptions = {
+        updateData.data.audienceExceptions = {
           complexIds: selectedComplexExcept.map(item => item.value)
         }
       }
       if (selectedBuildingSpecific) {
-        createData.audienceExpanse = {
+        updateData.data.audienceExpanse = {
           buildingIds: selectedBuildingSpecific.map(item => item.value)
         }
       }
       if (selectedBuildingExcept) {
-        createData.audienceExceptions = {
+        updateData.data.audienceExceptions = {
           buildingIds: selectedBuildingExcept.map(item => item.value)
         }
       }
 
       if (selectedRecurring?.isRepeat) {
-        createData.recurringSchedule = {
+        updateData.data.recurringSchedule = {
           type:
             selectedRecurring.selectedRepeatOption.value === 'custom'
               ? selectedRecurring?.selectedRepeatEveryOption?.value
-              : selectedRecurring.selectedRepeatOption.value
+              : selectedRecurring?.selectedRepeatOption?.value ??
+                selectedRecurring.selectedRepeatOption[0]?.value
         }
 
         if (selectedRecurring.selectedRepeatOption.value === 'weekly') {
-          createData.recurringSchedule = {
-            ...createData.recurringSchedule,
+          updateData.data.recurringSchedule = {
+            ...updateData.data.recurringSchedule,
             properties: {
-              ...createData.recurringSchedule.properties,
+              ...updateData.data.recurringSchedule.properties,
               dayOfWeek: Array.from(Array(7).keys())
             }
           }
         }
 
         if (selectedRecurring.selectedRepeatOption.value === 'monthly') {
-          createData.recurringSchedule = {
-            ...createData.recurringSchedule,
+          updateData.data.recurringSchedule = {
+            ...updateData.data.recurringSchedule,
             properties: {
-              ...createData.recurringSchedule.properties,
+              ...updateData.data.recurringSchedule.properties,
               date: Array.from({ length: 31 }, (_, i) => i + 1)
             }
           }
@@ -315,10 +428,10 @@ function CreateNotification() {
           selectedRecurring.selectedRepeatOption.value === 'custom' &&
           selectedRecurring.selectedRepeatEveryOption.value === 'weekly'
         ) {
-          createData.recurringSchedule = {
-            ...createData.recurringSchedule,
+          updateData.data.recurringSchedule = {
+            ...updateData.data.recurringSchedule,
             properties: {
-              ...createData.recurringSchedule.properties,
+              ...updateData.data.recurringSchedule.properties,
               dayOfWeek:
                 selectedRecurring.selectedDays.length > 0
                   ? selectedRecurring.selectedDays
@@ -331,10 +444,10 @@ function CreateNotification() {
           selectedRecurring.selectedRepeatOption.value === 'custom' &&
           selectedRecurring.selectedRepeatEveryOption.value === 'monthly'
         ) {
-          createData.recurringSchedule = {
-            ...createData.recurringSchedule,
+          updateData.data.recurringSchedule = {
+            ...updateData.data.recurringSchedule,
             properties: {
-              ...createData.recurringSchedule.properties,
+              ...updateData.data.recurringSchedule.properties,
               date:
                 selectedRecurring.datesSelected.length > 0
                   ? selectedRecurring.datesSelected
@@ -347,8 +460,8 @@ function CreateNotification() {
           selectedRecurring.selectedRepeatEndOption === 'on' &&
           selectedRecurring.selectedRepeatDate
         ) {
-          createData.recurringSchedule = {
-            ...createData.recurringSchedule,
+          updateData.data.recurringSchedule = {
+            ...updateData.data.recurringSchedule,
             end: {
               date: DATE.toFriendlyISO(selectedRecurring.selectedRepeatDate)
             }
@@ -359,8 +472,8 @@ function CreateNotification() {
           selectedRecurring.selectedRepeatEndOption === 'after' &&
           selectedRecurring.instance
         ) {
-          createData.recurringSchedule = {
-            ...createData.recurringSchedule,
+          updateData.data.recurringSchedule = {
+            ...updateData.data.recurringSchedule,
             end: {
               instance: Number(selectedRecurring.instance)
             }
@@ -368,7 +481,7 @@ function CreateNotification() {
         }
       }
 
-      createPost({ variables: { data: createData } })
+      updatePost({ variables: updateData })
     }
   }
 
@@ -521,7 +634,7 @@ function CreateNotification() {
 
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Create a Notification</h1>
+      <h1 className="content-title">Edit a Notification</h1>
       <form>
         <div className="flex justify-between text-base">
           <div className="w-full md:w-9/12">
@@ -567,11 +680,15 @@ function CreateNotification() {
                         <FormTextArea
                           name={name}
                           value={value}
-                          onChange={onChange}
+                          onChange={e => {
+                            onChange(e)
+                            setIsEdit(false)
+                          }}
                           options={['history']}
                           placeholder="Write your text here"
                           error={errors?.content?.message ?? null}
                           stripHtmls
+                          isEdit={isEdit}
                         />
                       )}
                     />
@@ -642,7 +759,15 @@ function CreateNotification() {
                   <div className="w-full md:w-1/2">
                     <div className="flex mb-2">
                       <span style={{ minWidth: '65px' }}>Status:</span>
-                      <span className="font-bold">New</span>
+                      <span className="font-bold">
+                        {post?.status === 'published'
+                          ? 'Published'
+                          : post?.status === 'unpublished'
+                          ? 'Unpublished'
+                          : post?.status === 'draft'
+                          ? 'Draft'
+                          : 'New'}
+                      </span>
                     </div>
                     <AudienceType
                       audienceType={selectedAudienceType}

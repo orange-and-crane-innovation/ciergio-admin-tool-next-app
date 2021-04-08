@@ -1,31 +1,72 @@
-import { useEffect, useState, useMemo } from 'react'
-import P from 'prop-types'
-import { useQuery } from '@apollo/client'
+import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 
-import Modal from '@app/components/modal'
 import RadioBox from '@app/components/forms/form-radio'
-import SelectCompany from '@app/components/select'
-import { GET_COMPANIES } from '../../staff/queries'
+import Modal from '@app/components/modal'
 
-function AudienceModal({
-  visible,
-  onCancel,
-  onSave,
-  onSelectCompanySpecific,
+import SelectCompany from '@app/components/globals/SelectCompany'
+import SelectComplex from '@app/components/globals/SelectComplex'
+import SelectBuilding from '@app/components/globals/SelectBuilding'
+
+const Component = ({
+  isShown,
   onSelectAudienceType,
-  onSelectCompanyExcept
-}) {
-  const [selectedAudience, setSelectedAudience] = useState('all')
-  const [selectedCompanyExcept, setSelectedCompanyExcept] = useState()
-  const [selectedCompanySpecific, setSelectedCompanySpecific] = useState()
-
-  const { data: companies } = useQuery(GET_COMPANIES)
+  onSelectCompanyExcept,
+  onSelectCompanySpecific,
+  onSelectComplexExcept,
+  onSelectComplexSpecific,
+  onSelectBuildingExcept,
+  onSelectBuildingSpecific,
+  onSave,
+  onCancel,
+  valueAudienceType,
+  valueCompanyExcept,
+  valueCompanySpecific,
+  valueComplexExcept,
+  valueComplexSpecific,
+  valueBuildingExcept,
+  valueBuildingSpecific
+}) => {
+  const [selectedAudience, setSelectedAudience] = useState(valueAudienceType)
+  const [selectedCompanyExcept, setSelectedCompanyExcept] = useState(
+    valueCompanyExcept
+  )
+  const [selectedCompanySpecific, setSelectedCompanySpecific] = useState(
+    valueCompanySpecific
+  )
+  const [selectedComplexExcept, setSelectedComplexExcept] = useState(
+    valueComplexExcept
+  )
+  const [selectedComplexSpecific, setSelectedComplexSpecific] = useState(
+    valueComplexSpecific
+  )
+  const [selectedBuildingExcept, setSelectedBuildingExcept] = useState(
+    valueBuildingExcept
+  )
+  const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState(
+    valueBuildingSpecific
+  )
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
+  let userType
 
   useEffect(() => {
-    setSelectedAudience('all')
-    setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
-  }, [])
+    setSelectedAudience(valueAudienceType)
+    setSelectedCompanyExcept(valueCompanyExcept)
+    setSelectedCompanySpecific(valueCompanySpecific)
+    setSelectedComplexExcept(valueComplexExcept)
+    setSelectedComplexSpecific(valueComplexSpecific)
+    setSelectedBuildingExcept(valueBuildingExcept)
+    setSelectedBuildingSpecific(valueBuildingSpecific)
+  }, [
+    valueAudienceType,
+    valueCompanyExcept,
+    valueCompanySpecific,
+    valueComplexExcept,
+    valueComplexSpecific,
+    valueBuildingExcept,
+    valueBuildingSpecific
+  ])
 
   const onSelectAudience = e => {
     setSelectedAudience(e.target.value)
@@ -33,40 +74,94 @@ function AudienceModal({
   }
 
   const handleSelectCompanyExcept = data => {
-    const selected = data.map(item => {
-      return item.value
-    })
     setSelectedCompanySpecific(null)
     setSelectedCompanyExcept(data)
-    onSelectCompanyExcept(selected)
+    onSelectCompanyExcept(data)
     onSelectCompanySpecific(null)
   }
 
+  const handleClearCompanyExcept = () => {
+    setSelectedCompanyExcept(null)
+  }
+
   const handleSelectCompanySpecific = data => {
-    const selected = data.map(item => {
-      return item.value
-    })
     setSelectedCompanyExcept(null)
     setSelectedCompanySpecific(data)
-    onSelectCompanySpecific(selected)
+    onSelectCompanySpecific(data)
     onSelectCompanyExcept(null)
   }
 
-  const companySelections = useMemo(() => {
-    if (companies?.getCompanies?.data?.length > 0) {
-      return companies.getCompanies.data.map(company => ({
-        label: company.name,
-        value: company._id
-      }))
-    }
+  const handleClearCompanySpecific = () => {
+    setSelectedCompanySpecific(null)
+  }
 
-    return []
-  }, [companies?.getCompanies])
+  const handleSelectComplexExcept = data => {
+    setSelectedComplexSpecific(null)
+    setSelectedComplexExcept(data)
+    onSelectComplexExcept(data)
+    onSelectComplexSpecific(null)
+  }
+
+  const handleClearComplexExcept = () => {
+    setSelectedComplexExcept(null)
+  }
+
+  const handleSelectComplexSpecific = data => {
+    setSelectedComplexExcept(null)
+    setSelectedComplexSpecific(data)
+    onSelectComplexSpecific(data)
+    onSelectComplexExcept(null)
+  }
+
+  const handleClearComplexSpecific = () => {
+    setSelectedComplexSpecific(null)
+  }
+
+  const handleSelectBuildingExcept = data => {
+    setSelectedBuildingSpecific(null)
+    setSelectedBuildingExcept(data)
+    onSelectBuildingExcept(data)
+    onSelectBuildingSpecific(null)
+  }
+
+  const handleClearBuildingExcept = () => {
+    setSelectedBuildingExcept(null)
+  }
+
+  const handleSelectBuildingSpecific = data => {
+    setSelectedBuildingExcept(null)
+    setSelectedBuildingSpecific(data)
+    onSelectBuildingSpecific(data)
+    onSelectBuildingExcept(null)
+  }
+
+  const handleClearBuildingSpecific = () => {
+    setSelectedBuildingSpecific(null)
+  }
+
+  switch (accountType) {
+    case 'company_admin': {
+      userType = 'company'
+      break
+    }
+    case 'complex_admin': {
+      userType = 'complex'
+      break
+    }
+    case 'building_admin': {
+      userType = 'building'
+      break
+    }
+    default: {
+      userType = null
+      break
+    }
+  }
 
   return (
     <Modal
-      title="When do you want this published?"
-      visible={visible}
+      title="Who are the audience"
+      visible={isShown}
       onClose={onCancel}
       onCancel={onCancel}
       onOk={onSave}
@@ -88,7 +183,9 @@ function AudienceModal({
                 isChecked={selectedAudience === 'all'}
               />
               <div className="ml-7 text-neutral-500 text-md leading-relaxed">
-                All those registered under your complex
+                {userType
+                  ? `All those registered under your ${userType}`
+                  : `All those registered`}
               </div>
             </div>
             <div className="p-4">
@@ -102,7 +199,9 @@ function AudienceModal({
                 isChecked={selectedAudience === 'allExcept'}
               />
               <div className="ml-7 text-neutral-500 text-md leading-relaxed">
-                All those registered under your complex except
+                {userType
+                  ? `All those registered under your ${userType} except`
+                  : `All those registered except`}
               </div>
             </div>
           </div>
@@ -123,7 +222,7 @@ function AudienceModal({
         </div>
 
         {selectedAudience && selectedAudience !== 'all' && (
-          <div className="">
+          <div className="bg-neutral-200 -mx-8 p-6">
             {selectedAudience === 'allExcept' && (
               <>
                 <div className="mb-4">
@@ -134,15 +233,50 @@ function AudienceModal({
                   </p>
                 </div>
 
-                <div className="mb-4">
-                  <p className="font-bold text-neutral-500 mb-2">Companies</p>
-                  <SelectCompany
-                    options={companySelections}
-                    onChange={handleSelectCompanyExcept}
-                    value={selectedCompanyExcept}
-                    allowMultiple
-                  />
-                </div>
+                {accountType === 'administrator' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Companies</p>
+                    <SelectCompany
+                      name="companyIds"
+                      type="active"
+                      userType={accountType}
+                      placeholder="Select a Company"
+                      onChange={handleSelectCompanyExcept}
+                      onClear={handleClearCompanyExcept}
+                      selected={selectedCompanyExcept}
+                      isMulti
+                    />
+                  </div>
+                )}
+
+                {accountType === 'company_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Complexes</p>
+                    <SelectComplex
+                      type="active"
+                      userType={accountType}
+                      placeholder="Select a Complex"
+                      companyId={user?.accounts?.data[0]?.company?._id}
+                      onChange={handleSelectComplexExcept}
+                      onClear={handleClearComplexExcept}
+                      selected={selectedComplexExcept}
+                    />
+                  </div>
+                )}
+
+                {accountType === 'complex_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Buildings</p>
+                    <SelectBuilding
+                      type="active"
+                      userType={accountType}
+                      placeholder="Select a Building"
+                      onChange={handleSelectBuildingExcept}
+                      onClear={handleClearBuildingExcept}
+                      selected={selectedBuildingExcept}
+                    />
+                  </div>
+                )}
               </>
             )}
             {selectedAudience === 'specific' && (
@@ -155,15 +289,50 @@ function AudienceModal({
                   </p>
                 </div>
 
-                <div className="mb-4">
-                  <p className="font-bold text-neutral-500 mb-2">Companies</p>
-                  <SelectCompany
-                    onChange={handleSelectCompanySpecific}
-                    options={companySelections}
-                    value={selectedCompanySpecific}
-                    allowMultiple
-                  />
-                </div>
+                {accountType === 'administrator' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Companies</p>
+                    <SelectCompany
+                      name="companyIds"
+                      type="active"
+                      userType={accountType}
+                      placeholder="Select a Company"
+                      onChange={handleSelectCompanySpecific}
+                      onClear={handleClearCompanySpecific}
+                      selected={selectedCompanySpecific}
+                      isMulti
+                    />
+                  </div>
+                )}
+
+                {accountType === 'company_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Complexes</p>
+                    <SelectComplex
+                      type="active"
+                      userType={accountType}
+                      placeholder="Select a Complex"
+                      companyId={user?.accounts?.data[0]?.company?._id}
+                      onChange={handleSelectComplexSpecific}
+                      onClear={handleClearComplexSpecific}
+                      selected={selectedComplexSpecific}
+                    />
+                  </div>
+                )}
+
+                {accountType === 'complex_admin' && (
+                  <div className="mb-4">
+                    <p className="font-bold text-neutral-500 mb-2">Buildings</p>
+                    <SelectBuilding
+                      type="active"
+                      userType={accountType}
+                      placeholder="Select a Building"
+                      onChange={handleSelectBuildingSpecific}
+                      onClear={handleClearBuildingSpecific}
+                      selected={selectedBuildingSpecific}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -173,17 +342,24 @@ function AudienceModal({
   )
 }
 
-AudienceModal.propTypes = {
-  visible: P.bool,
-  onCancel: P.func,
-  onSave: P.func,
-  onSelectAudienceType: P.func,
-  onSelectCompanyExcept: P.func,
-  onSelectCompanySpecific: P.func,
-  onSelectComplexExcept: P.func,
-  onSelectComplexSpecific: P.func,
-  onSelectBuildingExcept: P.func,
-  onSelectBuildingSpecific: P.func
+Component.propTypes = {
+  isShown: PropTypes.bool,
+  onSelectAudienceType: PropTypes.func,
+  onSelectCompanyExcept: PropTypes.func,
+  onSelectCompanySpecific: PropTypes.func,
+  onSelectComplexExcept: PropTypes.func,
+  onSelectComplexSpecific: PropTypes.func,
+  onSelectBuildingExcept: PropTypes.func,
+  onSelectBuildingSpecific: PropTypes.func,
+  onSave: PropTypes.func,
+  onCancel: PropTypes.func,
+  valueAudienceType: PropTypes.string,
+  valueCompanyExcept: PropTypes.array,
+  valueCompanySpecific: PropTypes.array,
+  valueComplexExcept: PropTypes.array,
+  valueComplexSpecific: PropTypes.array,
+  valueBuildingExcept: PropTypes.array,
+  valueBuildingSpecific: PropTypes.array
 }
 
-export default AudienceModal
+export default Component
