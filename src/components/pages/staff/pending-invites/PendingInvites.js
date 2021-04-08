@@ -61,6 +61,7 @@ function PendingInvites() {
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedAssignment, setSelectedAssignment] = useState(null)
   const [selectedData, setSelectedData] = useState([])
+  const [selectedInvite, setSelectedInvite] = useState(null)
   const [isBulkDisabled, setIsBulkDisabled] = useState(false)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(false)
   const [selectedBulk, setSelectedBulk] = useState('')
@@ -105,8 +106,8 @@ function PendingInvites() {
         showToast(
           'success',
           `You have successfully removed ${
-            selectedData?.email
-          } as ${parseAccountType(selectedData?.accountType)}`
+            selectedInvite?.email
+          } as ${parseAccountType(selectedInvite?.accountType)}`
         )
         handleClearModal('cancel')
         refetchInvites()
@@ -196,7 +197,7 @@ function PendingInvites() {
     cancelInvite({
       variables: {
         data: {
-          invitationId: selectedData?._id
+          invitationId: selectedData[0]
         }
       }
     })
@@ -265,15 +266,17 @@ function PendingInvites() {
                   label: 'Resend Invite',
                   icon: <span className="ciergio-mail" />,
                   function: () => {
-                    setSelectedData(invite)
+                    setSelectedInvite(invite)
+                    setSelectedData([invite?._id])
                     setShowResendInviteModal(old => !old)
                   }
                 },
                 {
-                  label: 'Delete Invite',
+                  label: 'Cancel Invite',
                   icon: <span className="ciergio-trash" />,
                   function: () => {
-                    setSelectedData(invite)
+                    setSelectedInvite(invite)
+                    setSelectedData([invite?._id])
                     setShowCancelInviteModal(old => !old)
                   }
                 }
@@ -407,7 +410,7 @@ function PendingInvites() {
       <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}
         onOk={handleCancelInvite}
-        data={selectedData}
+        data={selectedInvite}
         open={showCancelInviteModal}
         loading={cancellingInvite}
       />
