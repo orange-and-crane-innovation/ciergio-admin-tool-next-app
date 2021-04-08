@@ -6,6 +6,7 @@ import styles from './dropdown.module.css'
 const Dropdown = ({ label, items }) => {
   const dropdownRef = useRef()
   const [isOpen, setIsOpen] = useState(false)
+  const [isBottom, setIsBottom] = useState(false)
 
   useEffect(() => {
     document.addEventListener('mousedown', handleOutsideClick)
@@ -14,7 +15,17 @@ const Dropdown = ({ label, items }) => {
     }
   }, [])
 
-  const handleDropdown = () => {
+  const handleDropdown = e => {
+    if (e?.clientY) {
+      const windowSize = window.innerWidth
+
+      if (windowSize < 1000) {
+        setIsBottom(e.clientY > 400)
+      } else {
+        setIsBottom(e.clientY > 500)
+      }
+    }
+
     setIsOpen(!isOpen)
   }
 
@@ -36,7 +47,11 @@ const Dropdown = ({ label, items }) => {
       >
         <div className={styles.dropdownControlContainer}>{label}</div>
       </button>
-      <div className={`${styles.dropdownContent} ${isOpen && styles.open}`}>
+      <div
+        className={`${styles.dropdownContent} ${isOpen && styles.open} ${
+          isBottom && styles.bottomPlacement
+        }`}
+      >
         {items.map((item, index) => {
           return (
             <div

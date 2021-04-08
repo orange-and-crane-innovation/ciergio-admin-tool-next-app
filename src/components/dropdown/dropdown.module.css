@@ -73,5 +73,10 @@
         @apply text-white;
       }
     }
+
+    &.bottomPlacement {
+      @apply bottom-10;
+      transform-origin: bottom;
+    }
   }
 }
