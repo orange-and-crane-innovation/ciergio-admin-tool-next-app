@@ -255,6 +255,7 @@ const Component = ({
                     <SelectComplex
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Complex"
                       companyId={user?.accounts?.data[0]?.company?._id}
                       onChange={handleSelectComplexExcept}
                       onClear={handleClearComplexExcept}
@@ -269,6 +270,7 @@ const Component = ({
                     <SelectBuilding
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Building"
                       onChange={handleSelectBuildingExcept}
                       onClear={handleClearBuildingExcept}
                       selected={selectedBuildingExcept}
@@ -309,6 +311,7 @@ const Component = ({
                     <SelectComplex
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Complex"
                       companyId={user?.accounts?.data[0]?.company?._id}
                       onChange={handleSelectComplexSpecific}
                       onClear={handleClearComplexSpecific}
@@ -323,6 +326,7 @@ const Component = ({
                     <SelectBuilding
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Building"
                       onChange={handleSelectBuildingSpecific}
                       onClear={handleClearBuildingSpecific}
                       selected={selectedBuildingSpecific}
