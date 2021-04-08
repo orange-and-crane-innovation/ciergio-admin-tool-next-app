@@ -138,9 +138,11 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
       const tableData = []
       const tempIds = []
       const tempCSV = []
+
       data?.getRegistryRecords?.data.forEach((registry, index) => {
+        const num = index + 1
         tempCSV.push([
-          index + 1,
+          num,
           registry.forWhat.name,
           `${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`,
           `${registry.visitor.firstName} ${registry.visitor.lastName}`,
