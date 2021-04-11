@@ -87,7 +87,7 @@ export default function Main() {
             (tabName === 'upcoming' && '2') ||
             (tabName === 'cancelled' && '3') ||
             (tabName === 'logbook' && '1') ||
-            (tabName === null && '1')
+            (tabName === undefined && '1')
           }
         >
           <Tabs.TabLabels>
