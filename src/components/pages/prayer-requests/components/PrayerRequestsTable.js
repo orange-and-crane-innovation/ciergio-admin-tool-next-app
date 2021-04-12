@@ -52,24 +52,28 @@ const columns = [
 ]
 
 const validationSchema = yup.object().shape({
-  prayerFor: yup.string().required(),
-  prayerFrom: yup.string().required(),
+  prayerFor: yup.string().required('This field is required'),
+  prayerFrom: yup.string().required('This field is required'),
   category: yup.object().shape({
-    label: yup.string(),
-    value: yup.string()
+    label: yup.string().required(),
+    value: yup.string().required('This field is required')
   }),
-  date: yup.date(),
+  date: yup.string(),
   message: yup.string()
 })
 
 function PrayerRequestsTable({ queryTemplate, status }) {
-  const { handleSubmit, control, errors, reset } = useForm({
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountId = user?.accounts?.data[0]?._id
+  const companyId = user?.accounts?.data[0]?.company?._id
+  const complexId = user?.accounts?.data[0]?.complex?._id
+  const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       prayerFor: '',
       prayerFrom: '',
-      category: '',
-      date: new Date(),
+      category: undefined,
+      date: undefined,
       message: ''
     }
   })
@@ -78,12 +82,11 @@ function PrayerRequestsTable({ queryTemplate, status }) {
   const [offset, setPageOffset] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [category, setCategory] = useState({
-    label: 'All Category',
+    label: 'All',
     value: null
   })
   const [showCreatePrayerModal, setShowCreatePrayerModal] = useState(false)
   const debouncedSearchText = useDebounce(searchText, 700)
-
   const DOCUMENT_TITLE =
     status === 'new' ? 'Prayer_Request_New' : 'Prayer_Request_Received'
   const PDF_TITLE =
@@ -92,7 +95,7 @@ function PrayerRequestsTable({ queryTemplate, status }) {
   const printRef = useRef()
   const { data, loading } = useQuery(queryTemplate, {
     variables: {
-      complexId: '5f291193643d6011be2d280b',
+      complexId,
       offset,
       limit: pageLimit,
       search: debouncedSearchText,
@@ -110,8 +113,8 @@ function PrayerRequestsTable({ queryTemplate, status }) {
         reset({
           prayerFor: '',
           prayerFrom: '',
-          category: '',
-          date: '',
+          category: null,
+          date: undefined,
           message: ''
         })
         setShowCreatePrayerModal(old => !old)
@@ -127,27 +130,40 @@ function PrayerRequestsTable({ queryTemplate, status }) {
     removeAfterPrint: true
   })
 
-  const onCancel = () => setShowCreatePrayerModal(old => !old)
+  const onCancel = () => {
+    reset({
+      prayerFor: '',
+      prayerFrom: '',
+      category: null,
+      date: undefined,
+      message: ''
+    })
+    setShowCreatePrayerModal(old => !old)
+  }
 
-  const onSubmit = values => {
-    const { date, category, message, prayerFor, prayerFrom } = values
+  const onSubmit = async () => {
+    const validated = await trigger()
 
-    createRequest({
-      variables: {
-        data: {
-          authorAccountId: '5fd1d549ae785b6e2e923c6a',
-          companyId: '5f290f7d0dcafc0ba70e0721',
-          complexId: '5f291193643d6011be2d280b',
-          categoryId: category?.value,
-          content: message,
-          prayer: {
-            for: prayerFor,
-            from: prayerFrom,
-            date: date.toISOString()
+    if (validated) {
+      const values = getValues()
+      const { date, category, message, prayerFor, prayerFrom } = values
+      createRequest({
+        variables: {
+          data: {
+            authorAccountId: accountId,
+            companyId,
+            complexId,
+            categoryId: category?.value,
+            content: message,
+            prayer: {
+              for: prayerFor,
+              from: prayerFrom,
+              date: date
+            }
           }
         }
-      }
-    })
+      })
+    }
   }
 
   const downloadData = useMemo(() => {
@@ -231,7 +247,7 @@ function PrayerRequestsTable({ queryTemplate, status }) {
                   ),
                   title: (
                     <p>
-                      <span>{category.name}</span> - <span>{prayer.from}</span>
+                      <span>{category.name}</span> - <span>{prayer.for}</span>
                     </p>
                   ),
                   requestor: (
@@ -373,7 +389,7 @@ function PrayerRequestsTable({ queryTemplate, status }) {
         visible={showCreatePrayerModal}
         onCancel={onCancel}
         categoryOptions={categoryOptions}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={onSubmit}
         form={{
           errors,
           control
