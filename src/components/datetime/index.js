@@ -152,7 +152,8 @@ DateInput.propTypes = {
   label: P.string,
   disabled: P.bool,
   maxDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
-  minDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)])
+  minDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
+  constraints: P.any
 }
 
 TimeInput.defaultProps = {

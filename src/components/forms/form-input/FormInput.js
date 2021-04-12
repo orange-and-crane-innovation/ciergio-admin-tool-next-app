@@ -40,7 +40,7 @@ function FormInput({
       }),
     [containerClassName, error, readOnly, disabled]
   )
-  const labelClasses = useMemo(() => clsx(styles.formLabel, labelClassName), [
+  const labelClasses = useMemo(() => clsx(labelClassName, styles.formLabel), [
     labelClassName
   ])
   const inputClasses = useMemo(() => clsx(styles.FormControl, inputClassName), [
