@@ -5,7 +5,15 @@ import Button from '@app/components/button'
 import PrintContent from './PrintContent'
 import P from 'prop-types'
 
-function PrintTable({ header, subHeaders, tableHeader, tableData }) {
+function PrintTable({
+  header,
+  subHeaders,
+  tableHeader,
+  tableData,
+  label,
+  disabled,
+  icon
+}) {
   const printComponentRef = useRef()
 
   return (
@@ -20,18 +28,25 @@ function PrintTable({ header, subHeaders, tableHeader, tableData }) {
         />
       </div>
       <ReactToPrint
-        trigger={() => <Button icon={<FiPrinter />} />}
+        trigger={() => <Button icon={icon} label={label} disabled={disabled} />}
         content={() => printComponentRef.current}
       />
     </>
   )
 }
 
+PrintTable.defaultProps = {
+  icon: <FiPrinter />
+}
+
 PrintTable.propTypes = {
   header: P.string,
   subHeaders: P.array,
   tableHeader: P.array.isRequired,
-  tableData: P.array.isRequired
+  tableData: P.array.isRequired,
+  label: P.string,
+  disabled: P.bool,
+  icon: P.node
 }
 
 export default PrintTable
