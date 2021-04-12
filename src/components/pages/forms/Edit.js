@@ -1002,7 +1002,7 @@ const CreatePosts = () => {
 
             <Button
               type="button"
-              label="Publish Form"
+              label={post?.status === 'draft' ? 'Publish Form' : 'Update Form'}
               primary
               onMouseDown={() => onUpdateStatus('active')}
               onClick={handleSubmit(e => {
