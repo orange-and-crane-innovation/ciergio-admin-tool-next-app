@@ -222,7 +222,7 @@ function CreateNotification() {
         )
         setSelectedPublishDateTime(new Date(itemData?.publishedAt))
 
-        if (itemData?.recurringSchedule) {
+        if (itemData?.recurringSchedule?.type) {
           const recurringData = {
             isEdit: true,
             ...itemData.recurringSchedule
