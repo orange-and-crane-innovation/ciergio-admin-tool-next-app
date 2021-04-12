@@ -12,6 +12,7 @@ import Pagination from '@app/components/pagination'
 import PageLoader from '@app/components/page-loader'
 
 import { DATE } from '@app/utils'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import styles from './index.module.css'
 
@@ -41,6 +42,8 @@ const OverviewComponent = ({
 }) => {
   const router = useRouter()
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
   let buttonCreateLabel
 
   useEffect(() => {
@@ -238,14 +241,16 @@ const OverviewComponent = ({
                 </div>
               }
               footer={
-                <div className="text-center">
-                  <button
-                    className="font-bold"
-                    onClick={onSubscriptionButtonClick}
-                  >
-                    Upgrade Plan
-                  </button>
-                </div>
+                accountType === ACCOUNT_TYPES.SUP.value ? (
+                  <div className="text-center">
+                    <button
+                      className="font-bold"
+                      onClick={onSubscriptionButtonClick}
+                    >
+                      Upgrade Plan
+                    </button>
+                  </div>
+                ) : null
               }
             />
           </div>
