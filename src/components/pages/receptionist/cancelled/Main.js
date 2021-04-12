@@ -6,7 +6,6 @@ import styles from '../main.module.css'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Pagination from '@app/components/pagination'
-import { FiPrinter } from 'react-icons/fi'
 import { BsPlusCircle } from 'react-icons/bs'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
@@ -28,6 +27,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import useKeyPress from '@app/utils/useKeyPress'
 import DownloadCSV from '@app/components/globals/DownloadCSV'
 import { DATE } from '@app/utils'
+import PrintTable from '@app/components/globals/PrintTable'
 
 const rowName = [
   {
@@ -100,6 +100,7 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
     [''],
     ['#', 'Unit No.', 'Unit Owner', "Visitor's Name", "Visitor's Company"]
   ])
+  const [printableData, setPrintableData] = useState([])
 
   const [
     addNote,
@@ -198,6 +199,7 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
       })
       setIds(tempIds)
       setCsvData(prevState => [...prevState, ...tempCSV])
+      setPrintableData(tempCSV)
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
@@ -341,7 +343,22 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
                 : `Cancelled ${name} (${data?.getRegistryRecords?.count || 0})`}
             </b>
             <div className={styles.ReceptionistButtonCard}>
-              <Button icon={<FiPrinter />} />
+              <PrintTable
+                header="Cancelled Visistor"
+                tableHeader={[
+                  '#',
+                  'Unit No.',
+                  'Unit Owner',
+                  "Visitor's Name",
+                  "Visitor's Company"
+                ]}
+                tableData={printableData}
+                subHeaders={[
+                  { title: 'Building Name', content: buildingName },
+                  { title: 'Date', content: DATE.toFriendlyDate(new Date()) }
+                ]}
+              />
+
               <DownloadCSV
                 data={csvData}
                 title="Cancelled Visitor"
