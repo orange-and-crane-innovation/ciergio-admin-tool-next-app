@@ -10,7 +10,9 @@
     "format": "prettier --write './**/*.{js,jsx,css,md,json}' --config ./.prettierrc --ignore-path ./.gitignore",
     "storybook": "start-storybook -p 6006 -s ./public",
     "build-storybook": "build-storybook",
-    "deploy-dev": "AWS_PROFILE=cgpray serverless"
+    "deploy-pray": "AWS_PROFILE=cgpray serverless",
+    "deploy-circle": "AWS_PROFILE=cgcircle serverless",
+    "deploy-home": "AWS_PROFILE=cghome serverless"
   },
   "dependencies": {
     "@apollo/client": "^3.3.3",
@@ -38,6 +40,7 @@
     "html-to-draftjs": "1.4.0",
     "immutability-helper": "^3.1.1",
     "js-cookie": "^2.2.1",
+    "libphonenumber-js": "^1.9.16",
     "lodash": "^4.17.20",
     "lodash.debounce": "^4.0.8",
     "lodash.orderby": "^4.6.0",
@@ -62,6 +65,7 @@
     "react-js-pagination": "^3.0.3",
     "react-modal": "^3.12.1",
     "react-password-strength-bar": "^0.3.2",
+    "react-phone-number-input": "^3.1.18",
     "react-player": "^2.7.2",
     "react-qr-code": "^1.1.1",
     "react-select": "^3.2.0",
