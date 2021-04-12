@@ -104,6 +104,66 @@ const GET_POST_QUERY = gql`
             _id
           }
         }
+      }
+    }
+  }
+`
+
+const GET_POST_DAILY_READINGS_QUERY = gql`
+  query getAllPost($where: AllPostInput) {
+    getAllPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+        category {
+          _id
+          name
+        }
+        primaryMedia {
+          url
+          type
+        }
+        embeddedMediaFiles {
+          url
+          type
+        }
+        audienceType
+        audienceExpanse {
+          company {
+            _id
+          }
+          complex {
+            _id
+          }
+          building {
+            _id
+          }
+        }
+        audienceExceptions {
+          company {
+            _id
+          }
+          complex {
+            _id
+          }
+          building {
+            _id
+          }
+        }
         dailyReadingDate
       }
     }
@@ -206,7 +266,7 @@ const CreatePosts = () => {
   })
 
   const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
-    GET_POST_QUERY,
+    isDailyReadingsPage ? GET_POST_DAILY_READINGS_QUERY : GET_POST_QUERY,
     {
       variables: {
         where: {
@@ -1348,7 +1408,7 @@ const CreatePosts = () => {
 
               <Button
                 type="button"
-                label={modalType === 'draft' ? 'Publish' : 'Update Post'}
+                label={post?.status === 'draft' ? 'Publish' : 'Update Post'}
                 primary
                 onMouseDown={() => onUpdateStatus('active')}
                 onClick={handleSubmit(e => {
