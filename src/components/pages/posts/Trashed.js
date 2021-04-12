@@ -99,6 +99,62 @@ const GET_ALL_POST_QUERY = gql`
             }
           }
         }
+      }
+    }
+  }
+`
+
+const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
+  query getAllPost(
+    $where: AllPostInput
+    $limit: Int
+    $offset: Int
+    $sort: PostSort
+  ) {
+    getAllPost(where: $where, limit: $limit, offset: $offset, sort: $sort) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          user {
+            firstName
+            lastName
+            email
+            avatar
+          }
+          accountType
+          company {
+            name
+          }
+          complex {
+            name
+          }
+          building {
+            name
+          }
+        }
+        category {
+          name
+        }
+        views {
+          count
+          unique {
+            count
+            users {
+              firstName
+              lastName
+              avatar
+            }
+          }
+        }
         dailyReadingDate
       }
     }
@@ -224,7 +280,9 @@ const PostComponent = () => {
   }
 
   const { loading, data, error, refetch: refetchPosts } = useQuery(
-    GET_ALL_POST_QUERY,
+    isDailyReadingsPage
+      ? GET_ALL_POST_DAILY_READINGS_QUERY
+      : GET_ALL_POST_QUERY,
     {
       enabled: false,
       variables: {

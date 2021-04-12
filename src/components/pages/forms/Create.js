@@ -620,7 +620,7 @@ const CreatePosts = () => {
                 yes={
                   <Button
                     type="button"
-                    label="Publish Post"
+                    label="Publish Form"
                     primary
                     onMouseDown={() => onUpdateStatus('active')}
                     onClick={handleSubmit(e => {
@@ -629,7 +629,7 @@ const CreatePosts = () => {
                   />
                 }
                 no={
-                  <Button type="button" label="Publish Post" primary disabled />
+                  <Button type="button" label="Publish Form" primary disabled />
                 }
               />
             </span>

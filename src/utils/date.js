@@ -10,8 +10,8 @@ dayjs.extend(utc)
 
 export const toFriendlyISO = data => {
   const dateObj = new Date(data)
-  const dayObj = dayjs(dateObj).utc().local()
-  return dayObj.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+  const dayObj = dayjs(dateObj)
+  return dayObj.toISOString()
 }
 
 export const toFriendlyDateTime = data => {

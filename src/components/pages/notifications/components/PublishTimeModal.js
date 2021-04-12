@@ -58,7 +58,7 @@ const Component = ({
   useEffect(() => {
     if (valueRecurring?.isEdit) {
       setSelectedRepeatDate(
-        valueRecurring.end.date ? new Date(valueRecurring?.end?.date) : null
+        valueRecurring?.end?.date ? new Date(valueRecurring?.end?.date) : null
       )
       setIsRepeat(true)
       setSelectedRepeatOption(

@@ -284,6 +284,12 @@ function CreateNotification() {
       }
 
       if (selectedRecurring?.isRepeat) {
+        createData.status = 'scheduled'
+
+        createData.publishedAt = DATE.toFriendlyISO(
+          dayjs(new Date(selectedPublishDateTime)).add(5, 'minute')
+        )
+
         createData.recurringSchedule = {
           type:
             selectedRecurring.selectedRepeatOption.value === 'custom'

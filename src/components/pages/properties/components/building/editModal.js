@@ -92,7 +92,10 @@ const Component = ({
     if (files) {
       setLoadingUploader(true)
       setFileUploadError(null)
-      errors.logo.message = null
+
+      if (errors?.logo?.message) {
+        errors.logo.message = null
+      }
 
       for (const file of files) {
         const reader = new FileReader()

@@ -6,7 +6,7 @@ import { FaSync } from 'react-icons/fa'
 import { DATE } from '@app/utils'
 
 const RecurringType = ({ publishedAt, recurringData }) => {
-  if (recurringData) {
+  if (recurringData?.type) {
     return (
       <span className="flex items-center text-neutral-500 text-sm">
         <FaSync className="mr-2" />

@@ -222,7 +222,7 @@ function CreateNotification() {
         )
         setSelectedPublishDateTime(new Date(itemData?.publishedAt))
 
-        if (itemData?.recurringSchedule) {
+        if (itemData?.recurringSchedule?.type) {
           const recurringData = {
             isEdit: true,
             ...itemData.recurringSchedule
@@ -396,6 +396,12 @@ function CreateNotification() {
       }
 
       if (selectedRecurring?.isRepeat) {
+        updateData.status = 'scheduled'
+
+        updateData.publishedAt = DATE.toFriendlyISO(
+          dayjs(new Date(selectedPublishDateTime)).add(5, 'minute')
+        )
+
         updateData.data.recurringSchedule = {
           type:
             selectedRecurring.selectedRepeatOption.value === 'custom'
