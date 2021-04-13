@@ -211,6 +211,8 @@ const rules = {
         'notifications:trash',
         'notifications:draft',
         'prayerrequests:create',
+        'prayerrequests:export',
+        'prayerrequests:print',
         'prayerrequests:view',
         'offerings:view'
       ]
