@@ -450,7 +450,7 @@ const rules = {
         '/posts/create',
         '/forms/create',
         '/forms',
-        '/dues/billing',
+        '/dues/billing/:id',
         '/notifications/list',
         '/notifications/create',
         '/dues/overview',
