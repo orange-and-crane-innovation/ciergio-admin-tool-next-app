@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/router'
 import P from 'prop-types'
 import * as yup from 'yup'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
@@ -14,10 +15,8 @@ import showToast from '@app/utils/toast'
 import axios from '@app/utils/axios'
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-import { initializeApollo } from '@app/lib/apollo/client'
 import ContactModal from './ContactModal'
 import {
-  GET_COMPLEXES,
   GET_COMPLEX,
   GET_CONTACTS,
   GET_CONTACT_CATEGORY,
@@ -67,6 +66,9 @@ const columns = [
 ]
 
 function Contact({ id }) {
+  const router = useRouter()
+  const companyId = router?.query?.companyId
+  console.log({ companyId })
   const {
     getValues,
     control,
@@ -107,13 +109,15 @@ function Contact({ id }) {
   } = useQuery(GET_CONTACTS, {
     variables: {
       complexId: id,
+      companyId: companyId ?? null,
       limit: pageLimit,
       offset
     }
   })
   const { data: categories } = useQuery(GET_CONTACT_CATEGORY, {
     variables: {
-      complexId: id
+      complexId: id,
+      companyId: companyId ?? null
     }
   })
 
@@ -146,7 +150,6 @@ function Contact({ id }) {
   )
 
   const name = complexes?.getComplexes?.data[0]?.name || ''
-  const companyId = complexes?.getComplexes?.data[0]?.company._id || ''
 
   useEffect(() => {
     if (selectedContact !== undefined) {
@@ -442,53 +445,6 @@ function Contact({ id }) {
 
 Contact.propTypes = {
   id: P.string
-}
-
-const apolloClient = initializeApollo()
-
-export async function getStaticPaths() {
-  const complexes = await apolloClient.query({
-    query: GET_COMPLEXES
-  })
-
-  const paths = complexes?.getComplexes?.data.map(c => ({
-    params: { id: c._id }
-  }))
-
-  return {
-    paths,
-    fallback: false
-  }
-}
-
-export async function getStaticProps({ params }) {
-  const { id } = params
-  await apolloClient.query({
-    query: GET_COMPLEX,
-    variables: {
-      id
-    }
-  })
-
-  await apolloClient.query({
-    query: GET_CONTACTS,
-    variables: {
-      complexId: id
-    }
-  })
-
-  await apolloClient.query({
-    query: GET_CONTACT_CATEGORY,
-    variables: {
-      complexId: id
-    }
-  })
-
-  return {
-    props: {
-      initialApolloState: apolloClient.cache.extract()
-    }
-  }
 }
 
 export default Contact
