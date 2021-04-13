@@ -62,11 +62,8 @@ const validationSchema = yup.object().shape({
   message: yup.string()
 })
 
-function PrayerRequestsTable({ queryTemplate, status }) {
-  const user = JSON.parse(localStorage.getItem('profile'))
-  const accountId = user?.accounts?.data[0]?._id
-  const companyId = user?.accounts?.data[0]?.company?._id
-  const complexId = user?.accounts?.data[0]?.complex?._id
+function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
+  const { complexId, companyId, accountId } = user
   const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -93,15 +90,18 @@ function PrayerRequestsTable({ queryTemplate, status }) {
     status === 'new' ? 'Prayer Request - New' : 'Prayer Request - Received'
 
   const printRef = useRef()
-  const { data, loading } = useQuery(queryTemplate, {
-    variables: {
-      complexId,
-      offset,
-      limit: pageLimit,
-      search: debouncedSearchText,
-      categoryId: category?.value || null
+  const { data, loading, refetch: refetchPrayerRequests } = useQuery(
+    queryTemplate,
+    {
+      variables: {
+        complexId,
+        offset,
+        limit: pageLimit,
+        search: debouncedSearchText,
+        categoryId: category?.value || null
+      }
     }
-  })
+  )
 
   const { data: categories } = useQuery(GET_POST_CATEGORY)
 
@@ -118,6 +118,16 @@ function PrayerRequestsTable({ queryTemplate, status }) {
           message: ''
         })
         setShowCreatePrayerModal(old => !old)
+        refetchCounts()
+        refetchPrayerRequests({
+          variables: {
+            complexId,
+            offset,
+            limit: pageLimit,
+            search: debouncedSearchText,
+            categoryId: category?.value || null
+          }
+        })
       }
     }
   )
@@ -409,7 +419,9 @@ function PrayerRequestsTable({ queryTemplate, status }) {
 
 PrayerRequestsTable.propTypes = {
   queryTemplate: P.object,
-  status: P.string
+  status: P.string,
+  refetchCounts: P.func,
+  user: P.object
 }
 
 export default PrayerRequestsTable
