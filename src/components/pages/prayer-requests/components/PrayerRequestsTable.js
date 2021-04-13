@@ -9,7 +9,7 @@ import * as yup from 'yup'
 import Link from 'next/link'
 
 import FormInput from '@app/components/forms/form-input'
-import FormSelect from '@app/components/select'
+import FormSelect from '@app/components/forms/form-select'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -282,7 +282,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
   return (
     <>
       <div className="flex items-center justify-end">
-        <div className="w-2/12 md:w-120 mr-2 relative -top-2">
+        <div className="w-2/12 md:w-120 mr-2 relative">
           <FormSelect
             isClearable={false}
             placeholder="Select Category"
