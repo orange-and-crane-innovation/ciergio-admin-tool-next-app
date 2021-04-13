@@ -1,9 +1,10 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useReactToPrint } from 'react-to-print'
 import { CSVLink } from 'react-csv'
+import { useRouter } from 'next/router'
 import P from 'prop-types'
 import * as yup from 'yup'
 import Link from 'next/link'
@@ -64,6 +65,8 @@ const validationSchema = yup.object().shape({
 })
 
 function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
+  const router = useRouter()
+  const initialCategory = router?.query?.category
   const { complexId, companyId, accountId } = user
   const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
@@ -79,10 +82,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
   const [pageLimit, setPageLimit] = useState(10)
   const [offset, setPageOffset] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
-  const [category, setCategory] = useState({
-    label: 'All',
-    value: null
-  })
+  const [category, setCategory] = useState()
   const [showCreatePrayerModal, setShowCreatePrayerModal] = useState(false)
   const debouncedSearchText = useDebounce(searchText, 700)
   const DOCUMENT_TITLE =
@@ -235,6 +235,14 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
     }
   }, [categories?.getPostCategory])
 
+  useEffect(() => {
+    if (categoryOptions?.length > 0 && initialCategory) {
+      router.push('/prayer-requests')
+      const index = categoryOptions?.findIndex(c => c.value === initialCategory)
+      setCategory(categoryOptions[index])
+    }
+  }, [categoryOptions])
+
   const tableData = useMemo(() => {
     return {
       count: prayerRequests?.count || 0,
@@ -243,20 +251,24 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
       data:
         prayerRequests?.issue?.length > 0
           ? prayerRequests.issue.map(
-              ({ category, prayer, reporter, createdAt, updatedAt }) => {
+              ({ _id, category, prayer, reporter, createdAt, updatedAt }) => {
                 const dropdownData = [
                   {
                     label: 'View Details',
                     icon: <span className="ciergio-file" />,
-                    function: () => {}
+                    function: () => {
+                      router.push(`/prayer-requests/details/${_id}`)
+                    }
                   }
                 ]
                 return {
                   dateCreated: friendlyDateTimeFormat(dayjs(createdAt), 'LL'),
                   title: (
-                    <p>
-                      <span>{category.name}</span> - <span>{prayer.for}</span>
-                    </p>
+                    <Link href={`/prayer-requests/details/${_id}`}>
+                      <p className="cursor-pointer font-bold hover:underline">
+                        <span>{category.name}</span> - <span>{prayer.for}</span>
+                      </p>
+                    </Link>
                   ),
                   requestor: (
                     <Link href={`/residents/view/${reporter?._id}`}>
@@ -304,6 +316,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
               setPageLimit(10)
               setPageOffset(0)
             }}
+            defaultValue={null}
           />
         </div>
         <div className="w-2/12 md:w-120 relative">
