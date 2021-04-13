@@ -6,6 +6,7 @@ import { useReactToPrint } from 'react-to-print'
 import { CSVLink } from 'react-csv'
 import P from 'prop-types'
 import * as yup from 'yup'
+import Link from 'next/link'
 
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/select'
@@ -251,22 +252,20 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   }
                 ]
                 return {
-                  dateCreated: friendlyDateTimeFormat(
-                    dayjs(Number(createdAt)),
-                    'LL'
-                  ),
+                  dateCreated: friendlyDateTimeFormat(dayjs(createdAt), 'LL'),
                   title: (
                     <p>
                       <span>{category.name}</span> - <span>{prayer.for}</span>
                     </p>
                   ),
                   requestor: (
-                    <span>{`${reporter?.user?.firstName || ''}`}</span>
+                    <Link href={`/residents/view/${reporter?._id}`}>
+                      <span className="text-blue-500 cursor-pointer">{`${
+                        reporter?.user?.firstName || ''
+                      }`}</span>
+                    </Link>
                   ),
-                  lastUpdate: friendlyDateTimeFormat(
-                    dayjs(Number(updatedAt)),
-                    'LL'
-                  ),
+                  lastUpdate: friendlyDateTimeFormat(dayjs(updatedAt), 'LL'),
                   button: (
                     <Dropdown
                       label={<AiOutlineEllipsis />}
