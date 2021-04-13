@@ -214,7 +214,17 @@ const rules = {
         'prayerrequests:export',
         'prayerrequests:print',
         'prayerrequests:view',
-        'offerings:view'
+        'offerings:view',
+        'contactus:create',
+        'contactus:update::delete',
+        'contactus:view',
+        'contactus:update',
+        'directory:contact:create',
+        'directory:contact:update::delete',
+        'directory:contact:view',
+        'directory:contact:update',
+        'directory:contact:delete',
+        'directory:contact:view'
       ]
     },
     member: {
