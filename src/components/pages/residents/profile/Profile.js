@@ -103,23 +103,23 @@ function Profile() {
               <div className="p-4">
                 <div className="mb-4">
                   <h4 className="text-sm text-neutral-500">Email Address</h4>
-                  <p className="text-sm">{residentProfile?.email}</p>
+                  <p className="text-sm">{residentProfile?.email ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
                   <h4 className="text-sm text-neutral-500">Company</h4>
-                  <p className="text-sm">{resident?.company?.name}</p>
+                  <p className="text-sm">{resident?.company?.name ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
                   <h4 className="text-sm text-neutral-500">Complex</h4>
-                  <p className="text-sm">{resident?.complex?.name}</p>
+                  <p className="text-sm">{resident?.complex?.name ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
                   <h4 className="text-sm text-neutral-500">Building</h4>
-                  <p className="text-sm">{resident?.building?.name}</p>
+                  <p className="text-sm">{resident?.building?.name ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
                   <h4 className="text-sm text-neutral-500">Unit</h4>
-                  <p className="text-sm">{resident?.unit?.name}</p>
+                  <p className="text-sm">{resident?.unit?.name ?? 'N/A'}</p>
                 </div>
               </div>
             }

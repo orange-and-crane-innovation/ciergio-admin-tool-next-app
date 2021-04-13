@@ -228,6 +228,7 @@ select:active {
     height: initial !important;
     overflow: initial !important;
     -webkit-print-color-adjust: exact;
+    background: none !important;
   }
 
   body {
@@ -284,7 +285,8 @@ select:active {
   }
 
   .print-container table thead th {
-    @apply bg-gray-300 font-bold text-sm p-2 text-center;
+    font-size: 13px;
+    @apply bg-gray-300 font-bold p-2 text-center;
   }
 
   .print-container table tbody {
@@ -297,6 +299,7 @@ select:active {
 
   .print-container table tbody td {
     word-wrap: break-word;
+    font-size: 13px;
     @apply p-2;
   }
 

@@ -1,7 +1,21 @@
 .createPrayerContainer {
   @apply w-full p-4;
 
+  .label {
+    font-size: 14px !important;
+    font-weight: bold;
+    font-family: 'Noto-Sans', sans-serif;
+    margin-bottom: 8px !important;
+    @apply block;
+  }
+
+  .message {
+    height: 130px !important;
+  }
+
   & .dateInput {
+    margin-bottom: 16px;
+
     & .react-datepicker-wrapper {
       width: 100% !important;
     }

@@ -151,7 +151,7 @@ FormDatePicker.propTypes = {
   showMonthYearPicker: P.bool,
   datepickerprops: P.object,
   disabledPreviousDate: P.func,
-  date: P.instanceOf(Date),
+  date: P.oneOfType([P.string, P.instanceOf(Date)]),
   name: P.string,
   rightIcon: P.bool,
   inputRef: P.object,

@@ -1,10 +1,8 @@
 import P from 'prop-types'
 import { Controller } from 'react-hook-form'
-
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
-import FormTextArea from '@app/components/forms/form-textarea'
-import FormSelect from '@app/components/select'
+import FormSelect from '@app/components/forms/form-select'
 import FormDate from '@app/components/forms/form-datepicker'
 
 import styles from './CreatePrayerRequest.module.css'
@@ -18,7 +16,6 @@ const CreatePrayerRequestModal = ({
   loading
 }) => {
   const { control, errors } = form
-
   return (
     <Modal
       title="Create Prayer Request"
@@ -39,12 +36,13 @@ const CreatePrayerRequestModal = ({
             render={({ name, value, onChange }) => (
               <FormInput
                 label="Prayer For"
-                labelClassName="text-base font-bold"
+                labelClassName={styles.label}
                 placeholder="Enter name"
                 onChange={onChange}
                 name={name}
                 value={value}
                 error={errors?.prayerFor?.message ?? null}
+                maxLength={50}
               />
             )}
           />
@@ -54,12 +52,13 @@ const CreatePrayerRequestModal = ({
             render={({ name, value, onChange }) => (
               <FormInput
                 label="Prayer From"
-                labelClassName="text-base font-bold"
+                labelClassName={styles.label}
                 placeholder="Enter name"
                 onChange={onChange}
                 name={name}
                 value={value}
                 error={errors?.prayerFrom?.message ?? null}
+                maxLength={50}
               />
             )}
           />
@@ -71,7 +70,11 @@ const CreatePrayerRequestModal = ({
               <>
                 <label
                   htmlFor={name}
-                  className="block font-bold text-neutral-dark text-sm mb-4"
+                  className={
+                    errors?.category
+                      ? `${styles.label} text-red-500`
+                      : styles.label
+                  }
                 >
                   Category
                 </label>
@@ -81,7 +84,11 @@ const CreatePrayerRequestModal = ({
                   options={categoryOptions}
                   onChange={onChange}
                   value={value}
-                  error={errors?.category?.message}
+                  error={
+                    errors?.category?.message
+                      ? 'This field is required'
+                      : errors?.category?.value.message
+                  }
                   containerClasses="mb-4"
                 />
               </>
@@ -94,14 +101,16 @@ const CreatePrayerRequestModal = ({
               <div className={styles.dateInput}>
                 <FormDate
                   label="Date (optional)"
+                  labelClassname={styles.label}
                   placeholder="Date"
                   onChange={onChange}
                   error={errors?.date?.message}
-                  date={value || new Date()}
+                  date={value}
                   datepickerprops={{
                     name,
                     isClearable: true
                   }}
+                  placeHolder="Date"
                 />
               </div>
             )}
@@ -111,24 +120,16 @@ const CreatePrayerRequestModal = ({
             control={control}
             render={({ name, value, onChange }) => (
               <>
-                <label
-                  htmlFor={name}
-                  className="block font-bold text-neutral-dark text-sm mb-4"
-                >
+                <label htmlFor={name} className={styles.label}>
                   Message (optional)
                 </label>
-                <FormTextArea
-                  label="Message (optional)"
-                  placeholder="Give more details about the issue"
+                <textarea
+                  maxLength={500}
+                  value={value}
                   name={name}
                   onChange={onChange}
-                  value={value}
-                  error={errors?.message?.message}
-                  options={[]}
-                  toolbarHidden
-                  maxLength={500}
-                  withCounter
-                  editorClassName="h-32"
+                  className="rounded p-2 w-full h-36"
+                  placeholder="Give more details about the issue"
                 />
               </>
             )}
