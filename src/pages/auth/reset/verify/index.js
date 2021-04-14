@@ -72,6 +72,7 @@ function VerifyPage() {
           } else {
             showToast('danger', message)
           }
+          return null
         })
 
       if (networkError?.result?.errors) {
