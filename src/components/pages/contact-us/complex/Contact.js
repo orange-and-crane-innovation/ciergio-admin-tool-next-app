@@ -99,13 +99,31 @@ function Contact({ id }) {
     companyId: companyId ?? null
   })
 
+  const handleRefetchContacts = () => {
+    refetchContacts({
+      variables: {
+        limit: 100,
+        skip: 0,
+        where: {
+          type: 'contactus'
+        },
+        contactWhere: {
+          complexId: id,
+          companyId: companyId ?? null
+        },
+        contactsLimit: pageLimit,
+        contactsSkip: pageOffset
+      }
+    })
+  }
+
   const [createContact, { loading: creatingContact }] = useMutation(
     CREATE_CONTACT,
     {
       onCompleted: () => {
         handleContactModal()
         showToast('success', `You have successfully added a new contact`)
-        refetchContacts()
+        handleRefetchContacts()
       }
     }
   )
@@ -113,7 +131,7 @@ function Contact({ id }) {
     onCompleted: () => {
       handleContactModal()
       showToast('success', `You have successfully updated a contact`)
-      refetchContacts()
+      handleRefetchContacts()
     }
   })
   const [deleteContact, { loading: deletingContact }] = useMutation(
@@ -122,7 +140,7 @@ function Contact({ id }) {
       onCompleted: () => {
         setShowDeleteContactModal(old => !old)
         showToast('success', `You have successfully deleted a contact`)
-        refetchContacts()
+        handleRefetchContacts()
       }
     }
   )
