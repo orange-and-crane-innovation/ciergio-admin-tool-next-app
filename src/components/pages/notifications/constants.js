@@ -44,11 +44,11 @@ export const publishedTableRows = [
 export const otherTableRows = [
   {
     name: 'Last Modified',
-    width: ''
+    width: '20%'
   },
   {
     name: 'Title',
-    width: ''
+    width: '40%'
   },
   {
     name: 'Category',
@@ -62,12 +62,19 @@ export const otherTableRows = [
 
 export const bulkOptions = [
   {
-    label: 'Unpublished',
-    value: 'unpublish'
+    label: 'Move to Trash',
+    value: 'trashed'
+  }
+]
+
+export const bulkOptionsTrash = [
+  {
+    label: 'Restore',
+    value: 'draft'
   },
   {
-    label: 'Move to Trash',
-    value: 'trash'
+    label: 'Delete Permanently',
+    value: 'deleted'
   }
 ]
 
@@ -108,7 +115,7 @@ export const repeatOptions = [
   },
   {
     label: 'Annually',
-    value: 'annually'
+    value: 'yearly'
   },
   {
     label: 'Custom',
@@ -119,42 +126,42 @@ export const repeatOptions = [
 export const repeatEveryOptions = [
   {
     label: 'Week',
-    value: 'week'
+    value: 'weekly'
   },
   {
     label: 'Month',
-    value: 'month'
+    value: 'monthly'
   }
 ]
 
 export const days = [
   {
-    label: 'S',
-    value: 'sun'
+    label: 'Sun',
+    value: 0
   },
   {
-    label: 'M',
-    value: 'mon'
+    label: 'Mon',
+    value: 1
   },
   {
-    label: 'T',
-    value: 'tue'
+    label: 'Tue',
+    value: 2
   },
   {
-    label: 'W',
-    value: 'wed'
+    label: 'Wed',
+    value: 3
   },
   {
-    label: 'T',
-    value: 'thu'
+    label: 'Thu',
+    value: 4
   },
   {
-    label: 'F',
-    value: 'fri'
+    label: 'Fri',
+    value: 5
   },
   {
-    label: 'S',
-    value: 'sat'
+    label: 'Sat',
+    value: 6
   }
 ]
 

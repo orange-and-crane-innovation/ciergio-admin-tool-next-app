@@ -121,9 +121,9 @@ export const GET_BUILDINGS = gql`
 `
 
 export const GET_CONTACT_CATEGORY = gql`
-  query getCategoriesByComplexId($complexId: String) {
+  query getCategoriesByComplexId($complexId: String, $companyId: String) {
     getContactCategories(
-      where: { complexId: $complexId, type: contactus }
+      where: { complexId: $complexId, companyId: $companyId, type: contactus }
       limit: 10
       skip: 0
     ) {

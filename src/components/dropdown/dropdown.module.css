@@ -1,5 +1,5 @@
 .dropdownContainer {
-  @apply absolute;
+  @apply relative;
   @apply flex justify-end;
   @apply text-base;
 
@@ -72,6 +72,11 @@
         @apply bg-primary-500;
         @apply text-white;
       }
+    }
+
+    &.bottomPlacement {
+      @apply bottom-10;
+      transform-origin: bottom;
     }
   }
 }

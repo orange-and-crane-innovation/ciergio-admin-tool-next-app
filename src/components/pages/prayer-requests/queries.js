@@ -14,6 +14,104 @@ export const GET_PRAYER_REQUESTS = gql`
   }
 `
 
+export const GET_PRAYER_REQUEST_DETAILS = gql`
+  query getPrayerRequestDetails($id: String) {
+    getIssue(id: $id) {
+      issue {
+        _id
+        createdAt
+        readAt
+        title
+        content
+        status
+        category {
+          _id
+          name
+          __typename
+        }
+        code
+        author {
+          _id
+          accountType
+          user {
+            _id
+            firstName
+            lastName
+            __typename
+          }
+          __typename
+        }
+        reporter {
+          _id
+          accountType
+          user {
+            _id
+            firstName
+            lastName
+            __typename
+          }
+          __typename
+        }
+        company {
+          _id
+          name
+          __typename
+        }
+        complex {
+          _id
+          name
+          __typename
+        }
+        prayer {
+          for
+          from
+          date
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
+export const GET_PRAYER_REQUEST_HISTORY = gql`
+  query getPrayerRequestHistory(
+    $id: String
+    $limit: Int
+    $offset: Int
+    $sort: Int
+  ) {
+    getIssue(id: $id) {
+      issue {
+        _id
+        history(limit: $limit, offset: $offset, sort: $sort) {
+          count
+          data {
+            _id
+            by {
+              accountType
+              user {
+                _id
+                firstName
+                lastName
+                __typename
+              }
+              __typename
+            }
+            action
+            activity
+            createdAt
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+    }
+  }
+`
+
 export const GET_NEW_PRAYER_REQUESTS = gql`
   query getNewPrayerRequests(
     $categoryId: String

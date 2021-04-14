@@ -6,7 +6,6 @@ import styles from '../main.module.css'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Pagination from '@app/components/pagination'
-import { FiPrinter, FiDownload } from 'react-icons/fi'
 import { BsPlusCircle } from 'react-icons/bs'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_REGISTRYRECORDS } from '../query'
@@ -26,6 +25,9 @@ import * as yup from 'yup'
 import PageLoader from '@app/components/page-loader'
 import { yupResolver } from '@hookform/resolvers/yup'
 import useKeyPress from '@app/utils/useKeyPress'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
+import { DATE } from '@app/utils'
+import PrintTable from '@app/components/globals/PrintTable'
 
 const rowName = [
   {
@@ -65,7 +67,7 @@ const TableColStyle = ({ top, bottom }) => {
   )
 }
 
-function Cancelled({ buildingId, categoryId, status, name }) {
+function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -91,6 +93,14 @@ function Cancelled({ buildingId, categoryId, status, name }) {
       note: ''
     }
   })
+  const [csvData, setCsvData] = useState([
+    ['Cancelled Visitor'],
+    ['Building', buildingName],
+    ['Date', DATE.toFriendlyDate(new Date())],
+    [''],
+    ['#', 'Unit No.', 'Unit Owner', "Visitor's Name", "Visitor's Company"]
+  ])
+  const [printableData, setPrintableData] = useState([])
 
   const [
     addNote,
@@ -128,7 +138,17 @@ function Cancelled({ buildingId, categoryId, status, name }) {
     if (!loading && !error && data) {
       const tableData = []
       const tempIds = []
+      const tempCSV = []
+
       data?.getRegistryRecords?.data.forEach((registry, index) => {
+        const num = index + 1
+        tempCSV.push([
+          num,
+          registry.forWhat.name,
+          `${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`,
+          `${registry.visitor.firstName} ${registry.visitor.lastName}`,
+          registry.visitor.company
+        ])
         const dropdownData = [
           {
             label: 'View More Details',
@@ -145,7 +165,13 @@ function Cancelled({ buildingId, categoryId, status, name }) {
               bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
             />
           ),
-          personCompany: `${registry.visitor.firstName} ${registry.visitor.lastName}`,
+          personCompany: (
+            <TableColStyle
+              key={index}
+              top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+              bottom={registry.visitor.company}
+            />
+          ),
           addOrView: (
             <div>
               <Button
@@ -172,6 +198,8 @@ function Cancelled({ buildingId, categoryId, status, name }) {
         tempIds.push(registry._id)
       })
       setIds(tempIds)
+      setCsvData(prevState => [...prevState, ...tempCSV])
+      setPrintableData(tempCSV)
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
@@ -315,8 +343,28 @@ function Cancelled({ buildingId, categoryId, status, name }) {
                 : `Cancelled ${name} (${data?.getRegistryRecords?.count || 0})`}
             </b>
             <div className={styles.ReceptionistButtonCard}>
-              <Button icon={<FiPrinter />} />
-              <Button icon={<FiDownload />} />
+              <PrintTable
+                header="Cancelled Visistor"
+                tableHeader={[
+                  '#',
+                  'Unit No.',
+                  'Unit Owner',
+                  "Visitor's Name",
+                  "Visitor's Company"
+                ]}
+                tableData={printableData}
+                subHeaders={[
+                  { title: 'Building Name', content: buildingName },
+                  { title: 'Date', content: DATE.toFriendlyDate(new Date()) }
+                ]}
+              />
+
+              <DownloadCSV
+                data={csvData}
+                title="Cancelled Visitor"
+                fileName="Cancelled"
+              />
+
               <Button
                 primary
                 label={`Add ${name}`}
@@ -374,7 +422,8 @@ Cancelled.propTypes = {
   buildingId: P.string.isRequired,
   categoryId: P.string.isRequired,
   status: P.oneOfType[(P.string, P.array)],
-  name: P.string.isRequired
+  name: P.string.isRequired,
+  buildingName: P.string
 }
 
 export default Cancelled

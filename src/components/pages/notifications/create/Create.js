@@ -1,27 +1,32 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { useMutation, useQuery } from '@apollo/client'
+import { useMutation } from '@apollo/client'
 import axios from '@app/utils/axios'
+import dayjs from 'dayjs'
 
 import { Card } from '@app/components/globals'
 import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
-import FormSelect from '@app/components/forms/form-select'
 import Button from '@app/components/button'
 import UploaderImage from '@app/components/uploader/image'
+import SelectCategory from '@app/components/globals/SelectCategory'
 
 import showToast from '@app/utils/toast'
-import { CREATE_POST_MUTATION, GET_POST_CATEGORIES } from '../queries'
+import { DATE } from '@app/utils'
+import { CREATE_POST_MUTATION } from '../queries'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import AudienceModal from '../components/AudienceModal'
 import PublishTimeModal from '../components/PublishTimeModal'
 import PreviewModal from '../components/PreviewModal'
-import AudienceType from './AudienceType'
-import PublishType from './PublishType'
+import AudienceType from '../components/AudienceType'
+import PublishType from '../components/PublishType'
 
 import Can from '@app/permissions/can'
+import style from './Create.module.css'
 
 const validationSchema = yup.object().shape({
   title: yup
@@ -31,8 +36,8 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
-  content: yup.mixed().label('Content').nullable(),
-  embeddedFiles: yup.array().label('File').nullable().required(),
+  content: yup.mixed().label('Content').nullable().required(),
+  embeddedFiles: yup.array().label('Image').nullable().required(),
   category: yup.string().label('Category').nullable().required()
 })
 
@@ -42,24 +47,38 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
-  content: yup.mixed(),
-  embeddedFiles: yup.array().label('File').nullable(),
-  category: yup.string().nullable()
+  content: yup.mixed().label('Content').nullable(),
+  embeddedFiles: yup.array().label('Image').nullable(),
+  category: yup.string().label('Category').nullable()
 })
 
 function CreateNotification() {
+  const { push } = useRouter()
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
   const [selectedStatus, setSelectedStatus] = useState('active')
+  const [fileUploadError, setFileUploadError] = useState()
   const [fileUploadedData, setFileUploadedData] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedAudienceType, setSelectedAudienceType] = useState('all')
-  const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
+  const [selectedPublishDateTime, setSelectedPublishDateTime] = useState(
+    new Date()
+  )
+  const [selectedRecurring, setSelectedRecurring] = useState()
   const [selectedCompanySpecific, setSelectedCompanySpecific] = useState()
+  const [selectedComplexExcept, setSelectedComplexExcept] = useState()
+  const [selectedComplexSpecific, setSelectedComplexSpecific] = useState()
+  const [selectedBuildingExcept, setSelectedBuildingExcept] = useState()
+  const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState()
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState()
   const [selectedCompanyExcept, setSelectedCompanyExcept] = useState()
   const [showAudienceModal, setShowAudienceModal] = useState(false)
   const [showPublishTimeModal, setShowPublishTimeModal] = useState(false)
   const [previewNotification, setPreviewNotification] = useState(false)
+  const [inputMaxLength] = useState(65)
+  const [textCount, setTextCount] = useState(0)
+  const [selectedCategory, setSelectedCategory] = useState()
   const [previewData, setPreviewData] = useState({
     primaryMedia: [
       {
@@ -70,9 +89,11 @@ function CreateNotification() {
     content: ''
   })
 
-  const { control, reset, errors, register, setValue, getValues } = useForm({
+  const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
-      selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
+      selectedStatus === 'draft' || selectedStatus === 'preview'
+        ? validationSchemaDraft
+        : validationSchema
     ),
     defaultValues: {
       title: '',
@@ -84,8 +105,6 @@ function CreateNotification() {
 
   register({ name: 'embeddedFiles' })
 
-  const { data: categories } = useQuery(GET_POST_CATEGORIES)
-
   const [
     createPost,
     {
@@ -94,43 +113,116 @@ function CreateNotification() {
       data: dataCreate,
       error: errorCreate
     }
-  ] = useMutation(CREATE_POST_MUTATION)
+  ] = useMutation(CREATE_POST_MUTATION, {
+    onError: _e => {}
+  })
+
+  useEffect(() => {
+    resetAudienceSpecific()
+  }, [])
 
   useEffect(() => {
     if (!loadingCreate) {
       if (errorCreate) {
-        showToast('danger', 'Sorry, an error occured during creation of post.')
+        errorHandler(errorCreate)
       }
       if (calledCreate && dataCreate) {
+        let message
+
         reset()
         resetForm()
-        showToast('success', 'You have successfully created a post.')
+        goToPageLists()
+
+        switch (selectedStatus) {
+          case 'draft':
+            message = `You have successfully draft a notification.`
+            break
+          default:
+            message = `You have successfully published a notification.`
+            break
+        }
+
+        showToast('success', message)
       }
     }
   }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
 
-  const uploadApi = async payload => {
-    const response = await axios.post('/', payload)
+  const goToPageLists = () => {
+    let pageType
 
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
-        }
-      })
+    if (selectedStatus === 'draft') {
+      pageType = 'draft'
+    } else if (!dayjs().isAfter(dayjs(new Date(selectedPublishDateTime)))) {
+      pageType = 'upcoming'
+    } else {
+      pageType = 'published'
+    }
 
-      setFileUploadedData(imageData)
+    push(`/notifications/list/${pageType}`)
+  }
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
     }
   }
 
+  const uploadApi = async payload => {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(function (response) {
+        if (response.data) {
+          const imageData = response.data.map(item => {
+            return {
+              url: item.location,
+              type: item.mimetype
+            }
+          })
+
+          setFileUploadedData(imageData)
+          setFileUploadError(null)
+        }
+      })
+      .catch(function (error) {
+        const errMsg = 'Failed to upload image. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('embeddedFiles', null)
+      })
+      .then(() => {
+        setLoading(false)
+      })
+  }
+
   const onSubmit = (data, status) => {
-    console.log({ data, status })
     if (status === 'preview') {
       setPreviewData({
         primaryMedia: fileUploadedData,
         title: data?.title,
-        content: data?.content
+        content: data?.content?.replace(/(&nbsp;)+/g, '')
       })
       setPreviewNotification(old => !old)
       return
@@ -144,23 +236,144 @@ function CreateNotification() {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
       const createData = {
-        type: 'form',
+        type: 'flash',
         categoryId: data.category,
         title: data?.title || 'Untitled',
-        content: data?.content,
+        content: data?.content?.replace(/(&nbsp;)+/g, ''),
         audienceType: selectedAudienceType,
-        status: status,
+        status:
+          !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
+          status !== 'draft'
+            ? 'scheduled'
+            : status,
         primaryMedia: fileUploadedData
       }
+
       if (selectedPublishDateTime) {
-        createData.publishedAt = selectedPublishDateTime
+        createData.publishedAt = DATE.toFriendlyISO(selectedPublishDateTime)
       }
       if (selectedCompanySpecific) {
-        createData.audienceExpanse = { companyIds: selectedCompanySpecific }
+        createData.audienceExpanse = {
+          companyIds: selectedCompanySpecific.map(item => item.value)
+        }
       }
       if (selectedCompanyExcept) {
-        createData.audienceExceptions = { companyIds: selectedCompanyExcept }
+        createData.audienceExceptions = {
+          companyIds: selectedCompanyExcept.map(item => item.value)
+        }
       }
+      if (selectedComplexSpecific) {
+        createData.audienceExpanse = {
+          complexIds: selectedComplexSpecific.map(item => item.value)
+        }
+      }
+      if (selectedComplexExcept) {
+        createData.audienceExceptions = {
+          complexIds: selectedComplexExcept.map(item => item.value)
+        }
+      }
+      if (selectedBuildingSpecific) {
+        createData.audienceExpanse = {
+          buildingIds: selectedBuildingSpecific.map(item => item.value)
+        }
+      }
+      if (selectedBuildingExcept) {
+        createData.audienceExceptions = {
+          buildingIds: selectedBuildingExcept.map(item => item.value)
+        }
+      }
+
+      if (selectedRecurring?.isRepeat) {
+        createData.status = 'scheduled'
+
+        createData.publishedAt = DATE.toFriendlyISO(
+          dayjs(new Date(selectedPublishDateTime)).add(5, 'minute')
+        )
+
+        createData.recurringSchedule = {
+          type:
+            selectedRecurring.selectedRepeatOption.value === 'custom'
+              ? selectedRecurring?.selectedRepeatEveryOption?.value
+              : selectedRecurring.selectedRepeatOption.value
+        }
+
+        if (selectedRecurring.selectedRepeatOption.value === 'weekly') {
+          createData.recurringSchedule = {
+            ...createData.recurringSchedule,
+            properties: {
+              ...createData.recurringSchedule.properties,
+              dayOfWeek: Array.from(Array(7).keys())
+            }
+          }
+        }
+
+        if (selectedRecurring.selectedRepeatOption.value === 'monthly') {
+          createData.recurringSchedule = {
+            ...createData.recurringSchedule,
+            properties: {
+              ...createData.recurringSchedule.properties,
+              date: Array.from({ length: 31 }, (_, i) => i + 1)
+            }
+          }
+        }
+
+        if (
+          selectedRecurring.selectedRepeatOption.value === 'custom' &&
+          selectedRecurring.selectedRepeatEveryOption.value === 'weekly'
+        ) {
+          createData.recurringSchedule = {
+            ...createData.recurringSchedule,
+            properties: {
+              ...createData.recurringSchedule.properties,
+              dayOfWeek:
+                selectedRecurring.selectedDays.length > 0
+                  ? selectedRecurring.selectedDays
+                  : Array.from(Array(7).keys())
+            }
+          }
+        }
+
+        if (
+          selectedRecurring.selectedRepeatOption.value === 'custom' &&
+          selectedRecurring.selectedRepeatEveryOption.value === 'monthly'
+        ) {
+          createData.recurringSchedule = {
+            ...createData.recurringSchedule,
+            properties: {
+              ...createData.recurringSchedule.properties,
+              date:
+                selectedRecurring.datesSelected.length > 0
+                  ? selectedRecurring.datesSelected
+                  : Array.from({ length: 31 }, (_, i) => i + 1)
+            }
+          }
+        }
+
+        if (
+          selectedRecurring.selectedRepeatEndOption === 'on' &&
+          selectedRecurring.selectedRepeatDate
+        ) {
+          createData.recurringSchedule = {
+            ...createData.recurringSchedule,
+            end: {
+              date: DATE.toFriendlyISO(selectedRecurring.selectedRepeatDate)
+            }
+          }
+        }
+
+        if (
+          selectedRecurring.selectedRepeatEndOption === 'after' &&
+          selectedRecurring.instance
+        ) {
+          createData.recurringSchedule = {
+            ...createData.recurringSchedule,
+            end: {
+              instance: Number(selectedRecurring.instance)
+            }
+          }
+        }
+      }
+
       createPost({ variables: { data: createData } })
     }
   }
@@ -175,19 +388,24 @@ function CreateNotification() {
         showToast('info', `Maximum of 3 files only`)
       } else {
         setLoading(true)
+        setFileUploadError(null)
+
+        if (errors?.embeddedFiles?.message) {
+          errors.embeddedFiles.message = null
+        }
+
         for (const file of files) {
           const reader = new FileReader()
 
           reader.onloadend = () => {
             setImageUrls(imageUrls => [...imageUrls, reader.result])
-            setLoading(false)
           }
           reader.readAsDataURL(file)
 
-          formData.append('photos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
-        setValue('images', fileList)
+        setValue('embeddedFiles', fileList)
 
         uploadApi(formData)
       }
@@ -199,7 +417,56 @@ function CreateNotification() {
       return image !== e.currentTarget.dataset.id
     })
     setImageUrls(images)
-    setValue('images', images.length !== 0 ? images : null)
+    setValue('embeddedFiles', images.length !== 0 ? images : null)
+  }
+
+  const onSelectType = data => {
+    setSelectedAudienceType(data)
+
+    if (data === 'all') {
+      resetAudienceSpecific()
+    }
+  }
+
+  const onSelectCompanyExcept = data => {
+    setSelectedCompanyExcept(data)
+  }
+
+  const onSelectCompanySpecific = data => {
+    setSelectedCompanySpecific(data)
+  }
+
+  const onSelectComplexExcept = data => {
+    setSelectedComplexExcept(data)
+  }
+
+  const onSelectComplexSpecific = data => {
+    setSelectedComplexSpecific(data)
+  }
+
+  const onSelectBuildingExcept = data => {
+    setSelectedBuildingExcept(data)
+  }
+
+  const onSelectBuildingSpecific = data => {
+    setSelectedBuildingSpecific(data)
+  }
+
+  const handleShowAudienceModal = () => {
+    setShowAudienceModal(old => !old)
+  }
+
+  const onSaveAudience = () => {
+    handleShowAudienceModal()
+  }
+
+  const onCancelAudience = () => {
+    setSelectedAudienceType('all')
+    setSelectedCompanyExcept(null)
+    setSelectedComplexExcept(null)
+    setSelectedBuildingExcept(null)
+    resetAudienceSpecific()
+    handleShowAudienceModal()
   }
 
   const resetForm = () => {
@@ -210,64 +477,107 @@ function CreateNotification() {
     setShowPublishTimeModal(false)
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
+    setSelectedComplexExcept(null)
+    setSelectedBuildingExcept(null)
     setSelectedPublishTimeType('now')
     setSelectedPublishDateTime(null)
     setSelectedStatus('active')
+    resetAudienceSpecific()
   }
 
-  const postCategories = useMemo(() => {
-    if (categories?.getPostCategory.category?.length) {
-      return categories.getPostCategory.category.map(category => ({
-        label: category.name,
-        value: category._id
-      }))
+  const resetAudienceSpecific = () => {
+    if (accountType === ACCOUNT_TYPES.COMPYAD.value) {
+      const companyID = user?.accounts?.data[0]?.company?._id
+      setSelectedCompanySpecific([{ value: companyID }])
+      setSelectedComplexSpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
+      const complexID = user?.accounts?.data[0]?.complex?._id
+      setSelectedComplexSpecific([{ value: complexID }])
+      setSelectedCompanySpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.BUIGAD.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+    } else if (accountType === ACCOUNT_TYPES.RECEP.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+      setSelectedCompanySpecific(null)
+      setSelectedComplexSpecific(null)
     }
+  }
 
-    return []
-  }, [categories?.getPostCategory])
+  const onCountChar = e => {
+    if (e.currentTarget.maxLength) {
+      setTextCount(e.currentTarget.value.length)
+    }
+  }
+
+  const onCategorySelect = e => {
+    setSelectedCategory(e.value !== '' ? e.value : null)
+  }
+
+  const onClearCategory = () => {
+    setSelectedCategory(null)
+  }
+
+  const onUpdateStatus = data => {
+    setSelectedStatus(data)
+  }
 
   return (
     <section className="content-wrap">
       <h1 className="content-title">Create a Notification</h1>
       <form>
-        <div className="flex justify-between">
-          <div className="w-9/12 mr-8">
+        <div className="flex justify-between text-base">
+          <div className="w-full md:w-9/12">
             <Card
               content={
                 <div className="p-4">
                   <div className="title">
-                    <h1 className="pb-4 text-base text-gray-500 font-bold">
-                      Title
-                    </h1>
-                    <Controller
-                      control={control}
-                      name="title"
-                      render={({ name, value, onChange }) => (
-                        <FormInput
-                          name={name}
-                          value={value}
-                          onChange={onChange}
-                          placeholder={`What's is the title of your notification?`}
+                    <h1 className="pb-4 text-base font-bold">Title</h1>
+                    <div className={style.PostSubContent}>
+                      <div className={style.PostSubContentGrow}>
+                        <Controller
+                          name="title"
+                          control={control}
+                          render={({ name, value, onChange }) => (
+                            <FormInput
+                              inputClassName={style.PostInputCustom}
+                              type="text"
+                              name={name}
+                              value={value}
+                              placeholder="What's the title of your notification?"
+                              maxLength={inputMaxLength}
+                              count={textCount}
+                              error={errors?.title?.message ?? null}
+                              onChange={e => {
+                                onChange(e)
+                                onCountChar(e)
+                              }}
+                            />
+                          )}
                         />
-                      )}
-                    />
+                      </div>
+                      <div className={style.PostCounter}>
+                        {textCount}/{inputMaxLength}
+                      </div>
+                    </div>
                   </div>
-                  <div className="message mt-8">
-                    <h1 className="pb-4 text-base text-gray-500 font-bold">
-                      Content
-                    </h1>
+                  <div className="mt-8">
+                    <h1 className="pb-4 font-bold">Content</h1>
                     <Controller
                       control={control}
-                      name="message"
+                      name="content"
                       render={({ name, value, onChange }) => (
                         <FormTextArea
                           name={name}
                           value={value}
                           onChange={onChange}
-                          maxLength={500}
                           options={['history']}
                           placeholder="Write your text here"
+                          error={errors?.content?.message ?? null}
+                          stripHtmls
                         />
                       )}
                     />
@@ -289,10 +599,14 @@ function CreateNotification() {
                         <UploaderImage
                           name="image"
                           multiple
-                          maxImages={3}
+                          maxImages={1}
                           images={imageUrls}
                           loading={loading}
-                          error={errors?.images?.message ?? null}
+                          error={
+                            errors?.embeddedFiles?.message ??
+                            fileUploadError ??
+                            null
+                          }
                           onUploadImage={onUploadImage}
                           onRemoveImage={onRemoveImage}
                         />
@@ -304,67 +618,76 @@ function CreateNotification() {
             </div>
 
             <Card
-              title={<h1 className="text-base font-bold">Categories</h1>}
+              title={<h1 className="text-base font-bold">Category</h1>}
               content={
                 <div className="p-4 w-full border-t ">
-                  <div className="w-1/3 mt-4">
-                    <Controller
-                      control={control}
-                      name="postCategory"
-                      render={({ name, onChange, value }) => (
-                        <FormSelect
-                          name={name}
-                          value={value}
-                          options={postCategories}
-                          onChange={onChange}
-                        />
-                      )}
-                    />
-                  </div>
+                  <Controller
+                    control={control}
+                    name="category"
+                    render={({ name, onChange, value }) => (
+                      <SelectCategory
+                        placeholder="Select a Category"
+                        type="flash"
+                        onChange={e => {
+                          onChange(e.value)
+                          onCategorySelect(e)
+                        }}
+                        onClear={onClearCategory}
+                        error={errors?.category?.message ?? null}
+                        selected={selectedCategory}
+                      />
+                    )}
+                  />
                 </div>
               }
             />
             <Card
               title={<h1 className="text-base font-bold ">Publish Details</h1>}
               content={
-                <div className="flex items-start w-full border-t pt-2">
-                  <div className="w-1/2 mb-4 p-4">
-                    <div className="mb-2">
-                      <span>Status:</span>{' '}
-                      <span className="font-bold ml-5">New</span>
+                <div className="flex flex-col items-start w-full border-t md:flex-row p-4">
+                  <div className="w-full md:w-1/2">
+                    <div className="flex mb-2">
+                      <span style={{ minWidth: '65px' }}>Status:</span>
+                      <span className="font-bold">New</span>
                     </div>
                     <AudienceType
                       audienceType={selectedAudienceType}
                       specificCompanies={selectedCompanySpecific}
                       excludedCompanies={selectedCompanyExcept}
+                      specificComplexes={selectedComplexSpecific}
+                      excludedComplexes={selectedComplexExcept}
+                      specificBuildings={selectedBuildingSpecific}
+                      excludedBuildings={selectedBuildingExcept}
                       onShowAudienceModal={() =>
                         setShowAudienceModal(old => !old)
                       }
                     />
                   </div>
-                  <div className="w-1/2 mb-4 p-4">
+                  <div className="w-full md:w-1/2">
                     <PublishType
                       onShowPublishTypeModal={() =>
                         setShowPublishTimeModal(old => !old)
                       }
                       publishType={selectedPublishTimeType}
                       publishDateTime={selectedPublishDateTime}
+                      recurringData={selectedRecurring}
                     />
                   </div>
                 </div>
               }
             />
-            <div className="w-full grid grid-cols-6">
-              <div className="col-span-3 col-start-4 col-end-7 flex justify-end">
+            <div className="flex flex-col items-center justify-between md:flex-row">
+              <div>
                 <Can
                   perform="notifications:draft"
                   yes={
                     <Button
                       default
                       label="Save as Draft"
-                      onClick={() => {
-                        onSubmit(getValues(), 'draft')
-                      }}
+                      onMouseDown={() => onUpdateStatus('draft')}
+                      onClick={handleSubmit(e => {
+                        onSubmit(e, 'draft')
+                      })}
                       className="mr-4"
                     />
                   }
@@ -377,15 +700,19 @@ function CreateNotification() {
                     />
                   }
                 />
+              </div>
+
+              <div>
                 <Can
                   perform="notifications:view"
                   yes={
                     <Button
                       default
                       label="Preview"
-                      onClick={() => {
-                        onSubmit(getValues(), 'preview')
-                      }}
+                      onMouseDown={() => onUpdateStatus('preview')}
+                      onClick={handleSubmit(e => {
+                        onSubmit(e, 'preview')
+                      })}
                       className="mr-4"
                     />
                   }
@@ -400,9 +727,10 @@ function CreateNotification() {
                     <Button
                       primary
                       label="Publish"
-                      onClick={() => {
-                        onSubmit(getValues(), 'active')
-                      }}
+                      onMouseDown={() => onUpdateStatus('active')}
+                      onClick={handleSubmit(e => {
+                        onSubmit(e, 'active')
+                      })}
                     />
                   }
                   no={<Button primary disabled label="Publish" />}
@@ -414,11 +742,24 @@ function CreateNotification() {
       </form>
       <AudienceModal
         visible={showAudienceModal}
-        onCancel={() => setShowAudienceModal(old => !old)}
-        onSave={() => setShowAudienceModal(old => !old)}
-        onSelectAudienceType={setSelectedAudienceType}
-        onSelectCompanyExcept={setSelectedCompanyExcept}
-        onSelectCompanySpecific={setSelectedCompanySpecific}
+        onSelectAudienceType={onSelectType}
+        onSelectCompanyExcept={onSelectCompanyExcept}
+        onSelectCompanySpecific={onSelectCompanySpecific}
+        onSelectComplexExcept={onSelectComplexExcept}
+        onSelectComplexSpecific={onSelectComplexSpecific}
+        onSelectBuildingExcept={onSelectBuildingExcept}
+        onSelectBuildingSpecific={onSelectBuildingSpecific}
+        onSave={onSaveAudience}
+        onCancel={onCancelAudience}
+        onClose={onCancelAudience}
+        isShown={showAudienceModal}
+        valueAudienceType={selectedAudienceType}
+        valueCompanyExcept={selectedCompanyExcept}
+        valueCompanySpecific={selectedCompanySpecific}
+        valueComplexExcept={selectedComplexExcept}
+        valueComplexSpecific={selectedComplexSpecific}
+        valueBuildingExcept={selectedBuildingExcept}
+        valueBuildingSpecific={selectedBuildingSpecific}
       />
       <PublishTimeModal
         visible={showPublishTimeModal}
@@ -426,6 +767,10 @@ function CreateNotification() {
         onSave={() => setShowPublishTimeModal(old => !old)}
         onSelectType={setSelectedPublishTimeType}
         onSelectDateTime={setSelectedPublishDateTime}
+        onSelectRecurring={setSelectedRecurring}
+        valuePublishType={selectedPublishTimeType}
+        valueDateTime={selectedPublishDateTime}
+        valueRecurring={selectedRecurring}
       />
       <PreviewModal
         showPreview={previewNotification}

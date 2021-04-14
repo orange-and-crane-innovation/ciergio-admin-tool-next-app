@@ -47,10 +47,19 @@ function Directory() {
       category_name: ''
     }
   })
+  const [categoryPageLimit, setCategoryPageLimit] = useState(10)
+  const [categoryPageOffset, setCategoryPageOffset] = useState(0)
+  const [categoryCurrentPage, setCategoryCurrentPage] = useState(1)
 
   const { data: companies } = useQuery(GET_COMPANIES)
   const { data: categories, refetch: refetchCategories } = useQuery(
-    GET_CONTACT_CATEGORY
+    GET_CONTACT_CATEGORY,
+    {
+      variables: {
+        limit: categoryPageLimit,
+        offset: categoryPageOffset
+      }
+    }
   )
   const [createCategory] = useMutation(CREATE_CATEGORY, {
     onCompleted: () => {
@@ -144,43 +153,51 @@ function Directory() {
   )
 
   const directoryCategories = useMemo(() => {
-    const cats = categories?.getContactCategories?.data
+    const cats = categories?.getContactCategories
 
-    if (cats?.length > 0) {
-      return cats.map(c => {
-        const dropdownData = [
-          {
-            label: 'Edit Category',
-            icon: <span className="ciergio-edit" />,
-            function: () => {
-              setSelectedCategory(c.name)
-              handleShowModal('edit', c._id)
-            }
-          },
-          {
-            label: 'Delete Category',
-            icon: <span className="ciergio-trash" />,
-            function: () => {
-              setSelectedCategory(c.name)
-              handleShowModal('delete', c._id)
-            }
-          }
-        ]
+    return {
+      count: cats?.count || 0,
+      limit: cats?.limit || categoryPageLimit,
+      data:
+        cats?.count > 0
+          ? cats.data.map(c => {
+              const dropdownData = [
+                {
+                  label: 'Edit Category',
+                  icon: <span className="ciergio-edit" />,
+                  function: () => {
+                    setSelectedCategory(c.name)
+                    handleShowModal('edit', c._id)
+                  }
+                },
+                {
+                  label: 'Delete Category',
+                  icon: <span className="ciergio-trash" />,
+                  function: () => {
+                    setSelectedCategory(c.name)
+                    handleShowModal('delete', c._id)
+                  }
+                }
+              ]
 
-        return {
-          name: c.name,
-          dropdown: (
-            <Can
-              perform="directory:categories:update::delete"
-              yes={
-                <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} />
+              return {
+                name: c.name,
+                dropdown: (
+                  <Can
+                    perform="directory:categories:update::delete"
+                    yes={
+                      <Dropdown
+                        label={<AiOutlineEllipsis />}
+                        items={dropdownData}
+                      />
+                    }
+                  />
+                )
               }
-            />
-          )
-        }
-      })
+            })
+          : []
     }
-  }, [categories?.getContactCategories?.data])
+  }, [categories?.getContactCategories])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
@@ -192,12 +209,9 @@ function Directory() {
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
-            <div className="flex items-center justify-between">
-              <h1 className="font-bold text-base px-8 py-4">Companies</h1>
-            </div>
             <Card
               noPadding
-              header={
+              title={
                 <div className="flex items-center justify-between">
                   <span>Companies</span>
                 </div>
@@ -207,22 +221,27 @@ function Directory() {
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <div className="w-full flex items-center justify-end pt-4">
-              <Can
-                perform="directory:categories:create"
-                yes={
-                  <Button
-                    default
-                    leftIcon={<FaPlusCircle />}
-                    label="Add Category"
-                    onClick={() => setShowModal('create', null)}
-                  />
-                }
-              />
-            </div>
             <Card
-              noPadding
-              content={<ManageDirectory data={directoryCategories} />}
+              title=" "
+              actions={[
+                <Button
+                  key="add"
+                  default
+                  leftIcon={<FaPlusCircle />}
+                  label="Add Category"
+                  onClick={() => setShowModal('create', null)}
+                />
+              ]}
+              content={
+                <ManageDirectory
+                  data={directoryCategories}
+                  pageLimit={categoryPageLimit}
+                  currentPage={categoryCurrentPage}
+                  setPageLimit={setCategoryPageLimit}
+                  setCurrentPage={setCategoryCurrentPage}
+                  setPageOffset={setCategoryPageOffset}
+                />
+              }
             />
             <Modal
               title="Add Category"

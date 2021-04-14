@@ -344,6 +344,10 @@ module.exports = {
       },
       maxWidth: (theme, { breakpoints }) => ({
         none: 'none',
+        '5xs': '4rem',
+        '4xs': '8rem',
+        '3xs': '12rem',
+        '2xs': '16rem',
         xs: '20rem',
         sm: '24rem',
         md: '28rem',
@@ -359,6 +363,10 @@ module.exports = {
       }),
       minHeight: {
         0: '0',
+        '5xs': '4rem',
+        '4xs': '8rem',
+        '3xs': '12rem',
+        '2xs': '16rem',
         xs: '20rem',
         sm: '24rem',
         md: '28rem',
@@ -374,6 +382,10 @@ module.exports = {
       },
       minWidth: {
         0: '0',
+        '5xs': '4rem',
+        '4xs': '8rem',
+        '3xs': '12rem',
+        '2xs': '16rem',
         xs: '20rem',
         sm: '24rem',
         md: '28rem',

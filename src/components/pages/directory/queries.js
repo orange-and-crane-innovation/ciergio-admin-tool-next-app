@@ -64,11 +64,16 @@ export const GET_BUILDINGS = gql`
 `
 
 export const GET_CONTACT_CATEGORY = gql`
-  query getCategoriesByComplexId($complexId: String) {
+  query getCategoriesByComplexId(
+    $complexId: String
+    $companyId: String
+    $limit: Int
+    $offset: Int
+  ) {
     getContactCategories(
-      where: { complexId: $complexId, type: directory }
-      limit: 10
-      skip: 0
+      where: { complexId: $complexId, companyId: $companyId, type: directory }
+      limit: $limit
+      skip: $offset
     ) {
       count
       limit
@@ -84,13 +89,13 @@ export const GET_CONTACT_CATEGORY = gql`
 
 export const GET_CONTACTS = gql`
   query getContactsByComplexId(
-    $companyId: String
     $complexId: String
+    $companyId: String
     $limit: Int
     $offset: Int
   ) {
     getContacts(
-      where: { complexId: $complexId, companyId: $companyId, type: directory }
+      where: { complexId: $complexId, companyId: $companyId }
       limit: $limit
       skip: $offset
     ) {

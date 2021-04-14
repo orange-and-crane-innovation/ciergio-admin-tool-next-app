@@ -141,7 +141,7 @@ const ListItem = ({ index, id, onMoveCard, item }) => {
       className={style.DraggableItem}
     >
       <td className={[style.ItemData, style.DragIcon].join(' ')}>
-        <span className="ciergio-reorder" />
+        <span className="ciergio-drag" />
       </td>
       {listItem}
     </tr>

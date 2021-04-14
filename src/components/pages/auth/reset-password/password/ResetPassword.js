@@ -29,18 +29,19 @@ const validationSchema = yup.object().shape({
 
 function ResetPassword({ onSubmit, isSubmitting }) {
   const [password, setPassword] = useState()
+  const resetToken = localStorage.getItem('reset_token')
 
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      token: localStorage.getItem('reset_token'),
+      token: resetToken,
       newPassword: ''
     }
   })
 
   useEffect(() => {
     register({ name: 'token' })
-    setValue('id', localStorage.getItem('reset_token'))
+    setValue('id', resetToken)
   }, [])
 
   return (
@@ -51,51 +52,55 @@ function ResetPassword({ onSubmit, isSubmitting }) {
         </div>
 
         <div className={style.ResetPasswordCard}>
-          <form
-            className={style.ResetPasswordForm}
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <h2>Create a password</h2>
-            <p>
-              For security purposes, your password must be between 8 to 16
-              characters long, including at least a number (0-9), a lowercase
-              letter (a-z), an uppercase letter (A-Z) and a special character.
-            </p>
+          {resetToken ? (
+            <form
+              className={style.ResetPasswordForm}
+              onSubmit={handleSubmit(onSubmit)}
+            >
+              <h2>Create a password {resetToken}</h2>
+              <p>
+                For security purposes, your password must be between 8 to 16
+                characters long, including at least a number (0-9), a lowercase
+                letter (a-z), an uppercase letter (A-Z) and a special character.
+              </p>
 
-            <Controller
-              name="newPassword"
-              control={control}
-              render={({ name, value, onChange, ...props }) => (
-                <>
-                  <FormInput
-                    type="password"
-                    name={name}
-                    value={value}
-                    maxLength={16}
-                    label="New Password"
-                    placeholder="Create you password"
-                    error={errors?.newPassword?.message ?? null}
-                    onChange={e => {
-                      onChange(e)
-                      setPassword(e.target.value)
-                    }}
-                    inputProps={props}
-                  />
-                  {value && <PasswordStrengthBar password={password} />}
-                </>
-              )}
-            />
+              <Controller
+                name="newPassword"
+                control={control}
+                render={({ name, value, onChange, ...props }) => (
+                  <>
+                    <FormInput
+                      type="password"
+                      name={name}
+                      value={value}
+                      maxLength={16}
+                      label="New Password"
+                      placeholder="Create you password"
+                      error={errors?.newPassword?.message ?? null}
+                      onChange={e => {
+                        onChange(e)
+                        setPassword(e.target.value)
+                      }}
+                      inputProps={props}
+                    />
+                    {value && <PasswordStrengthBar password={password} />}
+                  </>
+                )}
+              />
 
-            <br />
+              <br />
 
-            <Button
-              label="Submit"
-              type="submit"
-              loading={isSubmitting}
-              fluid
-              primary
-            />
-          </form>
+              <Button
+                label="Submit"
+                type="submit"
+                loading={isSubmitting}
+                fluid
+                primary
+              />
+            </form>
+          ) : (
+            <p className={style.PageError}>The code is invalid/not found.</p>
+          )}
         </div>
 
         <div className={style.MiniFooter}>

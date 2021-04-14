@@ -10,8 +10,8 @@ dayjs.extend(utc)
 
 export const toFriendlyISO = data => {
   const dateObj = new Date(data)
-  const dayObj = dayjs(dateObj).utc().local()
-  return dayObj.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+  const dayObj = dayjs(dateObj)
+  return dayObj.toISOString()
 }
 
 export const toFriendlyDateTime = data => {
@@ -21,6 +21,18 @@ export const toFriendlyDateTime = data => {
     const dateObj = new Date(data)
     const dayObj = dayjs(dateObj)
     convertedDate = dayObj.format('MMMM DD, YYYY hh:mm A')
+  }
+
+  return convertedDate
+}
+
+export const toFriendlyShortDateTime = data => {
+  let convertedDate = '-'
+
+  if (data) {
+    const dateObj = new Date(data)
+    const dayObj = dayjs(dateObj)
+    convertedDate = dayObj.format('MMM DD, YYYY hh:mm A')
   }
 
   return convertedDate
@@ -84,6 +96,21 @@ export const toFriendlyYearMonth = data => {
   }
 
   return convertedDate
+}
+
+export const displayDays = data => {
+  const inputDate = dayjs(data)
+  const currentDate = dayjs(new Date())
+  const difference = dayjs.duration(currentDate.diff(inputDate))
+  const dateData = difference.$d
+  const { days } = dateData
+  let returnData
+  if (days <= 7) {
+    returnData = friendlyDateTimeFormat(data, 'ddd')
+  } else {
+    returnData = friendlyDateTimeFormat(data, 'LL')
+  }
+  return returnData
 }
 
 export const displayDateCreated = data => {

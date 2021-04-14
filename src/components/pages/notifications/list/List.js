@@ -1,21 +1,32 @@
-import React, { useState, useMemo } from 'react'
-import { useQuery, useMutation } from '@apollo/client'
+import React, { useState } from 'react'
+import { useRouter } from 'next/router'
+import { useMutation } from '@apollo/client'
+import { debounce } from 'lodash'
+
 import Tabs from '@app/components/tabs'
-import FormSelect from '@app/components/forms/form-select'
 import SelectBulk from '@app/components/globals/SelectBulk'
-import useDebounce from '@app/utils/useDebounce'
+import SelectCategory from '@app/components/globals/SelectCategory'
+import Search from '@app/components/globals/SearchControl'
+import Modal from '@app/components/modal'
+
 import Notification from '../components/Notification'
-import StatCards from '../components/StatCards'
-import { bulkOptions, UPCOMING, PUBLISHED, DRAFT, TRASHED } from '../constants'
+
+import {
+  bulkOptions,
+  UPCOMING,
+  PUBLISHED,
+  DRAFT,
+  TRASHED,
+  bulkOptionsTrash
+} from '../constants'
+
 import {
   GET_ALL_UPCOMING_NOTIFICATIONS,
   GET_ALL_PUBLISHED_NOTIFICATIONS,
   GET_ALL_DRAFT_NOTIFICATIONS,
   GET_ALL_TRASHED_NOTIFICATIONS,
-  BULK_UPDATE_MUTATION,
-  GET_POST_CATEGORIES
+  BULK_UPDATE_MUTATION
 } from '../queries'
-import Search from '@app/components/globals/SearchControl'
 
 const tabs = [
   {
@@ -39,22 +50,22 @@ const tabs = [
 const { TabPanels, TabPanel, TabLabel, TabLabels } = Tabs
 
 function NotificationsList() {
-  const [searchText, setSearchtext] = useState(null)
+  const router = useRouter()
+  const [searchText, setSearchText] = useState()
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [selectedBulk, setSelectedBulk] = useState()
   const [category, setCategory] = useState(null)
   const [selectedData, setSelectedData] = useState([])
-
-  const debouncedSearchText = useDebounce(searchText, 500)
-
-  const { data: categories } = useQuery(GET_POST_CATEGORIES)
+  const [showModal, setShowModal] = useState(false)
+  const [modalType, setModalType] = useState()
+  const [modalContent, setModalContent] = useState()
+  const [modalTitle, setModalTitle] = useState()
+  const [modalFooter, setModalFooter] = useState(null)
 
   const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
     BULK_UPDATE_MUTATION
   )
-
-  const CATEGORIES = categories?.getPostCategory
 
   const onClearBulk = () => {
     setSelectedBulk('')
@@ -66,32 +77,86 @@ function NotificationsList() {
   }
 
   const onBulkChange = e => {
-    setSelectedBulk(e.target.value)
-    if (e.target.value !== '') {
+    setSelectedBulk(e.value)
+    if (e.value !== '') {
       setIsBulkButtonDisabled(false)
     } else {
       setIsBulkButtonDisabled(true)
     }
   }
 
-  const categoryOptions = useMemo(() => {
-    if (CATEGORIES !== undefined) {
-      return CATEGORIES?.category?.map(cat => ({
-        label: cat.name,
-        value: cat._id
-      }))
-    }
+  const onCategorySelect = e => {
+    setCategory(e.value !== '' ? e.value : null)
+  }
 
-    return []
-  }, [CATEGORIES])
+  const onClearCategory = () => {
+    setCategory(null)
+  }
+
+  const handleShowModal = (type, id) => {
+    if (selectedData?.length > 0) {
+      switch (type) {
+        case 'bulk': {
+          let typeName
+
+          switch (selectedBulk) {
+            case 'unpublished': {
+              typeName = 'unpublish'
+              break
+            }
+            case 'trashed': {
+              typeName = 'move to trash'
+              break
+            }
+            case 'deleted': {
+              typeName = 'delete permanently'
+              break
+            }
+            case 'draft': {
+              typeName = 'restore'
+              break
+            }
+          }
+
+          setModalType(type)
+
+          setModalTitle('Bulk Update Post')
+          setModalContent(
+            <div className="text-base mb-8">
+              <p>
+                {`You are about to `}
+                <strong>{`${typeName} "(${selectedData.length}) items" `}</strong>
+                {`from the list.`}
+              </p>
+              <br />
+              <p>Do you want to continue?</p>
+            </div>
+          )
+          setModalFooter(true)
+          break
+        }
+      }
+      setShowModal(old => !old)
+    }
+  }
+
+  const handleClearModal = () => {
+    handleShowModal()
+  }
+
+  const onSearch = debounce(e => {
+    setSearchText(e.target.value !== '' ? e.target.value : null)
+  }, 1000)
+
+  const onClearSearch = () => {
+    setSearchText(null)
+  }
 
   return (
-    <section className="content-wrap">
-      <h1 className="content-title">
-        Orange and Crane Innovations Inc. Notifications
-      </h1>
-      <StatCards />
-      <Tabs defaultTab={UPCOMING}>
+    <section className="content-wrap text-base">
+      <h1 className="content-title">Notifications</h1>
+
+      <Tabs defaultTab={router.query.tab || UPCOMING}>
         <TabLabels>
           {tabs.map(({ type }) => {
             const label = `${type.charAt(0).toUpperCase()}${type.slice(1)}`
@@ -102,34 +167,44 @@ function NotificationsList() {
             )
           })}
         </TabLabels>
+        <span>
+          {router?.query?.tab === 'trashed' && (
+            <>
+              Trashed notifications will be automatically deleted after{' '}
+              <strong>30 days</strong>.
+            </>
+          )}
+        </span>
 
         <div className="flex items-center justify-between mt-12 flex-col md:flex-row">
           <SelectBulk
-            placeholder="Select"
-            options={bulkOptions}
+            placeholder="Bulk Action"
+            options={
+              router?.query?.tab === TRASHED ? bulkOptionsTrash : bulkOptions
+            }
             disabled={isBulkDisabled}
             isButtonDisabled={isBulkButtonDisabled}
             onBulkChange={onBulkChange}
-            onBulkSubmit={onBulkSubmit}
+            onBulkSubmit={() => handleShowModal('bulk')}
             onBulkClear={onClearBulk}
             selected={selectedBulk}
           />
-          <div className="flex items-center justify-between w-full flex-col md:w-6/12 md:flex-row">
-            <FormSelect
-              options={categoryOptions}
-              value={category}
-              onChange={category => setCategory(category.value)}
-              onClear={() => setCategory(null)}
-              placeholder="Filter category"
-              className="mr-4"
-              isClearable
+          <div className="flex items-center justify-end w-full flex-col md:w-6/12 md:flex-row">
+            <SelectCategory
+              placeholder="Filter Category"
+              type="flash"
+              onChange={onCategorySelect}
+              onClear={onClearCategory}
+              selected={category}
             />
-            <Search
-              name="search"
-              placeholder="Search by title"
-              onChange={e => setSearchtext(e.target.value)}
-              value={searchText}
-            />
+            <div className="ml-2">
+              <Search
+                placeholder="Search by title"
+                searchText={searchText || ''}
+                onSearch={onSearch}
+                onClearSearch={onClearSearch}
+              />
+            </div>
           </div>
         </div>
         <TabPanels>
@@ -146,12 +221,24 @@ function NotificationsList() {
                 setIsBulkDisabled={setIsBulkDisabled}
                 setSelectedBulk={setSelectedBulk}
                 categoryId={category}
-                searchText={debouncedSearchText}
+                searchText={searchText}
               />
             </TabPanel>
           ))}
         </TabPanels>
       </Tabs>
+
+      <Modal
+        title={modalTitle}
+        visible={showModal}
+        onClose={handleClearModal}
+        footer={modalFooter}
+        okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
+        onOk={() => (modalType === 'bulk' ? onBulkSubmit() : null)}
+        onCancel={() => setShowModal(old => !old)}
+      >
+        <div className="w-full">{modalContent}</div>
+      </Modal>
     </section>
   )
 }

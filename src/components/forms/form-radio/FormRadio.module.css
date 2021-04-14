@@ -1,4 +1,5 @@
 .FormCheckboxContainer {
+  @apply flex items-center;
   @apply cursor-pointer;
 
   .FormCheckbox {

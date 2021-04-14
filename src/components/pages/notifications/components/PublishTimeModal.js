@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import dayjs from 'dayjs'
+import moment from 'moment'
 
 import RadioBox from '@app/components/forms/form-radio'
 import Modal from '@app/components/modal'
@@ -11,14 +13,19 @@ import SelectPublishTime from './SelectPublishTime'
 import CustomPublishDates from './CustomPublishDate'
 import RepeatOptions from './RepeatOptions'
 
-import { repeatOptions } from '../constants'
+import { repeatOptions, repeatEveryOptions } from '../constants'
+import showToast from '@app/utils/toast'
 
 const Component = ({
   visible,
   onSelectType,
   onSelectDateTime,
+  onSelectRecurring,
   onSave,
-  onCancel
+  onCancel,
+  valuePublishType,
+  valueDateTime,
+  valueRecurring
 }) => {
   const [isRepeat, setIsRepeat] = useState(false)
 
@@ -28,39 +35,115 @@ const Component = ({
   })
   const [selectedRepeatEveryOption, setSelectedRepeatEveryOption] = useState({
     label: 'Week',
-    value: 'week'
+    value: 'weekly'
   })
 
   const [selectedDays, setSelectedDays] = useState([])
   const [datesSelected, setDatesSelected] = useState([])
 
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const [selectedRepeatDate, setSelectedRepeatDate] = useState(new Date())
+  const [selectedRepeatDate, setSelectedRepeatDate] = useState()
 
   const [selectedPublishType, setSelectedPublishType] = useState('now')
-  const [selectedRepeatEndOption, setSelectedRepeatEndOption] = useState(
-    'never'
-  )
-  const [instance, setInstance] = useState('')
+  const [selectedRepeatEndOption, setSelectedRepeatEndOption] = useState('on')
+  const [instance, setInstance] = useState(1)
 
-  const resetModalValues = () => {
-    setSelectedDate(new Date())
-    setSelectedRepeatDate(new Date())
-    setSelectedPublishType('now')
-    setIsRepeat(false)
-    setSelectedRepeatOption({
-      label: 'Daily',
-      value: 'daily'
-    })
-    setSelectedRepeatEndOption('never')
-    setInstance('')
-    setSelectedRepeatEveryOption({
-      label: 'Week',
-      value: 'week'
-    })
-    setSelectedDays([])
-    setDatesSelected([])
-  }
+  useEffect(() => {
+    if (valuePublishType && valueDateTime) {
+      setSelectedPublishType(valuePublishType)
+      setSelectedDate(valueDateTime)
+    }
+  }, [valuePublishType, valueDateTime])
+
+  useEffect(() => {
+    if (valueRecurring?.isEdit) {
+      setSelectedRepeatDate(
+        valueRecurring?.end?.date ? new Date(valueRecurring?.end?.date) : null
+      )
+      setIsRepeat(true)
+      setSelectedRepeatOption(
+        repeatOptions.filter(
+          item =>
+            item.value ===
+            (valueRecurring?.properties?.dayOfWeek?.length > 0 ||
+            valueRecurring?.properties?.date?.length > 0
+              ? 'custom'
+              : valueRecurring?.type)
+        )[0]
+      )
+      setSelectedRepeatEndOption(
+        valueRecurring?.end?.date
+          ? 'on'
+          : valueRecurring?.end?.instance
+          ? 'after'
+          : 'on'
+      )
+      setInstance(valueRecurring?.end?.instance ?? 1)
+      setSelectedRepeatEveryOption(
+        repeatEveryOptions.filter(
+          item => item.value === valueRecurring?.type
+        )[0] || {
+          label: 'Week',
+          value: 'weekly'
+        }
+      )
+      setSelectedDays(valueRecurring?.properties?.dayOfWeek ?? [])
+      setDatesSelected(valueRecurring?.properties?.date ?? [])
+    }
+  }, [valueRecurring])
+
+  // const resetModalValues = () => {
+  //   if (valueRecurring?.isEdit) {
+  //     if (valuePublishType && valueDateTime) {
+  //       setSelectedPublishType(valuePublishType)
+  //       setSelectedDate(valueDateTime)
+  //     }
+  //     if (valueRecurring) {
+  //       setSelectedRepeatDate(
+  //         valueRecurring?.end?.date ? new Date(valueRecurring?.end?.date) : null
+  //       )
+  //       setIsRepeat(true)
+  //       setSelectedRepeatOption(
+  //         repeatOptions.filter(item => item.value === valueRecurring?.type)[0]
+  //       )
+  //       setSelectedRepeatEndOption(
+  //         valueRecurring?.end?.date
+  //           ? 'on'
+  //           : valueRecurring?.end?.instance
+  //           ? 'after'
+  //           : 'on'
+  //       )
+  //       setInstance(valueRecurring?.end?.instance ?? 1)
+  //       setSelectedRepeatEveryOption(
+  //         repeatEveryOptions.filter(
+  //           item => item.value === valueRecurring?.type
+  //         )[0] || {
+  //           label: 'Week',
+  //           value: 'weekly'
+  //         }
+  //       )
+  //       setSelectedDays(valueRecurring?.properties?.dayOfWeek ?? [])
+  //       setDatesSelected(valueRecurring?.properties?.date ?? [])
+  //     }
+  //   } else {
+  //     setSelectedDate(new Date())
+  //     setSelectedRepeatDate(null)
+  //     setSelectedPublishType('now')
+  //     setIsRepeat(false)
+  //     setSelectedRepeatOption({
+  //       label: 'Daily',
+  //       value: 'daily'
+  //     })
+  //     setSelectedRepeatEndOption('on')
+  //     setInstance(1)
+  //     setSelectedRepeatEveryOption({
+  //       label: 'Week',
+  //       value: 'weekly'
+  //     })
+  //     setSelectedDays([])
+  //     setDatesSelected([])
+  //   }
+  // }
 
   const onSelectPublishType = e => {
     setSelectedPublishType(e.target.value)
@@ -86,6 +169,7 @@ const Component = ({
     }
 
     setSelectedDays(cloneDays)
+    setDatesSelected([])
   }
 
   const onSelectDates = currentDate => {
@@ -99,6 +183,7 @@ const Component = ({
     }
 
     setDatesSelected(cloneDates)
+    setSelectedDays([])
   }
 
   const onSelectRepeatEveryOption = value => {
@@ -106,14 +191,60 @@ const Component = ({
   }
 
   const handleSave = () => {
-    onSelectType(selectedPublishType)
-    onSelectDateTime(selectedDate)
-    resetModalValues()
-    onSave()
+    const fromTime = dayjs(new Date())
+    const toTime = dayjs(selectedDate)
+    const diffTime = toTime.diff(fromTime, 'minute', true)
+
+    if (selectedPublishType === 'later' && diffTime < 5) {
+      showToast('danger', 'Time must be 5 minutes advance on the current date')
+    } else if (
+      isRepeat &&
+      selectedRepeatOption.value === 'custom' &&
+      selectedDays.length === 0 &&
+      datesSelected.length === 0
+    ) {
+      if (
+        selectedRepeatEveryOption.value === 'weekly' &&
+        selectedDays.length === 0
+      ) {
+        showToast('danger', 'Days of week must have at least 1 item')
+      } else if (
+        selectedRepeatEveryOption.value === 'monthly' &&
+        datesSelected.length === 0
+      ) {
+        showToast('danger', 'Days of month must have at least 1 item')
+      }
+    } else if (
+      isRepeat &&
+      selectedRepeatEndOption === 'on' &&
+      !selectedRepeatDate
+    ) {
+      showToast('danger', 'Please select an end date')
+    } else if (
+      isRepeat &&
+      selectedRepeatEndOption === 'after' &&
+      (instance === 0 || instance === '0' || instance === '')
+    ) {
+      showToast('danger', 'Instance value must be greater than 0')
+    } else {
+      onSelectType(selectedPublishType)
+      onSelectDateTime(selectedDate)
+      onSelectRecurring({
+        isRepeat,
+        selectedRepeatOption,
+        selectedRepeatEveryOption,
+        datesSelected,
+        selectedDays,
+        selectedRepeatEndOption,
+        selectedRepeatDate,
+        instance
+      })
+
+      onSave()
+    }
   }
 
   const handleCancel = () => {
-    resetModalValues()
     onCancel()
   }
 
@@ -179,7 +310,7 @@ const Component = ({
               id="repeat"
               name="repeat"
               label="Repeat"
-              value={isRepeat}
+              value={isRepeat || ''}
               isChecked={isRepeat}
               onChange={onRepeatChange}
             />
@@ -191,6 +322,7 @@ const Component = ({
               onChange={onChangeRepeatOption}
               options={repeatOptions}
               disabled={!isRepeat}
+              isClearable={false}
             />
           </div>
         </div>
@@ -222,8 +354,15 @@ Component.propTypes = {
   visible: PropTypes.bool,
   onSelectType: PropTypes.func,
   onSelectDateTime: PropTypes.func,
+  onSelectRecurring: PropTypes.func,
   onSave: PropTypes.func,
-  onCancel: PropTypes.func
+  onCancel: PropTypes.func,
+  valuePublishType: PropTypes.string,
+  valueDateTime: PropTypes.oneOfType([
+    PropTypes.instanceOf(Date),
+    PropTypes.instanceOf(moment)
+  ]),
+  valueRecurring: PropTypes.object
 }
 
 export default Component

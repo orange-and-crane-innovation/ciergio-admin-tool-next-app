@@ -10,7 +10,7 @@ function VerifyEmail({ loading, data, error }) {
   const errorLists = {
     1000: {
       errorType: style.PageError,
-      message: 'Email verification links has already been expired.'
+      message: 'Email verification link has already been expired.'
     },
     4000: {
       errorType: style.PageInfo,

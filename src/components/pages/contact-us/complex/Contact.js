@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/router'
 import P from 'prop-types'
 import * as yup from 'yup'
 import Button from '@app/components/button'
@@ -54,6 +55,8 @@ const columns = [
 ]
 
 function Contact({ id }) {
+  const router = useRouter()
+  const companyId = router?.query?.companyId
   const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -83,7 +86,8 @@ function Contact({ id }) {
         type: 'contactus'
       },
       contactWhere: {
-        complexId: id
+        complexId: id,
+        companyId: companyId ?? null
       },
       contactsLimit: pageLimit,
       contactsSkip: pageOffset
@@ -91,7 +95,8 @@ function Contact({ id }) {
   })
 
   const { data: contactCategories } = useQuery(GET_CONTACT_CATEGORY, {
-    complexId: id
+    complexId: id,
+    companyId: companyId ?? null
   })
 
   const [createContact, { loading: creatingContact }] = useMutation(
@@ -127,7 +132,6 @@ function Contact({ id }) {
   const [showDeleteContactModal, setShowDeleteContactModal] = useState(false)
 
   const name = complexes?.getComplexes?.data[0]?.name || ''
-  const companyId = complexes?.getComplexes?.data[0]?.company._id || ''
 
   useEffect(() => {
     if (selectedContact !== undefined) {

@@ -23,6 +23,12 @@ function VerifyPage() {
   })
 
   useEffect(() => {
+    if (localStorage.getItem('reset_token')) {
+      localStorage.removeItem('reset_token')
+    }
+  }, [])
+
+  useEffect(() => {
     if (!loading) {
       if (error) {
         errorHandler(error)
@@ -60,9 +66,14 @@ function VerifyPage() {
     if (errors) {
       const { graphQLErrors, networkError, message } = errors
       if (graphQLErrors)
-        graphQLErrors.map(({ message, locations, path }) =>
-          showToast('danger', message)
-        )
+        graphQLErrors.map(({ code, message, locations, path }) => {
+          if (code === 5002) {
+            showToast('danger', 'Invalid reset code')
+          } else {
+            showToast('danger', message)
+          }
+          return null
+        })
 
       if (networkError?.result?.errors) {
         showToast('danger', errors?.networkError?.result?.errors[0]?.message)

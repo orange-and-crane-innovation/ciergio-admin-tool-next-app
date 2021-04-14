@@ -28,12 +28,15 @@ function VerifyEmailPage() {
   ] = useMutation(VERIFY_EMAIL_MUTATION, { onError: _e => {} })
 
   useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => {
-      onSubmit()
-      clearTimeout(timer)
-    }, 2000)
-  }, [])
+    if (router?.query?.code) {
+      setIsLoading(true)
+
+      const timer = setTimeout(() => {
+        onSubmit()
+        clearTimeout(timer)
+      }, 2000)
+    }
+  }, [router])
 
   useEffect(() => {
     if (!loading) {
@@ -56,11 +59,11 @@ function VerifyEmailPage() {
         }
       })
     } catch (err) {}
-  }, [verifyEmail])
+  }, [verifyEmail, router])
 
   const errorHandler = data => {
     const errors = JSON.parse(JSON.stringify(data))
-
+    console.log(errors)
     if (errors) {
       const { graphQLErrors, networkError, message } = errors
       if (graphQLErrors) {

@@ -50,7 +50,7 @@ const AboutComponent = ({
                   </span>
                   <div className={styles.FlexCol}>
                     <span className={styles.ContentTitle}>Address</span>
-                    <span>{address}</span>
+                    <span>{address || 'Not available'}</span>
                   </div>
                 </div>
                 <hr />
@@ -65,7 +65,7 @@ const AboutComponent = ({
                         <span className={styles.ContentTitle}>
                           Company Tin #
                         </span>
-                        <span>{tinNo}</span>
+                        <span>{tinNo || 'Not available'}</span>
                       </div>
                     </div>
                     <hr />
@@ -79,7 +79,7 @@ const AboutComponent = ({
                     </span>
                     <div className={styles.FlexCol}>
                       <span className={styles.ContentTitle}>Email Address</span>
-                      <span>{email}</span>
+                      <span>{email || 'Not available'}</span>
                     </div>
                   </div>
 
@@ -91,7 +91,7 @@ const AboutComponent = ({
                       <span className={styles.ContentTitle}>
                         Contact Number
                       </span>
-                      <span>{contactNo}</span>
+                      <span>{contactNo || 'Not available'}</span>
                     </div>
                   </div>
                 </div>
@@ -102,7 +102,7 @@ const AboutComponent = ({
                   </span>
                   <div className={styles.FlexCol}>
                     <span className={styles.ContentTitle}>Approved By</span>
-                    <span>{approvedBy}</span>
+                    <span>{approvedBy || 'Not available'}</span>
                   </div>
                 </div>
               </div>

@@ -21,7 +21,7 @@ const GET_BUILDINGS_QUERY = gql`
   }
 `
 
-const SelectCategoryComponent = ({
+const SelectBuildingComponent = ({
   type,
   userType,
   selected,
@@ -83,7 +83,7 @@ const SelectCategoryComponent = ({
   )
 }
 
-SelectCategoryComponent.propTypes = {
+SelectBuildingComponent.propTypes = {
   type: PropTypes.string,
   userType: PropTypes.string,
   selected: PropTypes.any,
@@ -92,4 +92,4 @@ SelectCategoryComponent.propTypes = {
   onClear: PropTypes.func
 }
 
-export default SelectCategoryComponent
+export default SelectBuildingComponent

@@ -26,7 +26,8 @@ function FormInput({
   icon,
   iconOnClick,
   readOnly,
-  defaultValue
+  defaultValue,
+  ...rest
 }) {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -34,11 +35,12 @@ function FormInput({
     () =>
       clsx(styles.FormInput, containerClassName, {
         [styles.hasError]: !!error,
-        [styles.Readonly]: !!readOnly
+        [styles.Readonly]: !!readOnly,
+        [styles.Disabled]: !!disabled
       }),
-    [containerClassName, error]
+    [containerClassName, error, readOnly, disabled]
   )
-  const labelClasses = useMemo(() => clsx(styles.formLabel, labelClassName), [
+  const labelClasses = useMemo(() => clsx(labelClassName, styles.formLabel), [
     labelClassName
   ])
   const inputClasses = useMemo(() => clsx(styles.FormControl, inputClassName), [
@@ -68,11 +70,13 @@ function FormInput({
           className={inputClasses}
           placeholder={placeholder}
           value={value}
+          defaultValue={defaultValue}
           maxLength={maxLength}
           readOnly={readOnly}
+          disabled={disabled}
           onChange={onChange}
-          defaultValue={defaultValue}
           {...inputProps}
+          {...rest}
         />
         {type !== 'password' && icon && (
           <button
