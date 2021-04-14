@@ -539,6 +539,7 @@ const rules = {
         '/residents/invites-requests/complexes',
         '/posts',
         '/posts/create',
+        '/forms/create',
         '/forms/building',
         '/dues/billing',
         '/notifications/list',

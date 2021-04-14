@@ -251,7 +251,14 @@ function LogBook({ buildingId, categoryId, status, name }) {
           ),
           options: (
             <div className="h-full w-full flex justify-center items-center">
-              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              <Dropdown
+                label={<FaEllipsisH />}
+                items={
+                  !registry.checkedOutAt
+                    ? dropdownData
+                    : [dropdownData[0], dropdownData[1]]
+                }
+              />
             </div>
           )
         })
