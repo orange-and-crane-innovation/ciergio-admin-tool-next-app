@@ -57,6 +57,12 @@ export const GET_REGISTRYRECORDS = gql`
         forWho {
           _id
           accountType
+          conversations {
+            count
+            data {
+              _id
+            }
+          }
           user {
             _id
             firstName
