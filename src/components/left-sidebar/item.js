@@ -24,8 +24,9 @@ const Item = ({ url, icon, title, items }) => {
       )
     } else {
       parentUrl = url
-      if (pathname) {
-        if (`/${pathname.split('/')[1]}` === parentUrl) {
+      const splitPath = pathname.split('/')
+      if (splitPath.length > 2) {
+        if (`/${splitPath[1]}` === parentUrl) {
           setHidden(false)
         }
       }
