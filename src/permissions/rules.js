@@ -375,8 +375,7 @@ const rules = {
         '/notifications',
         '/maintenance',
         '/maintenance/complexes',
-        '/maintenance/buildings',
-        '/dues'
+        '/maintenance/buildings'
       ],
       allowedNestedRoutes: [
         '/properties/company',
@@ -390,7 +389,6 @@ const rules = {
         '/posts/create',
         '/forms/create',
         '/forms',
-        '/dues/billing',
         '/notifications/list',
         '/notifications/create'
       ],
@@ -471,7 +469,7 @@ const rules = {
         '/posts/create',
         '/forms/create',
         '/forms',
-        '/dues/billing',
+        '/dues/billing/:id',
         '/notifications/list',
         '/notifications/create',
         '/dues/overview',
@@ -560,6 +558,7 @@ const rules = {
         '/residents/invites-requests/complexes',
         '/posts',
         '/posts/create',
+        '/forms/create',
         '/forms/building',
         '/dues/billing',
         '/notifications/list',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import P from 'prop-types'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
@@ -6,37 +6,48 @@ import { FiChevronRight } from 'react-icons/fi'
 
 const Item = ({ url, icon, title, items }) => {
   const [hidden, setHidden] = useState(true)
+  const [sidebarItem, setSidebarItem] = useState(null)
   const router = useRouter()
   const { pathname } = { ...router }
-  let active = pathname === url
+  const active = pathname === url
 
-  if (pathname === '/' && url === '/dashboard') {
-    active = true
-  }
-  if (pathname === '/' && url !== '/dashboard') {
-    active = false
-  }
-  if (items.length === 0) {
-    return (
-      <Link href={url}>
-        <a className={`left-sidebar-item ${active ? 'active' : ''}`}>
+  useEffect(() => {
+    let parentUrl = ''
+    if (items.length === 0) {
+      setSidebarItem(
+        <Link href={url}>
+          <a className={`left-sidebar-item ${active ? 'active' : ''}`}>
+            {icon && <i className={`icon ${icon}`}></i>}
+            <span className="title">{title}</span>
+          </a>
+        </Link>
+      )
+    } else {
+      parentUrl = url
+      const splitPath = pathname.split('/')
+      if (splitPath.length > 2) {
+        if (`/${splitPath[1]}` === parentUrl) {
+          setHidden(false)
+        }
+      }
+    }
+  }, [items, url, icon, items, pathname])
+
+  return (
+    <>
+      {sidebarItem || (
+        <button
+          onClick={() => setHidden(!hidden)}
+          className={`left-sidebar-item ${active ? 'active' : ''} ${
+            hidden ? 'hidden-sibling' : 'open-sibling'
+          }`}
+        >
           {icon && <i className={`icon ${icon}`}></i>}
           <span className="title">{title}</span>
-        </a>
-      </Link>
-    )
-  }
-  return (
-    <button
-      onClick={() => setHidden(!hidden)}
-      className={`left-sidebar-item ${active ? 'active' : ''} ${
-        hidden ? 'hidden-sibling' : 'open-sibling'
-      }`}
-    >
-      {icon && <i className={`icon ${icon}`}></i>}
-      <span className="title">{title}</span>
-      <FiChevronRight className="ml-auto arrow" />
-    </button>
+          <FiChevronRight className="ml-auto arrow" />
+        </button>
+      )}
+    </>
   )
 }
 Item.propTypes = {

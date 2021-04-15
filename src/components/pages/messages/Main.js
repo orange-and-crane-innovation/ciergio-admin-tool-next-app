@@ -23,6 +23,8 @@ import {
 } from './queries'
 import { FormSelect } from '@app/components/globals'
 
+import { useRouter } from 'next/router'
+
 const convoOptions = [
   {
     label: 'Group',
@@ -52,6 +54,9 @@ export default function Main() {
   const [hasFetched, setHasFetched] = useState(false)
   const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
+
+  const router = useRouter()
+  const { convoID } = router.query
 
   useEffect(() => {
     fetchAccounts({
@@ -128,7 +133,7 @@ export default function Main() {
   }, [convos?.getConversations])
 
   useEffect(() => {
-    if (selectedConvo && !hasFetched) {
+    if ((selectedConvo && !hasFetched) || convoID) {
       if (selectedConvo?.messages?.data[0]?._id) {
         seenNewMessage({
           variables: {
@@ -147,14 +152,14 @@ export default function Main() {
       })
       updateConvo({
         variables: {
-          convoId: selectedConvo?._id
+          convoId: convoID || selectedConvo?._id
         }
       })
     }
     if (hasFetched) {
       setHasFetched(old => !old)
     }
-  }, [selectedConvo])
+  }, [selectedConvo, convoID])
 
   const [
     fetchAccounts,

@@ -25,7 +25,12 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
               if (allowedRoutes.indexOf(url) !== -1) {
                 return (
                   <li key={a} className="l0">
-                    <Item {...l0} />
+                    <Item
+                      icon={l0.icon}
+                      items={l0.items}
+                      url={l0.url}
+                      title={l0.title}
+                    />
                     <ul>
                       {l0.items.map((l1, b) => {
                         if (allowedNestedRoutes.indexOf(l1.url) !== -1) {

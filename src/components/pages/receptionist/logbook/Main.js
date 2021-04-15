@@ -25,6 +25,7 @@ import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import PageLoader from '@app/components/page-loader'
+import { useRouter } from 'next/router'
 
 const NUMBEROFCOLUMN = 6
 
@@ -83,6 +84,7 @@ const validationSchema = yup.object().shape({
   note: yup.string().required()
 })
 function LogBook({ buildingId, categoryId, status, name }) {
+  const router = useRouter()
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -199,7 +201,11 @@ function LogBook({ buildingId, categoryId, status, name }) {
           {
             label: 'Message Resident',
             icon: <AiOutlineMessage />,
-            function: () => console.log('wew')
+            function: () =>
+              registry?.forWho?.conversations?.count > 0 &&
+              router.push(
+                `/messages/${registry?.forWho?.conversations?.data[0]._id}`
+              )
           },
           {
             label: 'View More Details',
@@ -251,7 +257,14 @@ function LogBook({ buildingId, categoryId, status, name }) {
           ),
           options: (
             <div className="h-full w-full flex justify-center items-center">
-              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              <Dropdown
+                label={<FaEllipsisH />}
+                items={
+                  !registry.checkedOutAt
+                    ? dropdownData
+                    : [dropdownData[0], dropdownData[1]]
+                }
+              />
             </div>
           )
         })
