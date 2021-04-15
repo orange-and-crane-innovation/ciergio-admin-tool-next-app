@@ -34,32 +34,42 @@ const CreatePrayerRequestModal = ({
             name="prayerFor"
             control={control}
             render={({ name, value, onChange }) => (
-              <FormInput
-                label="Prayer For"
-                labelClassName={styles.label}
-                placeholder="Enter name"
-                onChange={onChange}
-                name={name}
-                value={value}
-                error={errors?.prayerFor?.message ?? null}
-                maxLength={50}
-              />
+              <div className="relative">
+                <FormInput
+                  label="Prayer For"
+                  labelClassName={styles.label}
+                  placeholder="Enter name"
+                  onChange={onChange}
+                  name={name}
+                  value={value}
+                  error={errors?.prayerFor?.message ?? null}
+                  maxLength={50}
+                />
+                <div
+                  className={styles.prayerInputCounter}
+                >{`${value?.length}/50`}</div>
+              </div>
             )}
           />
           <Controller
             name="prayerFrom"
             control={control}
             render={({ name, value, onChange }) => (
-              <FormInput
-                label="Prayer From"
-                labelClassName={styles.label}
-                placeholder="Enter name"
-                onChange={onChange}
-                name={name}
-                value={value}
-                error={errors?.prayerFrom?.message ?? null}
-                maxLength={50}
-              />
+              <div className="relative">
+                <FormInput
+                  label="Prayer From"
+                  labelClassName={styles.label}
+                  placeholder="Enter name"
+                  onChange={onChange}
+                  name={name}
+                  value={value}
+                  error={errors?.prayerFrom?.message ?? null}
+                  maxLength={50}
+                />
+                <div
+                  className={styles.prayerInputCounter}
+                >{`${value?.length}/50`}</div>
+              </div>
             )}
           />
 
@@ -119,7 +129,7 @@ const CreatePrayerRequestModal = ({
             name="message"
             control={control}
             render={({ name, value, onChange }) => (
-              <>
+              <div className="relative">
                 <label htmlFor={name} className={styles.label}>
                   Message (optional)
                 </label>
@@ -131,7 +141,10 @@ const CreatePrayerRequestModal = ({
                   className="rounded p-2 w-full h-36"
                   placeholder="Give more details about the issue"
                 />
-              </>
+                <div
+                  className={styles.messageInputCounter}
+                >{`${value?.length}/500`}</div>
+              </div>
             )}
           />
         </form>
