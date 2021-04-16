@@ -21,7 +21,6 @@
   .messageInputCounter {
     @apply relative w-full p-2 text-neutral-500 bottom-2 -right-2 text-right;
   }
-  
 
   & .dateInput {
     margin-bottom: 16px;
@@ -31,4 +30,3 @@
     }
   }
 }
-

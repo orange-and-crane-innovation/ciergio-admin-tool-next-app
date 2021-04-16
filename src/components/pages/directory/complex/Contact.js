@@ -65,6 +65,19 @@ const columns = [
   }
 ]
 
+const formatNumber = number => {
+  if (number) {
+    const split = number.split('')
+    return split.map((s, i) => {
+      if (i === 2 || i === 3 || i === 7) {
+        return `${s} `
+      }
+      return s
+    })
+  }
+  return ''
+}
+
 function Contact({ id }) {
   const router = useRouter()
   const companyId = router?.query?.companyId
@@ -336,7 +349,9 @@ function Contact({ id }) {
               <div className="flex items-center justify-start">
                 <div>
                   <p>{contact.name}</p>
-                  <p className="text-gray-600">{contact.contactNumber}</p>
+                  <p className="text-gray-600">
+                    {formatNumber(contact.contactNumber)}
+                  </p>
                 </div>
               </div>
             ),
