@@ -8,7 +8,6 @@ function SelectPublishTime({ publishType, date, onDateChange }) {
   return (
     <div className="p-4">
       <div className="mb-4">
-        <p className="font-bold">{`Don't share with`}</p>
         <p>You can create the post now then publish it at a later time.</p>
       </div>
       <div className="flex items-center justify-between">

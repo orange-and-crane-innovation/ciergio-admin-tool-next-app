@@ -27,9 +27,9 @@ function AudienceType({
         <div className="flex">
           <p className="font-bold mr-2">
             {ALL_AUDIENCE_EXCEPT
-              ? 'Only show to those selected'
-              : SPECIFIC_AUDIENCE
               ? 'All those registered except'
+              : SPECIFIC_AUDIENCE
+              ? 'Only show to those selected'
               : 'All those registered'}
           </p>
 
