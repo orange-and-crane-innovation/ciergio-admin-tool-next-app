@@ -189,4 +189,24 @@ export const setEndTime = data => {
   return date
 }
 
+export const addTime = (data, type, value) => {
+  const date = new Date(data)
+
+  if (type === 'hours') {
+    date.setHours(value)
+  }
+  if (type === 'minutes') {
+    date.setMinutes(value)
+  }
+
+  if (type === 'seconds') {
+    date.setSeconds(value)
+  }
+
+  if (type === 'milliseconds') {
+    date.setMilliseconds(value)
+  }
+  return date
+}
+
 export default dayjs
