@@ -1,4 +1,12 @@
 const images = {
+  DEFAULT_FAV_ICON:
+    'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/favicon.ico',
+  DEFAULT_LOGO_V:
+    'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/logo-v.png',
+  DEFAULT_LOGO_H:
+    'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/logo-h.png',
+  DEFAULT_LOGO_MONO_MINI:
+    'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/logo-h-mono.png',
   DEFAULT_AVATAR:
     'https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-default.png',
   ADMIN_AVATAR:
