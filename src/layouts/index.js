@@ -28,7 +28,9 @@ const Layouts = ({ children }) => {
       '/auth/join/[code]',
       '/auth/verify-email/[code]',
       '/terms-and-conditions',
-      '/privacy-policy'
+      '/privacy-policy',
+      '/unsubscribe/[id]',
+      '/public-posts/view/[id]/[aid]'
     ].includes(pathname)
   ) {
     return <Public>{children}</Public>
