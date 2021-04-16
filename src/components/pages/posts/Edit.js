@@ -12,7 +12,7 @@ import { FiDownload } from 'react-icons/fi'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import QRCode from 'react-qr-code'
 import Datetime from 'react-datetime'
 
@@ -265,7 +265,12 @@ const CreatePosts = () => {
     onError: _e => {}
   })
 
-  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
+  const {
+    loading: loadingPost,
+    data: dataPost,
+    error: errorPost,
+    refetch
+  } = useQuery(
     isDailyReadingsPage ? GET_POST_DAILY_READINGS_QUERY : GET_POST_QUERY,
     {
       variables: {
@@ -302,6 +307,10 @@ const CreatePosts = () => {
   })
 
   register({ name: 'images' })
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   useEffect(() => {
     if (errorPost) {
@@ -401,7 +410,7 @@ const CreatePosts = () => {
             : null
         )
         setSelectedPublishTimeType(
-          moment().isAfter(moment(new Date(itemData?.publishedAt)))
+          dayjs().isAfter(dayjs(new Date(itemData?.publishedAt)))
             ? 'now'
             : 'later'
         )
@@ -576,7 +585,7 @@ const CreatePosts = () => {
           const reader = new FileReader()
 
           reader.onloadend = () => {
-            // setImageUrls(imageUrls => [...imageUrls, reader.result])
+            setImageUrls(imageUrls => [...imageUrls, reader.result])
           }
           reader.readAsDataURL(file)
 
@@ -653,7 +662,11 @@ const CreatePosts = () => {
       }
 
       if (status) {
-        updateData.data.status = status
+        updateData.data.status =
+          !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
+          status !== 'draft'
+            ? 'scheduled'
+            : status
       }
 
       if (selectedPublishDateTime) {
@@ -728,7 +741,7 @@ const CreatePosts = () => {
 
       if (isDailyReadingsPage) {
         updateData.data.dailyReadingDate = DATE.toFriendlyISO(
-          DATE.setInitialTime(selectedDate)
+          DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
       }
 
@@ -865,7 +878,7 @@ const CreatePosts = () => {
   }
 
   const onCancelPublishTime = () => {
-    const publishType = moment().isAfter(moment(new Date(post.publishedAt)))
+    const publishType = dayjs().isAfter(dayjs(new Date(post.publishedAt)))
       ? 'now'
       : 'later'
     setSelectedPublishDateTime(post.publishedAt)
@@ -1033,7 +1046,7 @@ const CreatePosts = () => {
                                         style.CreatePostInputCustom
                                       }
                                       name="date"
-                                      value={moment(selectedDate).format(
+                                      value={dayjs(selectedDate).format(
                                         'MMM DD, YYYY'
                                       )}
                                       error={errors?.date?.message ?? null}
@@ -1237,7 +1250,7 @@ const CreatePosts = () => {
                         </strong>
                         {(systemType === 'home' ||
                           (systemType !== 'home' &&
-                            accountType !== 'complex_admin')) && (
+                            accountType !== ACCOUNT_TYPES.COMPXAD.value)) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}
@@ -1293,7 +1306,7 @@ const CreatePosts = () => {
                     <span className={style.CreatePostSection}>Publish: </span>
                     <strong>
                       {selectedPublishTimeType === 'later'
-                        ? ` Scheduled, ${moment(selectedPublishDateTime).format(
+                        ? ` Scheduled, ${dayjs(selectedPublishDateTime).format(
                             'MMM DD, YYYY - hh:mm A'
                           )} `
                         : ' Immediately'}

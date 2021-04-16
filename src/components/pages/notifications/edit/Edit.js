@@ -79,6 +79,7 @@ function CreateNotification() {
   const [showPublishTimeModal, setShowPublishTimeModal] = useState(false)
   const [previewNotification, setPreviewNotification] = useState(false)
   const [inputMaxLength] = useState(65)
+  const [maxFiles] = useState(1)
   const [textCount, setTextCount] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState()
   const [previewData, setPreviewData] = useState({
@@ -354,7 +355,11 @@ function CreateNotification() {
           title: data?.title || 'Untitled',
           content: data?.content?.replace(/(&nbsp;)+/g, ''),
           audienceType: selectedAudienceType,
-          status: status,
+          status:
+            !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
+            status !== 'draft'
+              ? 'scheduled'
+              : status,
           primaryMedia: fileUploadedData?.length > 0 ? fileUploadedData : null
         }
       }
@@ -497,8 +502,8 @@ function CreateNotification() {
     const fileList = []
 
     if (files) {
-      if (files.length > 3) {
-        showToast('info', `Maximum of 3 files only`)
+      if (files.length > maxFiles) {
+        showToast('info', `Maximum of ${maxFiles} image only`)
       } else {
         setLoading(true)
         setFileUploadError(null)
@@ -716,7 +721,7 @@ function CreateNotification() {
                         <UploaderImage
                           name="image"
                           multiple
-                          maxImages={1}
+                          maxImages={maxFiles}
                           images={imageUrls}
                           loading={loading}
                           error={

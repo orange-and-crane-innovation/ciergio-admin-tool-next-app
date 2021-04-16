@@ -11,7 +11,7 @@ import { FaSpinner, FaTimes } from 'react-icons/fa'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import Datetime from 'react-datetime'
 
 import Card from '@app/components/card'
@@ -109,7 +109,9 @@ const CreatePosts = () => {
   const [selectedBuildingExcept, setSelectedBuildingExcept] = useState()
   const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState()
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
-  const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
+  const [selectedPublishDateTime, setSelectedPublishDateTime] = useState(
+    new Date()
+  )
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
@@ -358,7 +360,11 @@ const CreatePosts = () => {
         title: data?.title || 'Untitled',
         content: data?.content?.replace(/(&nbsp;)+/g, ''),
         audienceType: selectedAudienceType,
-        status: status,
+        status:
+          !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
+          status !== 'draft'
+            ? 'scheduled'
+            : status,
         primaryMedia: imageUploadedData,
         embeddedMediaFiles: videoUrl
           ? [
@@ -408,7 +414,7 @@ const CreatePosts = () => {
       if (isDailyReadingsPage) {
         createData.type = 'daily_reading'
         createData.dailyReadingDate = DATE.toFriendlyISO(
-          DATE.setInitialTime(selectedDate)
+          DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
       }
       createPost({ variables: { data: createData } })
@@ -605,7 +611,7 @@ const CreatePosts = () => {
                                         style.CreatePostInputCustom
                                       }
                                       name="date"
-                                      value={moment(selectedDate).format(
+                                      value={dayjs(selectedDate).format(
                                         'MMM DD, YYYY'
                                       )}
                                       error={errors?.date?.message ?? null}
@@ -805,7 +811,7 @@ const CreatePosts = () => {
                         </span>
                         {(systemType === 'home' ||
                           (systemType !== 'home' &&
-                            accountType !== 'complex_admin')) && (
+                            accountType !== ACCOUNT_TYPES.COMPXAD.value)) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}
@@ -865,7 +871,7 @@ const CreatePosts = () => {
                     <span className="mr-2">
                       <strong>
                         {selectedPublishTimeType === 'later'
-                          ? ` Scheduled, ${moment(
+                          ? ` Scheduled, ${dayjs(
                               selectedPublishDateTime
                             ).format('MMM DD, YYYY - hh:mm A')} `
                           : ' Immediately'}
@@ -887,34 +893,30 @@ const CreatePosts = () => {
           />
 
           <div className={style.CreatePostFooter}>
-            {isDailyReadingsPage ? (
-              <span></span>
-            ) : (
-              <Can
-                perform="bulletin:draft"
-                yes={
-                  <Button
-                    default
-                    type="button"
-                    label="Save as Draft"
-                    className={style.CreatePostFooterButton}
-                    onMouseDown={() => onUpdateStatus('draft')}
-                    onClick={handleSubmit(e => {
-                      onSubmit(e, 'draft')
-                    })}
-                  />
-                }
-                no={
-                  <Button
-                    disabled
-                    default
-                    type="button"
-                    label="Save as Draft"
-                    className={style.CreatePostFooterButton}
-                  />
-                }
-              />
-            )}
+            <Can
+              perform="bulletin:draft"
+              yes={
+                <Button
+                  default
+                  type="button"
+                  label="Save as Draft"
+                  className={style.CreatePostFooterButton}
+                  onMouseDown={() => onUpdateStatus('draft')}
+                  onClick={handleSubmit(e => {
+                    onSubmit(e, 'draft')
+                  })}
+                />
+              }
+              no={
+                <Button
+                  disabled
+                  default
+                  type="button"
+                  label="Save as Draft"
+                  className={style.CreatePostFooterButton}
+                />
+              }
+            />
 
             <span>
               <Button
