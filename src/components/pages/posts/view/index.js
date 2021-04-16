@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { gql, useQuery } from '@apollo/client'
+import { gql, useLazyQuery } from '@apollo/client'
 import PropTypes from 'prop-types'
 import ReactHtmlParser from 'react-html-parser'
 
@@ -49,7 +49,69 @@ const GET_POST_QUERY = gql`
           url
           type
         }
+      }
+    }
+  }
+`
+
+const GET_POST_DAILY_READINGS_QUERY = gql`
+  query getAllPost($where: AllPostInput) {
+    getAllPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+        category {
+          name
+        }
+        primaryMedia {
+          url
+          type
+        }
+        embeddedMediaFiles {
+          url
+          type
+        }
         dailyReadingDate
+      }
+    }
+  }
+`
+
+export const GET_PUBLIC_POST_QUERY = gql`
+  query getPostFromEmail($postID: String, $accountID: String) {
+    getPostFromEmail(where: { _id: $postID, requesterAccountId: $accountID }) {
+      content
+      title
+      createdAt
+      primaryMedia {
+        url
+      }
+      embeddedMediaFiles {
+        url
+        platform
+      }
+      category {
+        name
+      }
+      author {
+        user {
+          firstName
+          lastName
+        }
       }
     }
   }
@@ -59,24 +121,39 @@ const Component = () => {
   const { query, pathname } = useRouter()
   const [post, setPost] = useState()
   const isDailyReadingsPage = pathname === '/daily-readings/view/[id]'
+  const isPublicPostsPage = pathname === '/public-posts/view/[id]/[aid]'
 
-  const { loading, data, error, refetch } = useQuery(GET_POST_QUERY, {
-    variables: {
-      where: {
-        _id: query.id
-      }
-    }
-  })
+  const [fetchPost, { loading, data, error }] = useLazyQuery(
+    isDailyReadingsPage
+      ? GET_POST_DAILY_READINGS_QUERY
+      : isPublicPostsPage
+      ? GET_PUBLIC_POST_QUERY
+      : GET_POST_QUERY
+  )
 
   useEffect(() => {
-    refetch()
-  }, [])
+    let fetchData
+
+    if (isPublicPostsPage) {
+      fetchData = {
+        postID: query.id,
+        accountID: query.aid
+      }
+    } else {
+      fetchData = {
+        where: {
+          _id: query.id
+        }
+      }
+    }
+    fetchPost({ variables: fetchData })
+  }, [query.id, query.aid])
 
   useEffect(() => {
     if (error) {
       showToast('danger', `Sorry, there's an error occured on fetching.`)
     } else if (!loading && data) {
-      const itemData = data?.getAllPost?.post[0]
+      const itemData = data?.getAllPost?.post[0] || data?.getPostFromEmail
 
       if (itemData) {
         setPost({
