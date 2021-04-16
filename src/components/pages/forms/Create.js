@@ -536,7 +536,7 @@ const CreatePosts = () => {
 
                         {(systemType === 'home' ||
                           (systemType !== 'home' &&
-                            accountType !== 'complex_admin')) && (
+                            accountType !== ACCOUNT_TYPES.COMPXAD.value)) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}
