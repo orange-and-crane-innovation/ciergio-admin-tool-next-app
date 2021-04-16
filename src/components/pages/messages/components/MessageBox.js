@@ -100,14 +100,7 @@ export default function MessageBox({
           <div />
         )}
       </div>
-      <div
-        className={styles.messageBoxList}
-        style={{
-          height: `calc(${height}px - ${
-            attachments?.length > 0 ? '217' : '175'
-          }px)`
-        }}
-      >
+      <div className={styles.messageBoxList}>
         {loading && messages?.length === 0 ? <Spinner /> : null}
         {!loading && messages?.length > 0 ? (
           messages.map((item, index) => {
@@ -224,7 +217,10 @@ export default function MessageBox({
           ))}
         </div>
       ) : null} */}
-      <div className={styles.messageBoxInput}>
+      <div
+        className={styles.messageBoxInput}
+        style={{ height: `calc(${height - 844.38}px)` }}
+      >
         {/* NOTE: temporarily removed to align with old UI */}
         {/* <div className="col-span-1 flex items-center justify-center">
           <img

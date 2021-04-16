@@ -49,6 +49,7 @@
   }
 
   .messageBoxList {
+    height: 700px;
     @apply overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5 flex flex-col;
   }
 
