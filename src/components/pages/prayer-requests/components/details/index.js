@@ -1,14 +1,16 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
 import { toFriendlyDate, friendlyDateTimeFormat } from '@app/utils/date'
+import isEmpty from 'lodash/isEmpty'
 import {
   GET_PRAYER_REQUEST_DETAILS,
-  GET_PRAYER_REQUEST_HISTORY
+  GET_PRAYER_REQUEST_HISTORY,
+  UPDATE_PRAYER_REQUEST
 } from '../../queries'
 
 const columns = [
@@ -30,12 +32,15 @@ export default function PrayerRequestDetails() {
   const router = useRouter()
   const id = router?.query?.id
 
+  const [updatePrayerRequest] = useMutation(UPDATE_PRAYER_REQUEST)
+
   const { data: details } = useQuery(GET_PRAYER_REQUEST_DETAILS, {
     variables: {
       id
     }
   })
   const pr = details?.getIssue?.issue
+  const unread = isEmpty(pr?.readAt)
 
   const { data: history } = useQuery(GET_PRAYER_REQUEST_HISTORY, {
     variables: {
@@ -45,6 +50,21 @@ export default function PrayerRequestDetails() {
       sort: -1
     }
   })
+
+  useEffect(() => {
+    if (pr && unread) {
+      const now = new Date().toISOString()
+      updatePrayerRequest({
+        variables: {
+          id,
+          data: {
+            readAt: now
+          }
+        }
+      })
+    }
+  }, [pr, unread])
+
   const prHistory = history?.getIssue?.issue?.history
   const prayerRequestHistoryDate = useMemo(() => {
     return {

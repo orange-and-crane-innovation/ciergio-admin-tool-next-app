@@ -1,5 +1,4 @@
 import { useQuery } from '@apollo/client'
-
 import Tabs from '@app/components/tabs'
 import {
   GET_NEW_PRAYER_REQUESTS,
@@ -32,8 +31,7 @@ function PrayerRequests() {
   return (
     <div className="content-wrap">
       <h3 className="content-title">Prayer Requests</h3>
-
-      <Tabs defaultTab="new">
+      <Tabs defaultTab={'new'}>
         <Tabs.TabLabels>
           <Tabs.TabLabel id="new">{`New (${
             prayerRequests?.countStatus?.unread || 0

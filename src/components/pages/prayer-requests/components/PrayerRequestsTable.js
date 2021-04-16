@@ -273,7 +273,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   ),
                   requestor: (
                     <Link href={`/residents/view/${reporter?._id}`}>
-                      <span className="text-blue-500 cursor-pointer">{`${req.firstName} ${req.lastName}`}</span>
+                      <span className="text-blue-500 cursor-pointer">{`${req?.firstName} ${req?.lastName}`}</span>
                     </Link>
                   ),
                   lastUpdate: friendlyDateTimeFormat(dayjs(updatedAt), 'LL'),
