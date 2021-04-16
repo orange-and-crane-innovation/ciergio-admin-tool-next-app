@@ -24,6 +24,21 @@ html,
 body,
 #__next {
   @apply bg-neutral-100 h-full;
+
+  &.disconnected {
+    *:not(.Toaster) {
+      opacity: 0.92;
+      transition: all 0.4s ease-in-out;
+      -webkit-transition: all 0.4s ease-in-out;
+      -ms-transition: all 0.4s ease-in-out;
+      -o-transition: all 0.4s ease-in-out;
+    }
+
+    .Toaster,
+    .Toaster * {
+      opacity: 1 !important;
+    }
+  }
 }
 
 [data-background='light'] {
@@ -506,7 +521,7 @@ td.rdtYear:hover {
 /* DATERANGE PICKER */
 
 .rdrDefinedRangesWrapper {
-  @apply w-full !important;
+  @apply hidden md:block;
 }
 
 /* END DATERANGE PICKER */
