@@ -76,6 +76,7 @@
 
   .messageDateStamp {
     @apply text-right uppercase;
+    margin-bottom: 0 !important;
     font-size: 10px;
   }
 

@@ -150,30 +150,38 @@ export default function MessageBox({
                   }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
                 >
                   <p className="font-sm">{item.message}</p>
-                  <p
-                    className={`${styles.messageDateStamp} ${
-                      isCurrentUserMessage ? 'text-white' : 'text-neutral-500'
-                    }`}
-                  >
-                    {toFriendlyDate(item.createdAt)}
-                  </p>
+                  <div className="flex items-center justify-end w-full text-right">
+                    <p
+                      className={`${styles.messageDateStamp} ${
+                        isCurrentUserMessage ? 'text-white' : 'text-neutral-500'
+                      }`}
+                    >
+                      {toFriendlyDate(item.createdAt)}
+                    </p>
+                    {isCurrentUserMessage &&
+                    (item.status === 'seen' || item.viewers.count > 0) ? (
+                      <div className="ml-2">
+                        <BsCheckAll className="w-5 h-5" />
+                      </div>
+                    ) : null}
+                  </div>
                   {!isCurrentUserMessage &&
-                  (item.status === 'seen' || item.viewers.length > 0) ? (
-                    <div className="w-full flex items-center">
-                      {item.viewers.map(v => (
-                        <img
-                          key={v?._id}
-                          src={v?.user?.avatar}
-                          alt="viewer-avatar"
-                          className={styles.viewerAvatar}
-                        />
-                      ))}
-                    </div>
-                  ) : null}
-                  {isCurrentUserMessage &&
-                  (item.status === 'seen' || item.viewers.length > 0) ? (
-                    <div className="absolute right-4 bottom-2">
-                      <BsCheckAll className="w-5 h-5" />
+                  (item.status === 'seen' || item.viewers.count > 0) ? (
+                    <div className="w-full flex items-center justify-end mt-2">
+                      {item.viewers.data.map(v => {
+                        const img =
+                          accountType === 'company_admin'
+                            ? `https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-company-admin.png`
+                            : `https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-complex-admin.png`
+                        return (
+                          <img
+                            key={v?._id}
+                            src={v?.user?.avatar ?? img}
+                            alt="viewer-avatar"
+                            className={styles.viewerAvatar}
+                          />
+                        )
+                      })}
                     </div>
                   ) : null}
                 </div>
