@@ -7,7 +7,7 @@
   }
 
   .Content {
-    @apply absolute top-14 left-0 w-full;
+    @apply absolute top-14 left-0;
     @apply bg-neutral-200 border border-neutral-300;
     @apply shadow-md opacity-0;
     @apply z-10;

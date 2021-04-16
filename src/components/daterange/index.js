@@ -69,7 +69,12 @@ const DateRangeInput = ({
           />
 
           <div className={styles.Button}>
-            <Button label="Ok" type="button" primary onClick={handleCalendar} />
+            <Button
+              label="Close"
+              type="button"
+              primary
+              onClick={handleCalendar}
+            />
           </div>
         </div>
       </div>
