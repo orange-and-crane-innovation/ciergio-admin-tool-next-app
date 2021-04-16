@@ -149,7 +149,7 @@ export default function MessageBox({
                       : 'bg-white float-right '
                   }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
                 >
-                  <p className="font-sm">{item.message}</p>
+                  <p className="font-sm break-all">{item.message}</p>
                   <div className="flex items-center justify-end w-full text-right">
                     <p
                       className={`${styles.messageDateStamp} ${
