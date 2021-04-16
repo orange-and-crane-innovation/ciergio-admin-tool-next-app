@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import P from 'prop-types'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { FiChevronRight } from 'react-icons/fi'
 
+import { Context } from '@app/lib/global/store'
+
 const Item = ({ url, icon, title, items }) => {
+  const [state] = useContext(Context)
   const [hidden, setHidden] = useState(true)
   const [sidebarItem, setSidebarItem] = useState(null)
   const router = useRouter()
   const { pathname } = { ...router }
   const active = pathname === url
+  const unreadMsg = state.unreadMsg
 
   useEffect(() => {
     let parentUrl = ''
@@ -19,6 +23,11 @@ const Item = ({ url, icon, title, items }) => {
           <a className={`left-sidebar-item ${active ? 'active' : ''}`}>
             {icon && <i className={`icon ${icon}`}></i>}
             <span className="title">{title}</span>
+            {title === 'Messages' && unreadMsg > 0 && (
+              <div className="flex items-center justify-center ml-auto mr-4 w-6 h-6 text-sm font-medium bg-primary-900 text-white rounded-full">
+                {unreadMsg}
+              </div>
+            )}
           </a>
         </Link>
       )
@@ -31,7 +40,7 @@ const Item = ({ url, icon, title, items }) => {
         }
       }
     }
-  }, [items, url, icon, items, pathname])
+  }, [items, url, icon, items, pathname, unreadMsg])
 
   return (
     <>

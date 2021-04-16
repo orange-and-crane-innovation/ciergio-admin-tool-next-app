@@ -16,8 +16,14 @@ import { ApolloProvider } from '@apollo/client'
 import P from 'prop-types'
 
 import { useApollo } from '@app/lib/apollo/client'
+import { useEffect } from 'react'
+import { FaSpinner } from 'react-icons/fa'
 
+import Store from '@app/lib/global/store'
 import Layout from '@app/layouts'
+
+import showToast from '@app/utils/toast'
+import closeToast from '@app/utils/closeToast'
 
 if (process.env.NODE_ENV !== 'production') {
   require('@app/lib/msw')
@@ -26,17 +32,44 @@ if (process.env.NODE_ENV !== 'production') {
 function MyApp({ Component, pageProps }) {
   const apolloClient = useApollo(pageProps.initialApolloState)
 
+  useEffect(() => {
+    window.addEventListener('offline', updateOnlineStatus)
+    window.addEventListener('online', updateOnlineStatus)
+  }, [])
+
+  const updateOnlineStatus = () => {
+    const isOnline = navigator.onLine
+    const bodyTag = document.getElementsByTagName('body')
+
+    if (isOnline) {
+      bodyTag[0].classList.remove('disconnected')
+      closeToast()
+      showToast('success', 'Reconnected', 'bottom-right')
+    } else {
+      bodyTag[0].classList.add('disconnected')
+      showToast(
+        'danger',
+        'Your computer seems to be offline. We’ll keep trying to reconnect, please check your internet connection.',
+        'bottom-right',
+        <FaSpinner className="icon-spin" />,
+        null
+      )
+    }
+  }
+
   return (
     <ApolloProvider client={apolloClient}>
-      <Head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"
-        />
-      </Head>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <Store>
+        <Head>
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"
+          />
+        </Head>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </Store>
     </ApolloProvider>
   )
 }
