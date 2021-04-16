@@ -63,7 +63,7 @@ function VerifyEmailPage() {
 
   const errorHandler = data => {
     const errors = JSON.parse(JSON.stringify(data))
-    console.log(errors)
+
     if (errors) {
       const { graphQLErrors, networkError, message } = errors
       if (graphQLErrors) {

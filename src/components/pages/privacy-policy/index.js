@@ -64,7 +64,7 @@ const PrivacyPolicyComponent = () => {
       }
     }
   }
-  console.log(pageContent)
+
   return (
     <>
       <div className={styles.PageContainer}>
