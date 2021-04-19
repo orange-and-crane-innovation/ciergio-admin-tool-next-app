@@ -174,3 +174,14 @@ export const CREATE_PRAYER_REQUEST = gql`
     }
   }
 `
+
+export const UPDATE_PRAYER_REQUEST = gql`
+  mutation updatePrayerRequest($id: String, $data: InputUpdateIssue) {
+    updateIssue(id: $id, data: $data) {
+      _id
+      message
+      processId
+      __typename
+    }
+  }
+`

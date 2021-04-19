@@ -65,28 +65,22 @@ const columns = [
   }
 ]
 
+const formatNumber = number => {
+  if (number) {
+    const split = number.split('')
+    return split.map((s, i) => {
+      if (i === 2 || i === 3 || i === 7) {
+        return `${s} `
+      }
+      return s
+    })
+  }
+  return ''
+}
+
 function Contact({ id }) {
   const router = useRouter()
   const companyId = router?.query?.companyId
-  console.log({ companyId })
-  const {
-    getValues,
-    control,
-    errors,
-    reset,
-    setValue,
-    trigger,
-    setError
-  } = useForm({
-    resolver: yupResolver(validationSchema),
-    defaultValues: {
-      name: '',
-      contactNumber: '',
-      address: undefined,
-      category: undefined
-    }
-  })
-
   const [showContactModal, setShowContactModal] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(false)
@@ -96,6 +90,26 @@ function Contact({ id }) {
   const [offset, setPageOffset] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [fileUploadedData, setFileUploadedData] = useState([])
+
+  const {
+    getValues,
+    control,
+    errors,
+    reset,
+    setValue,
+    trigger,
+    setError,
+    watch
+  } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      logo: null,
+      name: '',
+      contactNumber: '',
+      address: null,
+      category: null
+    }
+  })
 
   const { data: complexes } = useQuery(GET_COMPLEX, {
     variables: {
@@ -121,13 +135,24 @@ function Contact({ id }) {
     }
   })
 
+  const handleRefetchContacts = () => {
+    refetchContacts({
+      variables: {
+        complexId: id,
+        companyId: companyId ?? null,
+        limit: pageLimit,
+        offset
+      }
+    })
+  }
+
   const [createContact, { loading: creatingContact }] = useMutation(
     CREATE_CONTACT,
     {
       onCompleted: () => {
         handleContactModal()
         showToast('success', `You have successfully added a new contact`)
-        refetchContacts()
+        handleRefetchContacts()
       }
     }
   )
@@ -135,7 +160,7 @@ function Contact({ id }) {
     onCompleted: () => {
       handleContactModal()
       showToast('success', `You have successfully updated a contact`)
-      refetchContacts()
+      handleRefetchContacts()
     }
   })
   const [deleteContact, { loading: deletingContact }] = useMutation(
@@ -144,7 +169,7 @@ function Contact({ id }) {
       onCompleted: () => {
         setShowDeleteContactModal(old => !old)
         showToast('success', `You have successfully deleted a contact`)
-        refetchContacts()
+        handleRefetchContacts()
       }
     }
   )
@@ -165,10 +190,11 @@ function Contact({ id }) {
   const handleContactModal = () => {
     if (selectedContact) setSelectedContact(undefined)
     reset({
-      category: undefined,
+      logo: null,
+      category: null,
       name: '',
       contactNumber: '',
-      address: undefined
+      address: null
     })
     setImageUrls([])
     setValue('images', null)
@@ -252,6 +278,7 @@ function Contact({ id }) {
         const reader = new FileReader()
 
         reader.onloadend = () => {
+          console.log('reading image')
           setImageUrls(imageUrls => [...imageUrls, reader.result])
           setLoading(false)
         }
@@ -322,7 +349,9 @@ function Contact({ id }) {
               <div className="flex items-center justify-start">
                 <div>
                   <p>{contact.name}</p>
-                  <p className="text-gray-600">{contact.contactNumber}</p>
+                  <p className="text-gray-600">
+                    {formatNumber(contact.contactNumber)}
+                  </p>
                 </div>
               </div>
             ),
@@ -407,7 +436,9 @@ function Contact({ id }) {
         imageURLs={imageUrls}
         form={{
           control,
-          errors
+          errors,
+          setValue,
+          watch
         }}
         loading={creatingContact || editingContact}
         uploading={loading}

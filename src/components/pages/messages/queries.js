@@ -111,6 +111,7 @@ export const getMessages = gql`
       data {
         _id
         message
+        status
         createdAt
         author {
           user {
@@ -126,6 +127,8 @@ export const getMessages = gql`
           __typename
         }
         conversation {
+          name
+          type
           _id
           messages {
             count
@@ -153,6 +156,7 @@ export const getMessages = gql`
           __typename
         }
         viewers {
+          count
           data {
             _id
             user {
@@ -174,7 +178,7 @@ export const getMessages = gql`
 
 export const getAccounts = gql`
   query getAccounts($where: GetAccountsParams) {
-    getAccounts(where: $where) {
+    getAccounts(where: $where, limit: 500, skip: 0) {
       data {
         _id
         active

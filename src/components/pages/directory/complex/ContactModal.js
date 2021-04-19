@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import P from 'prop-types'
 import { Controller } from 'react-hook-form'
 import Modal from '@app/components/modal'
@@ -21,15 +22,41 @@ function ContactModal({
   uploading,
   selected
 }) {
-  const { control, errors } = form
+  const { control, errors, setValue } = form
+  const [logo, setLogo] = useState([])
+  const [canReplace, setCanReplace] = useState(false)
+  console.log({ imageURLs })
+  useEffect(() => {
+    if (selected) {
+      setValue('category', {
+        label: selected?.category?.name,
+        value: selected?.category?._id
+      })
+      setValue('address', selected?.address)
+      if (!canReplace) {
+        setCanReplace(true)
+        setLogo([selected?.logo])
+      }
+    }
+    if (canReplace || !selected) {
+      setLogo(imageURLs)
+    }
+  }, [selected, imageURLs?.length])
+
+  const handleClose = () => {
+    setCanReplace(false)
+    setLogo([])
+    setValue('address', null)
+    onCancel()
+  }
 
   return (
     <Modal
       title="Add a Contact"
       okText="Okay"
       visible={open}
-      onClose={onCancel}
-      onCancel={onCancel}
+      onClose={handleClose}
+      onCancel={handleClose}
       onOk={onOk}
       cancelText="Close"
       okButtonProps={{
@@ -45,13 +72,17 @@ function ContactModal({
 
           <div>
             <UploaderImage
-              images={imageURLs}
+              images={logo}
               loading={uploading}
               onUploadImage={onUploadImage}
-              onRemoveImage={onRemoveImage}
+              onRemoveImage={e => {
+                if (logo?.length > 0) {
+                  setLogo([])
+                }
+                onRemoveImage(e)
+              }}
               maxImages={1}
               circle
-              defaultValue={selected?.logo}
             />
           </div>
         </div>
@@ -69,7 +100,6 @@ function ContactModal({
                 onChange={onChange}
                 value={value}
                 error={errors?.category?.value?.message}
-                defaultValue={selected?.category?._id}
               />
             )}
           />
@@ -117,7 +147,6 @@ function ContactModal({
                 value={value?.formattedAddress}
                 error={errors?.address?.message}
                 getValue={onGetMapValue}
-                defaultValue={selected?.address?.formattedAddress}
               />
             )}
           />

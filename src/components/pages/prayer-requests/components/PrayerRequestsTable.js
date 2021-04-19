@@ -252,6 +252,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
         prayerRequests?.issue?.length > 0
           ? prayerRequests.issue.map(
               ({ _id, category, prayer, reporter, createdAt, updatedAt }) => {
+                const req = reporter?.user
                 const dropdownData = [
                   {
                     label: 'View Details',
@@ -272,9 +273,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   ),
                   requestor: (
                     <Link href={`/residents/view/${reporter?._id}`}>
-                      <span className="text-blue-500 cursor-pointer">{`${
-                        reporter?.user?.firstName || ''
-                      }`}</span>
+                      <span className="text-blue-500 cursor-pointer">{`${req?.firstName} ${req?.lastName}`}</span>
                     </Link>
                   ),
                   lastUpdate: friendlyDateTimeFormat(dayjs(updatedAt), 'LL'),

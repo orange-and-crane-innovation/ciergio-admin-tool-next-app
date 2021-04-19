@@ -85,7 +85,7 @@ export default function Main() {
         participants: [accountId],
         includeEmptyConversation: false,
         pending: showPendingMessages,
-        type: localStorage.getItem('convoType') ?? convoType
+        type: convoType
       }
     }
   })
@@ -102,7 +102,7 @@ export default function Main() {
             participants: [accountId],
             includeEmptyConversation: false,
             pending: showPendingMessages,
-            type: localStorage.getItem('convoType') ?? convoType
+            type: convoType
           }
         }
       })
@@ -194,10 +194,14 @@ export default function Main() {
           {
             _id: createdConvo?.createConversation?._id,
             unit: null,
+            author: {
+              accountType: recipient?.accountType,
+              user: { ...recipient?.user }
+            },
             participants: {
               data: [
                 {
-                  user: { ...profile.user }
+                  user: { ...profile?.user }
                 },
                 {
                   ...recipient,
@@ -210,21 +214,18 @@ export default function Main() {
           ...old.data
         ]
       }))
-      handleMessagePreviewClick({
-        _id: createdConvo?.createConversation?._id,
-        unit: null,
-        participants: {
-          data: [
-            {
-              user: { ...profile.user }
-            },
-            {
-              ...recipient,
-              __typename: 'User'
-            }
-          ]
-        }
-      })
+      // handleMessagePreviewClick({
+      //   _id: createdConvo?.createConversation?._id,
+      //   unit: null,
+      //   participants: {
+      //     data: [
+      //       {
+      //         ...recipient,
+      //         user: { ...recipient?.user }
+      //       }
+      //     ]
+      //   }
+      // })
       setSelectedAccountId(null)
     }
   }, [createdConvo, calledCreateConvo])
@@ -372,7 +373,7 @@ export default function Main() {
           <div className="w-3/4">
             <FormSelect
               options={convoOptions}
-              onChange={e => console.log({ e }) || setConvoType(e.target.value)}
+              onChange={e => setConvoType(e.target.value)}
             />
           </div>
           <div className="flex items-center">
@@ -387,10 +388,14 @@ export default function Main() {
                     accountTypes: [
                       'company_admin',
                       'complex_admin',
-                      'resident',
-                      'member'
+                      'building_admin',
+                      'security',
+                      'receptionist',
+                      'member',
+                      'utility'
                     ],
-                    companyId
+                    companyId,
+                    status: 'active'
                   }
                 })
                 handleNewMessageModal()
