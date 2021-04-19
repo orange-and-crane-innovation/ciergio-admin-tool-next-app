@@ -80,7 +80,7 @@ const rules = {
         '/messages',
         '/posts',
         '/daily-readings',
-        '/prayer-requests',
+        '/prayer-requests/list',
         '/forms',
         '/directory',
         '/contact-us',
@@ -160,7 +160,7 @@ const rules = {
         '/messages',
         '/posts',
         '/daily-readings',
-        '/prayer-requests',
+        '/prayer-requests/list',
         '/forms',
         '/directory',
         '/contact-us',
@@ -237,7 +237,7 @@ const rules = {
         '/contact-us',
         '/notifications',
         '/dues',
-        '/prayer-requests'
+        '/prayer-requests/list'
       ],
       allowedNestedRoutes: [
         '/posts/create',

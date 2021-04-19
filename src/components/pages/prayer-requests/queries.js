@@ -164,6 +164,20 @@ export const GET_POST_CATEGORY = gql`
   }
 `
 
+export const GET_COMPLEXES = gql`
+  query getComplexes($where: GetComplexesParams) {
+    getComplexes(where: $where) {
+      count
+      limit
+      skip
+      data {
+        _id
+        name
+      }
+    }
+  }
+`
+
 export const CREATE_PRAYER_REQUEST = gql`
   mutation createPrayerRequest($data: InputCreateIssue) {
     createIssue(data: $data) {
