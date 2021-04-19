@@ -263,14 +263,17 @@ const CreatePosts = () => {
     if (
       data?.embeddedFiles === null &&
       data?.title === '' &&
-      data?.content === null
+      (data?.content === null || data?.content === '')
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
       const createData = {
         type: 'form',
         title: data?.title || 'Untitled',
-        content: data?.content?.replace(/(&nbsp;)+/g, ''),
+        content:
+          data?.content === ''
+            ? null
+            : data?.content?.replace(/(&nbsp;)+/g, ''),
         audienceType: selectedAudienceType,
         status: status,
         primaryMedia: fileUploadedData

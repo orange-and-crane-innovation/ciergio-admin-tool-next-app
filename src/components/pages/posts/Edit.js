@@ -636,7 +636,7 @@ const CreatePosts = () => {
   const onSubmit = (data, status) => {
     if (
       data?.title === '' &&
-      data?.content === null &&
+      (data?.content === null || data?.content === '') &&
       data?.images === null &&
       data?.video === ''
     ) {
@@ -647,7 +647,10 @@ const CreatePosts = () => {
         data: {
           categoryId: data.category,
           title: data?.title || 'Untitled',
-          content: data?.content?.replace(/(&nbsp;)+/g, ''),
+          content:
+            data?.content === ''
+              ? null
+              : data?.content?.replace(/(&nbsp;)+/g, ''),
           audienceType: selectedAudienceType,
           primaryMedia:
             imageUploadedData?.length > 0 ? imageUploadedData : null,

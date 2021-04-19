@@ -348,7 +348,7 @@ const CreatePosts = () => {
   const onSubmit = (data, status) => {
     if (
       data?.title === '' &&
-      data?.content === null &&
+      (data?.content === null || data?.content === '') &&
       data?.images === null &&
       data?.video === ''
     ) {
@@ -358,7 +358,10 @@ const CreatePosts = () => {
         type: 'post',
         categoryId: data.category,
         title: data?.title || 'Untitled',
-        content: data?.content?.replace(/(&nbsp;)+/g, ''),
+        content:
+          data?.content === ''
+            ? null
+            : data?.content?.replace(/(&nbsp;)+/g, ''),
         audienceType: selectedAudienceType,
         status:
           !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
