@@ -107,7 +107,7 @@ const User = ({ data, handleClick }) => {
         />
       </div>
       <div className="mr-4">
-        <p>{`${lastName} ${firstName} `}</p>
+        <p>{`${firstName} ${lastName} `}</p>
       </div>
       <div>
         <p className="text-neutral-600 capitalize">
