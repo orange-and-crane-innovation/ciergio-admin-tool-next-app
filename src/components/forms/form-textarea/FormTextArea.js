@@ -42,12 +42,22 @@ const FormTextArea = ({
   )
 
   const onEditorStateChange = e => {
+    const content = e.getCurrentContent()
+    const isEditorEmpty = !content.hasText()
+    const currentPlainText = content.getPlainText()
+    const lengthOfTrimmedContent = currentPlainText.trim().length
+    const isContainOnlySpaces = !isEditorEmpty && !lengthOfTrimmedContent
+
     setEditorState(e)
 
-    if (stripHtmls) {
-      onChange(e.getCurrentContent().getPlainText())
+    if (!isContainOnlySpaces && !!(!isEditorEmpty && lengthOfTrimmedContent)) {
+      if (stripHtmls) {
+        onChange(currentPlainText)
+      } else {
+        onChange(draftToHtml(convertToRaw(content)))
+      }
     } else {
-      onChange(draftToHtml(convertToRaw(e.getCurrentContent())))
+      onChange(null)
     }
   }
 
