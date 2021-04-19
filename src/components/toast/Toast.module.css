@@ -28,11 +28,10 @@
 
   .content {
     @apply inline-block mr-8;
-    @apply text-center;
   }
 
   .button {
-    @apply absolute right-0 top-0 mt-2 mr-4;
+    @apply absolute right-0 top-0 mt-3 mr-4;
     @apply border-0 bg-transparent;
     @apply text-2xl font-semibold leading-none;
     @apply outline-none;

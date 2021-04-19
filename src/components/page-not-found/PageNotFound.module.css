@@ -1,0 +1,15 @@
+.pageNotFound {
+  @apply flex flex-col w-full h-screen justify-center items-center;
+
+  .heading {
+    @apply text-neutral-600 text-7xl font-bold leading-relaxed;
+  }
+
+  .subHeading {
+    @apply text-primary-500 text-2xl font-bold leading-loose;
+  }
+
+  .message {
+    @apply text-neutral-dark;
+  }
+}

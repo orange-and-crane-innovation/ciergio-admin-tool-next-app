@@ -601,7 +601,11 @@ function Notifications({
     <>
       <Card
         title={
-          <h1 className="font-bold text-base px-4 py-4 capitalize">{`${type} Notifications (${ITEM_COUNT})`}</h1>
+          <h1 className="font-bold text-base px-4 py-4 capitalize">
+            {searchText
+              ? `Search result for "${searchText}" (${ITEM_COUNT || 0})`
+              : `${type} Notifications (${ITEM_COUNT || 0})`}
+          </h1>
         }
         actions={[
           <Can

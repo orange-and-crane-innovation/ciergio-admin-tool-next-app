@@ -412,7 +412,7 @@ function Donations() {
                   <FormSelect
                     id="paymentType"
                     name="paymentType"
-                    options={paymentOptions}
+                    options={paymentOptions || []}
                     placeholder="Payment Method"
                     value={paymentOptions?.filter(
                       item => item.value === selectedPaymentType

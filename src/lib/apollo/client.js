@@ -4,8 +4,11 @@ import {
   HttpLink,
   InMemoryCache,
   concat,
-  ApolloLink
+  ApolloLink,
+  split
 } from '@apollo/client'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { WebSocketLink } from '@apollo/link-ws'
 import merge from 'deepmerge'
 
 let apolloClient
@@ -14,6 +17,51 @@ function createApolloClient() {
   const isBrowser = typeof window !== 'undefined'
 
   const httpLink = new HttpLink({ uri: process.env.NEXT_PUBLIC_API })
+
+  const wsLink = process.browser
+    ? new WebSocketLink({
+        uri: process.env.NEXT_PUBLIC_SUBSCRIPTION_API,
+        options: {
+          reconnect: true,
+          reconnectionAttempts: 10,
+          timeout: 90000,
+          connectionParams: () => {
+            const token = (isBrowser && localStorage.getItem('keep')) || ''
+            const user =
+              (isBrowser && JSON.parse(localStorage.getItem('profile'))) || ''
+
+            return {
+              treat: isBrowser && navigator.userAgent,
+              slave: token,
+              userId: user?._id
+            }
+          },
+          connectionCallback: error => {
+            if (error) {
+              console.log(
+                '<===== AN ERROR ACCURED WHILE CONNECTING TO WEBSOCKET =====>'
+              )
+            } else {
+              console.log('<===== WEBSOCKET CONNECTION SUCCESS =====>')
+            }
+          }
+        }
+      })
+    : null
+
+  const splitLink = process.browser
+    ? split(
+        ({ query }) => {
+          const definition = getMainDefinition(query)
+          return (
+            definition.kind === 'OperationDefinition' &&
+            definition.operation === 'subscription'
+          )
+        },
+        wsLink,
+        httpLink
+      )
+    : httpLink
 
   const authMiddleware = new ApolloLink((operation, forward) => {
     const token = (isBrowser && localStorage.getItem('keep')) || ''
@@ -32,7 +80,7 @@ function createApolloClient() {
 
   return new ApolloClient({
     ssrMode: !isBrowser,
-    link: concat(authMiddleware, httpLink),
+    link: concat(authMiddleware, splitLink),
     credentials: 'same-origin',
     cache: new InMemoryCache()
   })

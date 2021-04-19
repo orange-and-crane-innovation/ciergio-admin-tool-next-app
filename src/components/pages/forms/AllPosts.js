@@ -21,6 +21,7 @@ import Modal from '@app/components/modal'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import ViewsCard from './components/ViewsCard'
 import UpdateCard from './components/UpdateCard'
@@ -57,6 +58,7 @@ const GET_ALL_POST_QUERY = gql`
         updatedAt
         publishedAt
         author {
+          _id
           user {
             firstName
             lastName
@@ -65,12 +67,15 @@ const GET_ALL_POST_QUERY = gql`
           }
           accountType
           company {
+            _id
             name
           }
           complex {
+            _id
             name
           }
           building {
+            _id
             name
           }
         }
@@ -225,19 +230,23 @@ const PostComponent = () => {
             ]
 
             switch (item.author?.accountType) {
-              case 'administrator': {
+              case ACCOUNT_TYPES.SUP.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'company_admin': {
+              case ACCOUNT_TYPES.COMPYAD.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'complex_admin': {
+              case ACCOUNT_TYPES.COMPXAD.value: {
                 buildingName = item.author?.complex?.name
                 break
               }
-              case 'building_admin': {
+              case ACCOUNT_TYPES.BUIGAD.value: {
+                buildingName = item.author?.building?.name
+                break
+              }
+              case ACCOUNT_TYPES.RECEP.value: {
                 buildingName = item.author?.building?.name
                 break
               }
@@ -264,13 +273,12 @@ const PostComponent = () => {
 
             if (
               user._id === item.author._id ||
-              item.author.accountType === accountType ||
-              accountType === 'administrator' ||
-              (item.author.accountType !== 'administrator' &&
-                accountType === 'company_admin') ||
-              (item.author.accountType !== 'administrator' &&
-                item.author.accountType !== 'company_admin' &&
-                accountType === 'complex_admin' &&
+              accountType === ACCOUNT_TYPES.SUP.value ||
+              (((item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                accountType === ACCOUNT_TYPES.COMPYAD.value) ||
+                (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                  item.author.accountType !== ACCOUNT_TYPES.COMPYAD.value &&
+                  accountType === ACCOUNT_TYPES.COMPXAD.value)) &&
                 item.author.company._id === companyID)
             ) {
               isMine = true

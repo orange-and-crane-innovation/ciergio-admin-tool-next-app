@@ -168,16 +168,18 @@ const CreatePosts = () => {
     onError: _e => {}
   })
 
-  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
-    GET_POST_QUERY,
-    {
-      variables: {
-        where: {
-          _id: query.id
-        }
+  const {
+    loading: loadingPost,
+    data: dataPost,
+    error: errorPost,
+    refetch
+  } = useQuery(GET_POST_QUERY, {
+    variables: {
+      where: {
+        _id: query.id
       }
     }
-  )
+  })
 
   const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
@@ -192,6 +194,10 @@ const CreatePosts = () => {
   })
 
   register({ name: 'embeddedFiles' })
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   useEffect(() => {
     if (errorPost) {
@@ -297,8 +303,6 @@ const CreatePosts = () => {
       }
     }
   }, [loadingPost, dataPost, errorPost, setValue])
-
-  console.log(selectedCompanySpecific)
 
   useEffect(() => {
     if (!loadingUpdate) {
@@ -462,6 +466,7 @@ const CreatePosts = () => {
 
           reader.onloadend = () => {
             setFileUploadedData(prevArr => [...prevArr, file])
+            setFileUrls(prevArr => [...prevArr, reader.result])
           }
           reader.readAsDataURL(file)
 
@@ -491,7 +496,7 @@ const CreatePosts = () => {
     if (
       data?.embeddedFiles === null &&
       data?.title === '' &&
-      data?.content === null
+      (data?.content === null || data?.content === '')
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
@@ -499,7 +504,10 @@ const CreatePosts = () => {
         id: query.id,
         data: {
           title: data?.title || 'Untitled',
-          content: data?.content,
+          content:
+            data?.content === ''
+              ? null
+              : data?.content?.replace(/(&nbsp;)+/g, ''),
           audienceType: selectedAudienceType,
           status: status,
           primaryMedia: fileUploadedData,
@@ -906,7 +914,7 @@ const CreatePosts = () => {
                         </strong>
                         {(systemType === 'home' ||
                           (systemType !== 'home' &&
-                            accountType !== 'complex_admin')) && (
+                            accountType !== ACCOUNT_TYPES.COMPXAD.value)) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}

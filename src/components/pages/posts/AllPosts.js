@@ -30,6 +30,7 @@ import Tooltip from '@app/components/tooltip'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import ViewsCard from './components/ViewsCard'
 import UpdateCard from './components/UpdateCard'
@@ -71,6 +72,7 @@ const GET_ALL_POST_QUERY = gql`
         updatedAt
         publishedAt
         author {
+          _id
           user {
             firstName
             lastName
@@ -79,12 +81,15 @@ const GET_ALL_POST_QUERY = gql`
           }
           accountType
           company {
+            _id
             name
           }
           complex {
+            _id
             name
           }
           building {
+            _id
             name
           }
         }
@@ -127,6 +132,7 @@ const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
         updatedAt
         publishedAt
         author {
+          _id
           user {
             firstName
             lastName
@@ -135,12 +141,15 @@ const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
           }
           accountType
           company {
+            _id
             name
           }
           complex {
+            _id
             name
           }
           building {
+            _id
             name
           }
         }
@@ -251,12 +260,11 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: isDailyReadingsPage ? '80%' : '30%'
+      width: '30%'
     },
     {
       name: 'Author',
-      width: '30%',
-      hidden: isDailyReadingsPage
+      width: '30%'
     },
     {
       name: 'Category',
@@ -265,8 +273,7 @@ const PostComponent = () => {
     },
     {
       name: reorder ? 'Reorder' : isQRCodePage ? 'QR Code' : 'Status',
-      width: '15%',
-      hidden: isDailyReadingsPage
+      width: '15%'
     },
     {
       name: reorder ? 'Reorder' : '',
@@ -381,19 +388,23 @@ const PostComponent = () => {
             ]
 
             switch (item.author?.accountType) {
-              case 'administrator': {
+              case ACCOUNT_TYPES.SUP.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'company_admin': {
+              case ACCOUNT_TYPES.COMPYAD.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'complex_admin': {
+              case ACCOUNT_TYPES.COMPXAD.value: {
                 buildingName = item.author?.complex?.name
                 break
               }
-              case 'building_admin': {
+              case ACCOUNT_TYPES.BUIGAD.value: {
+                buildingName = item.author?.building?.name
+                break
+              }
+              case ACCOUNT_TYPES.RECEP.value: {
                 buildingName = item.author?.building?.name
                 break
               }
@@ -421,13 +432,12 @@ const PostComponent = () => {
             if (
               !reorder &&
               (user._id === item.author._id ||
-                item.author.accountType === accountType ||
-                accountType === 'administrator' ||
-                (item.author.accountType !== 'administrator' &&
-                  accountType === 'company_admin') ||
-                (item.author.accountType !== 'administrator' &&
-                  item.author.accountType !== 'company_admin' &&
-                  accountType === 'complex_admin' &&
+                accountType === ACCOUNT_TYPES.SUP.value ||
+                (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                  accountType === ACCOUNT_TYPES.COMPYAD.value) ||
+                (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                  item.author.accountType !== ACCOUNT_TYPES.COMPYAD.value &&
+                  accountType === ACCOUNT_TYPES.COMPXAD.value &&
                   item.author.company._id === companyID))
             ) {
               isMine = true
@@ -495,7 +505,7 @@ const PostComponent = () => {
                   )}
                 </div>
               ),
-              author: !isDailyReadingsPage && (
+              author: (
                 <div className="flex flex-col">
                   <span>{buildingName}</span>
                   <span className="text-neutral-500 text-sm">
@@ -968,19 +978,23 @@ const PostComponent = () => {
       ]
 
       switch (item.author?.accountType) {
-        case 'administrator': {
+        case ACCOUNT_TYPES.SUP.value: {
           buildingName = item.author?.company?.name
           break
         }
-        case 'company_admin': {
+        case ACCOUNT_TYPES.COMPYAD.value: {
           buildingName = item.author?.company?.name
           break
         }
-        case 'complex_admin': {
+        case ACCOUNT_TYPES.COMPXAD.value: {
           buildingName = item.author?.complex?.name
           break
         }
-        case 'building_admin': {
+        case ACCOUNT_TYPES.BUIGAD.value: {
+          buildingName = item.author?.building?.name
+          break
+        }
+        case ACCOUNT_TYPES.RECEP.value: {
           buildingName = item.author?.building?.name
           break
         }
@@ -1012,13 +1026,13 @@ const PostComponent = () => {
       if (
         !reorder &&
         (user._id === item.author._id ||
-          item.author.accountType === accountType ||
-          accountType === 'administrator' ||
-          (item.author.accountType !== 'administrator' &&
-            accountType === 'company_admin') ||
-          (item.author.accountType !== 'administrator' &&
-            item.author.accountType !== 'company_admin' &&
-            accountType === 'complex_admin'))
+          accountType === ACCOUNT_TYPES.SUP.value ||
+          (((item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+            accountType === ACCOUNT_TYPES.COMPYAD.value) ||
+            (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+              item.author.accountType !== ACCOUNT_TYPES.COMPYAD.value &&
+              accountType === ACCOUNT_TYPES.COMPXAD.value)) &&
+            item.author.company._id === companyID))
       ) {
         isMine = true
         checkbox = (
@@ -1091,52 +1105,48 @@ const PostComponent = () => {
               )}
             </div>
           </td>
-          {!isDailyReadingsPage && (
-            <td>
-              <div className="flex flex-col">
-                <span>{buildingName}</span>
-                <span className="text-neutral-500 text-sm">
-                  {`${item.author?.user?.firstName} ${item.author?.user?.lastName} | ${item.author?.user?.email}`}
-                </span>
-              </div>
-            </td>
-          )}
+          <td>
+            <div className="flex flex-col">
+              <span>{buildingName}</span>
+              <span className="text-neutral-500 text-sm">
+                {`${item.author?.user?.firstName} ${item.author?.user?.lastName} | ${item.author?.user?.email}`}
+              </span>
+            </div>
+          </td>
 
           {!isDailyReadingsPage && (
             <td>{item.category?.name ?? 'Uncategorized'}</td>
           )}
-          {(!isDailyReadingsPage || reorder) && (
-            <td>
-              {reorder ? (
-                <>
-                  <Button
-                    default
-                    leftIcon={<FaAngleUp className="text-2xl" />}
-                    className="mr-4"
-                    onClick={e => reorderRow(e, 'up')}
-                  />
-                  <Button
-                    default
-                    leftIcon={<FaAngleDown className="text-2xl" />}
-                    onClick={e => reorderRow(e, 'down')}
-                  />
-                </>
-              ) : isQRCodePage ? (
+          <td>
+            {reorder ? (
+              <>
                 <Button
                   default
-                  label="Download QR"
-                  onClick={() => handleShowModal('download-qr', item._id)}
+                  leftIcon={<FaAngleUp className="text-2xl" />}
+                  className="mr-4"
+                  onClick={e => reorderRow(e, 'up')}
                 />
-              ) : (
-                <div className="flex flex-col">
-                  <span>{status}</span>
-                  <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyShortDate(item.createdAt)}
-                  </span>
-                </div>
-              )}
-            </td>
-          )}
+                <Button
+                  default
+                  leftIcon={<FaAngleDown className="text-2xl" />}
+                  onClick={e => reorderRow(e, 'down')}
+                />
+              </>
+            ) : isQRCodePage ? (
+              <Button
+                default
+                label="Download QR"
+                onClick={() => handleShowModal('download-qr', item._id)}
+              />
+            ) : (
+              <div className="flex flex-col">
+                <span>{status}</span>
+                <span className="text-neutral-500 text-sm">
+                  {DATE.toFriendlyShortDate(item.createdAt)}
+                </span>
+              </div>
+            )}
+          </td>
           {!reorder && (
             <td>
               <Can
@@ -1306,6 +1316,8 @@ const PostComponent = () => {
                     perform={
                       isAttractionsEventsPage
                         ? 'attractions:reorder'
+                        : isDailyReadingsPage
+                        ? 'daily-reading:reorder'
                         : 'bulletin:reorder'
                     }
                     yes={
