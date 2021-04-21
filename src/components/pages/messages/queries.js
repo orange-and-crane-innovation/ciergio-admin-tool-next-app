@@ -20,7 +20,6 @@ export const getConversations = gql`
             firstName
             avatar
             lastName
-            __typename
           }
           status
           accountType
@@ -28,9 +27,7 @@ export const getConversations = gql`
           unit {
             _id
             name
-            __typename
           }
-          __typename
         }
         participants(limit: 1) {
           data {
@@ -40,19 +37,15 @@ export const getConversations = gql`
               firstName
               lastName
               avatar
-              __typename
             }
             unit {
               _id
               name
-              __typename
             }
             accountType
-            __typename
           }
-          __typename
         }
-        messages {
+        messages(limit: 1) {
           count
           limit
           data {
@@ -62,16 +55,13 @@ export const getConversations = gql`
                 _id
                 firstName
                 lastName
-                __typename
               }
-              __typename
             }
             message
             attachments {
               type
               filename
               url
-              __typename
             }
             viewers {
               count
@@ -81,23 +71,16 @@ export const getConversations = gql`
                   _id
                   firstName
                   lastName
-                  __typename
                 }
-                __typename
               }
-              __typename
             }
-            __typename
           }
-          __typename
         }
         status
         selected
         createdAt
         updatedAt
-        __typename
       }
-      __typename
     }
   }
 `
@@ -119,12 +102,10 @@ export const getMessages = gql`
             firstName
             lastName
             avatar
-            __typename
           }
           accountType
           active
           status
-          __typename
         }
         conversation {
           name
@@ -136,9 +117,7 @@ export const getMessages = gql`
               _id
               createdAt
               message
-              __typename
             }
-            __typename
           }
           participants {
             count
@@ -147,13 +126,9 @@ export const getMessages = gql`
               user {
                 firstName
                 lastName
-                __typename
               }
-              __typename
             }
-            __typename
           }
-          __typename
         }
         viewers {
           count
@@ -163,15 +138,10 @@ export const getMessages = gql`
               _id
               firstName
               lastName
-              __typename
             }
-            __typename
           }
-          __typename
         }
-        __typename
       }
-      __typename
     }
   }
 `
@@ -190,16 +160,12 @@ export const getAccounts = gql`
           firstName
           lastName
           avatar
-          __typename
         }
         unit {
           _id
           name
-          __typename
         }
-        __typename
       }
-      __typename
     }
   }
 `
@@ -211,7 +177,6 @@ export const createConversation = gql`
       slave
       message
       processId
-      __typename
     }
   }
 `
@@ -223,7 +188,6 @@ export const updateConversation = gql`
       slave
       message
       processId
-      __typename
     }
   }
 `
@@ -235,7 +199,6 @@ export const sendMessage = gql`
       slave
       message
       processId
-      __typename
     }
   }
 `
@@ -247,7 +210,12 @@ export const seenMessage = gql`
       slave
       message
       processId
-      __typename
     }
+  }
+`
+
+export const GET_UNREAD_MESSAGE_QUERY = gql`
+  query($accountId: String) {
+    getUnreadConversationCount(where: { accountId: $accountId })
   }
 `

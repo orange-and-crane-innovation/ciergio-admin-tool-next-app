@@ -39,6 +39,20 @@ export const NEW_MESSAGE_ADDED_SUBSCRIPTION = gql`
           lastName
         }
       }
+      conversation {
+        _id
+      }
+      viewers {
+        count
+        data {
+          _id
+          user {
+            _id
+            firstName
+            lastName
+          }
+        }
+      }
     }
   }
 `
@@ -146,6 +160,7 @@ const withAuth = WrappedComponent => {
       refetch: refetchConvo
     } = useQuery(GET_UNREAD_MESSAGE_QUERY, {
       skip: activeAccount?._id === null,
+      fetchPolicy: 'network-only',
       variables: {
         accountId: activeAccount?._id
       }
@@ -173,9 +188,13 @@ const withAuth = WrappedComponent => {
         const data = dataSubNewMessage?.newMessageAdded
         const name = `New message - ${data?.author?.user?.firstName} ${data?.author?.user?.lastName}`
         const message = data?.message
+        const isMine = data?.author?._id === activeAccount?._id
 
-        refetchConvo()
-        showNotification(name, message)
+        if (!isMine) {
+          dispatch({ type: 'UPDATE_NEW_MSG', payload: data })
+          refetchConvo()
+          showNotification(name, message)
+        }
       }
     }, [dataSubNewMessage, loadingSubNewMessage, errorSubNewMessage])
 

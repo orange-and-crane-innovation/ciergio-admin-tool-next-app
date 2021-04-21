@@ -3,7 +3,8 @@ import PropTypes from 'prop-types'
 import Reducer from './reducer'
 
 const initialState = {
-  unreadMsg: 0
+  unreadMsg: 0,
+  newMsg: null
 }
 
 const Store = ({ children }) => {
