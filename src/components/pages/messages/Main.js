@@ -1,15 +1,21 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useContext, useRef } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
-import axios from '@app/utils/axios'
+import { FiEdit } from 'react-icons/fi'
+
+import InfiniteScroll from 'react-infinite-scroll-component'
+
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
+
 import useWindowDimensions from '@app/utils/useWindowDimensions'
+import axios from '@app/utils/axios'
+import showToast from '@app/utils/toast'
+import useDebounce from '@app/utils/useDebounce'
+
 import MessagePreviewItem from './components/MessagePreviewItem'
 import MessageBox from './components/MessageBox'
 import NewMessageModal from './components/NewMessageModal'
-import useDebounce from '@app/utils/useDebounce'
-import showToast from '@app/utils/toast'
-import { FiEdit } from 'react-icons/fi'
+
 import styles from './messages.module.css'
 
 import {
@@ -19,11 +25,14 @@ import {
   getConversations,
   sendMessage,
   updateConversation,
-  seenMessage
+  seenMessage,
+  GET_UNREAD_MESSAGE_QUERY
 } from './queries'
 import { FormSelect } from '@app/components/globals'
 
 import { useRouter } from 'next/router'
+
+import { Context } from '@app/lib/global/store'
 
 const convoOptions = [
   {
@@ -37,6 +46,7 @@ const convoOptions = [
 ]
 
 export default function Main() {
+  const endMessage = useRef()
   const { height } = useWindowDimensions()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountId = profile?.accounts?.data[0]?._id
@@ -50,13 +60,18 @@ export default function Main() {
   const [attachmentURLs, setAttachmentURLs] = useState([])
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState(null)
-  const [conversations, setConversations] = useState(null)
+  const [conversations, setConversations] = useState({})
+  const [convoMessages, setConvoMessages] = useState({})
   const [hasFetched, setHasFetched] = useState(false)
+  const [offset, setOffset] = useState(0)
+  const [offsetConvo, setOffsetConvo] = useState(0)
   const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
 
   const router = useRouter()
   const { convoID } = router.query
+  const [state, dispatch] = useContext(Context)
+  const newMsg = state.newMsg
 
   useEffect(() => {
     fetchAccounts({
@@ -86,39 +101,36 @@ export default function Main() {
         includeEmptyConversation: false,
         pending: showPendingMessages,
         type: convoType
-      }
+      },
+      limit: 10,
+      skip: offsetConvo
     }
   })
   const [
     fetchMessages,
     { data: messages, loading: loadingMessages, refetch: refetchMessages }
-  ] = useLazyQuery(getMessages)
+  ] = useLazyQuery(getMessages, {
+    fetchPolicy: 'network-only'
+  })
   const [updateConvo] = useMutation(updateConversation)
   const [sendNewMessage] = useMutation(sendMessage, {
     onCompleted: () => {
-      refetchConversations({
-        variables: {
-          where: {
-            participants: [accountId],
-            includeEmptyConversation: false,
-            pending: showPendingMessages,
-            type: convoType
-          }
-        }
-      })
-      refetchMessages({
-        variables: {
-          limit: 10,
-          skip: 0,
-          where: {
-            conversationId: selectedConvo?._id
-          }
-        }
-      })
+      refetchMessages()
       setHasFetched(true)
     }
   })
-  const [seenNewMessage] = useMutation(seenMessage)
+  const [seenNewMessage, { data: dataSeenMessage }] = useMutation(seenMessage)
+
+  const [
+    fetchUnreadMessage,
+    { loading: loadingUnreadMessage, data: dataUnreadMessage }
+  ] = useLazyQuery(GET_UNREAD_MESSAGE_QUERY, {
+    enabled: false,
+    fetchPolicy: 'network-only',
+    variables: {
+      accountId
+    }
+  })
 
   const firstConvo = useMemo(() => {
     if (convos?.getConversations?.count > 0) {
@@ -128,9 +140,61 @@ export default function Main() {
 
   useEffect(() => {
     if (convos?.getConversations) {
-      setConversations(convos.getConversations)
+      if (
+        conversations?.data &&
+        conversations?.data[0]?._id !== convos?.getConversations?.data[0]?._id
+      ) {
+        setConversations(prev => ({
+          ...prev,
+          data: [
+            ...new Set(
+              conversations?.data.concat(convos?.getConversations?.data)
+            )
+          ]
+        }))
+      } else {
+        setConversations(convos.getConversations)
+      }
     }
   }, [convos?.getConversations])
+
+  useEffect(() => {
+    if (messages) {
+      if (
+        convoMessages?.data &&
+        convoMessages?.data[0]?.conversation?._id === selectedConvo._id &&
+        !hasFetched
+      ) {
+        setConvoMessages(prev => ({
+          ...prev,
+          data: [
+            ...new Set(convoMessages?.data.concat(messages?.getMessages?.data))
+          ]
+        }))
+      } else {
+        setConvoMessages(messages?.getMessages)
+      }
+    }
+  }, [messages])
+
+  useEffect(() => {
+    if (newMsg) {
+      if (newMsg?.conversation?._id === selectedConvo._id) {
+        setConvoMessages(prev => ({
+          ...prev,
+          data: [newMsg, ...prev?.data]
+        }))
+      }
+    }
+  }, [newMsg])
+
+  useEffect(() => {
+    if (dataSeenMessage) {
+      if (dataSeenMessage?.seenMessage?.message === 'success') {
+        fetchUnreadMessage()
+      }
+    }
+  }, [dataSeenMessage])
 
   useEffect(() => {
     if ((selectedConvo && !hasFetched) || convoID) {
@@ -168,11 +232,7 @@ export default function Main() {
 
   const [
     createNewConversation,
-    {
-      data: createdConvo,
-      called: calledCreateConvo,
-      loading: creatingConversation
-    }
+    { data: createdConvo, called: calledCreateConvo }
   ] = useMutation(createConversation)
 
   useEffect(() => {
@@ -230,8 +290,6 @@ export default function Main() {
     }
   }, [createdConvo, calledCreateConvo])
 
-  const convoMessages = messages?.getMessages
-
   // const dropdownData = [
   //   {
   //     label: 'Group',
@@ -251,10 +309,24 @@ export default function Main() {
   //   }
   // ]
 
+  useEffect(() => {
+    if (!loadingUnreadMessage) {
+      if (dataUnreadMessage) {
+        const unreadMsg = dataUnreadMessage?.getUnreadConversationCount
+        dispatch({ type: 'UPDATE_UNREAD_MSG', payload: unreadMsg })
+      }
+    }
+  }, [loadingUnreadMessage, dataUnreadMessage])
+
   const togglePendingMessages = checked => setShowPendingMessages(checked)
 
   const handleMessagePreviewClick = convo => {
+    if (!hasFetched) {
+      setConvoMessages({})
+    }
+    setOffset(0)
     setSelectedConvo(convo)
+    router.push(`/messages/${convo._id}`)
   }
 
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
@@ -362,6 +434,52 @@ export default function Main() {
     }
   }
 
+  const onReadNewMessage = () => {
+    const messageID = convoMessages?.data[0]?._id
+    if (messageID) {
+      seenNewMessage({
+        variables: {
+          messageId: messageID
+        }
+      })
+    }
+    dispatch({ type: 'UPDATE_NEW_MSG', payload: null })
+    endMessage.current.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const onFetchMoreMessage = () => {
+    if (
+      convoMessages?.data &&
+      convoMessages?.data[0]?.conversation?._id === selectedConvo._id
+    ) {
+      setOffset(prev => prev + 10)
+    } else {
+      setOffset(0)
+    }
+
+    fetchMessages({
+      variables: {
+        limit: 10,
+        skip: offset + 10,
+        where: {
+          conversationId: selectedConvo?._id
+        }
+      }
+    })
+  }
+
+  const onFetchMoreConversations = () => {
+    setOffsetConvo(prev => prev + 10)
+
+    refetchConversations()
+  }
+
+  const onSelectConvoType = e => {
+    setConversations({})
+    setOffsetConvo(0)
+    setConvoType(e.target.value)
+  }
+
   return (
     <section
       className={styles.messagesContainer}
@@ -371,10 +489,7 @@ export default function Main() {
         <div className={styles.messagesListHeader}>
           {/* <h3 className="text-lg font-bold">Members</h3> */}
           <div className="w-3/4">
-            <FormSelect
-              options={convoOptions}
-              onChange={e => setConvoType(e.target.value)}
-            />
+            <FormSelect options={convoOptions} onChange={onSelectConvoType} />
           </div>
           <div className="flex items-center">
             {/* <button className={styles.messagesButton}>
@@ -414,37 +529,61 @@ export default function Main() {
           className={styles.messagesListItems}
           style={{ height: `calc(${height}px - 180px)` }}
         >
-          {loadingConvo || creatingConversation ? <Spinner /> : null}
-          {!loadingConvo &&
-          !creatingConversation &&
-          conversations?.count > 0 ? (
-            conversations.data.map(convo => (
-              <MessagePreviewItem
-                key={convo._id}
-                onClick={handleMessagePreviewClick}
-                data={convo}
-                isSelected={selectedConvo?._id === convo._id}
-                currentUserid={parseInt(profile?._id)}
-              />
-            ))
-          ) : (
+          {/* {loadingConvo || creatingConversation ? <Spinner /> : null} */}
+          {conversations?.count > 0 ? (
+            <div
+              id="scrollableConvo"
+              style={{
+                height: '100%',
+                overflow: 'auto',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <InfiniteScroll
+                dataLength={conversations?.data?.length || 0}
+                next={onFetchMoreConversations}
+                hasMore={conversations?.data?.length < conversations?.count}
+                loader={<Spinner />}
+                scrollableTarget="scrollableConvo"
+              >
+                {conversations.data.map(convo => (
+                  <MessagePreviewItem
+                    key={convo._id}
+                    onClick={handleMessagePreviewClick}
+                    data={convo}
+                    isSelected={selectedConvo?._id === convo._id}
+                    currentUserid={profile?._id}
+                    convoId={convo._id}
+                    newMessage={newMsg}
+                  />
+                ))}
+              </InfiniteScroll>
+            </div>
+          ) : loadingConvo ? (
+            <Spinner />
+          ) : conversations?.count === 0 ? (
             <div className="h-full flex items-center justify-center">
               <p>No conversations found.</p>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
       <MessageBox
+        endMessageRef={endMessage}
         participant={selectedConvo}
         conversation={convoMessages}
         loading={loadingMessages}
         onSubmitMessage={handleSubmitMessage}
-        currentUserid={parseInt(profile?._id)}
+        currentUserid={profile?._id}
         onUpload={onUploadAttachment}
         onRemove={onRemoveAttachment}
         loadingAttachment={isUploadingAttachment}
         attachments={uploadedAttachments}
         attachmentURLs={attachmentURLs}
+        newMessage={newMsg?.conversation?._id === selectedConvo?._id}
+        onReadNewMessage={onReadNewMessage}
+        onFetchMoreMessage={onFetchMoreMessage}
       />
       <NewMessageModal
         visible={showNewMessageModal}

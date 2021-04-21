@@ -40,6 +40,7 @@
 
   .messagesBoxContainer {
     @apply col-span-2 border-b border-neutral-300 flex flex-col;
+    @apply bg-neutral-200;
   }
 
   .messageBoxHeader {
@@ -49,7 +50,7 @@
   }
 
   .messageBoxList {
-    height: 700px;
+    height: calc(100vh - 200px);
     @apply overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5 flex flex-col;
   }
 
@@ -72,7 +73,7 @@
   .messageBoxInput {
     min-height: 80px;
     @apply bg-white border border-neutral-300 box-border p-0;
-    @apply grid grid-cols-12;
+    @apply relative grid grid-cols-12;
   }
 
   .messageDateStamp {
@@ -83,6 +84,12 @@
 
   .viewerAvatar {
     @apply h-4 w-4 rounded-full ml-1;
+  }
+
+  .messageBoxNotif {
+    @apply absolute left-0 right-0 m-auto p-4 flex items-center justify-center bg-neutral-400 font-bold rounded-md cursor-pointer;
+    bottom: calc(100% + 10px);
+    width: 230px;
   }
 }
 

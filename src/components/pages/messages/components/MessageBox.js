@@ -1,20 +1,32 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
-import Spinner from '@app/components/spinner'
+import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
 import useWindowDimensions from '@app/utils/useWindowDimensions'
-import { BsCheckAll } from 'react-icons/bs'
+import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
+import InfiniteScroll from 'react-infinite-scroll-component'
+
+import Spinner from '@app/components/spinner'
+import Tooltip from '@app/components/tooltip'
+
+import { toFriendlyShortDate, toFriendlyDateTime } from '@app/utils/date'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+
+import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
+
 import styles from '../messages.module.css'
 import MessageInput from './MessageInput'
-import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
-import { toFriendlyDate } from '@app/utils/date'
 
 export default function MessageBox({
+  endMessageRef,
   participant,
   conversation,
   loading,
   currentUserid,
   onSubmitMessage,
-  attachments
+  // attachments,
+  newMessage,
+  onReadNewMessage,
+  onFetchMoreMessage
   // onUpload,
   // onRemove
 }) {
@@ -25,18 +37,40 @@ export default function MessageBox({
   // const [isOver, setIsOver] = useState(false)
 
   const messages = useMemo(() => {
-    return Array.isArray(conversation?.data)
-      ? [...conversation?.data]?.reverse()
-      : conversation?.data
-  }, [conversation?.data])
+    if (conversation?.data?.length > 0) {
+      return Array.isArray(conversation?.data)
+        ? [...conversation?.data]
+        : conversation?.data
+    }
+  }, [conversation])
 
   const user = useMemo(() => {
-    if (participant?.participants?.data?.length > 1) {
-      return participant.participants.data[1]?.user
+    if (participant?.participants?.data?.length === 2) {
+      return participant.participants.data.filter(
+        item => item?.user?._id !== currentUserid
+      )[0]?.user
+    } else if (participant?.participants?.data?.length > 1) {
+      return participant.participants.data.filter(item =>
+        ['member', 'unit_owner', 'resident'].includes(item.accountType)
+      )[0]?.user
     }
   }, [participant?.participants])
 
-  const name = `${user?.firstName} ${user?.lastName}`
+  const accountType = useMemo(() => {
+    if (participant?.participants?.data?.length === 2) {
+      return participant.participants.data.filter(
+        item => item?.user?._id !== currentUserid
+      )[0]?.accountType
+    } else if (participant?.participants?.data?.length > 1) {
+      return participant.participants.data.filter(item =>
+        ['member', 'unit_owner', 'resident'].includes(item.accountType)
+      )[0]?.accountType
+    }
+  }, [participant?.participants])
+
+  const name = `${getAccountTypeName(accountType)} - ${user?.firstName} ${
+    user?.lastName
+  }`
 
   // NOTE: temporarily removed to align with old UI
   // const handleChange = () => {
@@ -93,100 +127,148 @@ export default function MessageBox({
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
         {user?.firstName && user?.lastName ? (
-          <h2 className="font-bold text text-base">{`Member - ${
-            name || ''
-          }`}</h2>
+          <h2 className="font-bold text text-base">{name || ''}</h2>
         ) : (
           <div />
         )}
       </div>
-      <div className={styles.messageBoxList}>
-        {loading && messages?.length === 0 ? <Spinner /> : null}
-        {!loading && messages?.length > 0 ? (
-          messages.map((item, index) => {
-            const author = item.author.user
-            const authorName = `${author?.firstName} ${author?.lastName}`
-            const accountType = item?.author?.accountType.replace('_', ' ')
-            const isCurrentUserMessage = parseInt(author._id) === currentUserid
-            const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
 
-            return (
-              <div
-                key={item._id}
-                className={`${
-                  isCurrentUserMessage ? 'self-end ' : 'self-start '
-                }w-8/12 mt-2`}
-              >
-                {messages[index - 1]?.author.user._id !== author._id ? (
+      <div className={styles.messageBoxList}>
+        {loading ? <Spinner /> : null}
+        {messages?.length > 0 && (
+          <div
+            id="scrollableDiv"
+            style={{
+              height: '100%',
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column-reverse'
+            }}
+          >
+            <InfiniteScroll
+              dataLength={messages?.length || 0}
+              next={onFetchMoreMessage}
+              style={{ display: 'flex', flexDirection: 'column-reverse' }}
+              inverse={true}
+              hasMore={messages?.length < conversation?.count}
+              loader={<Spinner />}
+              scrollableTarget="scrollableDiv"
+              endMessage={
+                <p className="font-semibold text-center text-neutral-500">
+                  {`- - - End of message - - -`}
+                </p>
+              }
+            >
+              <span ref={endMessageRef}></span>
+              {messages?.map((item, index) => {
+                const author = item?.author?.user
+                const authorName = `${author?.firstName} ${author?.lastName}`
+                const accountType = getAccountTypeName(
+                  item?.author?.accountType
+                )
+                const isCurrentUserMessage = author?._id === currentUserid
+                const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
+                const isLastMessage = index === 0
+                const isSameAuthor =
+                  messages[index + 1]?.author.user._id !== author._id
+
+                return (
                   <div
-                    className={`capitalize flex items-center ${
-                      isCurrentUserMessage
-                        ? 'justify-end '
-                        : 'flex-row-reverse justify-end '
-                    }`}
+                    key={item._id}
+                    className={`${
+                      isCurrentUserMessage ? 'self-end ' : 'self-start '
+                    }w-8/12 mt-2`}
                   >
-                    <span className="block mr-">{`${accountType} - ${authorName}`}</span>
-                    <img
-                      src={author?.avatar || defaultAvatarUri}
-                      alt={authorName}
-                      className={`${
-                        isCurrentUserMessage ? 'ml-4 ' : 'mr-4 '
-                      }rounded-full h-8 w-8`}
-                    />
-                  </div>
-                ) : null}
-                <div
-                  className={`${
-                    isCurrentUserMessage
-                      ? 'bg-primary-500 text-white '
-                      : 'bg-white float-right '
-                  }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
-                >
-                  <p className="font-sm break-all">{item.message}</p>
-                  <div className="flex items-center justify-end w-full text-right">
-                    <p
-                      className={`${styles.messageDateStamp} ${
-                        isCurrentUserMessage ? 'text-white' : 'text-neutral-500'
-                      }`}
-                    >
-                      {toFriendlyDate(item.createdAt)}
-                    </p>
-                    {isCurrentUserMessage &&
-                    (item.status === 'seen' || item.viewers.count > 0) ? (
-                      <div className="ml-2">
-                        <BsCheckAll className="w-5 h-5" />
+                    {isSameAuthor ? (
+                      <div
+                        className={`capitalize flex items-center ${
+                          isCurrentUserMessage
+                            ? 'justify-end '
+                            : 'flex-row-reverse justify-end '
+                        }`}
+                      >
+                        <span className="block">{`${accountType} - ${authorName}`}</span>
+                        <img
+                          src={author?.avatar || defaultAvatarUri}
+                          alt={authorName}
+                          className={`${
+                            isCurrentUserMessage ? 'ml-4 ' : 'mr-4 '
+                          }rounded-full h-8 w-8`}
+                        />
                       </div>
                     ) : null}
-                  </div>
-                  {!isCurrentUserMessage &&
-                  (item.status === 'seen' || item.viewers.count > 0) ? (
-                    <div className="w-full flex items-center justify-end mt-2">
-                      {item.viewers.data.map(v => {
-                        const img =
-                          accountType === 'company_admin'
-                            ? `https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-company-admin.png`
-                            : `https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-complex-admin.png`
-                        return (
-                          <img
-                            key={v?._id}
-                            src={v?.user?.avatar ?? img}
-                            alt="viewer-avatar"
-                            className={styles.viewerAvatar}
-                          />
-                        )
-                      })}
+                    <div
+                      className={`${
+                        isCurrentUserMessage
+                          ? 'bg-primary-500 text-white '
+                          : 'bg-white float-right '
+                      }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
+                    >
+                      <p className="font-sm break-all">{item.message}</p>
+                      <div className="flex items-center justify-end w-full text-right">
+                        <p
+                          className={`${styles.messageDateStamp} ${
+                            isCurrentUserMessage
+                              ? 'text-white'
+                              : 'text-neutral-500'
+                          }`}
+                        >
+                          <Tooltip
+                            text={toFriendlyDateTime(item.createdAt)}
+                            effect="solid"
+                          >
+                            <span className={styles.updateDate}>
+                              {toFriendlyShortDate(item.createdAt)}
+                            </span>
+                          </Tooltip>
+                        </p>
+                        {isCurrentUserMessage &&
+                        (item.status === 'seen' || item.viewers.count > 0) ? (
+                          <div className="ml-2">
+                            <BsCheckAll className="w-5 h-5" />
+                          </div>
+                        ) : null}
+                      </div>
+                      {isLastMessage &&
+                      (item.status === 'seen' || item.viewers.count > 0) ? (
+                        <div className="w-full flex items-center justify-end mt-2">
+                          {item.viewers.data.map(v => {
+                            const img =
+                              accountType === ACCOUNT_TYPES.COMPYAD.value
+                                ? IMAGES.COMPANY_AVATAR
+                                : accountType === ACCOUNT_TYPES.COMPXAD.value
+                                ? IMAGES.COMPLEX_AVATAR
+                                : IMAGES.DEFAULT_AVATAR
+                            return (
+                              <Tooltip
+                                key={v?._id}
+                                text={v?.user?.firstName}
+                                effect="solid"
+                              >
+                                <img
+                                  src={v?.user?.avatar ?? img}
+                                  alt="viewer-avatar"
+                                  className={styles.viewerAvatar}
+                                />
+                              </Tooltip>
+                            )
+                          })}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
-              </div>
-            )
-          })
-        ) : (
+                  </div>
+                )
+              })}
+            </InfiniteScroll>
+          </div>
+        )}
+        {!loading && messages?.length === 0 && (
           <div className="w-full h-full flex items-center justify-center">
             <p>No messages found.</p>
           </div>
         )}
       </div>
+
       {/* NOTE: temporarily removed to align with old UI */}
       {/* {attachments?.length ? (
         <div className={styles.messageAttachmentsContainer}>
@@ -221,6 +303,13 @@ export default function MessageBox({
         className={styles.messageBoxInput}
         style={{ height: `calc(${height - 844.38}px)` }}
       >
+        {!loading && messages?.length > 0 && newMessage && (
+          <button className={styles.messageBoxNotif} onClick={onReadNewMessage}>
+            <span className="mr-2">New Message Received</span>
+            <BsFillCaretDownFill />
+          </button>
+        )}
+
         {/* NOTE: temporarily removed to align with old UI */}
         {/* <div className="col-span-1 flex items-center justify-center">
           <img
@@ -229,15 +318,16 @@ export default function MessageBox({
             className="rounded-full"
           />
         </div> */}
-        <div className="col-span-11 py-2 px-4 flex items-center w-full">
+        <div className="relative col-span-12 py-2 px-4 flex items-center w-full">
           <MessageInput
+            editorClassName="pr-16"
             placeholder="Write a message"
             onChange={handleEditorChange}
             onPressEnter={handlePressEnter}
             editorState={editorState}
           />
           <div
-            className={`pl-4 flex items-center text-lg font-bold cursor-pointer ${
+            className={`absolute right-4 px-4 flex items-center text-lg font-bold cursor-pointer ${
               disabledSendBtn ? 'text-neutral-400' : 'text-primary-500'
             }`}
           >
@@ -281,13 +371,17 @@ export default function MessageBox({
 }
 
 MessageBox.propTypes = {
+  endMessageRef: P.any,
   participant: P.object,
   conversation: P.object,
   loading: P.bool,
-  currentUserid: P.number,
+  currentUserid: P.string,
   onSubmitMessage: P.func,
   attachmentURLs: P.array,
   onUpload: P.func,
   onRemove: P.func,
-  attachments: P.array
+  attachments: P.array,
+  newMessage: P.bool,
+  onReadNewMessage: P.func,
+  onFetchMoreMessage: P.func
 }
