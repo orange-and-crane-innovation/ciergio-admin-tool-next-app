@@ -1,14 +1,7 @@
 import ComplexDataComponent from '@app/components/pages/properties/complex/complexData'
-import Page from '@app/permissions/page'
 
 function ComplexSinglePropertiesPage() {
-  return (
-    <Page
-      route="/properties"
-      nestedRoute="/properties/complex"
-      page={<ComplexDataComponent />}
-    />
-  )
+  return <ComplexDataComponent />
 }
 
 export default ComplexSinglePropertiesPage
