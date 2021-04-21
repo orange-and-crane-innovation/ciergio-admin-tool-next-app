@@ -1,10 +1,15 @@
 const Reducer = (state, action) => {
   switch (action.type) {
     case 'UPDATE_UNREAD_MSG': {
-      console.log('UPDATE_UNREAD_MSG', state, action)
       return {
         ...state,
         unreadMsg: action.payload
+      }
+    }
+    case 'UPDATE_NEW_MSG': {
+      return {
+        ...state,
+        newMsg: action.payload
       }
     }
     default:
