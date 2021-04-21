@@ -111,6 +111,7 @@ export const GET_CONTACTS = gql`
         }
         address {
           formattedAddress
+          city
         }
         category {
           _id
