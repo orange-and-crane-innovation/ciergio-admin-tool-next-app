@@ -93,7 +93,7 @@
 
 .newMessageAccountsList {
   height: 550px;
-  @apply overflow-y-scroll -mx-6;
+  @apply overflow-y-scroll -mx-4;
 }
 
 .newMessageUserItem {
