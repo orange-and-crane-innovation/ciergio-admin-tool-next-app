@@ -62,7 +62,7 @@ function ContactModal({
 
   return (
     <Modal
-      title="Add a Contact"
+      title={`${selected ? 'Edit' : 'Add a'} Contact`}
       okText="Okay"
       visible={open}
       onClose={handleClose}
