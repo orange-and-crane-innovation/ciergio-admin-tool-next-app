@@ -103,12 +103,13 @@ export const displayDays = data => {
   const currentDate = dayjs(new Date())
   const difference = dayjs.duration(currentDate.diff(inputDate))
   const dateData = difference.$d
-  const { days } = dateData
+  const { years, months, days } = dateData
+
   let returnData
-  if (days <= 7) {
+  if (years === 0 && months === 0 && days <= 7) {
     returnData = friendlyDateTimeFormat(data, 'ddd')
   } else {
-    returnData = friendlyDateTimeFormat(data, 'LL')
+    returnData = friendlyDateTimeFormat(data, 'll')
   }
   return returnData
 }
@@ -118,35 +119,38 @@ export const displayDateCreated = data => {
   const currentDate = dayjs(new Date())
   const difference = dayjs.duration(currentDate.diff(inputDate))
   const dateData = difference.$d
-  const { seconds, minutes, hours, days } = dateData
+  const { seconds, minutes, hours, days, months, years } = dateData
   let returnData
-
-  if (days === 0) {
-    if (hours === 0) {
-      if (minutes === 0) {
-        if (seconds <= 10) {
-          returnData = 'Just now'
-        } else {
-          returnData = seconds + ' sec ago'
+  if (years === 0 && months === 0) {
+    if (days === 0) {
+      if (hours === 0) {
+        if (minutes === 0) {
+          if (seconds <= 10) {
+            returnData = 'Just now'
+          } else {
+            returnData = seconds + ' sec ago'
+          }
+        } else if (minutes === 1) {
+          returnData = minutes + ' min ago'
+        } else if (minutes > 1) {
+          returnData = minutes + ' mins ago'
         }
-      } else if (minutes === 1) {
-        returnData = minutes + ' min ago'
-      } else if (minutes > 1) {
-        returnData = minutes + ' mins ago'
+      } else if (hours === 1) {
+        returnData = hours + ' hr ago'
+      } else {
+        returnData = hours + ' hrs ago'
       }
-    } else if (hours === 1) {
-      returnData = hours + ' hr ago'
+    } else if (days >= 2 && days < 7) {
+      returnData = days + ' days ago'
+    } else if (days === 7) {
+      returnData = '1 week ago'
+    } else if (days > 7) {
+      returnData = toFriendlyDate(data)
     } else {
-      returnData = hours + ' hrs ago'
+      returnData = 'Yesterday at ' + dayjs(data).format('h:mm a')
     }
-  } else if (days >= 2 && days < 7) {
-    returnData = days + ' days ago'
-  } else if (days === 7) {
-    returnData = '1 week ago'
-  } else if (days > 7) {
-    returnData = toFriendlyDate(data)
   } else {
-    returnData = 'Yesterday at ' + dayjs(data).format('h:mm a')
+    returnData = toFriendlyDate(data)
   }
   return returnData
 }
