@@ -31,7 +31,7 @@ const columns = [
 export default function PrayerRequestDetails() {
   const router = useRouter()
   const id = router?.query?.id
-
+  const complexId = router?.query?.complexId
   const [updatePrayerRequest] = useMutation(UPDATE_PRAYER_REQUEST)
 
   const { data: details } = useQuery(GET_PRAYER_REQUEST_DETAILS, {
@@ -87,6 +87,11 @@ export default function PrayerRequestDetails() {
     }
   }, [prHistory])
 
+  let path = `/prayer-requests/list?category=${pr?.category?._id}`
+  if (complexId) {
+    path += `&complexId=${complexId}`
+  }
+
   return (
     <section className="content-wrap">
       <div className="w-8/12">
@@ -94,7 +99,7 @@ export default function PrayerRequestDetails() {
           <h2 className="font-bold text-4xl">{`${pr?.category.name} - ${pr?.prayer.for}`}</h2>
           <small className="font-normal text-base">March 03, 2021</small>{' '}
           <span className="text-neutral-500 text-base">&middot; </span>
-          <Link href={`/prayer-requests?category=${pr?.category?._id}`}>
+          <Link href={path}>
             <small className="text-blue-500 cursor-pointer font-normal text-base">
               {pr?.category?.name}
             </small>

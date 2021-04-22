@@ -13,7 +13,7 @@ import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Can from '@app/permissions/can'
-
+import showToast from '@app/utils/toast'
 import ManageDirectory from './ManageDirectory'
 
 import { initializeApollo } from '@app/lib/apollo/client'
@@ -64,6 +64,7 @@ function Directory() {
   const [createCategory] = useMutation(CREATE_CATEGORY, {
     onCompleted: () => {
       handleClearModal('create')
+      showToast('success', 'You have successfully created a category.')
       refetchCategories()
     }
   })

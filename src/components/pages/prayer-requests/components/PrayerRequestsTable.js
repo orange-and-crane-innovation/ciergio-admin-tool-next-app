@@ -5,9 +5,9 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useReactToPrint } from 'react-to-print'
 import { CSVLink } from 'react-csv'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import P from 'prop-types'
 import * as yup from 'yup'
-import Link from 'next/link'
 
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
@@ -66,8 +66,7 @@ const validationSchema = yup.object().shape({
 
 function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
   const router = useRouter()
-  const initialCategory = router?.query?.category
-  const { complexId, companyId, accountId } = user
+  const { complexId, companyId, accountId, initialCategory } = user
   const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -163,7 +162,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
           data: {
             authorAccountId: accountId,
             companyId,
-            complexId,
+            complexId: complexId ?? null,
             categoryId: category?.value,
             content: message,
             prayer: {
@@ -236,8 +235,12 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
   }, [categories?.getPostCategory])
 
   useEffect(() => {
+    // let path = '/prayer-requests/list'
+    // if (router?.query?.complexId) {
+    //   path += `?complexId=${complexId}`
+    // }
+    // router.push(path)
     if (categoryOptions?.length > 0 && initialCategory) {
-      router.push('/prayer-requests')
       const index = categoryOptions?.findIndex(c => c.value === initialCategory)
       setCategory(categoryOptions[index])
     }
@@ -253,19 +256,23 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
           ? prayerRequests.issue.map(
               ({ _id, category, prayer, reporter, createdAt, updatedAt }) => {
                 const req = reporter?.user
+                let path = `/prayer-requests/details/${_id}`
+                if (complexId) {
+                  path += `?complexId=${complexId}`
+                }
                 const dropdownData = [
                   {
                     label: 'View Details',
                     icon: <span className="ciergio-file" />,
                     function: () => {
-                      router.push(`/prayer-requests/details/${_id}`)
+                      router.push(path)
                     }
                   }
                 ]
                 return {
                   dateCreated: friendlyDateTimeFormat(dayjs(createdAt), 'LL'),
                   title: (
-                    <Link href={`/prayer-requests/details/${_id}`}>
+                    <Link href={path}>
                       <p className="cursor-pointer font-bold hover:underline">
                         <span>{category.name}</span> - <span>{prayer.for}</span>
                       </p>

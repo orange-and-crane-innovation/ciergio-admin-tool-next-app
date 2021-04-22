@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/router'
 import P from 'prop-types'
 import * as yup from 'yup'
+import omit from 'lodash/omit'
+import isEmpty from 'lodash/isEmpty'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import Button from '@app/components/button'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -36,10 +38,13 @@ const validationSchema = yup.object().shape({
       city: yup.string()
     })
     .nullable(),
-  category: yup.object().shape({
-    label: yup.string(),
-    value: yup.string().required('This field is required')
-  })
+  category: yup
+    .object()
+    .shape({
+      label: yup.string(),
+      value: yup.string().required('This field is required')
+    })
+    .nullable()
 })
 
 const columns = [
@@ -80,7 +85,10 @@ const formatNumber = number => {
 
 function Contact({ id }) {
   const router = useRouter()
-  const companyId = router?.query?.companyId
+  const profile = JSON.parse(window.localStorage.getItem('profile'))
+  const profileData = profile?.accounts?.data[0]
+  const companyId = router?.query?.companyId ?? profileData?.company?._id
+  const complexId = id ?? profileData?.complex?._id
   const [showContactModal, setShowContactModal] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(false)
@@ -122,7 +130,7 @@ function Contact({ id }) {
     loading: loadingContacts
   } = useQuery(GET_CONTACTS, {
     variables: {
-      complexId: id,
+      complexId: complexId ?? null,
       companyId: companyId ?? null,
       limit: pageLimit,
       offset
@@ -130,7 +138,7 @@ function Contact({ id }) {
   })
   const { data: categories } = useQuery(GET_CONTACT_CATEGORY, {
     variables: {
-      complexId: id,
+      complexId: complexId ?? null,
       companyId: companyId ?? null
     }
   })
@@ -138,7 +146,7 @@ function Contact({ id }) {
   const handleRefetchContacts = () => {
     refetchContacts({
       variables: {
-        complexId: id,
+        complexId: complexId ?? null,
         companyId: companyId ?? null,
         limit: pageLimit,
         offset
@@ -206,7 +214,7 @@ function Contact({ id }) {
     const { category, name, contactNumber, address } = values
     const validated = await trigger()
     const phoneNumber = parsePhoneNumberFromString(contactNumber, 'PH')
-
+    console.log({ validated, errors })
     if (validated && !phoneNumber.isValid()) {
       setError('contactNumber', {
         type: 'manual',
@@ -215,16 +223,34 @@ function Contact({ id }) {
       })
     }
 
-    const contactData = {
+    let addressData = {}
+    if (selectedContact) {
+      addressData = address?.formattedAddress
+        ? {
+            ...omit(address, '__typename')
+          }
+        : {
+            ...omit(selectedContact?.address, '__typename')
+          }
+    } else {
+      addressData = address
+    }
+
+    let contactData = {
       name,
-      logo: fileUploadedData[0]?.url ?? null,
+      logo: fileUploadedData[0]?.url,
       contactNumber,
-      address: address ?? null,
-      categoryId:
-        category.value || categories?.getContactCategories?.data[0]._id
+      categoryId: category.value ?? selectedContact?.category?._id
+    }
+
+    if (!isEmpty(addressData)) {
+      contactData = { ...contactData, address: addressData }
     }
 
     if (validated && phoneNumber.isValid()) {
+      if (fileUploadedData?.length > 0) {
+        setFileUploadedData([])
+      }
       if (selectedContact) {
         editContact({
           variables: {
@@ -237,8 +263,8 @@ function Contact({ id }) {
       createContact({
         variables: {
           data: contactData,
-          companyId,
-          complexId: id
+          companyId: companyId,
+          complexId: complexId
         }
       })
     }
@@ -254,16 +280,15 @@ function Contact({ id }) {
 
   const uploadApi = async payload => {
     const response = await axios.post('/', payload)
-
     if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
-        }
+      setFileUploadedData(() => {
+        return response.data.map(item => {
+          return {
+            url: item.location,
+            type: item.mimetype
+          }
+        })
       })
-
-      setFileUploadedData(imageData)
     }
   }
 
@@ -278,7 +303,6 @@ function Contact({ id }) {
         const reader = new FileReader()
 
         reader.onloadend = () => {
-          console.log('reading image')
           setImageUrls(imageUrls => [...imageUrls, reader.result])
           setLoading(false)
         }
@@ -372,7 +396,7 @@ function Contact({ id }) {
           }
         }) || []
     }
-  }, [contacts?.getContacts?.count])
+  }, [contacts?.getContacts?.data])
 
   const categoryOptions = useMemo(() => {
     if (categories?.getContactCategories?.data?.length > 0) {
@@ -383,7 +407,7 @@ function Contact({ id }) {
     }
 
     return []
-  }, [categories?.getContactCategories])
+  }, [categories?.getContactCategories?.data])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>

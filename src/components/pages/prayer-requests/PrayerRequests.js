@@ -1,4 +1,5 @@
 import { useQuery } from '@apollo/client'
+import { useRouter } from 'next/router'
 import Tabs from '@app/components/tabs'
 import {
   GET_NEW_PRAYER_REQUESTS,
@@ -9,10 +10,12 @@ import {
 import PrayerRequestsTable from './components/PrayerRequestsTable'
 
 function PrayerRequests() {
+  const router = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountId = user?.accounts?.data[0]?._id
   const companyId = user?.accounts?.data[0]?.company?._id
-  const complexId = user?.accounts?.data[0]?.complex?._id
+  const complexId = router?.query?.complexId
+  const initialCategory = router?.query?.category
   const { data, refetch } = useQuery(GET_PRAYER_REQUESTS, {
     variables: {
       complexId: complexId
@@ -23,7 +26,7 @@ function PrayerRequests() {
   const handleRefetch = () => {
     refetch({
       variables: {
-        complexId: complexId
+        complexId
       }
     })
   }
@@ -60,7 +63,8 @@ function PrayerRequests() {
               user={{
                 accountId,
                 companyId,
-                complexId
+                complexId,
+                initialCategory
               }}
               refetchCounts={handleRefetch}
             />

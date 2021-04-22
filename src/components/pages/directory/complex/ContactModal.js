@@ -25,29 +25,39 @@ function ContactModal({
   const { control, errors, setValue } = form
   const [logo, setLogo] = useState([])
   const [canReplace, setCanReplace] = useState(false)
-  console.log({ imageURLs })
+  const [isDirty, setIsDirty] = useState(false)
+
   useEffect(() => {
-    if (selected) {
+    if (!isDirty && selected) {
       setValue('category', {
         label: selected?.category?.name,
         value: selected?.category?._id
       })
-      setValue('address', selected?.address)
-      if (!canReplace) {
-        setCanReplace(true)
+    }
+    setValue('address', selected?.address)
+    if (!canReplace && selected) {
+      setCanReplace(true)
+      if (selected?.logo) {
         setLogo([selected?.logo])
       }
     }
     if (canReplace || !selected) {
       setLogo(imageURLs)
     }
-  }, [selected, imageURLs?.length])
+  }, [selected, imageURLs?.length, categoryOptions])
 
   const handleClose = () => {
     setCanReplace(false)
+    setIsDirty(false)
     setLogo([])
-    setValue('address', null)
     onCancel()
+  }
+
+  const handleRemoveImage = e => {
+    if (logo?.length > 0) {
+      setLogo([])
+    }
+    onRemoveImage(e)
   }
 
   return (
@@ -72,15 +82,11 @@ function ContactModal({
 
           <div>
             <UploaderImage
+              name="images"
               images={logo}
               loading={uploading}
               onUploadImage={onUploadImage}
-              onRemoveImage={e => {
-                if (logo?.length > 0) {
-                  setLogo([])
-                }
-                onRemoveImage(e)
-              }}
+              onRemoveImage={handleRemoveImage}
               maxImages={1}
               circle
             />
@@ -97,8 +103,18 @@ function ContactModal({
                 name={name}
                 options={categoryOptions}
                 placeholder="Choose a contact category"
-                onChange={onChange}
-                value={value}
+                onChange={option => {
+                  setIsDirty(true)
+                  onChange(option)
+                }}
+                value={
+                  selected && !isDirty
+                    ? {
+                        label: selected?.category?.name,
+                        value: selected?.category?._id
+                      }
+                    : value
+                }
                 error={errors?.category?.value?.message}
               />
             )}

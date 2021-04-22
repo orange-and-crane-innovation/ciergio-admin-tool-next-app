@@ -260,7 +260,7 @@ function Contact({ id }) {
           }
         ) || []
     }
-  }, [contacts?.getContactCategories?.data[0]?.contacts?.count])
+  }, [contacts?.getContactCategories?.data[0]?.contacts?.data])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
