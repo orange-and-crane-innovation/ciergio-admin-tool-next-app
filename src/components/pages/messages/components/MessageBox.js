@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
 import useWindowDimensions from '@app/utils/useWindowDimensions'
