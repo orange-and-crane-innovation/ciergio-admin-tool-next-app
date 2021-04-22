@@ -81,11 +81,12 @@ const validationSchema = yup.object().shape({
   note: yup.string().required()
 })
 
-function Upcoming({ buildingId, categoryId, status, name }) {
+export default function Upcoming({ buildingId, categoryId, status, name }) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
   const [tableData, setTableData] = useState()
+  const [customTable, setCustomTable] = useState()
   const [search, setSearch] = useState(null)
   const [searchText, setSearchText] = useState(null)
   const [showModal, setShowModal] = useState(false)
@@ -185,7 +186,6 @@ function Upcoming({ buildingId, categoryId, status, name }) {
 
   useEffect(() => {
     if (!loading && !error && data) {
-      const tableData = []
       const tableToday = []
       const tableTomorrow = []
       const talbeDates = []
@@ -219,185 +219,184 @@ function Upcoming({ buildingId, categoryId, status, name }) {
         const momentDate = DATE.toFriendlyDate(moment(dateUTC).format())
 
         if (dates.today === momentDate) {
-          tableToday.push({
-            unitNumberAndOwner: (
-              <TableColStyle
-                key={index}
-                top={`${registry.forWhat.name}`}
-                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
-              />
-            ),
-            personCompany: (
-              <TableColStyle
-                key={index}
-                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
-                bottom={registry.visitor.company}
-              />
-            ),
-            checkedIn: (
-              <TableColStyle
-                key={index}
-                top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
-                bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
-              />
-            ),
-            checkedOut: (
-              <Button
-                label="Checked In"
-                onClick={e => updateMyRecord(e, registry._id)}
-              />
-            ),
-            addNote: (
-              <Button
-                link
-                label="Add Note"
-                onClick={e => handleViewMoreModal('addnote', registry._id)}
-              />
-            ),
-            options: (
-              <div className="h-full w-full flex justify-center items-center">
-                <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-              </div>
-            )
-          })
-        } else if (dates.tomorrow === momentDate) {
-          tableTomorrow.push({
-            unitNumberAndOwner: (
-              <TableColStyle
-                key={index}
-                top={`${registry.forWhat.name}`}
-                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
-              />
-            ),
-            personCompany: (
-              <TableColStyle
-                key={index}
-                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
-                bottom={registry.visitor.company}
-              />
-            ),
-            checkedIn: (
-              <TableColStyle
-                key={index}
-                top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
-                bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
-              />
-            ),
-            checkedOut: (
-              <Button
-                label="Checked In"
-                onClick={e => updateMyRecord(e, registry._id)}
-              />
-            ),
-            addNote: (
-              <Button
-                link
-                label="Add Note"
-                onClick={e => handleViewMoreModal('addnote', registry._id)}
-              />
-            ),
-            options: (
-              <div className="h-full w-full flex justify-center items-center">
-                <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-              </div>
-            )
-          })
-        } else {
-          talbeDates.push(
-            {
-              date: (
-                <div className="text-gray-900 font-bold">
-                  {DATE.toFriendlyDate(dateUTC)}
-                </div>
-              ),
-              blank: '',
-              blank1: '',
-              blank2: '',
-              blank3: '',
-              blank4: ''
-              // temporary
-            },
-            {
-              unitNumberAndOwner: (
+          tableToday.push(
+            <tr>
+              <td>
                 <TableColStyle
                   key={index}
                   top={`${registry.forWhat.name}`}
                   bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
                 />
-              ),
-              personCompany: (
+              </td>
+              <td>
                 <TableColStyle
                   key={index}
                   top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
                   bottom={registry.visitor.company}
                 />
-              ),
-              checkedIn: (
+              </td>
+              <td>
                 <TableColStyle
                   key={index}
                   top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
                   bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
                 />
-              ),
-              checkedOut: (
+              </td>
+              <td>
                 <Button
                   label="Checked In"
                   onClick={e => updateMyRecord(e, registry._id)}
                 />
-              ),
-              addNote: (
+              </td>
+              <td>
                 <Button
                   link
                   label="Add Note"
                   onClick={e => handleViewMoreModal('addnote', registry._id)}
                 />
-              ),
-              options: (
+              </td>
+              <td>
                 <div className="h-full w-full flex justify-center items-center">
                   <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                 </div>
-              )
-            }
+              </td>
+            </tr>
+          )
+        } else if (dates.tomorrow === momentDate) {
+          tableTomorrow.push(
+            <tr>
+              <td>
+                <TableColStyle
+                  key={index}
+                  top={`${registry.forWhat.name}`}
+                  bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+                />
+              </td>
+              <td>
+                <TableColStyle
+                  key={index}
+                  top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+                  bottom={registry.visitor.company}
+                />
+              </td>
+              <td>
+                <TableColStyle
+                  key={index}
+                  top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
+                  bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
+                />
+              </td>
+              <td>
+                <Button
+                  label="Checked In"
+                  onClick={e => updateMyRecord(e, registry._id)}
+                />
+              </td>
+              <td>
+                <Button
+                  link
+                  label="Add Note"
+                  onClick={e => handleViewMoreModal('addnote', registry._id)}
+                />
+              </td>
+              <td>
+                <div className="h-full w-full flex justify-center items-center">
+                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                </div>
+              </td>
+            </tr>
+          )
+        } else {
+          talbeDates.push(
+            <>
+              <tr>
+                <td className="text-gray-900 font-bold pl-8 py-5">
+                  {DATE.toFriendlyDate(dateUTC)}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <TableColStyle
+                    key={index}
+                    top={`${registry.forWhat.name}`}
+                    bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
+                  />
+                </td>
+                <td>
+                  <TableColStyle
+                    key={index}
+                    top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+                    bottom={registry.visitor.company}
+                  />
+                </td>
+                <td>
+                  <TableColStyle
+                    key={index}
+                    top={`${DATE.toFriendlyTime(dateUTC.toUTCString())}`}
+                    bottom={`${DATE.toFriendlyDate(dateUTC.toUTCString())}`}
+                  />
+                </td>
+                <td>
+                  <Button
+                    label="Checked In"
+                    onClick={e => updateMyRecord(e, registry._id)}
+                  />
+                </td>
+                <td>
+                  <Button
+                    link
+                    label="Add Note"
+                    onClick={e => handleViewMoreModal('addnote', registry._id)}
+                  />
+                </td>
+                <td>
+                  <div className="h-full w-full flex justify-center items-center">
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  </div>
+                </td>
+              </tr>
+            </>
           )
         }
       })
       setIds(tempIds)
+
       if (tableTomorrow.length > 0) {
-        tableTomorrow.unshift({
-          date: <div className="text-gray-900 font-bold">Tomorrow</div>,
-          blank: '',
-          blank1: '',
-          blank2: '',
-          blank3: '',
-          blank4: ''
-          // temporary
-        })
+        tableTomorrow.unshift(
+          <tr>
+            <td className="text-gray-900 font-bold pl-8 py-5">Tomorrow</td>
+          </tr>
+        )
       }
 
+      console.log(tableTomorrow)
+
       if (tableToday.length > 0) {
-        tableToday.unshift({
-          date: <div className="text-gray-900 font-bold">Today</div>,
-          blank: '',
-          blank1: '',
-          blank2: '',
-          blank3: '',
-          blank4: ''
-          // temporary
-        })
+        tableToday.unshift(
+          <tr>
+            <td className="text-gray-900 font-bold pl-8 py-5">Today</td>
+          </tr>
+        )
       }
 
       // this is only temporary function, to divide the dates by tomorrow, today, yesterday or other dates
-
-      tableData.push(...tableToday, ...tableTomorrow, ...talbeDates)
+      const custom = []
+      custom.push(...tableToday, ...tableTomorrow, ...talbeDates)
 
       const table = {
         count: data?.getRegistryRecords.count || 0,
         limit: data?.getRegistryRecords.limit || 0,
         offset: data?.getRegistryRecords.offset || 0,
-        data: tableData || []
+        data: {
+          length: data?.getRegistryRecords?.data?.reduce(
+            (prev, cur) => prev + cur.count,
+            0
+          )
+        }
       }
 
       setTableData(table)
+      setCustomTable(custom)
     }
   }, [loading, error, data])
 
@@ -549,10 +548,12 @@ function Upcoming({ buildingId, categoryId, status, name }) {
           </div>
         }
         content={
-          loading && !tableData ? (
+          loading && !customTable ? (
             <PageLoader />
           ) : (
-            <Table rowNames={rowName} items={tableData} />
+            customTable && (
+              <Table custom rowNames={rowName} customBody={customTable} />
+            )
           )
         }
       />
@@ -600,5 +601,3 @@ Upcoming.propTypes = {
   status: P.oneOfType[(P.string, P.array)],
   name: P.string.isRequired
 }
-
-export default Upcoming
