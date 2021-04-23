@@ -226,6 +226,7 @@ const PostComponent = () => {
   const [temporaryMonth, setTemporaryMonth] = useState('')
   const [selectedDate, setSelectedDate] = useState()
   const [selectedMonth, setSelectedMonth] = useState()
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const companyID = user?.accounts?.data[0]?.company?._id
@@ -287,11 +288,16 @@ const PostComponent = () => {
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
-    }
+    },
+    qr: false
   }
 
-  if (isQRCodePage) {
-    fetchFilter.qr = true
+  if (systemType === 'circle') {
+    fetchFilter.qr = false
+
+    if (isQRCodePage) {
+      fetchFilter.qr = true
+    }
   }
 
   if (isDailyReadingsPage) {

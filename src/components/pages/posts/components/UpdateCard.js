@@ -10,6 +10,7 @@ const saveSvgAsPng = require('save-svg-as-png')
 
 const Component = ({ type, title, data }) => {
   const router = useRouter()
+  const isQRCodePage = router.pathname === '/qr-code'
   let typeName = ''
 
   if (type === 'unpublished') {
@@ -64,7 +65,7 @@ const Component = ({ type, title, data }) => {
       ) : type === 'download-qr' ? (
         <div className="qrCode flex flex-col items-center justify-center">
           <QRCode
-            value={`${window.location.origin}${router.pathname}/view/${data._id}`}
+            value={`${window.location.origin}public-qr-posts/view/${data._id}`}
           />
           <Button
             default
@@ -74,7 +75,7 @@ const Component = ({ type, title, data }) => {
             className="mt-4"
           />
         </div>
-      ) : router.pathname === '/qr-code' && type === 'trashed' ? (
+      ) : isQRCodePage && type === 'trashed' ? (
         <>
           <p>
             This will also deactivate the QR Code. Are you sure you want to move
