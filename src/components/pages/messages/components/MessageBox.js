@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
-import useWindowDimensions from '@app/utils/useWindowDimensions'
 import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
 import InfiniteScroll from 'react-infinite-scroll-component'
 
