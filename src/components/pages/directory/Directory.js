@@ -41,7 +41,7 @@ const columns = [
 ]
 
 function Directory() {
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control, reset, watch } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       category_name: ''
@@ -61,12 +61,24 @@ function Directory() {
       }
     }
   )
+
+  const handleOnError = err => {
+    const statusCode = err.networkError.statusCode
+    if (statusCode === 409) {
+      const categoryName = watch('category_name')
+      showToast('danger', `${categoryName} already exists.`)
+    } else {
+      showToast('danger', `Unexpected Error. Please try again.`)
+    }
+  }
+
   const [createCategory] = useMutation(CREATE_CATEGORY, {
     onCompleted: () => {
       handleClearModal('create')
       showToast('success', 'You have successfully created a category.')
       refetchCategories()
-    }
+    },
+    onError: handleOnError
   })
   const [editCategory] = useMutation(EDIT_CATEGORY, {
     onCompleted: () => {
@@ -182,7 +194,7 @@ function Directory() {
               ]
 
               return {
-                name: c.name,
+                name: <span className="capitalize">{c.name}</span>,
                 dropdown: (
                   <Can
                     perform="directory:categories:update::delete"
