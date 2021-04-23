@@ -1,11 +1,60 @@
 .MessageInputContainer {
-  @apply flex flex-col w-full;
+  @apply flex flex-col w-full h-full;
 
   .MessageInputSubContainer {
-    @apply border rounded-md overflow-auto min-h-5xs;
-    max-height: 4rem;
+    @apply border rounded-md min-h-5xs overflow-auto;
     a {
       @apply text-info-900 hover:underline;
+    }
+
+    &.MessageInputOverflowTwo {
+      > :first-child {
+        @apply h-auto max-h-16;
+        -webkit-transition: all 0.2s ease-out;
+        transition: all 0.2s ease-out;
+      }
+    }
+
+    &.MessageInputOverflowThree {
+      > :first-child {
+        @apply h-auto max-h-24;
+        -webkit-transition: all 0.2s ease-out;
+        transition: all 0.2s ease-out;
+      }
+    }
+
+    &.MessageInputOverflowFour {
+      > :first-child {
+        @apply h-auto max-h-32;
+        -webkit-transition: all 0.2s ease-out;
+        transition: all 0.2s ease-out;
+      }
+    }
+
+    &.MessageInputOverflowFive {
+      > :first-child {
+        @apply h-auto max-h-40;
+        -webkit-transition: all 0.2s ease-out;
+        transition: all 0.2s ease-out;
+      }
+    }
+
+    &.MessageInputOverflowSix {
+      > :first-child {
+        @apply h-auto max-h-48;
+        -webkit-transition: all 0.2s ease-out;
+        transition: all 0.2s ease-out;
+      }
+    }
+
+    > :first-child {
+      @apply h-auto max-h-8;
+      -webkit-transition: all 0.2s ease-out;
+      transition: all 0.2s ease-out;
+
+      > :first-child {
+        @apply pb-0 -mt-2;
+      }
     }
   }
 

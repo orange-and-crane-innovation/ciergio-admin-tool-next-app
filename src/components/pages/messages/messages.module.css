@@ -1,9 +1,10 @@
 .messagesContainer {
-  @apply grid grid-cols-3 gap-0 -m-4 text-lg;
-  font-size: 14px;
+  @apply grid grid-cols-3 gap-0 -m-4 text-base overflow-auto;
+  height: calc(100vh - 57.9px);
 
   .messagesListContainer {
     @apply col-span-1 border-r border-b border-neutral-300 bg-white shadow-md;
+    height: calc(100vh - 57.9px);
   }
 
   .messagesListHeader {
@@ -21,6 +22,7 @@
 
   .messagesListItems {
     @apply overflow-y-scroll;
+    height: calc(100vh - 180px);
   }
 
   .messagePreviewItem {
@@ -39,8 +41,9 @@
   }
 
   .messagesBoxContainer {
-    @apply col-span-2 border-b border-neutral-300 flex flex-col;
+    @apply relative col-span-2 border-b border-neutral-300 flex flex-col justify-between;
     @apply bg-neutral-200;
+    @apply overflow-auto;
   }
 
   .messageBoxHeader {
@@ -50,8 +53,8 @@
   }
 
   .messageBoxList {
-    height: calc(100vh - 200px);
     @apply overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5 flex flex-col;
+    /* min-height: calc(100vh - 190px); */
   }
 
   .messageAttachmentsContainer {
@@ -72,7 +75,7 @@
 
   .messageBoxInput {
     min-height: 80px;
-    @apply bg-white border border-neutral-300 box-border p-0;
+    @apply bg-white border border-neutral-300 box-border p-0 max-h-64;
     @apply relative grid grid-cols-12;
   }
 
@@ -90,6 +93,14 @@
     @apply absolute left-0 right-0 m-auto p-4 flex items-center justify-center bg-neutral-400 font-bold rounded-md cursor-pointer;
     bottom: calc(100% + 10px);
     width: 230px;
+  }
+
+  .viewerBadge {
+    @apply ml-1 px-1.5;
+    @apply bg-white;
+    @apply text-black text-sm font-semibold;
+    @apply rounded-full;
+    @apply cursor-default;
   }
 }
 
