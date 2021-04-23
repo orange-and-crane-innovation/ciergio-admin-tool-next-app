@@ -70,7 +70,8 @@ function ContactModal({
       onOk={onOk}
       cancelText="Close"
       okButtonProps={{
-        loading
+        loading,
+        disabled: uploading || loading
       }}
     >
       <div className="w-full p-4">
