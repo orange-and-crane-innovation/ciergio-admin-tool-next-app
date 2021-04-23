@@ -50,14 +50,14 @@ const FormTextArea = ({
 
     setEditorState(e)
 
-    if (!isContainOnlySpaces && !!(!isEditorEmpty && lengthOfTrimmedContent)) {
+    if (!isContainOnlySpaces) {
       if (stripHtmls) {
         onChange(currentPlainText)
       } else {
         onChange(draftToHtml(convertToRaw(content)))
       }
     } else {
-      onChange(null)
+      onChange('')
     }
   }
 

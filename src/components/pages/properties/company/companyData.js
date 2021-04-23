@@ -187,6 +187,7 @@ const CompanyDataComponent = () => {
   const [modalType, setModalType] = useState('create')
   const [modalTitle, setModalTitle] = useState('')
   const [modalData, setModalData] = useState()
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
   const goToComplexData = id => {
     router.push(`/properties/complex/${id}/overview`)
@@ -631,7 +632,12 @@ const CompanyDataComponent = () => {
           <Tabs.TabLabel id="overview">Overview</Tabs.TabLabel>
           <Tabs.TabLabel id="about">About</Tabs.TabLabel>
           <Tabs.TabLabel id="history">History</Tabs.TabLabel>
-          <Tabs.TabLabel id="settings">Settings</Tabs.TabLabel>
+          <Tabs.TabLabel
+            id="settings"
+            isHidden={systemType === 'pray' || systemType === 'circle'}
+          >
+            Settings
+          </Tabs.TabLabel>
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="overview">

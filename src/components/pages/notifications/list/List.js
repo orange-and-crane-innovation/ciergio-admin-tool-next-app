@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { useMutation } from '@apollo/client'
+import { useResettableMutation } from 'apollo-hooks-extended'
 import { debounce } from 'lodash'
 
 import Tabs from '@app/components/tabs'
@@ -63,9 +63,16 @@ function NotificationsList() {
   const [modalTitle, setModalTitle] = useState()
   const [modalFooter, setModalFooter] = useState(null)
 
-  const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
-    BULK_UPDATE_MUTATION
-  )
+  const [
+    bulkUpdate,
+    { called: calledBulk, data: dataBulk, reset: resetBulk }
+  ] = useResettableMutation(BULK_UPDATE_MUTATION)
+
+  useEffect(() => {
+    if (calledBulk && dataBulk) {
+      handleClearModal()
+    }
+  }, [calledBulk, dataBulk])
 
   const onClearBulk = () => {
     setSelectedBulk('')
@@ -141,7 +148,7 @@ function NotificationsList() {
   }
 
   const handleClearModal = () => {
-    handleShowModal()
+    setShowModal(old => !old)
   }
 
   const onSearch = debounce(e => {
@@ -215,7 +222,9 @@ function NotificationsList() {
                 query={query}
                 calledBulk={calledBulk}
                 dataBulk={dataBulk}
+                resetBulk={resetBulk}
                 selectedData={selectedData}
+                selectedBulk={selectedBulk}
                 setSelectedData={setSelectedData}
                 setIsBulkButtonDisabled={setIsBulkButtonDisabled}
                 setIsBulkDisabled={setIsBulkDisabled}
@@ -235,7 +244,7 @@ function NotificationsList() {
         footer={modalFooter}
         okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
         onOk={() => (modalType === 'bulk' ? onBulkSubmit() : null)}
-        onCancel={() => setShowModal(old => !old)}
+        onCancel={handleClearModal}
       >
         <div className="w-full">{modalContent}</div>
       </Modal>

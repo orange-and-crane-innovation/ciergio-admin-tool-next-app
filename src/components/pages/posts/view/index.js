@@ -91,7 +91,7 @@ const GET_POST_DAILY_READINGS_QUERY = gql`
   }
 `
 
-export const GET_PUBLIC_POST_QUERY = gql`
+export const GET_POST_FROM_EMAIL_QUERY = gql`
   query getPostFromEmail($postID: String, $accountID: String) {
     getPostFromEmail(where: { _id: $postID, requesterAccountId: $accountID }) {
       content
@@ -117,16 +117,50 @@ export const GET_PUBLIC_POST_QUERY = gql`
   }
 `
 
+export const GET_PUBLIC_POST_QUERY = gql`
+  query getPublicPost($where: PublicPostInput) {
+    getPublicPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        content
+        title
+        createdAt
+        primaryMedia {
+          url
+        }
+        embeddedMediaFiles {
+          url
+          platform
+        }
+        category {
+          name
+        }
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+      }
+    }
+  }
+`
+
 const Component = () => {
   const { query, pathname } = useRouter()
   const [post, setPost] = useState()
   const isDailyReadingsPage = pathname === '/daily-readings/view/[id]'
   const isPublicPostsPage = pathname === '/public-posts/view/[id]/[aid]'
+  const isPublicQrPostsPage = pathname === '/public-qr-posts/view/[id]'
 
   const [fetchPost, { loading, data, error }] = useLazyQuery(
     isDailyReadingsPage
       ? GET_POST_DAILY_READINGS_QUERY
       : isPublicPostsPage
+      ? GET_POST_FROM_EMAIL_QUERY
+      : isPublicQrPostsPage
       ? GET_PUBLIC_POST_QUERY
       : GET_POST_QUERY
   )
@@ -134,26 +168,31 @@ const Component = () => {
   useEffect(() => {
     let fetchData
 
-    if (isPublicPostsPage) {
-      fetchData = {
-        postID: query.id,
-        accountID: query.aid
-      }
-    } else {
-      fetchData = {
-        where: {
-          _id: query.id
+    if (query?.id) {
+      if (isPublicPostsPage) {
+        fetchData = {
+          postID: query.id,
+          accountID: query.aid
+        }
+      } else {
+        fetchData = {
+          where: {
+            _id: query.id
+          }
         }
       }
+      fetchPost({ variables: fetchData })
     }
-    fetchPost({ variables: fetchData })
   }, [query.id, query.aid])
 
   useEffect(() => {
     if (error) {
       showToast('danger', `Sorry, there's an error occured on fetching.`)
     } else if (!loading && data) {
-      const itemData = data?.getAllPost?.post[0] || data?.getPostFromEmail
+      const itemData =
+        data?.getAllPost?.post[0] ||
+        data?.getPostFromEmail ||
+        data?.getPublicPost?.post[0]
 
       if (itemData) {
         setPost({

@@ -4,8 +4,8 @@ import Page from '@app/permissions/page'
 function PostViewComponent() {
   return (
     <Page
-      route="/attractions-events"
-      nestedRoute="/attractions-events/view"
+      route="/qr-code"
+      nestedRoute="/qr-code/posts"
       page={<PostViewPage />}
     />
   )

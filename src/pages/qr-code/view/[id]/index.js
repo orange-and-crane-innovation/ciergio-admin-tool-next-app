@@ -5,7 +5,7 @@ function PostViewComponent() {
   return (
     <Page
       route="/qr-code"
-      nestedRoute="/qr-code/posts"
+      nestedRoute="/qr-code/view"
       page={<PostViewPage />}
     />
   )

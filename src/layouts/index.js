@@ -30,7 +30,8 @@ const Layouts = ({ children }) => {
       '/terms-and-conditions',
       '/privacy-policy',
       '/unsubscribe/[id]',
-      '/public-posts/view/[id]/[aid]'
+      '/public-posts/view/[id]/[aid]',
+      '/public-qr-posts/view/[id]'
     ].includes(pathname)
   ) {
     return <Public>{children}</Public>

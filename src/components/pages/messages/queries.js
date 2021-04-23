@@ -138,6 +138,7 @@ export const getMessages = gql`
               _id
               firstName
               lastName
+              avatar
             }
           }
         }
