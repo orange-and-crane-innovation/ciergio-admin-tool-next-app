@@ -127,35 +127,52 @@ function AllStaff() {
       }
     })
   }
+  const handleOnError = err => {
+    const statusCode = err.networkError.statusCode
+    if (statusCode === 409) {
+      const email = watchInvite('email')
+      showToast(
+        'danger',
+        `${email} has already been registered in the same role`
+      )
+    } else {
+      showToast('danger', `Unexpected Error. Please try again.`)
+    }
+  }
 
   const [addBuildingAdmin, { loading: addingBuildingAdmin }] = useMutation(
     ADD_BUILDING_ADMIN,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addCompanyAdmin, { loading: addingCompanyAdmin }] = useMutation(
     ADD_COMPANY_ADMIN,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addComplexAdmin, { loading: addingComplexAdmin }] = useMutation(
     ADD_COMPLEX_ADMIN,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addReceptionist, { loading: addingReceptionist }] = useMutation(
     ADD_RECEPTIONIST,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addUnitOwner, { loading: addingUnitOwner }] = useMutation(
     ADD_UNIT_OWNER,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
 
