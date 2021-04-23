@@ -48,6 +48,8 @@ const Component = ({
   const [selectedRepeatEndOption, setSelectedRepeatEndOption] = useState('on')
   const [instance, setInstance] = useState(1)
 
+  const [errorTime, setErrorTime] = useState()
+
   useEffect(() => {
     if (valuePublishType && valueDateTime) {
       setSelectedPublishType(valuePublishType)
@@ -151,6 +153,7 @@ const Component = ({
 
   const handleDateChange = e => {
     setSelectedDate(e)
+    setErrorTime(null)
   }
 
   const onSelectRepeat = e => {
@@ -195,7 +198,9 @@ const Component = ({
     const toTime = dayjs(selectedDate)
     const diffTime = toTime.diff(fromTime, 'minute', true)
 
+    setErrorTime(null)
     if (selectedPublishType === 'later' && diffTime < 5) {
+      setErrorTime('Requires at least 5 minutes')
       showToast('danger', 'Time must be 5 minutes advance on the current date')
     } else if (
       isRepeat &&
@@ -302,6 +307,7 @@ const Component = ({
           publishType={selectedPublishType}
           date={selectedDate}
           onDateChange={handleDateChange}
+          errorTime={errorTime}
         />
 
         <div className="p-4 border-t flex items-center justify-start">
