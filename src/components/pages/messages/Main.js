@@ -638,6 +638,7 @@ export default function Main() {
         onSelectUser={handleAccountClick}
         loadingUsers={loadingAccounts}
         users={accounts?.getAccounts?.data || []}
+        accountId={accountId}
         onSearchChange={handleSearchAccounts}
         searchText={search}
       />
