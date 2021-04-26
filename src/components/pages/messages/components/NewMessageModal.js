@@ -1,13 +1,17 @@
 import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
+import { FiSearch } from 'react-icons/fi'
+
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Spinner from '@app/components/spinner'
+
 import useDebounce from '@app/utils/useDebounce'
-import { FiSearch } from 'react-icons/fi'
-import styles from '../messages.module.css'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 import { ACCOUNT_TYPES } from '@app/constants'
+
+import styles from '../messages.module.css'
 
 export default function NewMessageModal({
   visible,
@@ -158,7 +162,7 @@ const User = ({ data, handleClick }) => {
       </div>
       <div>
         <p className="text-neutral-600 capitalize">
-          {data?.accountType?.replace('_', ' ')}
+          {getAccountTypeName(data?.accountType)}
         </p>
       </div>
     </div>
