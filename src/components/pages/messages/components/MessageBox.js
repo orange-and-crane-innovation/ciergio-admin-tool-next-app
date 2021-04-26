@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
+import { draftjsToMd } from 'draftjs-md-converter'
+import ReactHtmlParser from 'react-html-parser'
 import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
 import InfiniteScroll from 'react-infinite-scroll-component'
 
@@ -100,15 +102,22 @@ export default function MessageBox({
   // }
 
   const handleEditorChange = messageData => {
-    const rawMessage = convertToRaw(messageData.getCurrentContent())
+    const message = messageData.getCurrentContent()
+    const rawMessage = convertToRaw(message)
     const clearText = rawMessage?.blocks[0]?.text
+    const cleanData = draftjsToMd(rawMessage)
+      .replace(/(&nbsp;)+/g, '')
+      .replace(/\ \ +/g, ' ')
+      .replace(/\\s+/g, ' ')
+      .trim()
+
     if (clearText) {
       setDisabledSendBtn(false)
     } else {
       setDisabledSendBtn(true)
     }
     setEditorState(messageData)
-    setMessage(clearText)
+    setMessage(cleanData)
   }
 
   const handlePressEnter = e => {
@@ -208,7 +217,13 @@ export default function MessageBox({
                           : 'bg-white float-right '
                       }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
                     >
-                      <p className="font-sm break-all">{item.message}</p>
+                      <p className="font-sm break-all">
+                        {ReactHtmlParser(
+                          item.message
+                            .replace(/\n/gi, '\n <br />')
+                            .replace(/\t/gi, '\n &emsp;')
+                        )}
+                      </p>
                       <div className="flex items-center justify-end w-full text-right">
                         <p
                           className={`${styles.messageDateStamp} ${
@@ -280,7 +295,13 @@ export default function MessageBox({
                                 }`}
                                 effect="solid"
                               >
-                                <span className={styles.viewerBadge}>
+                                <span
+                                  className={`${styles.viewerBadge} ${
+                                    isCurrentUserMessage
+                                      ? styles.viewerBadgeRight
+                                      : styles.viewerBadgeLeft
+                                  }`}
+                                >
                                   +{moreViewers}
                                 </span>
                               </Tooltip>
