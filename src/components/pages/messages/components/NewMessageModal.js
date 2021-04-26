@@ -7,6 +7,8 @@ import useDebounce from '@app/utils/useDebounce'
 import { FiSearch } from 'react-icons/fi'
 import styles from '../messages.module.css'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+
 export default function NewMessageModal({
   visible,
   onCancel,
@@ -26,8 +28,9 @@ export default function NewMessageModal({
     if (users?.length > 0) {
       return users.map(user => {
         if (
-          user?.accountType === 'member' ||
-          user?.accountType === 'resident'
+          user?.accountType === ACCOUNT_TYPES.MEM.value ||
+          user?.accountType === ACCOUNT_TYPES.UNIT.value ||
+          user?.accountType === ACCOUNT_TYPES.RES.value
         ) {
           return user
         }
@@ -40,9 +43,11 @@ export default function NewMessageModal({
     if (users?.length > 0) {
       return users.map(user => {
         if (
-          user?.accountType === 'administrator' ||
-          user?.accountType === 'company_admin' ||
-          user?.accountType === 'complex_admin'
+          user?.accountType === ACCOUNT_TYPES.SUP.value ||
+          user?.accountType === ACCOUNT_TYPES.COMPYAD.value ||
+          user?.accountType === ACCOUNT_TYPES.COMPXAD.value ||
+          user?.accountType === ACCOUNT_TYPES.BUIGAD.value ||
+          user?.accountType === ACCOUNT_TYPES.RECEP.value
         ) {
           return user
         }
@@ -124,6 +129,7 @@ export default function NewMessageModal({
 }
 
 const User = ({ data, handleClick }) => {
+  const accountId = data?._id
   const user = data?.user
   const firstName = user?.firstName
   const lastName = user?.lastName
@@ -132,7 +138,7 @@ const User = ({ data, handleClick }) => {
   return (
     <div
       className={styles.newMessageUserItem}
-      onClick={() => handleClick(user?._id)}
+      onClick={() => handleClick(accountId)}
       role="button"
       tabIndex={0}
       onKeyDown={() => {}}
