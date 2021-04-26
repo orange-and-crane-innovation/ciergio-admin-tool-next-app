@@ -47,7 +47,6 @@ const convoOptions = [
 
 export default function Main() {
   const endMessage = useRef()
-  const { height } = useWindowDimensions()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id
@@ -126,6 +125,9 @@ export default function Main() {
       })
       refetchMessages()
       setHasFetched(true)
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
   const [seenNewMessage, { data: dataSeenMessage }] = useMutation(seenMessage)
@@ -255,7 +257,7 @@ export default function Main() {
   useEffect(() => {
     if (createdConvo && calledCreateConvo) {
       const recipient = accounts?.getAccounts?.data?.find(
-        account => account.user._id === selectedAccountId
+        account => account._id === selectedAccountId
       )
 
       setConversations(old => ({
@@ -348,7 +350,7 @@ export default function Main() {
     setSelectedAccountId(userid)
     if (conversations?.data?.length > 0) {
       const index = conversations?.data.findIndex(
-        convo => convo.participants.data[1].user._id === userid
+        convo => convo.participants.data._id === userid
       )
       const isExist = index !== -1
       if (isExist) {
@@ -505,6 +507,30 @@ export default function Main() {
     setConversations({})
     setOffsetConvo(0)
     setConvoType(e.target.value)
+  }
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
   }
 
   return (
