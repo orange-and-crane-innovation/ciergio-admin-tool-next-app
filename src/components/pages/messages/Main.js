@@ -349,9 +349,9 @@ export default function Main() {
   const handleAccountClick = userid => {
     setSelectedAccountId(userid)
     if (conversations?.data?.length > 0) {
-      const index = conversations?.data.findIndex(
-        convo => convo.participants.data._id === userid
-      )
+      const index = conversations?.data.findIndex(convo => {
+        return convo.participants.data[1]._id === userid
+      })
       const isExist = index !== -1
       if (isExist) {
         handleMessagePreviewClick(conversations?.data[index])
