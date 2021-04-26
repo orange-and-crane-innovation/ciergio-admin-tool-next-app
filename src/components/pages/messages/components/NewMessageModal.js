@@ -18,6 +18,7 @@ export default function NewMessageModal({
   onCancel,
   onSelectUser,
   users,
+  accountId,
   loadingUsers,
   onSearchChange
 }) {
@@ -32,9 +33,10 @@ export default function NewMessageModal({
     if (users?.length > 0) {
       return users.map(user => {
         if (
-          user?.accountType === ACCOUNT_TYPES.MEM.value ||
-          user?.accountType === ACCOUNT_TYPES.UNIT.value ||
-          user?.accountType === ACCOUNT_TYPES.RES.value
+          user?._id !== accountId &&
+          (user?.accountType === ACCOUNT_TYPES.MEM.value ||
+            user?.accountType === ACCOUNT_TYPES.UNIT.value ||
+            user?.accountType === ACCOUNT_TYPES.RES.value)
         ) {
           return user
         }
@@ -47,11 +49,12 @@ export default function NewMessageModal({
     if (users?.length > 0) {
       return users.map(user => {
         if (
-          user?.accountType === ACCOUNT_TYPES.SUP.value ||
-          user?.accountType === ACCOUNT_TYPES.COMPYAD.value ||
-          user?.accountType === ACCOUNT_TYPES.COMPXAD.value ||
-          user?.accountType === ACCOUNT_TYPES.BUIGAD.value ||
-          user?.accountType === ACCOUNT_TYPES.RECEP.value
+          user?._id !== accountId &&
+          (user?.accountType === ACCOUNT_TYPES.SUP.value ||
+            user?.accountType === ACCOUNT_TYPES.COMPYAD.value ||
+            user?.accountType === ACCOUNT_TYPES.COMPXAD.value ||
+            user?.accountType === ACCOUNT_TYPES.BUIGAD.value ||
+            user?.accountType === ACCOUNT_TYPES.RECEP.value)
         ) {
           return user
         }
@@ -179,6 +182,7 @@ NewMessageModal.propTypes = {
   onCancel: P.func,
   onSelectUser: P.func,
   users: P.array,
+  accountId: P.string,
   loadingUsers: P.bool,
   onSearchChange: P.func,
   searchText: P.string
