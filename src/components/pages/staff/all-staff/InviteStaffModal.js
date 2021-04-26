@@ -8,7 +8,7 @@ import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
 
 import { GET_BUILDINGS, GET_COMPLEXES } from '../queries'
-import { ROLES } from '../constants'
+import { CREATE_STAFF_ROLES } from '../constants'
 import styles from '../staff.module.css'
 
 function InviteStaffModal({
@@ -101,10 +101,11 @@ function InviteStaffModal({
               <FormSelect
                 name={name}
                 value={value}
-                options={ROLES}
+                options={CREATE_STAFF_ROLES}
                 error={
-                  errors?.staffType?.message ??
-                  errors?.staffType?.value?.message
+                  errors?.staffType?.message
+                    ? 'This field is required'
+                    : errors?.staffType?.value?.message
                 }
                 onChange={onChange}
                 placeholder="Select Staff Type"

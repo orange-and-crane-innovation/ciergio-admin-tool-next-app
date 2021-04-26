@@ -35,7 +35,22 @@ export const columns = [
   }
 ]
 
-export const roles = [
+const prayStaffRoles = [
+  {
+    label: 'Super User',
+    value: SUPER_ADMIN
+  },
+  {
+    label: 'Parish Head',
+    value: COMPANY_ADMIN
+  },
+  {
+    label: 'Parish Admin',
+    value: COMPLEX_ADMIN
+  }
+]
+
+const roles = [
   {
     label: 'Super User',
     value: SUPER_ADMIN
@@ -50,27 +65,37 @@ export const roles = [
   }
 ]
 
-export const prayStaffRoles = [
+export let STAFF_ROLES = roles
+export let CREATE_STAFF_ROLES = [
   {
-    label: 'Parish Head',
-    value: 'company_admin'
+    label: 'Company Admin',
+    value: COMPANY_ADMIN
   },
   {
-    label: 'Parish Admin',
-    value: 'complex_admin'
+    label: 'Complex Admin',
+    value: COMPLEX_ADMIN
   }
 ]
 
-export const ROLES = systemType === 'pray' ? prayStaffRoles : roles
-export const STAFF_ROLES = [
-  {
-    label: 'Super User',
-    value: 'administrator'
-  },
-  ...ROLES
-]
+if (systemType === 'pray') {
+  STAFF_ROLES = prayStaffRoles
+  CREATE_STAFF_ROLES = [
+    {
+      label: 'Parish Head',
+      value: COMPANY_ADMIN
+    },
+    {
+      label: 'Parish Admin',
+      value: COMPLEX_ADMIN
+    }
+  ]
+}
 
-export const ALL_ROLES = [SUPER_ADMIN, COMPLEX_ADMIN, COMPANY_ADMIN, MEMBER]
+export let ALL_ROLES = [SUPER_ADMIN, COMPLEX_ADMIN, COMPANY_ADMIN]
+
+if (systemType === 'pray' || systemType === 'circle') {
+  ALL_ROLES = [...ALL_ROLES, MEMBER]
+}
 
 export const parseAccountType = type => {
   const system = systemType?.toLowerCase()
@@ -86,7 +111,7 @@ export const parseAccountType = type => {
         return type
     }
   } else {
-    return type.replace('_', ' ')
+    return type?.replace('_', ' ')
   }
 }
 
