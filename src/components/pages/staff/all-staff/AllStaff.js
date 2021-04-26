@@ -241,6 +241,7 @@ function AllStaff() {
         staffFirstName: '',
         staffLastName: ''
       })
+      handleShowModal(type)
       return
     }
 
