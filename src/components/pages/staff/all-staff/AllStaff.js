@@ -370,10 +370,10 @@ function AllStaff() {
               const { user, company, accountType } = staff
               const roleType = parseAccountType(accountType)
 
-              const dropdownData = [
+              let dropdownData = [
                 {
                   label: 'View Staff',
-                  icon: <span className="ciergio-employees" />,
+                  icon: <span className="ciergio-user" />,
                   function: () => router.push(`/staff/view/${user?._id}`)
                 },
                 {
@@ -387,16 +387,22 @@ function AllStaff() {
                     })
                     handleShowModal('edit')
                   }
-                },
-                {
-                  label: 'Remove Staff',
-                  icon: <span className="ciergio-trash" />,
-                  function: () => {
-                    setSelectedStaff(staff)
-                    handleShowModal('delete')
-                  }
                 }
               ]
+
+              if (accountType !== 'member') {
+                dropdownData = [
+                  ...dropdownData,
+                  {
+                    label: 'Remove Staff',
+                    icon: <span className="ciergio-trash" />,
+                    function: () => {
+                      setSelectedStaff(staff)
+                      handleShowModal('delete')
+                    }
+                  }
+                ]
+              }
 
               return {
                 avatar: (
