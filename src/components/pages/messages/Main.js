@@ -7,7 +7,6 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
 
-import useWindowDimensions from '@app/utils/useWindowDimensions'
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
@@ -550,17 +549,19 @@ export default function Main() {
               onClick={() => {
                 fetchAccounts({
                   variables: {
-                    accountTypes: [
-                      'company_admin',
-                      'complex_admin',
-                      'building_admin',
-                      'receptionist',
-                      'unit_owner',
-                      'resident',
-                      'member'
-                    ],
-                    companyId,
-                    status: 'active'
+                    where: {
+                      accountTypes: [
+                        'company_admin',
+                        'complex_admin',
+                        'building_admin',
+                        'receptionist',
+                        'unit_owner',
+                        'resident',
+                        'member'
+                      ],
+                      companyId,
+                      status: 'active'
+                    }
                   }
                 })
                 handleNewMessageModal()
