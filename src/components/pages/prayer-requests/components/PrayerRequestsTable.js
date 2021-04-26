@@ -99,7 +99,8 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
         limit: pageLimit,
         search: debouncedSearchText,
         categoryId: category?.value || null
-      }
+      },
+      fetchPolicy: 'network-only'
     }
   )
 
