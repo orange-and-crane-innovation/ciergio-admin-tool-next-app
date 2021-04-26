@@ -264,8 +264,7 @@ const PostComponent = () => {
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
-    },
-    qr: false
+    }
   }
 
   if (systemType === 'circle') {
