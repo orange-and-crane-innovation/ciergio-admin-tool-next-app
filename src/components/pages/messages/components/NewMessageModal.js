@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
 import { FiSearch } from 'react-icons/fi'
+import { FaTimes, FaUserAlt } from 'react-icons/fa'
 
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
@@ -10,6 +11,8 @@ import useDebounce from '@app/utils/useDebounce'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 import { ACCOUNT_TYPES } from '@app/constants'
+
+import NotifCard from '@app/components/globals/NotifCard'
 
 import styles from '../messages.module.css'
 
@@ -84,11 +87,8 @@ export default function NewMessageModal({
         />
         <span className="absolute top-11 right-8">
           {searchText ? (
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={() => {}}
-              className="ciergio-close cursor-pointer"
+            <FaTimes
+              className="cursor-pointer"
               onClick={() => setSearchText('')}
             />
           ) : (
@@ -130,6 +130,15 @@ export default function NewMessageModal({
             }
             return null
           })}
+        {!loadingUsers && users?.length === 0 && (
+          <div className="h-full flex items-center justify-center">
+            <NotifCard
+              icon={<FaUserAlt />}
+              header="No result"
+              content="Sorry, no results were found."
+            />
+          </div>
+        )}
       </div>
     </Modal>
   )
