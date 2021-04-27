@@ -30,9 +30,15 @@ function PrimaryDataTable({
           rowNames={columns}
           custom={customize}
           customBody={customBody}
+          emptyText={emptyText}
         />
       ) : (
-        <Table rowNames={columns} items={data} loading={loading} />
+        <Table
+          rowNames={columns}
+          items={data}
+          loading={loading}
+          emptyText={emptyText}
+        />
       )}
 
       {!loading && data && (
