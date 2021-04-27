@@ -33,6 +33,8 @@ import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SelectStatus from '@app/components/globals/SelectStatus'
 import SearchControl from '@app/components/globals/SearchControl'
+import NotifCard from '@app/components/globals/NotifCard'
+
 import Can from '@app/permissions/can'
 import styles from './Main.module.css'
 
@@ -984,7 +986,19 @@ const PostComponent = () => {
           loading ? (
             <PageLoader />
           ) : (
-            posts && <Table rowNames={tableRowData} items={posts} />
+            posts && (
+              <Table
+                rowNames={tableRowData}
+                items={posts}
+                emptyText={
+                  <NotifCard
+                    icon={<FiFileText />}
+                    header="You haven’t created a bulletin post yet"
+                    content="Bulletin posts are a great way to share information with your members. Create one now!"
+                  />
+                }
+              />
+            )
           )
         }
       />
