@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import P from 'prop-types'
 import { FaPlusCircle, FaEye, FaEllipsisH } from 'react-icons/fa'
+import { FiFileText } from 'react-icons/fi'
 
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
@@ -12,10 +13,10 @@ import Button from '@app/components/button'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
+import NotifCard from '@app/components/globals/NotifCard'
 
 import {
   friendlyDateTimeFormat,
-  toFriendlyDate,
   toFriendlyShortDateTime
 } from '@app/utils/date'
 import showToast from '@app/utils/toast'
@@ -662,6 +663,13 @@ function Notifications({
             currentPage={activePage}
             setCurrentPage={onPageClick}
             setPageLimit={onLimitChange}
+            emptyText={
+              <NotifCard
+                icon={<FiFileText />}
+                header="You haven’t created a notification yet"
+                content="Notifications are a great way to share information with your members. Create one now!"
+              />
+            }
           />
         }
         className="rounded-t-none"
