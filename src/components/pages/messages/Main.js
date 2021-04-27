@@ -7,7 +7,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
 
-import useWindowDimensions from '@app/utils/useWindowDimensions'
+// import useWindowDimensions from '@app/utils/useWindowDimensions'
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
@@ -47,7 +47,7 @@ const convoOptions = [
 
 export default function Main() {
   const endMessage = useRef()
-  const { height } = useWindowDimensions()
+  // const { height } = useWindowDimensions()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id

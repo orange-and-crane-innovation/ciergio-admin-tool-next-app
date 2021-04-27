@@ -15,7 +15,7 @@ import { Card } from '@app/components/globals'
 
 import {
   friendlyDateTimeFormat,
-  toFriendlyDate,
+  // toFriendlyDate,
   toFriendlyShortDateTime
 } from '@app/utils/date'
 import showToast from '@app/utils/toast'
