@@ -40,10 +40,7 @@ export default function MessagePreviewItem({
     }
   }, [data?.participants])
 
-  const name = `${getAccountTypeName(accountType)} - ${user?.firstName} ${
-    user?.lastName
-  }`
-
+  const name = `${user?.firstName} ${user?.lastName}`
   const messages =
     newMessage && convoId === newMessage?.conversation?._id
       ? newMessage
@@ -78,7 +75,7 @@ export default function MessagePreviewItem({
       </div>
       <div className=" pr-24 min-w-4xs truncate">
         <p className={`${previewTextState} capitalize truncate max-w-xs`}>
-          {name}
+          {`${getAccountTypeName(accountType)} -  ${name}`}
         </p>
         <p className={`${previewTextState} truncate max-w-2xs`}>
           {newestMessage ?? 'Start writing a message'}

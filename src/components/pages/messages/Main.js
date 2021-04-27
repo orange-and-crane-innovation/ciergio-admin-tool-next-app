@@ -7,7 +7,6 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
 
-import useWindowDimensions from '@app/utils/useWindowDimensions'
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
@@ -47,7 +46,6 @@ const convoOptions = [
 
 export default function Main() {
   const endMessage = useRef()
-  const { height } = useWindowDimensions()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id
@@ -65,6 +63,7 @@ export default function Main() {
   const [hasFetched, setHasFetched] = useState(false)
   const [offset, setOffset] = useState(0)
   const [offsetConvo, setOffsetConvo] = useState(0)
+  const [messageData, setMessageData] = useState()
   const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
 
@@ -80,6 +79,9 @@ export default function Main() {
           accountTypes: [
             'company_admin',
             'complex_admin',
+            'building_admin',
+            'receptionist',
+            'unit_owner',
             'resident',
             'member'
           ],
@@ -114,9 +116,17 @@ export default function Main() {
   })
   const [updateConvo] = useMutation(updateConversation)
   const [sendNewMessage] = useMutation(sendMessage, {
-    onCompleted: () => {
+    onCompleted: ({ createMessage }) => {
+      seenNewMessage({
+        variables: {
+          messageId: createMessage?._id
+        }
+      })
       refetchMessages()
       setHasFetched(true)
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
   const [seenNewMessage, { data: dataSeenMessage }] = useMutation(seenMessage)
@@ -142,7 +152,9 @@ export default function Main() {
     if (convos?.getConversations) {
       if (
         conversations?.data &&
-        conversations?.data[0]?._id !== convos?.getConversations?.data[0]?._id
+        conversations?.data[0]?._id !==
+          convos?.getConversations?.data[0]?._id &&
+        !hasFetched
       ) {
         setConversations(prev => ({
           ...prev,
@@ -178,7 +190,7 @@ export default function Main() {
   }, [messages])
 
   useEffect(() => {
-    if (newMsg) {
+    if (newMsg && selectedConvo) {
       if (newMsg?.conversation?._id === selectedConvo._id) {
         setConvoMessages(prev => ({
           ...prev,
@@ -244,7 +256,7 @@ export default function Main() {
   useEffect(() => {
     if (createdConvo && calledCreateConvo) {
       const recipient = accounts?.getAccounts?.data?.find(
-        account => account.user._id === selectedAccountId
+        account => account._id === selectedAccountId
       )
 
       setConversations(old => ({
@@ -255,21 +267,20 @@ export default function Main() {
             _id: createdConvo?.createConversation?._id,
             unit: null,
             author: {
-              accountType: recipient?.accountType,
-              user: { ...recipient?.user }
+              accountType: profile?.accountType,
+              user: { ...profile?.accounts?.data[0].user }
             },
             participants: {
               data: [
                 {
-                  user: { ...profile?.user }
+                  accountType: profile?.accountType,
+                  user: { ...profile?.accounts?.data[0].user }
                 },
                 {
-                  ...recipient,
-                  __typename: 'User'
+                  ...recipient
                 }
               ]
-            },
-            __typename: 'GetAccountsResult'
+            }
           },
           ...old.data
         ]
@@ -318,7 +329,10 @@ export default function Main() {
     }
   }, [loadingUnreadMessage, dataUnreadMessage])
 
-  const togglePendingMessages = checked => setShowPendingMessages(checked)
+  const togglePendingMessages = checked => {
+    setConversations({})
+    setShowPendingMessages(checked)
+  }
 
   const handleMessagePreviewClick = convo => {
     if (!hasFetched) {
@@ -334,9 +348,9 @@ export default function Main() {
   const handleAccountClick = userid => {
     setSelectedAccountId(userid)
     if (conversations?.data?.length > 0) {
-      const index = conversations?.data.findIndex(
-        convo => convo.participants.data[1].user._id === userid
-      )
+      const index = conversations?.data.findIndex(convo => {
+        return convo.participants.data[1]._id === userid
+      })
       const isExist = index !== -1
       if (isExist) {
         handleMessagePreviewClick(conversations?.data[index])
@@ -349,7 +363,7 @@ export default function Main() {
       variables: {
         data: {
           type: convoType,
-          participants: [userid]
+          participants: [accountId, userid]
         }
       }
     })
@@ -357,6 +371,20 @@ export default function Main() {
   }
 
   const handleSubmitMessage = message => {
+    setMessageData({
+      author: {
+        accountType: profile?.accountType,
+        user: profile?.accounts?.data[0]?.user
+      },
+      conversation: {
+        _id: selectedConvo?._id
+      },
+      message,
+      status: 'seen',
+      viewers: {
+        data: [{ user: profile?.accounts?.data[0]?.user }]
+      }
+    })
     sendNewMessage({
       variables: {
         convoId: selectedConvo?._id,
@@ -480,11 +508,32 @@ export default function Main() {
     setConvoType(e.target.value)
   }
 
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
+
   return (
-    <section
-      className={styles.messagesContainer}
-      style={{ height: `calc(${height}px - 70px)` }}
-    >
+    <div className={styles.messagesContainer}>
       <div className={styles.messagesListContainer}>
         <div className={styles.messagesListHeader}>
           {/* <h3 className="text-lg font-bold">Members</h3> */}
@@ -500,17 +549,19 @@ export default function Main() {
               onClick={() => {
                 fetchAccounts({
                   variables: {
-                    accountTypes: [
-                      'company_admin',
-                      'complex_admin',
-                      'building_admin',
-                      'security',
-                      'receptionist',
-                      'member',
-                      'utility'
-                    ],
-                    companyId,
-                    status: 'active'
+                    where: {
+                      accountTypes: [
+                        'company_admin',
+                        'complex_admin',
+                        'building_admin',
+                        'receptionist',
+                        'unit_owner',
+                        'resident',
+                        'member'
+                      ],
+                      companyId,
+                      status: 'active'
+                    }
                   }
                 })
                 handleNewMessageModal()
@@ -525,11 +576,7 @@ export default function Main() {
           <span>Show only pending &amp; active messages </span>
           <Toggle onChange={togglePendingMessages} />
         </div>
-        <div
-          className={styles.messagesListItems}
-          style={{ height: `calc(${height}px - 180px)` }}
-        >
-          {/* {loadingConvo || creatingConversation ? <Spinner /> : null} */}
+        <div className={styles.messagesListItems}>
           {conversations?.count > 0 ? (
             <div
               id="scrollableConvo"
@@ -555,7 +602,7 @@ export default function Main() {
                     isSelected={selectedConvo?._id === convo._id}
                     currentUserid={profile?._id}
                     convoId={convo._id}
-                    newMessage={newMsg}
+                    newMessage={newMsg || messageData}
                   />
                 ))}
               </InfiniteScroll>
@@ -591,9 +638,10 @@ export default function Main() {
         onSelectUser={handleAccountClick}
         loadingUsers={loadingAccounts}
         users={accounts?.getAccounts?.data || []}
+        accountId={accountId}
         onSearchChange={handleSearchAccounts}
         searchText={search}
       />
-    </section>
+    </div>
   )
 }

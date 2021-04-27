@@ -92,7 +92,7 @@ function Contact({ id }) {
   const [showContactModal, setShowContactModal] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(false)
-  const [selectedContact, setSelectedContact] = useState(undefined)
+  const [selectedContact, setSelectedContact] = useState(null)
   const [showDeleteContactModal, setShowDeleteContactModal] = useState(false)
   const [pageLimit, setPageLimit] = useState(10)
   const [offset, setPageOffset] = useState(0)
@@ -185,7 +185,7 @@ function Contact({ id }) {
   const name = complexes?.getComplexes?.data[0]?.name || ''
 
   useEffect(() => {
-    if (selectedContact !== undefined) {
+    if (selectedContact) {
       reset({
         category: selectedContact?.category?._id,
         name: selectedContact.name,
@@ -196,14 +196,14 @@ function Contact({ id }) {
   }, [reset, selectedContact])
 
   const handleContactModal = () => {
-    if (selectedContact) setSelectedContact(undefined)
+    if (selectedContact) setSelectedContact(null)
     reset({
-      logo: null,
       category: null,
       name: '',
       contactNumber: '',
       address: null
     })
+    setFileUploadedData([])
     setImageUrls([])
     setValue('images', null)
     setShowContactModal(old => !old)
@@ -214,7 +214,6 @@ function Contact({ id }) {
     const { category, name, contactNumber, address } = values
     const validated = await trigger()
     const phoneNumber = parsePhoneNumberFromString(contactNumber, 'PH')
-    console.log({ validated, errors })
     if (validated && !phoneNumber.isValid()) {
       setError('contactNumber', {
         type: 'manual',
@@ -248,10 +247,9 @@ function Contact({ id }) {
     }
 
     if (validated && phoneNumber.isValid()) {
-      if (fileUploadedData?.length > 0) {
-        setFileUploadedData([])
-      }
+      setFileUploadedData([])
       if (selectedContact) {
+        setSelectedContact(null)
         editContact({
           variables: {
             data: contactData,
@@ -280,15 +278,16 @@ function Contact({ id }) {
 
   const uploadApi = async payload => {
     const response = await axios.post('/', payload)
-    if (response.data) {
-      setFileUploadedData(() => {
-        return response.data.map(item => {
-          return {
-            url: item.location,
-            type: item.mimetype
-          }
-        })
+    if (response?.data) {
+      console.log('res', response.data)
+      const files = response.data.map(item => {
+        return {
+          url: item.location,
+          type: item.mimetype
+        }
       })
+      setLoading(false)
+      setFileUploadedData(files)
     }
   }
 
@@ -304,7 +303,6 @@ function Contact({ id }) {
 
         reader.onloadend = () => {
           setImageUrls(imageUrls => [...imageUrls, reader.result])
-          setLoading(false)
         }
         reader.readAsDataURL(file)
 
@@ -322,6 +320,7 @@ function Contact({ id }) {
       return image !== e.currentTarget.dataset.id
     })
     setImageUrls(images)
+    setFileUploadedData([])
     setValue('images', images.length !== 0 ? images : null)
   }
 

@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
-import useWindowDimensions from '@app/utils/useWindowDimensions'
+import { draftjsToMd } from 'draftjs-md-converter'
+import ReactHtmlParser from 'react-html-parser'
 import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
 import InfiniteScroll from 'react-infinite-scroll-component'
 
@@ -33,7 +34,7 @@ export default function MessageBox({
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
   const [message, setMessage] = useState(undefined)
   const [disabledSendBtn, setDisabledSendBtn] = useState(true)
-  const { height } = useWindowDimensions()
+  // const { height } = useWindowDimensions()
   // const [isOver, setIsOver] = useState(false)
 
   const messages = useMemo(() => {
@@ -101,15 +102,22 @@ export default function MessageBox({
   // }
 
   const handleEditorChange = messageData => {
-    const rawMessage = convertToRaw(messageData.getCurrentContent())
+    const message = messageData.getCurrentContent()
+    const rawMessage = convertToRaw(message)
     const clearText = rawMessage?.blocks[0]?.text
+    const cleanData = draftjsToMd(rawMessage)
+      .replace(/(&nbsp;)+/g, '')
+      .replace(/\ \ +/g, ' ')
+      .replace(/\\s+/g, ' ')
+      .trim()
+
     if (clearText) {
       setDisabledSendBtn(false)
     } else {
       setDisabledSendBtn(true)
     }
     setEditorState(messageData)
-    setMessage(clearText)
+    setMessage(cleanData)
   }
 
   const handlePressEnter = e => {
@@ -123,6 +131,11 @@ export default function MessageBox({
       return getDefaultKeyBinding(e)
     }
   }
+
+  const sendMessage = () => {
+    onSubmitMessage(message)
+    setEditorState(EditorState.createEmpty())
+  }
   return (
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
@@ -132,7 +145,6 @@ export default function MessageBox({
           <div />
         )}
       </div>
-
       <div className={styles.messageBoxList}>
         {loading ? <Spinner /> : null}
         {messages?.length > 0 && (
@@ -171,6 +183,7 @@ export default function MessageBox({
                 const isLastMessage = index === 0
                 const isSameAuthor =
                   messages[index + 1]?.author.user._id !== author._id
+                let moreViewers = 0
 
                 return (
                   <div
@@ -204,7 +217,13 @@ export default function MessageBox({
                           : 'bg-white float-right '
                       }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
                     >
-                      <p className="font-sm break-all">{item.message}</p>
+                      <p className="font-sm break-all">
+                        {ReactHtmlParser(
+                          item.message
+                            .replace(/\n/gi, '\n <br />')
+                            .replace(/\t/gi, '\n &emsp;')
+                        )}
+                      </p>
                       <div className="flex items-center justify-end w-full text-right">
                         <p
                           className={`${styles.messageDateStamp} ${
@@ -232,27 +251,62 @@ export default function MessageBox({
                       {isLastMessage &&
                       (item.status === 'seen' || item.viewers.count > 0) ? (
                         <div className="w-full flex items-center justify-end mt-2">
-                          {item.viewers.data.map(v => {
-                            const img =
-                              accountType === ACCOUNT_TYPES.COMPYAD.value
-                                ? IMAGES.COMPANY_AVATAR
-                                : accountType === ACCOUNT_TYPES.COMPXAD.value
-                                ? IMAGES.COMPLEX_AVATAR
-                                : IMAGES.DEFAULT_AVATAR
-                            return (
+                          {item.viewers.data.map((v, index) => {
+                            if (index >= 4) {
+                              moreViewers++
+                            } else {
+                              if (v?.user?._id !== currentUserid) {
+                                const img =
+                                  v?.user?.avatar && v?.user?.avatar !== ''
+                                    ? v?.user?.avatar
+                                    : accountType ===
+                                      ACCOUNT_TYPES.COMPYAD.value
+                                    ? IMAGES.COMPANY_AVATAR
+                                    : accountType ===
+                                      ACCOUNT_TYPES.COMPXAD.value
+                                    ? IMAGES.COMPLEX_AVATAR
+                                    : IMAGES.DEFAULT_AVATAR
+
+                                return (
+                                  <span className="capitalize">
+                                    <Tooltip
+                                      key={v?._id}
+                                      text={`${v?.user?.firstName} ${v?.user?.lastName}`}
+                                      effect="solid"
+                                    >
+                                      <img
+                                        src={v?.user?.avatar ?? img}
+                                        alt="viewer-avatar"
+                                        className={styles.viewerAvatar}
+                                      />
+                                    </Tooltip>
+                                  </span>
+                                )
+                              }
+                            }
+                            return null
+                          })}
+
+                          {moreViewers > 0 && (
+                            <span className="capitalize">
                               <Tooltip
-                                key={v?._id}
-                                text={v?.user?.firstName}
+                                text={`${moreViewers} more viewer${
+                                  moreViewers > 1 ? 's' : ''
+                                }`}
                                 effect="solid"
                               >
-                                <img
-                                  src={v?.user?.avatar ?? img}
-                                  alt="viewer-avatar"
-                                  className={styles.viewerAvatar}
-                                />
+                                <span
+                                  className={`${styles.viewerBadge} ${
+                                    isCurrentUserMessage
+                                      ? styles.viewerBadgeRight
+                                      : styles.viewerBadgeLeft
+                                  }`}
+                                >
+                                  +{moreViewers}
+                                </span>
                               </Tooltip>
-                            )
-                          })}
+                            </span>
+                          )}
                         </div>
                       ) : null}
                     </div>
@@ -299,44 +353,46 @@ export default function MessageBox({
           ))}
         </div>
       ) : null} */}
-      <div
-        className={styles.messageBoxInput}
-        style={{ height: `calc(${height - 844.38}px)` }}
-      >
-        {!loading && messages?.length > 0 && newMessage && (
-          <button className={styles.messageBoxNotif} onClick={onReadNewMessage}>
-            <span className="mr-2">New Message Received</span>
-            <BsFillCaretDownFill />
-          </button>
-        )}
+      <div className="-mt-2">
+        <div className={styles.messageBoxInput}>
+          {!loading && messages?.length > 0 && newMessage && (
+            <button
+              className={styles.messageBoxNotif}
+              onClick={onReadNewMessage}
+            >
+              <span className="mr-2">New Message Received</span>
+              <BsFillCaretDownFill />
+            </button>
+          )}
 
-        {/* NOTE: temporarily removed to align with old UI */}
-        {/* <div className="col-span-1 flex items-center justify-center">
+          {/* NOTE: temporarily removed to align with old UI */}
+          {/* <div className="col-span-1 flex items-center justify-center">
           <img
             src="https://ui-avatars.com/api/?name=John+Doe&size=32"
             alt="avatar"
             className="rounded-full"
           />
         </div> */}
-        <div className="relative col-span-12 py-2 px-4 flex items-center w-full">
-          <MessageInput
-            editorClassName="pr-16"
-            placeholder="Write a message"
-            onChange={handleEditorChange}
-            onPressEnter={handlePressEnter}
-            editorState={editorState}
-          />
-          <div
-            className={`absolute right-4 px-4 flex items-center text-lg font-bold cursor-pointer ${
-              disabledSendBtn ? 'text-neutral-400' : 'text-primary-500'
-            }`}
-          >
-            <span>Send</span>
+          <div className="relative col-span-12 py-2 px-4 flex items-center w-full">
+            <MessageInput
+              editorClassName="pr-16"
+              placeholder="Write a message"
+              onChange={handleEditorChange}
+              onPressEnter={handlePressEnter}
+              editorState={editorState}
+            />
+            <button
+              className={`absolute right-4 bottom-9 px-4 flex items-center text-lg font-bold cursor-pointer ${
+                disabledSendBtn ? 'text-neutral-400' : 'text-primary-500'
+              }`}
+              onClick={sendMessage}
+            >
+              <span>Send</span>
+            </button>
           </div>
-        </div>
 
-        {/* NOTE: temporarily removed to align with old UI */}
-        {/* <div className="col-span-1 flex items-center justify-center">
+          {/* NOTE: temporarily removed to align with old UI */}
+          {/* <div className="col-span-1 flex items-center justify-center">
            <div className={containerClass}>
             <input
               type="file"
@@ -365,6 +421,7 @@ export default function MessageBox({
             </div>
           </div> 
         </div> */}
+        </div>
       </div>
     </div>
   )

@@ -80,7 +80,9 @@ function AllStaff() {
 
   const [searchText, setSearchText] = useState('')
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const [selectedRoles, setSelectedRoles] = useState(undefined)
+  const [selectedRoles, setSelectedRoles] = useState({
+    label: ''
+  })
   const [selectedAssignment, setSelectedAssignment] = useState(undefined)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -97,8 +99,7 @@ function AllStaff() {
   } = useQuery(GET_ACCOUNTS, {
     variables: {
       where: {
-        accountTypes:
-          selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
+        accountTypes: selectedRoles?.value ?? ALL_ROLES,
         companyId: selectedAssignment?.value,
         search: debouncedSearchText
       },
@@ -127,35 +128,52 @@ function AllStaff() {
       }
     })
   }
+  const handleOnError = err => {
+    const statusCode = err.networkError.statusCode
+    if (statusCode === 409) {
+      const email = watchInvite('email')
+      showToast(
+        'danger',
+        `${email} has already been registered in the same role`
+      )
+    } else {
+      showToast('danger', `Unexpected Error. Please try again.`)
+    }
+  }
 
   const [addBuildingAdmin, { loading: addingBuildingAdmin }] = useMutation(
     ADD_BUILDING_ADMIN,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addCompanyAdmin, { loading: addingCompanyAdmin }] = useMutation(
     ADD_COMPANY_ADMIN,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addComplexAdmin, { loading: addingComplexAdmin }] = useMutation(
     ADD_COMPLEX_ADMIN,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addReceptionist, { loading: addingReceptionist }] = useMutation(
     ADD_RECEPTIONIST,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
   const [addUnitOwner, { loading: addingUnitOwner }] = useMutation(
     ADD_UNIT_OWNER,
     {
-      onCompleted: handleOnCompleted
+      onCompleted: handleOnCompleted,
+      onError: handleOnError
     }
   )
 
@@ -201,7 +219,7 @@ function AllStaff() {
       })
     }
   })
-
+  console.log({ selectedRoles })
   const handleShowModal = type => {
     switch (type) {
       case 'create':
@@ -224,6 +242,7 @@ function AllStaff() {
         staffFirstName: '',
         staffLastName: ''
       })
+      handleShowModal(type)
       return
     }
 
@@ -353,10 +372,10 @@ function AllStaff() {
               const { user, company, accountType } = staff
               const roleType = parseAccountType(accountType)
 
-              const dropdownData = [
+              let dropdownData = [
                 {
                   label: 'View Staff',
-                  icon: <span className="ciergio-employees" />,
+                  icon: <span className="ciergio-user" />,
                   function: () => router.push(`/staff/view/${user?._id}`)
                 },
                 {
@@ -370,16 +389,22 @@ function AllStaff() {
                     })
                     handleShowModal('edit')
                   }
-                },
-                {
-                  label: 'Remove Staff',
-                  icon: <span className="ciergio-trash" />,
-                  function: () => {
-                    setSelectedStaff(staff)
-                    handleShowModal('delete')
-                  }
                 }
               ]
+
+              if (accountType !== 'member') {
+                dropdownData = [
+                  ...dropdownData,
+                  {
+                    label: 'Remove Staff',
+                    icon: <span className="ciergio-trash" />,
+                    function: () => {
+                      setSelectedStaff(staff)
+                      handleShowModal('delete')
+                    }
+                  }
+                ]
+              }
 
               return {
                 avatar: (

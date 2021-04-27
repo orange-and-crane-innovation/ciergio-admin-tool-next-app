@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import P from 'prop-types'
 import dynamic from 'next/dynamic'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
@@ -17,9 +18,28 @@ const MessageInput = ({
   onPressEnter,
   editorState
 }) => {
+  const inputHeight = useRef()
+  const textHeight =
+    inputHeight?.current?.children[0]?.children[0]?.clientHeight
+
   return (
     <div className={styles.MessageInputContainer}>
-      <div className={styles.MessageInputSubContainer}>
+      <div
+        ref={inputHeight}
+        className={`${styles.MessageInputSubContainer} ${
+          textHeight > 160
+            ? styles.MessageInputOverflowSix
+            : textHeight > 139
+            ? styles.MessageInputOverflowFive
+            : textHeight > 118
+            ? styles.MessageInputOverflowFour
+            : textHeight > 77
+            ? styles.MessageInputOverflowThree
+            : textHeight > 56
+            ? styles.MessageInputOverflowTwo
+            : ''
+        }`}
+      >
         <Editor
           toolbarHidden
           spellCheck

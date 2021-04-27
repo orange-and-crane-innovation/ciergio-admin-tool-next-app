@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import P from 'prop-types'
 import { FaPlusCircle, FaEye, FaEllipsisH } from 'react-icons/fa'
+import { FiFileText } from 'react-icons/fi'
 
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
@@ -12,10 +13,10 @@ import Button from '@app/components/button'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
+import NotifCard from '@app/components/globals/NotifCard'
 
 import {
   friendlyDateTimeFormat,
-  toFriendlyDate,
   toFriendlyShortDateTime
 } from '@app/utils/date'
 import showToast from '@app/utils/toast'
@@ -65,7 +66,9 @@ function Notifications({
   query,
   dataBulk,
   calledBulk,
+  resetBulk,
   selectedData,
+  selectedBulk,
   setSelectedData,
   setIsBulkButtonDisabled,
   setIsBulkDisabled,
@@ -180,6 +183,7 @@ function Notifications({
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
+        let message
 
         if (allCheck?.checked) {
           allCheck.click()
@@ -193,17 +197,37 @@ function Notifications({
 
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk('')
+        setSelectedBulk(null)
 
-        showToast('success', `You have successfully updated a post`)
+        switch (selectedBulk) {
+          case 'unpublished':
+            message = `You have successfully unpublished (${selectedData?.length}) items.`
+            break
+          case 'trashed':
+            message = `You have successfully sent (${selectedData?.length}) items to the trash.`
+            break
+          case 'deleted':
+            message = `You have successfully deleted (${selectedData?.length}) items.`
+            break
+          case 'draft':
+            message = `You have successfully restored (${selectedData?.length}) items.`
+            break
+          default:
+            message = `You have successfully updated a post.`
+            break
+        }
+
+        showToast('success', message)
         refetchNotifications()
       } else {
         showToast('danger', `Bulk update failed`)
       }
+      resetBulk()
     }
   }, [
     calledBulk,
     dataBulk,
+    resetBulk,
     refetchNotifications,
     setIsBulkButtonDisabled,
     setIsBulkDisabled,
@@ -465,10 +489,7 @@ function Notifications({
               if (p !== undefined) {
                 const parsedData = JSON.parse(p.data)
                 return {
-                  date: `${toFriendlyDate(p?.date)} - ${friendlyDateTimeFormat(
-                    p?.date,
-                    'LT'
-                  )}`,
+                  date: toFriendlyShortDateTime(p?.date),
                   editBy: `${parsedData?.authorName} published a notification: ${parsedData?.title}`
                 }
               }
@@ -642,6 +663,13 @@ function Notifications({
             currentPage={activePage}
             setCurrentPage={onPageClick}
             setPageLimit={onLimitChange}
+            emptyText={
+              <NotifCard
+                icon={<FiFileText />}
+                header="You haven’t created a notification yet"
+                content="Notifications are a great way to share information with your members. Create one now!"
+              />
+            }
           />
         }
         className="rounded-t-none"
@@ -684,11 +712,11 @@ function Notifications({
         onClose={() => setShowEditHistoryModal(old => !old)}
         onCancel={() => setShowEditHistoryModal(old => !old)}
         footer={null}
-        width={650}
+        width={850}
         loading={loadingPostHistory}
       >
         <div className="p-4">
-          <div className="w-full flex justify-start items-center mb-8">
+          <div className="w-full flex justify-start items-start mb-8">
             <div className="w-1/2">
               <h4 className="text-base">Date Created</h4>
               <p className="font-medium text-base">
@@ -703,9 +731,9 @@ function Notifications({
                   alt="avatar"
                   className="max-w-sm"
                 />
-                <p className="font-medium text-base ml-2">
+                <span className="font-medium text-base ml-2">
                   {PARSED_JSON_HISTORY?.authorName}
-                </p>
+                </span>
               </div>
             </div>
           </div>
@@ -730,22 +758,22 @@ function Notifications({
         footer={null}
       >
         <div className="p-4">
-          <div className="w-full flex justify-start items-center mb-8">
+          <div className="w-full flex justify-start items-start mb-8">
             <div className="w-1/2">
               <h4 className="text-base">Viewed By</h4>
-              <p className="font-medium text-sm">
+              <p className="font-medium text-base">
                 {`${VIEWS_HISTORY?.count?.uniqViews || 0} `}
-                <span className="text-gray-600">users</span>
+                <span className="text-neutral-500">users</span>
               </p>
             </div>
             <div className="w-1/2">
               <h4 className="text-base">Not Viewed By</h4>
-              <p className="font-bold text-sm">
+              <p className="font-medium text-base">
                 {`${
                   VIEWS_HISTORY?.count?.audience -
                     VIEWS_HISTORY?.count?.uniqViews || 0
                 } `}
-                <span className="text-gray-600">users</span>
+                <span className="text-neutral-500">users</span>
               </p>
             </div>
           </div>
@@ -786,8 +814,10 @@ Notifications.propTypes = {
   categoryId: P.string,
   query: P.object,
   selectedData: P.array,
+  selectedBulk: P.string,
   calledBulk: P.bool,
   dataBulk: P.object,
+  resetBulk: P.func,
   setSelectedData: P.func,
   setSelectedBulk: P.func,
   setIsBulkDisabled: P.func,

@@ -23,7 +23,8 @@ function DateInput({
   disabled,
   constraints,
   maxDate,
-  minDate
+  minDate,
+  error
 }) {
   let dateValue = toFriendlyDateTime(date)
 
@@ -66,6 +67,11 @@ function DateInput({
               icon={<i className="ciergio-calendar absolute right-1" />}
               iconOnClick={openCalendar}
             />
+            {error && (
+              <span className="mt-2 text-md text-danger-500 font-bold">
+                {error}
+              </span>
+            )}
           </div>
         </>
       )}
@@ -88,7 +94,8 @@ function TimeInput({
   name,
   disabled,
   maxDate,
-  minDate
+  minDate,
+  error
 }) {
   let timeValue = toFriendlyTime(time)
 
@@ -126,6 +133,11 @@ function TimeInput({
               icon={<FiClock />}
               iconOnClick={openCalendar}
             />
+            {error && (
+              <div className="-mt-4 text-md text-danger-500 font-bold">
+                {error}
+              </div>
+            )}
           </div>
         </>
       )}
@@ -153,7 +165,8 @@ DateInput.propTypes = {
   disabled: P.bool,
   maxDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
   minDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
-  constraints: P.any
+  constraints: P.any,
+  error: P.string
 }
 
 TimeInput.defaultProps = {
@@ -169,7 +182,8 @@ TimeInput.propTypes = {
   label: P.string,
   disabled: P.bool,
   maxDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
-  minDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)])
+  minDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
+  error: P.string
 }
 
 export { DateInput, TimeInput }

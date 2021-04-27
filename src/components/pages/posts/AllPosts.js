@@ -38,6 +38,8 @@ import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SearchControl from '@app/components/globals/SearchControl'
+import NotifCard from '@app/components/globals/NotifCard'
+
 import Can from '@app/permissions/can'
 import styles from './Main.module.css'
 
@@ -226,6 +228,7 @@ const PostComponent = () => {
   const [temporaryMonth, setTemporaryMonth] = useState('')
   const [selectedDate, setSelectedDate] = useState()
   const [selectedMonth, setSelectedMonth] = useState()
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const companyID = user?.accounts?.data[0]?.company?._id
@@ -290,8 +293,12 @@ const PostComponent = () => {
     }
   }
 
-  if (isQRCodePage) {
-    fetchFilter.qr = true
+  if (systemType === 'circle') {
+    fetchFilter.qr = false
+
+    if (isQRCodePage) {
+      fetchFilter.qr = true
+    }
   }
 
   if (isDailyReadingsPage) {
@@ -1371,7 +1378,18 @@ const PostComponent = () => {
             <PageLoader />
           ) : (
             tableData && (
-              <Table custom rowNames={tableRowData} customBody={tableData} />
+              <Table
+                custom
+                rowNames={tableRowData}
+                customBody={tableData}
+                emptyText={
+                  <NotifCard
+                    icon={<FiFileText />}
+                    header="You haven’t created a bulletin post yet"
+                    content="Bulletin posts are a great way to share information with your members. Create one now!"
+                  />
+                }
+              />
             )
           )
         }

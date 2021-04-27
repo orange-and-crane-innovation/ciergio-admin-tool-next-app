@@ -543,13 +543,13 @@ const CreatePosts = () => {
       })
       .then(function (response) {
         if (response.data) {
-          const imageData = response.data.map(item => {
-            return {
+          response.data.map(item => {
+            return imageUploadedData.push({
               url: item.location,
               type: item.mimetype
-            }
+            })
           })
-          setImageUploadedData(imageData)
+          setImageUploadedData(imageUploadedData)
           setFileUploadError(null)
         }
       })
@@ -747,8 +747,8 @@ const CreatePosts = () => {
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
       }
-
-      updatePost({ variables: updateData })
+      console.log(updateData)
+      // updatePost({ variables: updateData })
     }
   }
 
@@ -982,14 +982,14 @@ const CreatePosts = () => {
                   <FormInput
                     type="text"
                     name="qr-input"
-                    value={`${window.location.origin}/${routeName}/view/${dataPost?.getAllPost?.post[0]._id}`}
+                    value={`${window.location.origin}/public-qr-posts/view/${dataPost?.getAllPost?.post[0]._id}`}
                     readOnly
                   />
                   <div className={style.CreatePostVideoInput}>QR Code</div>
                   <div className="qrCode">
                     <QRCode
                       size={168}
-                      value={`${window.location.origin}/${routeName}/view/${dataPost?.getAllPost?.post[0]._id}`}
+                      value={`${window.location.origin}/public-qr-posts/view/${dataPost?.getAllPost?.post[0]._id}`}
                     />
                     <Button
                       default

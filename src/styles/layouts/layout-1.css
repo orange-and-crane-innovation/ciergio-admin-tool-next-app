@@ -26,24 +26,36 @@
     .wrapper {
       @apply relative flex flex-row items-stretch min-h-full;
       .left-sidebar {
-        @apply w-full;
-        min-width: calc(theme('spacing.1') * 16);
-        max-width: calc(theme('spacing.1') * 72);
-        transition: max-width 0.25s ease-in-out;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
+        z-index: 1;
+        font-weight: 200;
+        overflow-x: hidden;
       }
       .main {
-        min-width: calc(100% - (theme('spacing.1') * 72));
         @apply flex flex-col;
+        min-width: calc(100% - (theme('spacing.1') * 72));
+        margin-left: 260px;
+        transition: margin-left 0.25s ease-in-out;
       }
     }
     &[data-collapsed='false'] {
       .left-sidebar {
         max-width: calc(theme('spacing.1') * 72);
       }
+      .main {
+        margin-left: 260px;
+      }
     }
     &[data-collapsed='true'] {
       .left-sidebar {
-        max-width: calc(theme('spacing.1') * 16);
+        max-width: calc(theme('spacing.1') * 14);
+      }
+      .main {
+        margin-left: 60px;
       }
     }
   }
