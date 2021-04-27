@@ -30,6 +30,7 @@ import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectStatus from '@app/components/globals/SelectStatus'
 import SearchControl from '@app/components/globals/SearchControl'
+import NotifCard from '@app/components/globals/NotifCard'
 
 import styles from './Main.module.css'
 
@@ -685,7 +686,19 @@ const PostComponent = () => {
           loading ? (
             <PageLoader />
           ) : (
-            posts && <Table rowNames={tableRowData} items={posts} />
+            posts && (
+              <Table
+                rowNames={tableRowData}
+                items={posts}
+                emptyText={
+                  <NotifCard
+                    icon={<FiFileText />}
+                    header="You haven’t created any downloadable forms yet"
+                    content="Give your members easier access to forms and documents by uploading them to the app."
+                  />
+                }
+              />
+            )
           )
         }
       />

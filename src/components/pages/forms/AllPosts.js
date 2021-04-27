@@ -28,8 +28,9 @@ import UpdateCard from './components/UpdateCard'
 import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SearchControl from '@app/components/globals/SearchControl'
-import Can from '@app/permissions/can'
+import NotifCard from '@app/components/globals/NotifCard'
 
+import Can from '@app/permissions/can'
 import styles from './Main.module.css'
 
 const bulkOptions = [
@@ -655,7 +656,19 @@ const PostComponent = () => {
           loading ? (
             <PageLoader />
           ) : (
-            posts && <Table rowNames={tableRowData} items={posts} />
+            posts && (
+              <Table
+                rowNames={tableRowData}
+                items={posts}
+                emptyText={
+                  <NotifCard
+                    icon={<FiFileText />}
+                    header="You haven’t created any downloadable forms yet"
+                    content="Give your members easier access to forms and documents by uploading them to the app."
+                  />
+                }
+              />
+            )
           )
         }
       />

@@ -7,7 +7,6 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
 
-// import useWindowDimensions from '@app/utils/useWindowDimensions'
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
@@ -47,7 +46,6 @@ const convoOptions = [
 
 export default function Main() {
   const endMessage = useRef()
-  // const { height } = useWindowDimensions()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id
@@ -126,6 +124,9 @@ export default function Main() {
       })
       refetchMessages()
       setHasFetched(true)
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
   const [seenNewMessage, { data: dataSeenMessage }] = useMutation(seenMessage)
@@ -255,7 +256,7 @@ export default function Main() {
   useEffect(() => {
     if (createdConvo && calledCreateConvo) {
       const recipient = accounts?.getAccounts?.data?.find(
-        account => account.user._id === selectedAccountId
+        account => account._id === selectedAccountId
       )
 
       setConversations(old => ({
@@ -347,9 +348,9 @@ export default function Main() {
   const handleAccountClick = userid => {
     setSelectedAccountId(userid)
     if (conversations?.data?.length > 0) {
-      const index = conversations?.data.findIndex(
-        convo => convo.participants.data[1].user._id === userid
-      )
+      const index = conversations?.data.findIndex(convo => {
+        return convo.participants.data[1]._id === userid
+      })
       const isExist = index !== -1
       if (isExist) {
         handleMessagePreviewClick(conversations?.data[index])
@@ -507,6 +508,30 @@ export default function Main() {
     setConvoType(e.target.value)
   }
 
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
+
   return (
     <div className={styles.messagesContainer}>
       <div className={styles.messagesListContainer}>
@@ -524,17 +549,19 @@ export default function Main() {
               onClick={() => {
                 fetchAccounts({
                   variables: {
-                    accountTypes: [
-                      'company_admin',
-                      'complex_admin',
-                      'building_admin',
-                      'receptionist',
-                      'unit_owner',
-                      'resident',
-                      'member'
-                    ],
-                    companyId,
-                    status: 'active'
+                    where: {
+                      accountTypes: [
+                        'company_admin',
+                        'complex_admin',
+                        'building_admin',
+                        'receptionist',
+                        'unit_owner',
+                        'resident',
+                        'member'
+                      ],
+                      companyId,
+                      status: 'active'
+                    }
                   }
                 })
                 handleNewMessageModal()
@@ -611,6 +638,7 @@ export default function Main() {
         onSelectUser={handleAccountClick}
         loadingUsers={loadingAccounts}
         users={accounts?.getAccounts?.data || []}
+        accountId={accountId}
         onSearchChange={handleSearchAccounts}
         searchText={search}
       />

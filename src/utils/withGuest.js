@@ -81,7 +81,7 @@ const withGuest = WrappedComponent => {
     }, [data, loading, router])
 
     if (loading || !loaded) {
-      return <PageLoader />
+      return <PageLoader fullPage />
     }
 
     return <WrappedComponent {...props} />

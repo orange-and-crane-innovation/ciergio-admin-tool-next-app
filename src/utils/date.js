@@ -103,11 +103,31 @@ export const displayDays = data => {
   const currentDate = dayjs(new Date())
   const difference = dayjs.duration(currentDate.diff(inputDate))
   const dateData = difference.$d
-  const { years, months, days } = dateData
+  const { seconds, minutes, hours, days, months, years } = dateData
 
   let returnData
   if (years === 0 && months === 0 && days <= 7) {
-    returnData = friendlyDateTimeFormat(data, 'ddd')
+    if (days === 0) {
+      if (hours === 0) {
+        if (minutes === 0) {
+          if (seconds <= 10) {
+            returnData = 'Just now'
+          } else {
+            returnData = seconds + ' sec ago'
+          }
+        } else if (minutes === 1) {
+          returnData = minutes + ' min ago'
+        } else if (minutes > 1) {
+          returnData = minutes + ' mins ago'
+        }
+      } else if (hours === 1) {
+        returnData = hours + ' hr ago'
+      } else {
+        returnData = hours + ' hrs ago'
+      }
+    } else {
+      returnData = friendlyDateTimeFormat(data, 'ddd')
+    }
   } else {
     returnData = friendlyDateTimeFormat(data, 'll')
   }

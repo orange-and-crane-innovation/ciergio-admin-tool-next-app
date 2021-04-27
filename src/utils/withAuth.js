@@ -239,7 +239,7 @@ const withAuth = WrappedComponent => {
     }
 
     if (loading || !loaded) {
-      return <PageLoader />
+      return <PageLoader fullPage />
     }
 
     return (
