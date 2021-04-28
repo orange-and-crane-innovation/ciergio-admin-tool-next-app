@@ -161,7 +161,7 @@ const navigation = [
         items: []
       },
       {
-        url: '/prayer-requests/list',
+        url: '/prayer-requests',
         icon: 'ciergio-prayer',
         title: 'Prayer Requests',
         items: []

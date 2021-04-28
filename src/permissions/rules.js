@@ -86,7 +86,7 @@ const rules = {
         '/messages',
         '/posts',
         '/daily-readings',
-        '/prayer-requests/list',
+        '/prayer-requests',
         '/forms',
         '/directory',
         '/contact-us',
@@ -109,7 +109,8 @@ const rules = {
         '/forms/edit',
         '/notifications/list',
         '/notifications/all',
-        '/notifications/create'
+        '/notifications/create',
+        '/prayer-requests/list'
       ],
       actions: [
         'messages:view',
@@ -172,7 +173,7 @@ const rules = {
         '/messages',
         '/posts',
         '/daily-readings',
-        '/prayer-requests/list',
+        '/prayer-requests',
         '/forms',
         '/directory',
         '/contact-us',
@@ -193,7 +194,8 @@ const rules = {
         '/forms/edit',
         '/notifications/list',
         '/notifications/all',
-        '/notifications/create'
+        '/notifications/create',
+        '/prayer-requests/list'
       ],
       actions: [
         'messages:view',
