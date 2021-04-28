@@ -259,13 +259,16 @@ const CreatePosts = () => {
       })
       .then(function (response) {
         if (response.data) {
-          const imageData = response.data.map(item => {
-            return {
-              url: item.location,
-              type: item.mimetype
-            }
+          response.data.map(item => {
+            setImageUrls(prevArr => [...prevArr, item.location])
+            return setImageUploadedData(prevArr => [
+              ...prevArr,
+              {
+                url: item.location,
+                type: item.mimetype
+              }
+            ])
           })
-          setImageUploadedData(imageData)
           setFileUploadError(null)
         }
       })
@@ -299,10 +302,6 @@ const CreatePosts = () => {
 
         for (const file of files) {
           const reader = new FileReader()
-
-          reader.onloadend = () => {
-            setImageUrls(imageUrls => [...imageUrls, reader.result])
-          }
           reader.readAsDataURL(file)
 
           formData.append('files', file)
@@ -319,7 +318,11 @@ const CreatePosts = () => {
     const images = imageUrls.filter(image => {
       return image !== e.currentTarget.dataset.id
     })
+    const uploadedImages = imageUploadedData.filter(image => {
+      return image.url !== e.currentTarget.dataset.id
+    })
     setImageUrls(images)
+    setImageUploadedData(uploadedImages)
     setValue('images', images.length !== 0 ? images : null)
   }
 
