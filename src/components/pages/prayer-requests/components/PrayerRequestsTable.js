@@ -168,7 +168,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
             companyId,
             complexId: complexId ?? '',
             categoryId: category?.value,
-            content: message,
+            content: message && message !== '' ? message : null,
             prayer: {
               for: prayerFor,
               from: prayerFrom,
