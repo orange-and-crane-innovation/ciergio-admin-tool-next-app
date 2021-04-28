@@ -640,6 +640,16 @@ const rules = {
         'guestanddeliveries:addnote',
         'guestanddeliveries:addimages'
       ]
+    },
+    receptionist: {
+      allowedRoutes: ['/properties', '/messages', '/receptionist'],
+      allowedNestedRoutes: [
+        '/properties/building',
+        '/receptionist/visitors',
+        '/receptionist/deliveries',
+        '/receptionist/pick-ups',
+        '/receptionist/services'
+      ]
     }
   },
   circle: {
