@@ -747,8 +747,7 @@ const CreatePosts = () => {
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
       }
-      console.log(updateData)
-      // updatePost({ variables: updateData })
+      updatePost({ variables: updateData })
     }
   }
 
