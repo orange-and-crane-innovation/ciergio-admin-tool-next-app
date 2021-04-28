@@ -217,7 +217,7 @@ const CreatePosts = () => {
         }
       }
 
-      if (files.length > maxFiles) {
+      if (files.length + fileUrls?.length > maxFiles) {
         showToast('info', `Maximum of ${maxFiles} files only`)
       } else if (maxSize > 0) {
         showToast(

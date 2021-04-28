@@ -8,7 +8,7 @@ function ContactModal({ open, form, onOk, onCancel, loading, selected }) {
 
   return (
     <Modal
-      title="Add a Contact"
+      title={`${selected ? 'Edit' : 'Add'} a Contact`}
       okText="Okay"
       visible={open}
       onClose={onCancel}
@@ -22,13 +22,13 @@ function ContactModal({ open, form, onOk, onCancel, loading, selected }) {
     >
       <div className="w-full p-4">
         <form>
+          <span className="text-base font-bold">Title</span>
           <Controller
             name="title"
             control={control}
             render={({ name, value, onChange }) => (
               <FormInput
-                label="Title"
-                labelClassName="text-base font-bold"
+                inputClassName="mt-2"
                 placeholder="Enter title of contact"
                 onChange={onChange}
                 name={name}
@@ -38,13 +38,13 @@ function ContactModal({ open, form, onOk, onCancel, loading, selected }) {
               />
             )}
           />
+          <span className="text-base font-bold">Contact Name</span>
           <Controller
             name="name"
             control={control}
             render={({ name, value, onChange }) => (
               <FormInput
-                label="Contact Name"
-                labelClassName="text-base font-bold"
+                inputClassName="mt-2"
                 placeholder="Enter name of contact"
                 onChange={onChange}
                 name={name}
@@ -54,20 +54,19 @@ function ContactModal({ open, form, onOk, onCancel, loading, selected }) {
               />
             )}
           />
+          <span className="text-base font-bold">Contact Email</span>
           <Controller
             name="email"
             control={control}
             render={({ name, value, onChange }) => (
               <FormInput
-                label="Contact Email"
-                labelClassName="text-base font-bold"
+                inputClassName="w-full rounded border-gray-300 mt-2"
                 placeholder="Enter email of contact"
                 type="email"
                 name={name}
                 onChange={onChange}
                 value={value}
                 error={errors?.email?.message}
-                inputClassName="w-full rounded border-gray-300"
                 defaultValue={selected?.email}
               />
             )}

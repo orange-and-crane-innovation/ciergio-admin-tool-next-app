@@ -468,7 +468,7 @@ function Contact({ id }) {
         selected={selectedContact}
       />
       <Modal
-        title="Delete Category"
+        title="Delete Contact"
         okText="Yes, delete"
         visible={showDeleteContactModal}
         onClose={() => setShowDeleteContactModal(old => !old)}

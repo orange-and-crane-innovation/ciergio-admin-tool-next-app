@@ -96,8 +96,11 @@ export default function PrayerRequestDetails() {
     <section className="content-wrap">
       <div className="w-8/12">
         <div className="w-full bg-white p-4">
-          <h2 className="font-bold text-4xl">{`${pr?.category.name} - ${pr?.prayer.for}`}</h2>
-          <small className="font-normal text-base">March 03, 2021</small>{' '}
+          <h2 className="font-bold text-4xl leading-10 mb-2 break-words">{`${pr?.category?.name} - ${pr?.prayer?.for}`}</h2>
+          <small className="font-normal text-base">
+            {' '}
+            {toFriendlyDate(pr?.createdAt)}
+          </small>{' '}
           <span className="text-neutral-500 text-base">&middot; </span>
           <Link href={path}>
             <small className="text-blue-500 cursor-pointer font-normal text-base">
@@ -120,21 +123,21 @@ export default function PrayerRequestDetails() {
 
               <div className="p-4">
                 <p className="text-base text-gray-500 font-bold">Prayer For</p>
-                <p className="text-base text-neutral-dark">
+                <p className="text-base text-neutral-dark break-words">
                   {pr?.prayer?.for || 'No data'}
                 </p>
               </div>
 
               <div className="p-4">
                 <p className="text-base text-gray-500 font-bold">Message</p>
-                <p className="text-base text-neutral-dark">
+                <p className="text-base text-neutral-dark break-words">
                   {pr?.content || 'No data'}
                 </p>
               </div>
 
               <div className="p-4">
                 <p className="text-base text-gray-500 font-bold">Prayer From</p>
-                <p className="text-base text-neutral-dark">
+                <p className="text-base text-neutral-dark break-words">
                   {pr?.prayer?.from || 'No data'}
                 </p>
               </div>
