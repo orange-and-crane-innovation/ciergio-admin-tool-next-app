@@ -14,7 +14,8 @@ function PrayerRequests() {
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountId = user?.accounts?.data[0]?._id
   const companyId = user?.accounts?.data[0]?.company?._id
-  const complexId = router?.query?.complexId
+  const complexId =
+    router?.query?.complexId ?? user?.accounts?.data[0]?.complex?._id
   const initialCategory = router?.query?.category
   const { data, refetch } = useQuery(GET_PRAYER_REQUESTS, {
     variables: {

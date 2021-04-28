@@ -4,7 +4,7 @@ import Complexes from './complex-list'
 export default function PrayerRequestsPage() {
   const profile = JSON.parse(window.localStorage.getItem('profile'))
   const accountType = profile?.accounts?.data[0]?.accountType
-  console.log({ accountType })
+
   if (accountType === 'complex_admin') {
     return <PrayerRequests />
   }
