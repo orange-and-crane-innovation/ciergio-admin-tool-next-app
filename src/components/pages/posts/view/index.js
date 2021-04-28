@@ -162,7 +162,10 @@ const Component = () => {
       ? GET_POST_FROM_EMAIL_QUERY
       : isPublicQrPostsPage
       ? GET_PUBLIC_POST_QUERY
-      : GET_POST_QUERY
+      : GET_POST_QUERY,
+    {
+      fetchPolicy: 'network-only'
+    }
   )
 
   useEffect(() => {

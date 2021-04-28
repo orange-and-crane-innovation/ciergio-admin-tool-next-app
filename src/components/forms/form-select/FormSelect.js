@@ -62,7 +62,7 @@ const InputSelect = ({
   return (
     <div className={`${styles.FormSelectContainer} ${className}`}>
       {label ? (
-        <label className="font-bold text-sm text-neutral-500" htmlFor={name}>
+        <label className="font-bold text-base text-neutral-500" htmlFor={name}>
           {label}
         </label>
       ) : null}
