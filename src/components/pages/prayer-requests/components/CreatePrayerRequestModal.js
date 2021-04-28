@@ -121,6 +121,7 @@ const CreatePrayerRequestModal = ({
                     isClearable: true
                   }}
                   placeHolder="Date"
+                  disabledPreviousDate={new Date()}
                 />
               </div>
             )}
