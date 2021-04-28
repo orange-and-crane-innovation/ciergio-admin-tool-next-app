@@ -164,7 +164,7 @@ function ContactModal({
                 placeholder="(optional) Enter contact address"
                 name={name}
                 onChange={onChange}
-                value={value?.formattedAddress || ''}
+                value={value?.formattedAddress || value || ''}
                 error={errors?.address?.message}
                 getValue={onGetMapValue}
               />
