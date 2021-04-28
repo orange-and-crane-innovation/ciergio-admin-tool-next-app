@@ -411,13 +411,16 @@ const CreatePosts = () => {
       })
       .then(function (response) {
         if (response.data) {
-          const imageData = response.data.map(item => {
-            return {
-              url: item.location,
-              type: item.mimetype
-            }
+          response.data.map(item => {
+            setFileUrls(prevArr => [...prevArr, item.location])
+            return setFileUploadedData(prevArr => [
+              ...prevArr,
+              {
+                url: item.location,
+                type: item.mimetype
+              }
+            ])
           })
-          setFileUploadedData(imageData)
           setFileUploadError(null)
         }
       })
@@ -463,11 +466,6 @@ const CreatePosts = () => {
 
         for (const file of files) {
           const reader = new FileReader()
-
-          reader.onloadend = () => {
-            setFileUploadedData(prevArr => [...prevArr, file])
-            setFileUrls(prevArr => [...prevArr, reader.result])
-          }
           reader.readAsDataURL(file)
 
           formData.append('files', file)
