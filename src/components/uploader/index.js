@@ -86,8 +86,10 @@ const Uploader = ({
                 {files[index] && files[index].type === 'application/pdf' ? (
                   <ImagePdf />
                 ) : files[index] &&
-                  files[index].type ===
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ? (
+                  [
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/msword'
+                  ].includes(files[index].type) ? (
                   <ImageDoc />
                 ) : null}
               </div>

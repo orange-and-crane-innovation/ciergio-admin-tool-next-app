@@ -574,7 +574,7 @@ const CreatePosts = () => {
     const fileList = []
 
     if (files) {
-      if (files.length > maxImages) {
+      if (files.length + imageUrls?.length > maxImages) {
         showToast('info', `Maximum of ${maxImages} files only`)
       } else {
         setLoading(true)
