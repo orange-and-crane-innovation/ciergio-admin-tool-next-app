@@ -10,7 +10,10 @@
     "format": "prettier --write './**/*.{js,jsx,css,md,json}' --config ./.prettierrc --ignore-path ./.gitignore",
     "storybook": "start-storybook -p 6006 -s ./public",
     "build-storybook": "build-storybook",
-    "deploy-dev": "AWS_PROFILE=cgpray serverless"
+    "clean": "rm -rf .serverless .serverless_nextjs",
+    "deploy-pray": "AWS_PROFILE=cgpray serverless",
+    "deploy-circle": "AWS_PROFILE=cgcircle serverless",
+    "deploy-home": "AWS_PROFILE=cghome serverless"
   },
   "dependencies": {
     "@apollo/client": "^3.3.3",

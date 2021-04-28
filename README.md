@@ -12,21 +12,23 @@ npm run dev
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## FEES
+BANK_FEE_PERCENT=0.03
+BANK_FEE_FIX=7.5
+OCI_FEE_PERCENT=0.05
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+### FOMULAS
+Bank_Fee = ADD( MULTIPLY( amount, BANK_FEE_PERCENT), BANK_FEE_FIX )
+OCI Fee = MULTIPLY( SUBTRACT(amount, Bank_Fee),OCI_FEE_PERCENT )
 
-## Learn More
+### Example
+Amount Donated = 500
 
-To learn more about Next.js, take a look at the following resources:
+Bank_Fee(%) : 500 x 0.03 = 15
+Final Bank Fee : 15 + 7.5 = 22.5
+Amount Remaining : 500 - 22.5 = 477.5
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+OCI Fee : 477.5 x 0.05 = 23.875 (rounded off to 23.88 in display)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Net Amount : 500 - ( 22.5 + 23.875 ) = 453.625 (rounded off to 453.63 in display)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
