@@ -239,7 +239,7 @@ function Contact({ id }) {
       name,
       logo: fileUploadedData[0]?.url,
       contactNumber,
-      categoryId: category.value ?? selectedContact?.category?._id
+      categoryId: category?.value ?? selectedContact?.category?._id
     }
 
     if (!isEmpty(addressData)) {
