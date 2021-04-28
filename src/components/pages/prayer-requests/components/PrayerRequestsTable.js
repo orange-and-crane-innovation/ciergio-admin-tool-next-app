@@ -1,14 +1,16 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useReactToPrint } from 'react-to-print'
 import { CSVLink } from 'react-csv'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
 import P from 'prop-types'
 import * as yup from 'yup'
 
 import FormInput from '@app/components/forms/form-input'
-import FormSelect from '@app/components/select'
+import FormSelect from '@app/components/forms/form-select'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -52,24 +54,26 @@ const columns = [
 ]
 
 const validationSchema = yup.object().shape({
-  prayerFor: yup.string().required(),
-  prayerFrom: yup.string().required(),
+  prayerFor: yup.string().required('This field is required'),
+  prayerFrom: yup.string().required('This field is required'),
   category: yup.object().shape({
-    label: yup.string(),
-    value: yup.string()
+    label: yup.string().required(),
+    value: yup.string().required('This field is required')
   }),
-  date: yup.date(),
+  date: yup.string(),
   message: yup.string()
 })
 
-function PrayerRequestsTable({ queryTemplate, status }) {
-  const { handleSubmit, control, errors, reset } = useForm({
+function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
+  const router = useRouter()
+  const { complexId, companyId, accountId, initialCategory } = user
+  const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       prayerFor: '',
       prayerFrom: '',
-      category: '',
-      date: new Date(),
+      category: undefined,
+      date: undefined,
       message: ''
     }
   })
@@ -77,28 +81,28 @@ function PrayerRequestsTable({ queryTemplate, status }) {
   const [pageLimit, setPageLimit] = useState(10)
   const [offset, setPageOffset] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
-  const [category, setCategory] = useState({
-    label: 'All Category',
-    value: null
-  })
+  const [category, setCategory] = useState()
   const [showCreatePrayerModal, setShowCreatePrayerModal] = useState(false)
   const debouncedSearchText = useDebounce(searchText, 700)
-
   const DOCUMENT_TITLE =
     status === 'new' ? 'Prayer_Request_New' : 'Prayer_Request_Received'
   const PDF_TITLE =
     status === 'new' ? 'Prayer Request - New' : 'Prayer Request - Received'
 
   const printRef = useRef()
-  const { data, loading } = useQuery(queryTemplate, {
-    variables: {
-      complexId: '5f291193643d6011be2d280b',
-      offset,
-      limit: pageLimit,
-      search: debouncedSearchText,
-      categoryId: category?.value || null
+  const { data, loading, refetch: refetchPrayerRequests } = useQuery(
+    queryTemplate,
+    {
+      variables: {
+        complexId,
+        offset,
+        limit: pageLimit,
+        search: debouncedSearchText,
+        categoryId: category?.value || null
+      },
+      fetchPolicy: 'network-only'
     }
-  })
+  )
 
   const { data: categories } = useQuery(GET_POST_CATEGORY)
 
@@ -110,11 +114,21 @@ function PrayerRequestsTable({ queryTemplate, status }) {
         reset({
           prayerFor: '',
           prayerFrom: '',
-          category: '',
-          date: '',
+          category: null,
+          date: undefined,
           message: ''
         })
         setShowCreatePrayerModal(old => !old)
+        refetchCounts()
+        refetchPrayerRequests({
+          variables: {
+            complexId,
+            offset,
+            limit: pageLimit,
+            search: debouncedSearchText,
+            categoryId: category?.value || null
+          }
+        })
       }
     }
   )
@@ -127,27 +141,40 @@ function PrayerRequestsTable({ queryTemplate, status }) {
     removeAfterPrint: true
   })
 
-  const onCancel = () => setShowCreatePrayerModal(old => !old)
+  const onCancel = () => {
+    reset({
+      prayerFor: '',
+      prayerFrom: '',
+      category: null,
+      date: undefined,
+      message: ''
+    })
+    setShowCreatePrayerModal(old => !old)
+  }
 
-  const onSubmit = values => {
-    const { date, category, message, prayerFor, prayerFrom } = values
+  const onSubmit = async () => {
+    const validated = await trigger()
 
-    createRequest({
-      variables: {
-        data: {
-          authorAccountId: '5fd1d549ae785b6e2e923c6a',
-          companyId: '5f290f7d0dcafc0ba70e0721',
-          complexId: '5f291193643d6011be2d280b',
-          categoryId: category?.value,
-          content: message,
-          prayer: {
-            for: prayerFor,
-            from: prayerFrom,
-            date: date.toISOString()
+    if (validated) {
+      const values = getValues()
+      const { date, category, message, prayerFor, prayerFrom } = values
+      createRequest({
+        variables: {
+          data: {
+            authorAccountId: accountId,
+            companyId,
+            complexId: complexId ?? null,
+            categoryId: category?.value,
+            content: message,
+            prayer: {
+              for: prayerFor,
+              from: prayerFrom,
+              date: date
+            }
           }
         }
-      }
-    })
+      })
+    }
   }
 
   const downloadData = useMemo(() => {
@@ -208,6 +235,18 @@ function PrayerRequestsTable({ queryTemplate, status }) {
     }
   }, [categories?.getPostCategory])
 
+  useEffect(() => {
+    // let path = '/prayer-requests/list'
+    // if (router?.query?.complexId) {
+    //   path += `?complexId=${complexId}`
+    // }
+    // router.push(path)
+    if (categoryOptions?.length > 0 && initialCategory) {
+      const index = categoryOptions?.findIndex(c => c.value === initialCategory)
+      setCategory(categoryOptions[index])
+    }
+  }, [categoryOptions])
+
   const tableData = useMemo(() => {
     return {
       count: prayerRequests?.count || 0,
@@ -216,31 +255,36 @@ function PrayerRequestsTable({ queryTemplate, status }) {
       data:
         prayerRequests?.issue?.length > 0
           ? prayerRequests.issue.map(
-              ({ category, prayer, reporter, createdAt, updatedAt }) => {
+              ({ _id, category, prayer, reporter, createdAt, updatedAt }) => {
+                const req = reporter?.user
+                let path = `/prayer-requests/details/${_id}`
+                if (complexId) {
+                  path += `?complexId=${complexId}`
+                }
                 const dropdownData = [
                   {
                     label: 'View Details',
                     icon: <span className="ciergio-file" />,
-                    function: () => {}
+                    function: () => {
+                      router.push(path)
+                    }
                   }
                 ]
                 return {
-                  dateCreated: friendlyDateTimeFormat(
-                    dayjs(Number(createdAt)),
-                    'LL'
-                  ),
+                  dateCreated: friendlyDateTimeFormat(dayjs(createdAt), 'LL'),
                   title: (
-                    <p>
-                      <span>{category.name}</span> - <span>{prayer.from}</span>
-                    </p>
+                    <Link href={path}>
+                      <p className="cursor-pointer font-bold hover:underline">
+                        <span>{category.name}</span> - <span>{prayer.for}</span>
+                      </p>
+                    </Link>
                   ),
                   requestor: (
-                    <span>{`${reporter?.user?.firstName || ''}`}</span>
+                    <Link href={`/residents/view/${reporter?._id}`}>
+                      <span className="text-blue-500 cursor-pointer">{`${req?.firstName} ${req?.lastName}`}</span>
+                    </Link>
                   ),
-                  lastUpdate: friendlyDateTimeFormat(
-                    dayjs(Number(updatedAt)),
-                    'LL'
-                  ),
+                  lastUpdate: friendlyDateTimeFormat(dayjs(updatedAt), 'LL'),
                   button: (
                     <Dropdown
                       label={<AiOutlineEllipsis />}
@@ -257,7 +301,7 @@ function PrayerRequestsTable({ queryTemplate, status }) {
   return (
     <>
       <div className="flex items-center justify-end">
-        <div className="w-2/12 md:w-120 mr-2 relative -top-2">
+        <div className="w-2/12 md:w-120 mr-2 relative">
           <FormSelect
             isClearable={false}
             placeholder="Select Category"
@@ -279,6 +323,7 @@ function PrayerRequestsTable({ queryTemplate, status }) {
               setPageLimit(10)
               setPageOffset(0)
             }}
+            defaultValue={null}
           />
         </div>
         <div className="w-2/12 md:w-120 relative">
@@ -373,7 +418,7 @@ function PrayerRequestsTable({ queryTemplate, status }) {
         visible={showCreatePrayerModal}
         onCancel={onCancel}
         categoryOptions={categoryOptions}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={onSubmit}
         form={{
           errors,
           control
@@ -393,7 +438,9 @@ function PrayerRequestsTable({ queryTemplate, status }) {
 
 PrayerRequestsTable.propTypes = {
   queryTemplate: P.object,
-  status: P.string
+  status: P.string,
+  refetchCounts: P.func,
+  user: P.object
 }
 
 export default PrayerRequestsTable

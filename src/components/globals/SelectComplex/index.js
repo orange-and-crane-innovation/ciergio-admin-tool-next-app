@@ -21,7 +21,7 @@ const GET_COMPLEXES_QUERY = gql`
   }
 `
 
-const SelectCategoryComponent = ({
+const SelectComplexComponent = ({
   type,
   userType,
   companyId,
@@ -85,7 +85,7 @@ const SelectCategoryComponent = ({
   )
 }
 
-SelectCategoryComponent.propTypes = {
+SelectComplexComponent.propTypes = {
   type: PropTypes.string,
   userType: PropTypes.string,
   companyId: PropTypes.string,
@@ -95,4 +95,4 @@ SelectCategoryComponent.propTypes = {
   onClear: PropTypes.func
 }
 
-export default SelectCategoryComponent
+export default SelectComplexComponent

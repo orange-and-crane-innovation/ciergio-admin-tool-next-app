@@ -1,5 +1,5 @@
 .Button {
-  @apply mb-4 h-4 bg-white border border-neutral-300 py-5 px-6 rounded inline-flex justify-center items-center font-heading text-sm;
+  @apply mb-4 h-4 bg-white border border-neutral-300 py-5 px-4 rounded inline-flex justify-center items-center font-heading text-sm;
   @apply hover:bg-neutral-100;
 
   &.isPrimary {
@@ -16,6 +16,10 @@
 
   &.isWarning {
     @apply bg-warning-500 text-white border-warning-500 hover:bg-warning-700 active:bg-warning-900;
+  }
+
+  &.isLink {
+    @apply bg-transparent text-blue-500 text-base border-0 font-body;
   }
 
   &.isInfo {

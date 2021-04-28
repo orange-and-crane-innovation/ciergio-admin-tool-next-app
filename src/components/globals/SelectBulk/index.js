@@ -12,31 +12,40 @@ const SelectBulkComponent = ({
   selected,
   disabled,
   isButtonDisabled,
+  isButtonHidden,
   onBulkChange,
   onBulkSubmit,
-  onBulkClear
+  onBulkClear,
+  custom
 }) => {
   return (
-    <div className={styles.BulkControlContainer}>
+    <div
+      className={`${styles.BulkControlContainer} ${
+        custom ? styles.CustomWidth : ''
+      }`}
+    >
       <FormSelect
+        className="min-w-xs"
         id="bulkSelect"
         name="bulkSelect"
         options={options}
         placeholder={placeholder}
         defaultValue={options.filter(item => item.value === selected)}
+        value={options.filter(item => item.value === selected)}
         onChange={onBulkChange}
         onClear={onBulkClear}
         disabled={disabled}
         isClearable
       />
-      <Button
-        primary
-        type="button"
-        label="Apply"
-        className={styles.BulkControlButton}
-        onClick={onBulkSubmit}
-        disabled={disabled || isButtonDisabled}
-      />
+      {!isButtonHidden && (
+        <Button
+          type="button"
+          label="Apply"
+          className={styles.BulkControlButton}
+          onClick={onBulkSubmit}
+          disabled={disabled || isButtonDisabled}
+        />
+      )}
     </div>
   )
 }
@@ -47,9 +56,11 @@ SelectBulkComponent.propTypes = {
   selected: PropTypes.string,
   disabled: PropTypes.bool,
   isButtonDisabled: PropTypes.bool,
+  isButtonHidden: PropTypes.bool,
   onBulkChange: PropTypes.func,
   onBulkSubmit: PropTypes.func,
-  onBulkClear: PropTypes.func
+  onBulkClear: PropTypes.func,
+  custom: PropTypes.bool
 }
 
 export default SelectBulkComponent

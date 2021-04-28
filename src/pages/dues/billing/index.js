@@ -6,9 +6,12 @@ export default function DuesPage() {
   const router = useRouter()
   const { buildingID } = router.query
   const user = JSON.parse(localStorage.getItem('profile'))
-
   const buildingId = user?.accounts?.data[0]?.building?._id
-  router.push(`/dues/billing/${buildingID || buildingId}`)
 
-  return <Page route="/dues" page={<Billing />} />
+  if (buildingID === undefined || buildingId === undefined) {
+    return <Page route="/dues" nestedRoute="/dues/billing" page={<Billing />} />
+  } else {
+    router.push(`/dues/billing/${buildingID || ''}`)
+  }
+  return null
 }

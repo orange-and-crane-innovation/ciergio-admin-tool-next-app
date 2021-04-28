@@ -10,6 +10,8 @@ import FormAddress from '@app/components/forms/form-address'
 import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
 
+import showToast from '@app/utils/toast'
+
 const validationSchema = yup.object().shape({
   logo: yup.array().label('Image').nullable(),
   name: yup.string().label('Company Name').nullable().trim().required(),
@@ -29,6 +31,7 @@ const Component = ({
   onCancel
 }) => {
   const [loadingUploader, setLoadingUploader] = useState(false)
+  const [fileUploadError, setFileUploadError] = useState()
   const [imageUrls, setImageUrls] = useState([])
 
   const { handleSubmit, control, errors, register, setValue } = useForm({
@@ -63,22 +66,31 @@ const Component = ({
   }, [])
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    )
-
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return item.location
       })
-      setValue('logo', imageData)
-    }
+      .then(function (response) {
+        if (response.data) {
+          const imageData = response.data.map(item => {
+            return item.location
+          })
+          setValue('logo', imageData)
+          setFileUploadError(null)
+        }
+      })
+      .catch(function (error) {
+        const errMsg = 'Failed to upload image. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('logo', null)
+      })
+      .then(() => {
+        setLoadingUploader(false)
+      })
   }
 
   const onUploadImage = e => {
@@ -88,16 +100,21 @@ const Component = ({
 
     if (files) {
       setLoadingUploader(true)
+      setFileUploadError(null)
+
+      if (errors?.logo?.message) {
+        errors.logo.message = null
+      }
+
       for (const file of files) {
         const reader = new FileReader()
 
         reader.onloadend = () => {
           setImageUrls(imageUrls => [...imageUrls, reader.result])
-          setLoadingUploader(false)
         }
         reader.readAsDataURL(file)
 
-        formData.append('photos', file)
+        formData.append('files', file)
         fileList.push(file)
       }
       setValue('logo', fileList)
@@ -129,7 +146,7 @@ const Component = ({
       onCancel={onCancel}
     >
       <div className="p-2 text-base font-body leading-7">
-        <div className="flex items-center">
+        <div className="flex flex-col items-center md:flex-row">
           <div>
             <div className="font-black mb-2">Company Logo</div>
             <div className="text-md mb-2">
@@ -148,7 +165,7 @@ const Component = ({
           />
         </div>
         <div className="text-danger-500 text-md font-bold">
-          {errors?.logo?.message ?? null}
+          {errors?.logo?.message ?? fileUploadError ?? null}
         </div>
 
         <div className="font-black mb-2 mt-10">About the Company</div>

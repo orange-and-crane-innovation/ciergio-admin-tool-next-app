@@ -81,6 +81,7 @@ select:active {
 
 .content-wrap {
   @apply py-5 px-8;
+  @apply text-base leading-5;
 }
 
 .content-wrap .toolbar {
@@ -180,7 +181,7 @@ select:active {
 } */
 
 .modal {
-  @apply bg-white w-full m-auto flex-col flex rounded transition ease-in-out duration-700;
+  @apply bg-white w-full flex-col flex rounded transition ease-in-out duration-700;
 }
 
 .modal .modal-header {
@@ -188,7 +189,7 @@ select:active {
 }
 
 .modal .modal-header .modal-title span {
-  @apply text-black text-base font-bold;
+  @apply text-black text-lg font-bold;
 }
 
 .modal .modal-content {
@@ -215,12 +216,12 @@ select:active {
 .card .content table td {
   @apply py-2 px-5;
 }
-.card .content table tbody tr {
+/* .card .content table tbody tr {
   @apply bg-neutral-100;
-}
-.card .content table tbody tr:nth-child(even) {
+} */
+/* .card .content table tbody tr:nth-child(even) {
   @apply bg-white;
-}
+} */
 
 @media print {
   html,
@@ -228,6 +229,7 @@ select:active {
     height: initial !important;
     overflow: initial !important;
     -webkit-print-color-adjust: exact;
+    background: none !important;
   }
 
   body {
@@ -284,7 +286,8 @@ select:active {
   }
 
   .print-container table thead th {
-    @apply bg-gray-300 font-bold text-sm p-2 text-center;
+    font-size: 13px;
+    @apply bg-gray-300 font-bold p-2 text-center;
   }
 
   .print-container table tbody {
@@ -297,6 +300,7 @@ select:active {
 
   .print-container table tbody td {
     word-wrap: break-word;
+    font-size: 13px;
     @apply p-2;
   }
 

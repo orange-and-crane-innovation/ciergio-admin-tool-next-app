@@ -1,7 +1,10 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useLazyQuery, useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import P from 'prop-types'
+import { FaPlusCircle, FaEye, FaEllipsisH } from 'react-icons/fa'
+import { FiFileText } from 'react-icons/fi'
 
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Dropdown from '@app/components/dropdown'
@@ -10,12 +13,14 @@ import Button from '@app/components/button'
 import Modal from '@app/components/modal'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
+import NotifCard from '@app/components/globals/NotifCard'
 
-import { friendlyDateTimeFormat, toFriendlyDate } from '@app/utils/date'
+import {
+  friendlyDateTimeFormat,
+  toFriendlyShortDateTime
+} from '@app/utils/date'
 import showToast from '@app/utils/toast'
 
-import { FaPlusCircle, FaEye } from 'react-icons/fa'
-import { AiOutlineEllipsis } from 'react-icons/ai'
 import { BsFillClockFill } from 'react-icons/bs'
 
 import {
@@ -37,12 +42,13 @@ import {
   DELETE_NOTIFICATION
 } from '../queries'
 import PreviewModal from './PreviewModal'
+import RecurringType from './RecurringType'
 import Can from '@app/permissions/can'
 
 const getNotifDate = (type, notif) => {
   switch (type) {
     case UPCOMING:
-      return notif.publishedNextAt
+      return notif.publishedAt
     case PUBLISHED:
       return notif.publishedAt
     case DRAFT:
@@ -60,14 +66,15 @@ function Notifications({
   query,
   dataBulk,
   calledBulk,
+  resetBulk,
   selectedData,
+  selectedBulk,
   setSelectedData,
   setIsBulkButtonDisabled,
   setIsBulkDisabled,
   setSelectedBulk
 }) {
   const router = useRouter()
-
   const [currentLimit, setCurrentLimit] = useState(10)
   const [currentOffset, setCurrentOffset] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -81,6 +88,7 @@ function Notifications({
   const {
     data: notifications,
     loading: loadingNotifications,
+    error: errorNotifications,
     refetch: refetchNotifications
   } = useQuery(query, {
     variables: {
@@ -95,6 +103,7 @@ function Notifications({
     getNotifPreview,
     { data: notifPreview, loading: loadingNotifPreview }
   ] = useLazyQuery(GET_NOTIFICATION, {
+    fetchPolicy: 'network-only',
     variables: {
       id: selectedNotifId
     }
@@ -154,12 +163,29 @@ function Notifications({
       : undefined
 
   useEffect(() => {
+    router.replace(`/notifications/list/${type}`)
+    refetchNotifications()
+  }, [])
+
+  useEffect(() => {
+    setActivePage(1)
+    setCurrentOffset(0)
+  }, [searchText])
+
+  useEffect(() => {
+    if (errorNotifications) {
+      errorHandler(errorNotifications)
+    }
+  }, [errorNotifications])
+
+  useEffect(() => {
     if (calledBulk && dataBulk) {
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
+        let message
 
-        if (allCheck.checked) {
+        if (allCheck?.checked) {
           allCheck.click()
         }
 
@@ -171,17 +197,37 @@ function Notifications({
 
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk('')
+        setSelectedBulk(null)
 
-        showToast('success', `You have successfully updated a post`)
+        switch (selectedBulk) {
+          case 'unpublished':
+            message = `You have successfully unpublished (${selectedData?.length}) items.`
+            break
+          case 'trashed':
+            message = `You have successfully sent (${selectedData?.length}) items to the trash.`
+            break
+          case 'deleted':
+            message = `You have successfully deleted (${selectedData?.length}) items.`
+            break
+          case 'draft':
+            message = `You have successfully restored (${selectedData?.length}) items.`
+            break
+          default:
+            message = `You have successfully updated a post.`
+            break
+        }
+
+        showToast('success', message)
         refetchNotifications()
       } else {
         showToast('danger', `Bulk update failed`)
       }
+      resetBulk()
     }
   }, [
     calledBulk,
     dataBulk,
+    resetBulk,
     refetchNotifications,
     setIsBulkButtonDisabled,
     setIsBulkDisabled,
@@ -306,7 +352,7 @@ function Notifications({
     setCurrentOffset(e * currentLimit)
   }
 
-  const onLimitChange = e => setCurrentLimit(Number(e.target.value))
+  const onLimitChange = e => setCurrentLimit(e)
 
   const notificationsData = useMemo(() => {
     return {
@@ -347,34 +393,59 @@ function Notifications({
                     onChange={onCheck}
                   />
                 ),
-                date: toFriendlyDate(notifDate),
+                date: (
+                  <span>
+                    {toFriendlyShortDateTime(notifDate)}{' '}
+                    <RecurringType
+                      publishedAt={notif?.publishedAt}
+                      recurringData={notif?.recurringSchedule}
+                    />
+                  </span>
+                ),
                 title: (
                   <div>
                     <p className="text-base">{notif.title}</p>
                     <p className="text-sm">
+                      {(type === DRAFT || type === UPCOMING) && (
+                        <Can
+                          perform="notifications:update"
+                          yes={
+                            <>
+                              <Link href={`/notifications/edit/${notif._id}`}>
+                                <a className="text-blue-600 hover:underline">
+                                  Edit
+                                </a>
+                              </Link>
+                              {' | '}
+                            </>
+                          }
+                        />
+                      )}
                       <Can
                         perform="notifications:view"
                         yes={
-                          <span
-                            className="text-blue-600 cursor-pointer"
-                            onClick={() => {
-                              setSelectedNotifId(notif._id)
-                              setPreviewNotification(old => !old)
-                            }}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={() => {}}
-                          >
-                            View
-                          </span>
+                          <>
+                            <span
+                              className="text-blue-600 cursor-pointer hover:underline"
+                              onClick={() => {
+                                setSelectedNotifId(notif._id)
+                                setPreviewNotification(old => !old)
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={() => {}}
+                            >
+                              View
+                            </span>
+                            {' | '}
+                          </>
                         }
-                      />{' '}
-                      |{' '}
+                      />
                       <Can
                         perform="notifications:trash"
                         yes={
                           <span
-                            className="text-red-600 cursor-pointer"
+                            className="text-red-600 cursor-pointer hover:underline"
                             onClick={() => {
                               setSelectedNotif(notif)
                               setShowTrashModal(old => !old)
@@ -384,7 +455,7 @@ function Notifications({
                             onKeyDown={() => {}}
                           >
                             {type === TRASHED
-                              ? 'Delete Permanent'
+                              ? 'Permanently Delete'
                               : 'Move to Trash'}
                           </span>
                         }
@@ -392,15 +463,12 @@ function Notifications({
                     </p>
                   </div>
                 ),
-                category: notif?.category?.name || '--',
+                category: notif?.category?.name || 'Uncategorized',
                 dropdown: (
                   <Can
                     perform="notifications:view::update"
                     yes={
-                      <Dropdown
-                        label={<AiOutlineEllipsis />}
-                        items={dropdownData}
-                      />
+                      <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                     }
                   />
                 )
@@ -421,10 +489,7 @@ function Notifications({
               if (p !== undefined) {
                 const parsedData = JSON.parse(p.data)
                 return {
-                  date: `${toFriendlyDate(p?.date)} - ${friendlyDateTimeFormat(
-                    p?.date,
-                    'LT'
-                  )}`,
+                  date: toFriendlyShortDateTime(p?.date),
                   editBy: `${parsedData?.authorName} published a notification: ${parsedData?.title}`
                 }
               }
@@ -468,10 +533,7 @@ function Notifications({
                   </div>
                 ),
                 dropdown: (
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
-                  />
+                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                 )
               }
             })
@@ -532,13 +594,39 @@ function Notifications({
     }
   }, [onCheckAll, type])
 
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
+
   return (
     <>
       <Card
         title={
-          <div className="flex items-center justify-between bg-white">
-            <h1 className="font-bold text-base px-8 py-4 capitalize">{`${type} Notifications (${ITEM_COUNT})`}</h1>
-          </div>
+          <h1 className="font-bold text-base px-4 py-4 capitalize">
+            {searchText
+              ? `Search result for "${searchText}" (${ITEM_COUNT || 0})`
+              : `${type} Notifications (${ITEM_COUNT || 0})`}
+          </h1>
         }
         actions={[
           <Can
@@ -548,7 +636,7 @@ function Notifications({
               <Button
                 primary
                 leftIcon={<FaPlusCircle />}
-                label="Create Notifications"
+                label="Create Notification"
                 onClick={goToCreate}
                 className="mr-4 mt-4"
                 key={`${type}-btn`}
@@ -558,7 +646,7 @@ function Notifications({
               <Button
                 primary
                 leftIcon={<FaPlusCircle />}
-                label="Create Notifications"
+                label="Create Notification"
                 className="mr-4 mt-4"
                 key={`${type}-btn`}
                 disabled
@@ -573,8 +661,17 @@ function Notifications({
             data={notificationsData}
             loading={loadingNotifications}
             currentPage={activePage}
-            onPageChange={onPageClick}
-            onPageLimitChange={onLimitChange}
+            setCurrentPage={onPageClick}
+            setPageOffset={setCurrentOffset}
+            setPageLimit={onLimitChange}
+            pageLimit={currentLimit}
+            emptyText={
+              <NotifCard
+                icon={<FiFileText />}
+                header="You haven’t created a notification yet"
+                content="Notifications are a great way to share information with your members. Create one now!"
+              />
+            }
           />
         }
         className="rounded-t-none"
@@ -586,9 +683,13 @@ function Notifications({
         loading={loadingNotifPreview}
       />
       <Modal
+        title={type === 'trashed' ? 'Delete Permanently' : 'Move to Trash'}
         cancelText="No"
-        okText="Yes"
+        okText={
+          type === 'trashed' ? 'Yes, delete permanently' : 'Yes, move to trash'
+        }
         visible={showTrashModal}
+        onClose={() => setShowTrashModal(old => !old)}
         onCancel={() => setShowTrashModal(old => !old)}
         onOk={handleTrashNotification}
         okButtonProps={{
@@ -596,11 +697,14 @@ function Notifications({
         }}
         width={450}
       >
-        <div className="p-8">
-          <p className="text-xl text-gray-600">
-            {` Do you want to ${
-              type === 'trashed' ? 'delete permanently' : 'move to trash'
-            } a notification: ${selectedNotif?.title}?`}
+        <div className="pb-4">
+          <p className="text-base">
+            {`Do you want to `}
+            <strong>
+              {type === 'trashed' ? 'delete permanently' : 'move to trash'}
+            </strong>
+            {` a notification: `}
+            <strong>{selectedNotif?.title}</strong>?
           </p>
         </div>
       </Modal>
@@ -608,12 +712,13 @@ function Notifications({
         title="Edit History"
         visible={showEditHistoryModal}
         onClose={() => setShowEditHistoryModal(old => !old)}
+        onCancel={() => setShowEditHistoryModal(old => !old)}
         footer={null}
-        width={650}
+        width={850}
         loading={loadingPostHistory}
       >
         <div className="p-4">
-          <div className="w-full flex justify-start items-center mb-8">
+          <div className="w-full flex justify-start items-start mb-8">
             <div className="w-1/2">
               <h4 className="text-base">Date Created</h4>
               <p className="font-medium text-base">
@@ -628,9 +733,9 @@ function Notifications({
                   alt="avatar"
                   className="max-w-sm"
                 />
-                <p className="font-medium text-base ml-2">
+                <span className="font-medium text-base ml-2">
                   {PARSED_JSON_HISTORY?.authorName}
-                </p>
+                </span>
               </div>
             </div>
           </div>
@@ -655,22 +760,22 @@ function Notifications({
         footer={null}
       >
         <div className="p-4">
-          <div className="w-full flex justify-start items-center mb-8">
+          <div className="w-full flex justify-start items-start mb-8">
             <div className="w-1/2">
               <h4 className="text-base">Viewed By</h4>
-              <p className="font-medium text-sm">
+              <p className="font-medium text-base">
                 {`${VIEWS_HISTORY?.count?.uniqViews || 0} `}
-                <span className="text-gray-600">users</span>
+                <span className="text-neutral-500">users</span>
               </p>
             </div>
             <div className="w-1/2">
               <h4 className="text-base">Not Viewed By</h4>
-              <p className="font-bold text-sm">
+              <p className="font-medium text-base">
                 {`${
                   VIEWS_HISTORY?.count?.audience -
                     VIEWS_HISTORY?.count?.uniqViews || 0
                 } `}
-                <span className="text-gray-600">users</span>
+                <span className="text-neutral-500">users</span>
               </p>
             </div>
           </div>
@@ -711,8 +816,10 @@ Notifications.propTypes = {
   categoryId: P.string,
   query: P.object,
   selectedData: P.array,
+  selectedBulk: P.string,
   calledBulk: P.bool,
   dataBulk: P.object,
+  resetBulk: P.func,
   setSelectedData: P.func,
   setSelectedBulk: P.func,
   setIsBulkDisabled: P.func,

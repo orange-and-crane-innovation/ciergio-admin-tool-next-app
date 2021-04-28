@@ -24,6 +24,21 @@ html,
 body,
 #__next {
   @apply bg-neutral-100 h-full;
+
+  &.disconnected {
+    *:not(.Toaster) {
+      opacity: 0.92;
+      transition: all 0.4s ease-in-out;
+      -webkit-transition: all 0.4s ease-in-out;
+      -ms-transition: all 0.4s ease-in-out;
+      -o-transition: all 0.4s ease-in-out;
+    }
+
+    .Toaster,
+    .Toaster * {
+      opacity: 1 !important;
+    }
+  }
 }
 
 [data-background='light'] {
@@ -91,13 +106,13 @@ p {
 
 /* WSIWYG EDITOR */
 .rdw-editor-wrapper {
-  @apply h-full;
   @apply bg-white;
   @apply rounded-md;
+  height: 28rem;
 }
 
 .rdw-editor-main {
-  @apply py-2 px-4;
+  @apply pt-2 pb-8 px-4 mb-8;
 }
 
 .rdw-link-modal {
@@ -142,6 +157,10 @@ p {
   display: none !important;
 }
 
+/* END WSIWYG EDITOR */
+
+/* REACH DIALOG */
+
 [data-reach-dialog-content] {
   @apply p-0 !important;
   @apply bg-transparent !important;
@@ -155,7 +174,7 @@ p {
   }
 }
 
-/* END WSIWYG EDITOR */
+/* END REACH DIALOG */
 
 /* IMAGE SLIDER */
 .image-gallery-bullets {
@@ -170,12 +189,11 @@ p {
 }
 
 .image-gallery-slide img {
-  @apply w-full !important;
+  @apply w-full min-h-xs !important;
   @apply object-scale-down !important;
   @apply overflow-hidden !important;
   @apply object-center !important;
-  height: 430px !important;
-  max-height: 80vh !important;
+  @apply md:h-96 !important;
 }
 
 .image-gallery-icon {
@@ -216,7 +234,7 @@ p {
   @apply border border-neutral-300 !important;
   @apply rounded bg-clip-padding;
   @apply hidden shadow-md;
-  @apply min-w-full !important;
+  width: 260px !important;
 
   &:before {
     @apply inline-block absolute left-auto right-3;
@@ -262,15 +280,18 @@ p {
 }
 
 .rdtDay {
-  @apply h-7 w-7 p-0;
+  @apply h-6 w-6 p-0;
   @apply text-center leading-7;
   @apply rounded-full;
 
+  &:hover,
   &.rdtToday.rdtActive,
   &.rdtActive,
-  &.rdtActive:hover {
+  &.rdtActive:hover,
+  &.rdtOld:hover,
+  &.rdtNew:hover {
     @apply bg-primary-500 !important;
-    @apply bg-white;
+    @apply text-white;
   }
 }
 
@@ -496,3 +517,29 @@ td.rdtYear:hover {
 }
 
 /* END DATETIME PICKER */
+
+/* DATERANGE PICKER */
+
+.rdrDefinedRangesWrapper {
+  @apply hidden md:block;
+}
+
+/* END DATERANGE PICKER */
+
+/* RODAL MODAL */
+
+.rodal {
+  @apply overflow-auto !important;
+}
+
+.rodal-mask {
+  @apply fixed !important;
+}
+
+.rodal-dialog {
+  @apply pb-10 !important;
+  @apply shadow-none !important;
+  @apply w-11/12 md:w-128 !important;
+}
+
+/* END RODAL MODAL */

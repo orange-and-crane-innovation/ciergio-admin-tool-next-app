@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { FaTimes, FaSearch } from 'react-icons/fa'
+import { FaTimes } from 'react-icons/fa'
 
 import FormInput from '@app/components/forms/form-input'
 
@@ -30,7 +30,7 @@ const SearchComponent = ({
         {searchText ? (
           <FaTimes className="cursor-pointer" onClick={handleClearSearch} />
         ) : (
-          <FaSearch />
+          <span className="ciergio-search text-lg" />
         )}
       </span>
     </div>

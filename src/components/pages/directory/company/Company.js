@@ -2,12 +2,9 @@ import React, { useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 import Link from 'next/link'
 import P from 'prop-types'
-
 import { Card } from '@app/components/globals'
 import Table from '@app/components/table'
-
-import { initializeApollo } from '@app/lib/apollo/client'
-import { GET_COMPANY, GET_COMPLEXES, GET_COMPANIES } from '../queries'
+import { GET_COMPANY, GET_COMPLEXES } from '../queries'
 
 const columns = [
   {
@@ -17,31 +14,46 @@ const columns = [
 ]
 
 function Company({ id }) {
-  const { data: complexes } = useQuery(GET_COMPLEXES, {
-    variables: { companyId: id }
-  })
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const companyId = user?.accounts?.data[0]?.company?._id
+  const { data: complexes, loading: loadingComplexes } = useQuery(
+    GET_COMPLEXES,
+    {
+      variables: {
+        where: {
+          companyId: id ?? companyId
+        }
+      }
+    }
+  )
   const { data: companies } = useQuery(GET_COMPANY, {
-    variables: { companyId: id }
+    variables: { companyId: id ?? companyId }
   })
 
   const directoryData = useMemo(
     () => ({
-      count: complexes?.getComplexes.count || 0,
-      limit: complexes?.getComplexes.limit || 0,
+      count: complexes?.getComplexes?.count || 0,
+      limit: complexes?.getComplexes?.limit || 0,
       data:
-        complexes?.getComplexes?.data?.map(item => {
-          return {
-            name: (
-              <Link href={`/directory/complex/${item._id}`}>
-                <span className="text-blue-600 cursor-pointer">
-                  {item.name}
-                </span>
-              </Link>
-            )
-          }
-        }) || []
+        complexes?.getComplexes?.count > 0
+          ? complexes.getComplexes.data.map(item => {
+              return {
+                name: (
+                  <Link
+                    href={`/directory/complex/${item._id}?companyId=${
+                      id ?? companyId
+                    }`}
+                  >
+                    <span className="text-blue-600 cursor-pointer">
+                      {item.name}
+                    </span>
+                  </Link>
+                )
+              }
+            })
+          : []
     }),
-    [complexes?.getComplexes]
+    [complexes?.getComplexes?.count]
   )
   const name = companies?.getCompanies?.data[0]?.name
   return (
@@ -52,7 +64,13 @@ function Company({ id }) {
       </div>
       <Card
         noPadding
-        content={<Table rowNames={columns} items={directoryData} />}
+        content={
+          <Table
+            rowNames={columns}
+            items={directoryData}
+            loading={loadingComplexes}
+          />
+        }
         className="rounded-t-none"
       />
     </section>
@@ -61,40 +79,6 @@ function Company({ id }) {
 
 Company.propTypes = {
   id: P.string
-}
-
-const apolloClient = initializeApollo()
-
-export async function getStaticPaths() {
-  const companies = await apolloClient.query({
-    query: GET_COMPANIES
-  })
-
-  const paths = companies?.getCompanies?.data.map(c => ({
-    params: { id: c._id }
-  }))
-
-  return {
-    paths,
-    fallback: false
-  }
-}
-
-export async function getStaticProps({ params }) {
-  await apolloClient.query({
-    query: GET_COMPANY,
-    variables: { companyId: params.id }
-  })
-
-  await apolloClient.query({
-    query: GET_COMPLEXES
-  })
-
-  return {
-    props: {
-      initialApolloState: apolloClient.cache.extract()
-    }
-  }
 }
 
 export default Company

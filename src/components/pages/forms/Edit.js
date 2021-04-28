@@ -20,6 +20,7 @@ import Modal from '@app/components/modal'
 import PageLoader from '@app/components/page-loader'
 
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
@@ -57,10 +58,6 @@ const GET_POST_QUERY = gql`
             lastName
           }
         }
-        category {
-          _id
-          name
-        }
         primaryMedia {
           url
           type
@@ -73,23 +70,29 @@ const GET_POST_QUERY = gql`
         audienceExpanse {
           company {
             _id
+            name
           }
           complex {
             _id
+            name
           }
           building {
             _id
+            name
           }
         }
         audienceExceptions {
           company {
             _id
+            name
           }
           complex {
             _id
+            name
           }
           building {
             _id
+            name
           }
         }
       }
@@ -105,9 +108,8 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
-  content: yup.string().label('Content').required(),
-  embeddedFiles: yup.array().label('Image').nullable().required(),
-  category: yup.string().label('Category').nullable().required()
+  content: yup.string().label('Content').nullable(),
+  embeddedFiles: yup.array().label('Image').nullable().required()
 })
 
 const validationSchemaDraft = yup.object().shape({
@@ -116,8 +118,7 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65),
-  content: yup.mixed(),
-  category: yup.string().nullable()
+  content: yup.mixed().nullable()
 })
 
 const CreatePosts = () => {
@@ -127,7 +128,9 @@ const CreatePosts = () => {
   const [post, setPost] = useState([])
   const [fileUrls, setFileUrls] = useState([])
   const [fileUploadedData, setFileUploadedData] = useState([])
+  const [fileUploadError, setFileUploadError] = useState()
   const [videoUrl, setVideoUrl] = useState()
+  const [fileMaxSize] = useState(1572864)
   const [inputMaxLength] = useState(65)
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
@@ -149,6 +152,9 @@ const CreatePosts = () => {
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [isEdit, setIsEdit] = useState(true)
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
 
   const [
     updatePost,
@@ -158,18 +164,22 @@ const CreatePosts = () => {
       data: dataUpdate,
       error: errorUpdate
     }
-  ] = useMutation(UPDATE_POST_MUTATION)
+  ] = useMutation(UPDATE_POST_MUTATION, {
+    onError: _e => {}
+  })
 
-  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
-    GET_POST_QUERY,
-    {
-      variables: {
-        where: {
-          _id: query.id
-        }
+  const {
+    loading: loadingPost,
+    data: dataPost,
+    error: errorPost,
+    refetch
+  } = useQuery(GET_POST_QUERY, {
+    variables: {
+      where: {
+        _id: query.id
       }
     }
-  )
+  })
 
   const { handleSubmit, control, reset, errors, register, setValue } = useForm({
     resolver: yupResolver(
@@ -179,7 +189,6 @@ const CreatePosts = () => {
       title: '',
       content: null,
       video: '',
-      category: null,
       embeddedFiles: null
     }
   })
@@ -187,8 +196,12 @@ const CreatePosts = () => {
   register({ name: 'embeddedFiles' })
 
   useEffect(() => {
+    refetch()
+  }, [])
+
+  useEffect(() => {
     if (errorPost) {
-      showToast('danger', `Sorry, there's an error occured on fetching.`)
+      errorHandler(errorPost)
     } else if (!loadingPost && dataPost) {
       const itemData = dataPost?.getAllPost?.post[0]
 
@@ -196,10 +209,9 @@ const CreatePosts = () => {
         setPost(itemData)
         setValue('title', itemData?.title)
         setValue('content', itemData?.content)
-        setValue('category', itemData?.category?._id)
         setValue(
           'embeddedFiles',
-          itemData?.primaryMedia.map(item => {
+          itemData?.primaryMedia?.map(item => {
             return item.url
           })
         )
@@ -209,6 +221,7 @@ const CreatePosts = () => {
             itemData?.embeddedMediaFiles[0]?.url) ??
             null
         )
+        setTextCount(itemData?.title?.length)
         setFileUploadedData(
           itemData?.primaryMedia.map(item => {
             return { url: item.url, type: item.type }
@@ -294,17 +307,54 @@ const CreatePosts = () => {
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
-        showToast('danger', 'Sorry, an error occured during updating of post.')
+        errorHandler(errorUpdate)
       }
       if (calledUpdate && dataUpdate) {
+        let message
         reset()
         resetForm()
-        showToast('success', 'You have successfully updated a post.')
+
+        switch (modalType) {
+          case 'unpublished':
+            message = `You have successfully unpublished a form.`
+            break
+          case 'delete':
+            message = `You have successfully sent an item to the trash.`
+            break
+          default:
+            message = `You have successfully updated a form.`
+            break
+        }
+
+        showToast('success', message)
         goToFormsPageLists()
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
 
   const goToFormsPageLists = () => {
     push('/forms/')
@@ -326,9 +376,18 @@ const CreatePosts = () => {
 
       switch (type) {
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
+        case 'unpublished': {
+          setModalTitle('Unpublish Post')
+          setModalContent(
+            <UpdateCard type="unpublished" title={selected[0].title} />
           )
           setModalFooter(true)
           setModalID(selected[0]._id)
@@ -344,33 +403,37 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    )
-
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
+      })
+      .then(function (response) {
+        if (response.data) {
+          response.data.map(item => {
+            setFileUrls(prevArr => [...prevArr, item.location])
+            return setFileUploadedData(prevArr => [
+              ...prevArr,
+              {
+                url: item.location,
+                type: item.mimetype
+              }
+            ])
+          })
+          setFileUploadError(null)
         }
       })
-
-      const combinedImages = [].concat(
-        fileUrls,
-        response.data.map(item => item.location)
-      )
-      const combinedUploadedImages = [].concat(fileUploadedData, imageData)
-
-      setFileUrls(combinedImages)
-      setFileUploadedData(combinedUploadedImages)
-    }
+      .catch(function (error) {
+        const errMsg = 'Failed to upload file. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('embeddedFiles', null)
+      })
+      .then(() => {
+        setLoading(false)
+      })
   }
 
   const onUploadFile = e => {
@@ -379,20 +442,33 @@ const CreatePosts = () => {
     const fileList = []
 
     if (files) {
+      let maxSize = 0
+      for (const file of files) {
+        if (file.size > fileMaxSize) {
+          maxSize++
+        }
+      }
+
       if (files.length > maxFiles) {
         showToast('info', `Maximum of ${maxFiles} files only`)
+      } else if (maxSize > 0) {
+        showToast(
+          'info',
+          `Maximum size of ${(fileMaxSize / 1024 / 1024).toFixed(1)}mb only`
+        )
       } else {
         setLoading(true)
+        setFileUploadError(null)
+
+        if (errors?.embeddedFiles?.message) {
+          errors.embeddedFiles.message = null
+        }
+
         for (const file of files) {
           const reader = new FileReader()
-
-          reader.onloadend = () => {
-            setFileUploadedData(prevArr => [...prevArr, file])
-            setLoading(false)
-          }
           reader.readAsDataURL(file)
 
-          formData.append('photos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
         setValue('embeddedFiles', fileList)
@@ -418,16 +494,18 @@ const CreatePosts = () => {
     if (
       data?.embeddedFiles === null &&
       data?.title === '' &&
-      data?.content === null
+      (data?.content === null || data?.content === '')
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
       const updateData = {
         id: query.id,
         data: {
-          categoryId: data.category,
           title: data?.title || 'Untitled',
-          content: data?.content,
+          content:
+            data?.content === ''
+              ? null
+              : data?.content?.replace(/(&nbsp;)+/g, ''),
           audienceType: selectedAudienceType,
           status: status,
           primaryMedia: fileUploadedData,
@@ -516,6 +594,10 @@ const CreatePosts = () => {
 
   const onSelectType = data => {
     setSelectedAudienceType(data)
+
+    if (data === 'all') {
+      resetAudienceSpecific()
+    }
   }
 
   const onSelectCompanyExcept = data => {
@@ -645,10 +727,34 @@ const CreatePosts = () => {
     setShowPublishTimeModal(false)
     setSelectedAudienceType('all')
     setSelectedCompanyExcept(null)
-    setSelectedCompanySpecific(null)
+    setSelectedComplexExcept(null)
+    setSelectedBuildingExcept(null)
     setSelectedPublishTimeType('now')
     setSelectedPublishDateTime(null)
     setSelectedStatus('active')
+    resetAudienceSpecific()
+  }
+
+  const resetAudienceSpecific = () => {
+    if (accountType === ACCOUNT_TYPES.COMPYAD.value) {
+      const companyID = user?.accounts?.data[0]?.company?._id
+      setSelectedCompanySpecific([{ value: companyID }])
+      setSelectedComplexSpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
+      const complexID = user?.accounts?.data[0]?.complex?._id
+      setSelectedComplexSpecific([{ value: complexID }])
+      setSelectedCompanySpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.BUIGAD.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+    } else if (accountType === ACCOUNT_TYPES.RECEP.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+      setSelectedCompanySpecific(null)
+      setSelectedComplexSpecific(null)
+    }
   }
 
   const onUpdateStatus = data => {
@@ -670,11 +776,26 @@ const CreatePosts = () => {
     }
   }
 
+  const onUnpublishPost = async () => {
+    const updateData = {
+      id: modalID,
+      data: {
+        status: 'unpublished'
+      }
+    }
+
+    try {
+      await updatePost({ variables: updateData })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   return (
     <>
       {loadingUpdate && <PageLoader fullPage />}
       <div className={style.CreatePostContainer}>
-        <h1 className={style.CreatePostHeader}>Edit Post</h1>
+        <h1 className={style.CreatePostHeader}>Edit Form</h1>
         <form>
           <Card
             content={
@@ -713,8 +834,11 @@ const CreatePosts = () => {
                   control={control}
                   render={({ name, value, onChange }) => (
                     <FormTextArea
-                      options={['link', 'history']}
+                      maxLength={500}
+                      options={['history']}
                       placeholder="Write your text here"
+                      withCounter
+                      stripHtmls
                       value={value}
                       error={errors?.content?.message ?? null}
                       onChange={e => {
@@ -733,15 +857,20 @@ const CreatePosts = () => {
             header={<span className={style.CardHeader}>Files</span>}
             content={
               <div className={style.CreateContentContainer}>
-                <p>You may upload PDFs or DOCs with max file size of 1.5MB.</p>
-                <p>Maximum of 3 files only.</p>
+                <p>
+                  You may upload PDFs or DOCs with max file size of{' '}
+                  {(fileMaxSize / 1024 / 1024).toFixed(1)}MB.
+                </p>
+                <p>Maximum of {maxFiles} files only.</p>
                 <br />
                 <Uploader
                   multiple
                   files={fileUploadedData}
                   fileUrls={fileUrls}
                   loading={loading}
-                  error={errors?.embeddedFiles?.message ?? null}
+                  error={
+                    errors?.embeddedFiles?.message ?? fileUploadError ?? null
+                  }
                   maxFiles={maxFiles}
                   accept=".pdf, .doc, .docx"
                   onUpload={onUploadFile}
@@ -757,12 +886,23 @@ const CreatePosts = () => {
               <div className={style.CreateContentContainer}>
                 <div className={style.CreatePostPublishContent}>
                   <div className={style.CreatePostPublishSubContent}>
-                    <span>
-                      Status: <strong>New</strong>
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Status: </span>
+                      <strong>
+                        {post?.status === 'published'
+                          ? 'Published'
+                          : post?.status === 'unpublished'
+                          ? 'Unpublished'
+                          : post?.status === 'draft'
+                          ? 'Draft'
+                          : 'New'}
+                      </strong>
                     </span>
                     <span className="flex flex-col">
                       <div>
-                        Audience:
+                        <span className={style.CreatePostSection}>
+                          Audience:{' '}
+                        </span>
                         <strong>
                           {selectedAudienceType === 'allExcept'
                             ? ' All those registered except: '
@@ -770,7 +910,9 @@ const CreatePosts = () => {
                             ? ' Only show to those selected: '
                             : ' All those registered '}
                         </strong>
-                        {selectedAudienceType === 'all' && (
+                        {(systemType === 'home' ||
+                          (systemType !== 'home' &&
+                            accountType !== ACCOUNT_TYPES.COMPXAD.value)) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}
@@ -780,57 +922,47 @@ const CreatePosts = () => {
                         )}
                       </div>
 
-                      {(selectedAudienceType === 'allExcept' ||
-                        selectedAudienceType === 'specific') && (
-                        <div className="ml-20">
+                      <div className="flex">
+                        <span className={style.CreatePostSection} />
+                        <span>
                           <strong>
-                            {selectedCompanyExcept && (
-                              <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                            {accountType !== ACCOUNT_TYPES.COMPYAD.value && (
+                              <>
+                                {selectedCompanyExcept && (
+                                  <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
+                                )}
+                                {selectedCompanySpecific && (
+                                  <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+                                )}
+                              </>
                             )}
-                            {selectedCompanySpecific && (
-                              <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
+
+                            {accountType !== ACCOUNT_TYPES.COMPXAD.value && (
+                              <>
+                                {selectedComplexExcept && (
+                                  <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
+                                )}
+                                {selectedComplexSpecific && (
+                                  <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
+                                )}
+                              </>
                             )}
-                            {selectedComplexExcept && (
-                              <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
-                            )}
-                            {selectedComplexSpecific && (
-                              <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
-                            )}
-                            {selectedBuildingExcept && (
-                              <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
-                            )}
-                            {selectedBuildingSpecific && (
-                              <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+
+                            {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
+                              <>
+                                {selectedBuildingExcept && (
+                                  <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
+                                )}
+                                {selectedBuildingSpecific && (
+                                  <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
+                                )}
+                              </>
                             )}
                           </strong>
-                          <span
-                            className={style.CreatePostLink}
-                            onClick={handleShowAudienceModal}
-                          >
-                            Edit
-                          </span>
-                        </div>
-                      )}
+                        </span>
+                      </div>
                     </span>
                   </div>
-
-                  <div className={style.CreatePostPublishMarginContainer}>
-                    Publish:
-                    <strong>
-                      {selectedPublishTimeType === 'later'
-                        ? ` Scheduled, ${moment(selectedPublishDateTime).format(
-                            'MMM DD, YYYY - hh:mm A'
-                          )} `
-                        : ' Immediately '}
-                    </strong>
-                    <span
-                      className={style.CreatePostLink}
-                      onClick={handleShowPublishTimeModal}
-                    >
-                      Edit
-                    </span>
-                  </div>
-                  <span />
                 </div>
               </div>
             }
@@ -848,21 +980,35 @@ const CreatePosts = () => {
                   handleShowModal('delete')
                 })}
               />
-              <Button
-                default
-                type="button"
-                label="Save as Draft"
-                className={style.CreatePostFooterButton}
-                onMouseDown={() => onUpdateStatus('draft')}
-                onClick={handleSubmit(e => {
-                  onSubmit(e, 'draft')
-                })}
-              />
+              {post?.status === 'draft' && (
+                <Button
+                  default
+                  type="button"
+                  label="Save as Draft"
+                  className={style.CreatePostFooterButton}
+                  onMouseDown={() => onUpdateStatus('draft')}
+                  onClick={handleSubmit(e => {
+                    onSubmit(e, 'draft')
+                  })}
+                />
+              )}
+              {post?.status === 'published' && (
+                <Button
+                  default
+                  type="button"
+                  label="Unpublish Form"
+                  className={style.CreatePostFooterButton}
+                  onMouseDown={() => onUpdateStatus('unpublished')}
+                  onClick={handleSubmit(e => {
+                    handleShowModal('unpublished')
+                  })}
+                />
+              )}
             </span>
 
             <Button
               type="button"
-              label="Publish Post"
+              label={post?.status === 'draft' ? 'Publish Form' : 'Update Form'}
               primary
               onMouseDown={() => onUpdateStatus('active')}
               onClick={handleSubmit(e => {
@@ -916,7 +1062,13 @@ const CreatePosts = () => {
               ? 'Save & Continue'
               : 'Yes'
           }
-          onOk={() => (modalType === 'delete' ? onDeletePost() : null)}
+          onOk={() =>
+            modalType === 'delete'
+              ? onDeletePost()
+              : modalType === 'unpublished'
+              ? onUnpublishPost()
+              : null
+          }
           onCancel={() => setShowModal(old => !old)}
         >
           <div className="w-full">{modalContent}</div>

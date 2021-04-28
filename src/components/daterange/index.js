@@ -2,11 +2,12 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useState } from 'react'
 import P from 'prop-types'
-import moment from 'moment'
 import { DateRangePicker } from 'react-date-range'
 
 import FormInput from '@app/components/forms/form-input'
 import Button from '@app/components/button'
+
+import { DATE } from '@app/utils'
 
 import 'react-date-range/dist/styles.css'
 import 'react-date-range/dist/theme/default.css'
@@ -47,11 +48,9 @@ const DateRangeInput = ({
           <FormInput
             name="date"
             inputClassName="pointer-events-none"
-            value={`${moment(selectedDateRange[0].startDate).format(
-              'MMM. DD, YYYY'
-            )} - ${moment(selectedDateRange[0].endDate).format(
-              'MMM. DD, YYYY'
-            )}`}
+            value={`${DATE.toFriendlyShortDate(
+              selectedDateRange[0].startDate
+            )} - ${DATE.toFriendlyShortDate(selectedDateRange[0].endDate)}`}
             onChange={() => {}}
             readOnly
           />
@@ -70,7 +69,12 @@ const DateRangeInput = ({
           />
 
           <div className={styles.Button}>
-            <Button label="Ok" type="button" primary onClick={handleCalendar} />
+            <Button
+              label="Close"
+              type="button"
+              primary
+              onClick={handleCalendar}
+            />
           </div>
         </div>
       </div>

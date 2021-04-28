@@ -6,6 +6,8 @@ import PropTypes from 'prop-types'
 import { FaSpinner, FaRegTrashAlt } from 'react-icons/fa'
 
 import ImageAdd from '@app/assets/svg/image-add.svg'
+import Tooltip from '@app/components/tooltip'
+
 import styles from './image.module.css'
 
 const UploaderImage = ({
@@ -18,7 +20,8 @@ const UploaderImage = ({
   maxImages,
   circle,
   onUploadImage,
-  onRemoveImage
+  onRemoveImage,
+  defaultValue
 }) => {
   const [isOver, setIsOver] = useState(false)
   let uploadedImages
@@ -52,27 +55,41 @@ const UploaderImage = ({
     setIsOver(false)
   }
 
-  if (images && images.length > 0) {
+  if (!error && images && images.length > 0) {
     uploadedImages = images.map((image, index) => {
       return (
         <div key={index} className={containerClass}>
-          <div
-            className={`${styles.imageUploaderImage} ${
-              circle ? styles.imageUploaderImageCircle : ''
-            }`}
-            style={{ backgroundImage: `url(${!loading && image})` }}
-          />
-          <button
-            type="button"
-            className={styles.imageUploaderButton}
-            data-id={image}
-            onClick={e => {
-              handleRemoveImage()
-              onRemoveImage(e)
-            }}
-          >
-            <FaRegTrashAlt />
-          </button>
+          {loading ? (
+            <div
+              className={`${styles.imageUploaderImage} ${
+                circle ? styles.imageUploaderImageCircle : ''
+              }`}
+            >
+              <FaSpinner className="icon-spin" />
+            </div>
+          ) : (
+            <>
+              <div
+                className={`${styles.imageUploaderImage} ${
+                  circle ? styles.imageUploaderImageCircle : ''
+                }`}
+                style={{ backgroundImage: `url(${!loading && image})` }}
+              />
+              <Tooltip text="Remove">
+                <button
+                  type="button"
+                  className={styles.imageUploaderButton}
+                  data-id={image}
+                  onClick={e => {
+                    handleRemoveImage()
+                    onRemoveImage(e)
+                  }}
+                >
+                  <FaRegTrashAlt />
+                </button>
+              </Tooltip>
+            </>
+          )}
         </div>
       )
     })
@@ -82,7 +99,41 @@ const UploaderImage = ({
     <>
       <div className="flex">
         {uploadedImages}
-        {images && images.length < maxImages && (
+        {!error && maxImages ? (
+          images &&
+          images.length < maxImages && (
+            <div className={containerClass}>
+              <input
+                className={styles.imageUploaderControl}
+                type="file"
+                id="image"
+                name={name}
+                value={value}
+                multiple={multiple}
+                onChange={onUploadImage}
+                accept="image/jpg, image/jpeg, image/png"
+              />
+              <div
+                className={`${styles.imageUploaderImage} ${
+                  circle ? styles.imageUploaderImageCircle : ''
+                }`}
+                onClick={handleImageChange}
+                onDrop={handleOnDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+              >
+                {loading ? (
+                  <FaSpinner className="icon-spin" />
+                ) : (
+                  <span className={styles.imageUploaderImageContent}>
+                    <ImageAdd />
+                    Add Image
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        ) : (
           <div className={containerClass}>
             <input
               className={styles.imageUploaderControl}
@@ -90,6 +141,7 @@ const UploaderImage = ({
               id="image"
               name={name}
               value={value}
+              defaultValue={defaultValue}
               multiple={multiple}
               onChange={onUploadImage}
               accept="image/jpg, image/jpeg, image/png"
@@ -130,7 +182,8 @@ UploaderImage.propTypes = {
   maxImages: PropTypes.number,
   circle: PropTypes.bool,
   onUploadImage: PropTypes.func,
-  onRemoveImage: PropTypes.func
+  onRemoveImage: PropTypes.func,
+  defaultValue: PropTypes.string
 }
 
 export default UploaderImage

@@ -120,8 +120,8 @@ const Map = ({ google, getMapValue }) => {
   return (
     <div className="relative w-full h-full">
       <FormInput
-        id="location"
-        name="location"
+        id="location_search"
+        name="location_search"
         type="text"
         placeholder="Search places"
         onChange={searchLocation}

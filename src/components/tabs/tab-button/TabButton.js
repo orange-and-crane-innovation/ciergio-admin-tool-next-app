@@ -4,12 +4,21 @@ import clsx from 'clsx'
 
 import styles from './TabButton.module.css'
 
-const TabButton = ({ id, label, icon, onClick, isSelected, isDisabled }) => {
+const TabButton = ({
+  id,
+  label,
+  icon,
+  onClick,
+  isSelected,
+  isDisabled,
+  isHidden
+}) => {
   const tabClasses = useMemo(
     () =>
       clsx(styles.tabButton, {
         [styles.isSelected]: isSelected,
-        [styles.isDisabled]: isDisabled
+        [styles.isDisabled]: isDisabled,
+        [styles.isHidden]: isHidden
       }),
     [isSelected, isDisabled]
   )
@@ -30,13 +39,15 @@ TabButton.propTypes = {
   icon: PropTypes.node,
   onClick: PropTypes.func,
   isSelected: PropTypes.bool,
-  isDisabled: PropTypes.bool
+  isDisabled: PropTypes.bool,
+  isHidden: PropTypes.bool
 }
 
 TabButton.defaultProps = {
   type: 'default',
   isSelected: false,
-  isDisabled: false
+  isDisabled: false,
+  isHidden: false
 }
 
 export default TabButton

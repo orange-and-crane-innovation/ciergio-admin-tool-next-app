@@ -4,18 +4,33 @@ const navigation = [
     items: [
       {
         url: '/dashboard',
-        icon: 'ciergio-dashboard',
+        icon: 'ciergio-home',
         title: 'Dashboard',
         items: []
       },
       {
         url: '/properties',
-        icon: 'ciergio-organization',
+        icon: 'ciergio-building',
         title: 'My Properties',
         items: [
           {
             url: '/properties/company',
             title: 'My Company',
+            items: []
+          },
+          {
+            url: '/properties/complex',
+            title: 'My Complex',
+            items: []
+          },
+          {
+            url: '/properties/building',
+            title: 'My Building',
+            items: []
+          },
+          {
+            url: '/properties/manage/unit-types',
+            title: 'Manage Unit Types',
             items: []
           },
           {
@@ -27,7 +42,7 @@ const navigation = [
       },
       {
         url: '/staff',
-        icon: 'ciergio-teams',
+        icon: 'ciergio-user-group',
         title: 'My Staff',
         items: [
           {
@@ -44,16 +59,16 @@ const navigation = [
       },
       {
         url: '/residents',
-        icon: 'ciergio-employees',
+        icon: 'ciergio-user',
         title: 'My Residents',
         items: [
           {
-            url: '/residents/all-residents',
+            url: '/residents/all-residents/complexes',
             title: 'All Residents',
             items: []
           },
           {
-            url: '/residents/invites-requests',
+            url: '/residents/invites-requests/complexes',
             title: 'Invites & Requests',
             items: []
           }
@@ -67,7 +82,7 @@ const navigation = [
       },
       {
         url: '/posts',
-        icon: 'ciergio-bulletin',
+        icon: 'ciergio-list',
         title: 'Bulletin Board',
         items: [
           {
@@ -84,7 +99,7 @@ const navigation = [
       },
       {
         url: '/attractions-events',
-        icon: 'ciergio-event',
+        icon: 'ciergio-list',
         title: 'Attractions and Events',
         items: [
           {
@@ -100,30 +115,53 @@ const navigation = [
         ]
       },
       {
-        url: '/qr-codes',
-        icon: 'fa fa-qrcode',
-        title: 'QR Codes',
+        url: '/qr-code',
+        icon: 'ciergio-qr',
+        title: 'QR Code',
         items: [
           {
-            url: '/qr-codes/posts',
+            url: '/qr-code',
             title: 'View All Posts',
             items: []
           },
           {
-            url: '/qr-codes/create',
-            title: 'Create Bulletin',
+            url: '/qr-code/create',
+            title: 'Create QR Code',
             items: []
           }
         ]
       },
       {
-        url: '/maintenance',
-        icon: 'ciergio-maintenance',
+        url: '/daily-readings',
+        icon: 'ciergio-list',
+        title: 'Daily Readings',
+        items: [
+          {
+            url: '/daily-readings',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/daily-readings/create',
+            title: 'Create Daily Reading',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/guest-delivery',
+        icon: 'ciergio-door',
+        title: 'Guest & Delivery',
+        items: []
+      },
+      {
+        url: '/maintenance/complexes',
+        icon: 'ciergio-wrench',
         title: 'Maintenance & Repairs',
         items: []
       },
       {
-        url: '/prayer-requests',
+        url: '/prayer-requests/list',
         icon: 'ciergio-prayer',
         title: 'Prayer Requests',
         items: []
@@ -131,7 +169,7 @@ const navigation = [
       {
         url: '/forms',
         icon: 'ciergio-file',
-        title: 'Forms',
+        title: 'Downloadable Forms',
         items: [
           {
             url: '/forms/create',
@@ -147,7 +185,7 @@ const navigation = [
       },
       {
         url: '/dues',
-        icon: 'ciergio-dues',
+        icon: 'ciergio-bill',
         title: 'My Dues',
         items: [
           {
@@ -181,7 +219,7 @@ const navigation = [
       },
       {
         url: '/notifications',
-        icon: 'ciergio-bulletin',
+        icon: 'ciergio-mail',
         title: 'Notifications',
         items: [
           {
@@ -197,6 +235,33 @@ const navigation = [
         ]
       },
       {
+        url: '/receptionist',
+        icon: 'ciergio-list',
+        title: 'Guest and Delivery',
+        items: [
+          {
+            url: '/receptionist/visitors',
+            title: 'Visitors',
+            items: []
+          },
+          {
+            url: '/receptionist/deliveries',
+            title: 'Deliveries',
+            items: []
+          },
+          {
+            url: '/receptionist/pick-ups',
+            title: 'Pick-Ups',
+            items: []
+          },
+          {
+            url: '/receptionist/services',
+            title: 'Services',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/my-members',
         icon: 'ciergio-employees',
         title: 'My Members',
@@ -204,7 +269,7 @@ const navigation = [
       },
       {
         url: '/offerings',
-        icon: 'ciergio-donate',
+        icon: 'ciergio-donate-2',
         title: 'Offerings',
         items: []
       }

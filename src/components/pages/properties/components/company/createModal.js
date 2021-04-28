@@ -10,16 +10,18 @@ import FormAddress from '@app/components/forms/form-address'
 import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
 
+import showToast from '@app/utils/toast'
+
 const validationSchema = yup.object().shape({
   logo: yup.array().label('Image').nullable().required(),
   name: yup.string().label('Company Name').nullable().trim().required(),
   location: yup.string().label('Location').nullable().trim().required(),
-  domain: yup.string().label('Domain').nullable().trim().required(),
+  domain: yup.string().label('Domain').nullable().trim(),
   email: yup.string().email().label('Email').nullable().trim().required(),
   jobtitle: yup.string().label('Job Title').nullable().trim().required(),
   complexNo: yup
     .number()
-    .positive('No of Complexes must be greater than zero')
+    .moreThan(-1, 'No of Complexes must be greater than or equal to 0')
     .integer()
     .label('No of Complexes')
     .typeError('No of Complexes must be a number')
@@ -27,7 +29,7 @@ const validationSchema = yup.object().shape({
     .required(),
   buildingNo: yup
     .number()
-    .positive('No of Complexes must be greater than zero')
+    .moreThan(-1, 'No of Buildings must be greater than or equal to 0')
     .integer()
     .label('No of Buildings')
     .typeError('No of Buildings must be a number')
@@ -45,6 +47,7 @@ const Component = ({
   onCancel
 }) => {
   const [loadingUploader, setLoadingUploader] = useState(false)
+  const [fileUploadError, setFileUploadError] = useState()
   const [imageUrls, setImageUrls] = useState([])
 
   const { handleSubmit, control, errors, register, setValue } = useForm({
@@ -53,7 +56,7 @@ const Component = ({
       name: '',
       location: '',
       address: '',
-      domain: '',
+      domain: null,
       email: '',
       jobtitle: '',
       complexNo: '',
@@ -77,22 +80,31 @@ const Component = ({
   }, [])
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    )
-
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return item.location
       })
-      setValue('logo', imageData)
-    }
+      .then(function (response) {
+        if (response.data) {
+          const imageData = response.data.map(item => {
+            return item.location
+          })
+          setValue('logo', imageData)
+          setFileUploadError(null)
+        }
+      })
+      .catch(function (error) {
+        const errMsg = 'Failed to upload image. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('logo', null)
+      })
+      .then(() => {
+        setLoadingUploader(false)
+      })
   }
 
   const onUploadImage = e => {
@@ -102,16 +114,21 @@ const Component = ({
 
     if (files) {
       setLoadingUploader(true)
+      setFileUploadError(null)
+
+      if (errors?.logo?.message) {
+        errors.logo.message = null
+      }
+
       for (const file of files) {
         const reader = new FileReader()
 
         reader.onloadend = () => {
           setImageUrls(imageUrls => [...imageUrls, reader.result])
-          setLoadingUploader(false)
         }
         reader.readAsDataURL(file)
 
-        formData.append('photos', file)
+        formData.append('files', file)
         fileList.push(file)
       }
       setValue('logo', fileList)
@@ -143,7 +160,7 @@ const Component = ({
       onCancel={onCancel}
     >
       <div className="p-2 text-base font-body leading-7">
-        <div className="flex items-center">
+        <div className="flex flex-col items-center md:flex-row">
           <div>
             <div className="font-black mb-2">Company Logo</div>
             <div className="text-md mb-2">
@@ -162,7 +179,7 @@ const Component = ({
           />
         </div>
         <div className="text-danger-500 text-md font-bold">
-          {errors?.logo?.message ?? null}
+          {errors?.logo?.message ?? fileUploadError ?? null}
         </div>
 
         <div className="font-black mb-2 mt-10">About the Company</div>
@@ -199,12 +216,13 @@ const Component = ({
           )}
         />
 
-        <div className="font-semibold mb-2">Custom Domain</div>
+        <div className="font-semibold mb-2 hidden">Custom Domain</div>
         <Controller
           name="domain"
           control={control}
           render={({ name, value, onChange }) => (
             <FormInput
+              containerClassName="hidden"
               id={name}
               name={name}
               placeholder=".com"

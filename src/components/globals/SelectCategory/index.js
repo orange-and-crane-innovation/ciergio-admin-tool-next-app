@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLazyQuery, gql } from '@apollo/client'
 import PropTypes from 'prop-types'
-import { FaSpinner } from 'react-icons/fa'
 
 import FormSelect from '@app/components/forms/form-select'
 
@@ -60,6 +59,8 @@ const SelectCategoryComponent = ({
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const company = user?.accounts?.data[0]?.company?._id
+  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = system === 'pray'
 
   const [
     getCategories,
@@ -102,7 +103,7 @@ const SelectCategoryComponent = ({
   })
 
   useEffect(() => {
-    if (accountType === ACCOUNT_TYPES.SUP.value) {
+    if (isSystemPray || accountType === ACCOUNT_TYPES.SUP.value) {
       getCategories()
     } else {
       getAllowedCategories()
@@ -134,14 +135,6 @@ const SelectCategoryComponent = ({
     errorAllowedCategory
   ])
 
-  if (loadingCategory || loadingAllowedCategory) {
-    return (
-      <div className={styles.SelectCategorySpinnerContainer}>
-        <FaSpinner className="icon-spin" />
-      </div>
-    )
-  }
-
   return (
     <div className={styles.SelectCategoryContainer}>
       <FormSelect
@@ -151,12 +144,14 @@ const SelectCategoryComponent = ({
         defaultValue={
           lists ? lists.filter(item => item.value === selected) : null
         }
+        value={lists ? lists.filter(item => item.value === selected) : null}
         error={error}
         options={lists || []}
         disabled={disabled}
         onChange={onChange}
         onClear={onClear}
         isClearable
+        loading={loadingCategory || loadingAllowedCategory}
       />
     </div>
   )

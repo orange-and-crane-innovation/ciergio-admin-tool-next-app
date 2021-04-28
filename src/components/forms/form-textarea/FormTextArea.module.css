@@ -2,11 +2,13 @@
   @apply flex flex-col;
 
   .FormTextAreaSubContainer {
+    @apply h-128;
     @apply border;
     @apply rounded-md;
-    @apply overflow-auto;
-    min-height: 24rem;
-    max-height: 32rem;
+
+    a {
+      @apply text-info-900 hover:underline;
+    }
   }
 
   .hasError {

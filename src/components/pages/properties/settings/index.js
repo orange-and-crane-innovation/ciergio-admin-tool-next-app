@@ -85,8 +85,10 @@ const REMOVE_CATEGORY_QUERY = gql`
 
 const CompanySettingsComponent = ({ type }) => {
   const router = useRouter()
+  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const [categoryLists, setCategoryLists] = useState([])
   const [allowedCategoryLists, setAllowedCategoryLists] = useState([])
+  const isSystemPray = system === 'pray'
 
   const {
     loading: loadingCategory,
@@ -309,13 +311,17 @@ const CompanySettingsComponent = ({ type }) => {
         />
 
         <br />
-        <div className="text-lg font-bold my-4">Maintenance and Repairs</div>
+        <div className="text-lg font-bold my-4">
+          {isSystemPray ? 'Prayer Requests' : 'Maintenance and Repairs'}
+        </div>
         <Card
           noPadding
           content={
             <div className="p-4">
               <div className="text-lg font-bold mb-4">
-                Maintenance and Repairs Categories
+                {`${
+                  isSystemPray ? 'Prayer Requests' : 'Maintenance and Repairs'
+                } Categories`}
               </div>
               <div>
                 These will be the available categories for everyone in your

@@ -12,6 +12,7 @@ import Pagination from '@app/components/pagination'
 import PageLoader from '@app/components/page-loader'
 
 import { DATE } from '@app/utils'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import styles from './index.module.css'
 
@@ -36,10 +37,13 @@ const OverviewComponent = ({
   onLimitChange,
   onCreateButtonClick,
   onHistoryButtonClick,
-  onUnitButtonClick
+  onUnitButtonClick,
+  onSubscriptionButtonClick
 }) => {
   const router = useRouter()
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
   let buttonCreateLabel
 
   useEffect(() => {
@@ -118,7 +122,7 @@ const OverviewComponent = ({
 
       <div className={styles.PageSubContainer}>
         <div className={styles.PageSubContainer2}>
-          {((systemType !== 'pray' && type === 'complex') ||
+          {((systemType === 'home' && type === 'complex') ||
             type === 'company' ||
             type === 'building' ||
             type === 'unit') && (
@@ -237,14 +241,16 @@ const OverviewComponent = ({
                 </div>
               }
               footer={
-                <div className="text-center">
-                  <button
-                    className="font-bold"
-                    onClick={() => alert('Upgrade Plan button clicked!')}
-                  >
-                    Upgrade Plan
-                  </button>
-                </div>
+                accountType === ACCOUNT_TYPES.SUP.value ? (
+                  <div className="text-center">
+                    <button
+                      className="font-bold"
+                      onClick={onSubscriptionButtonClick}
+                    >
+                      Upgrade Plan
+                    </button>
+                  </div>
+                ) : null
               }
             />
           </div>
@@ -336,7 +342,8 @@ OverviewComponent.propTypes = {
   onLimitChange: P.func.isRequired,
   onCreateButtonClick: P.func,
   onHistoryButtonClick: P.func,
-  onUnitButtonClick: P.func
+  onUnitButtonClick: P.func,
+  onSubscriptionButtonClick: P.func
 }
 
 export default OverviewComponent

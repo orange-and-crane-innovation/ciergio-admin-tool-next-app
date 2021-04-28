@@ -1,9 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
-import Modal from '@app/components/globals/Modal'
+import { FiSearch } from 'react-icons/fi'
+import { FaTimes, FaUserAlt } from 'react-icons/fa'
+
+import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import Spinner from '@app/components/spinner'
-import { FiSearch } from 'react-icons/fi'
+
+import useDebounce from '@app/utils/useDebounce'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+
+import { ACCOUNT_TYPES } from '@app/constants'
+
+import NotifCard from '@app/components/globals/NotifCard'
+
 import styles from '../messages.module.css'
 
 export default function NewMessageModal({
@@ -11,21 +21,56 @@ export default function NewMessageModal({
   onCancel,
   onSelectUser,
   users,
+  accountId,
   loadingUsers,
   onSearchChange
 }) {
   const [searchText, setSearchText] = useState('')
-  const units = users?.map((user, index) => user?.unit?.name || `Unit-${index}`)
+  const debouncedSearchText = useDebounce(searchText, 700)
 
   useEffect(() => {
-    onSearchChange(searchText)
-  }, [searchText])
+    onSearchChange(debouncedSearchText)
+  }, [debouncedSearchText])
+
+  const mappedMembers = useMemo(() => {
+    if (users?.length > 0) {
+      return users.map(user => {
+        if (
+          user?._id !== accountId &&
+          (user?.accountType === ACCOUNT_TYPES.MEM.value ||
+            user?.accountType === ACCOUNT_TYPES.UNIT.value ||
+            user?.accountType === ACCOUNT_TYPES.RES.value)
+        ) {
+          return user
+        }
+        return undefined
+      })
+    }
+  }, [users])
+
+  const mappedAdmins = useMemo(() => {
+    if (users?.length > 0) {
+      return users.map(user => {
+        if (
+          user?._id !== accountId &&
+          (user?.accountType === ACCOUNT_TYPES.SUP.value ||
+            user?.accountType === ACCOUNT_TYPES.COMPYAD.value ||
+            user?.accountType === ACCOUNT_TYPES.COMPXAD.value ||
+            user?.accountType === ACCOUNT_TYPES.BUIGAD.value ||
+            user?.accountType === ACCOUNT_TYPES.RECEP.value)
+        ) {
+          return user
+        }
+        return undefined
+      })
+    }
+  }, [users])
 
   return (
     <Modal
       title="New Message"
-      open={visible}
-      onShowModal={() => {
+      visible={visible}
+      onClose={() => {
         setSearchText('')
         onCancel()
       }}
@@ -42,11 +87,8 @@ export default function NewMessageModal({
         />
         <span className="absolute top-11 right-8">
           {searchText ? (
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={() => {}}
-              className="ciergio-close cursor-pointer"
+            <FaTimes
+              className="cursor-pointer"
               onClick={() => setSearchText('')}
             />
           ) : (
@@ -56,33 +98,54 @@ export default function NewMessageModal({
       </div>
       <div className={styles.newMessageAccountsList}>
         {loadingUsers ? <Spinner /> : null}
+        {mappedAdmins?.length > 0 ? (
+          <h4 className="font-bold text-base px-4 py-2">Admins</h4>
+        ) : null}
         {!loadingUsers &&
-          units.map((unit, index) => {
-            return (
-              <div key={index} className="p-2">
-                <p>{unit.name}</p>
-                {users?.length > 0 && !loadingUsers
-                  ? users.map(user => {
-                      if (user?.unit?._id !== unit._id) return null
-
-                      return (
-                        <User
-                          key={user._id}
-                          data={user}
-                          handleClick={onSelectUser}
-                        />
-                      )
-                    })
-                  : null}
-              </div>
-            )
+          mappedAdmins?.map(admin => {
+            if (admin) {
+              return (
+                <User
+                  key={admin?._id}
+                  data={admin}
+                  handleClick={onSelectUser}
+                />
+              )
+            }
+            return null
           })}
+        {mappedMembers?.length > 0 ? (
+          <h4 className="font-bold text-base p-4">Members</h4>
+        ) : null}
+        {!loadingUsers &&
+          mappedMembers?.map(member => {
+            if (member) {
+              return (
+                <User
+                  key={member?._id}
+                  data={member}
+                  handleClick={onSelectUser}
+                />
+              )
+            }
+            return null
+          })}
+        {!loadingUsers && users?.length === 0 && (
+          <div className="h-full flex items-center justify-center">
+            <NotifCard
+              icon={<FaUserAlt />}
+              header="No result"
+              content="Sorry, no results were found."
+            />
+          </div>
+        )}
       </div>
     </Modal>
   )
 }
 
 const User = ({ data, handleClick }) => {
+  const accountId = data?._id
   const user = data?.user
   const firstName = user?.firstName
   const lastName = user?.lastName
@@ -91,7 +154,7 @@ const User = ({ data, handleClick }) => {
   return (
     <div
       className={styles.newMessageUserItem}
-      onClick={() => handleClick(user?._id)}
+      onClick={() => handleClick(accountId)}
       role="button"
       tabIndex={0}
       onKeyDown={() => {}}
@@ -99,19 +162,19 @@ const User = ({ data, handleClick }) => {
       <div className="mr-4">
         <img
           src={
-            avatar ||
-            `https://ui-avatars.com/api/?name=${firstName}+${lastName}`
+            avatar ??
+            `https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-default.png`
           }
           alt="avatar"
           className="h-8 w-8 rounded-full"
         />
       </div>
       <div className="mr-4">
-        <p>{`${lastName} ${firstName} `}</p>
+        <p>{`${firstName} ${lastName} `}</p>
       </div>
       <div>
         <p className="text-neutral-600 capitalize">
-          {data?.accountType?.replace('_', ' ')}
+          {getAccountTypeName(data?.accountType)}
         </p>
       </div>
     </div>
@@ -128,6 +191,7 @@ NewMessageModal.propTypes = {
   onCancel: P.func,
   onSelectUser: P.func,
   users: P.array,
+  accountId: P.string,
   loadingUsers: P.bool,
   onSearchChange: P.func,
   searchText: P.string

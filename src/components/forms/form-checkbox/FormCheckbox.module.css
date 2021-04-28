@@ -1,4 +1,5 @@
 .FormCheckboxContainer {
+  @apply flex items-center;
   @apply cursor-pointer;
 
   .FormCheckbox {
@@ -38,5 +39,10 @@
     &.isInfo {
       @apply text-info-500 text-white;
     }
+  }
+
+  .FormCheckboxLabel {
+    @apply ml-2;
+    @apply cursor-pointer;
   }
 }

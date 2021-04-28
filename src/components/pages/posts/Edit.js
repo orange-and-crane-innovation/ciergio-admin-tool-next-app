@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-key */
@@ -7,10 +8,13 @@ import { useRouter } from 'next/router'
 import { gql, useMutation, useQuery } from '@apollo/client'
 import axios from 'axios'
 import { FaSpinner, FaTimes } from 'react-icons/fa'
+import { FiDownload } from 'react-icons/fi'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import moment from 'moment'
+import dayjs from 'dayjs'
+import QRCode from 'react-qr-code'
+import Datetime from 'react-datetime'
 
 import Card from '@app/components/card'
 import FormInput from '@app/components/forms/form-input'
@@ -24,12 +28,16 @@ import VideoPlayer from '@app/components/globals/VideoPlayer'
 import SelectCategory from '@app/components/globals/SelectCategory'
 
 import showToast from '@app/utils/toast'
+import { DATE } from '@app/utils'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
 import Can from '@app/permissions/can'
 import style from './Create.module.css'
+
+const saveSvgAsPng = require('save-svg-as-png')
 
 const UPDATE_POST_MUTATION = gql`
   mutation($id: String, $data: PostInput) {
@@ -101,6 +109,67 @@ const GET_POST_QUERY = gql`
   }
 `
 
+const GET_POST_DAILY_READINGS_QUERY = gql`
+  query getAllPost($where: AllPostInput) {
+    getAllPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+        category {
+          _id
+          name
+        }
+        primaryMedia {
+          url
+          type
+        }
+        embeddedMediaFiles {
+          url
+          type
+        }
+        audienceType
+        audienceExpanse {
+          company {
+            _id
+          }
+          complex {
+            _id
+          }
+          building {
+            _id
+          }
+        }
+        audienceExceptions {
+          company {
+            _id
+          }
+          complex {
+            _id
+          }
+          building {
+            _id
+          }
+        }
+        dailyReadingDate
+      }
+    }
+  }
+`
+
 const validationSchema = yup.object().shape({
   title: yup
     .string()
@@ -109,8 +178,8 @@ const validationSchema = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
     .required(),
-  content: yup.string().label('Content').required(),
-  images: yup.array().label('Image').nullable().required(),
+  content: yup.string().label('Content').nullable().required(),
+  images: yup.array().label('Image').nullable(),
   category: yup.string().label('Category').nullable().required()
 })
 
@@ -120,17 +189,30 @@ const validationSchemaDraft = yup.object().shape({
     .nullable()
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
-  content: yup.mixed(),
+  content: yup.string().nullable(),
   category: yup.string().nullable()
 })
 
+const validationSchemaDailyReadings = yup.object().shape({
+  title: yup
+    .string()
+    .label('Title')
+    .nullable()
+    .trim()
+    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .required(),
+  content: yup.string().label('Content').nullable().required(),
+  images: yup.array().label('Image').nullable()
+})
+
 const CreatePosts = () => {
-  const { query, push } = useRouter()
+  const { query, push, pathname } = useRouter()
   const [loading, setLoading] = useState(false)
   const [maxImages] = useState(3)
   const [post, setPost] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
+  const [fileUploadError, setFileUploadError] = useState()
   const [videoUrl, setVideoUrl] = useState()
   const [videoError, setVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
@@ -155,10 +237,21 @@ const CreatePosts = () => {
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const [isEdit, setIsEdit] = useState(true)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const isAttractionsEventsPage = pathname === '/attractions-events/edit/[id]'
+  const isQRCodePage = pathname === '/qr-code/edit/[id]'
+  const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
+  const routeName = isAttractionsEventsPage
+    ? 'attractions-events'
+    : isQRCodePage
+    ? 'qr-code'
+    : isDailyReadingsPage
+    ? 'daily-readings'
+    : 'posts'
 
   const [
     updatePost,
@@ -168,10 +261,17 @@ const CreatePosts = () => {
       data: dataUpdate,
       error: errorUpdate
     }
-  ] = useMutation(UPDATE_POST_MUTATION)
+  ] = useMutation(UPDATE_POST_MUTATION, {
+    onError: _e => {}
+  })
 
-  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
-    GET_POST_QUERY,
+  const {
+    loading: loadingPost,
+    data: dataPost,
+    error: errorPost,
+    refetch
+  } = useQuery(
+    isDailyReadingsPage ? GET_POST_DAILY_READINGS_QUERY : GET_POST_QUERY,
     {
       variables: {
         where: {
@@ -191,7 +291,11 @@ const CreatePosts = () => {
     getValues
   } = useForm({
     resolver: yupResolver(
-      selectedStatus === 'draft' ? validationSchemaDraft : validationSchema
+      selectedStatus === 'draft'
+        ? validationSchemaDraft
+        : isDailyReadingsPage
+        ? validationSchemaDailyReadings
+        : validationSchema
     ),
     defaultValues: {
       title: '',
@@ -205,8 +309,12 @@ const CreatePosts = () => {
   register({ name: 'images' })
 
   useEffect(() => {
+    refetch()
+  }, [])
+
+  useEffect(() => {
     if (errorPost) {
-      showToast('danger', `Sorry, there's an error occured on fetching.`)
+      errorHandler(errorPost)
     } else if (!loadingPost && dataPost) {
       const itemData = dataPost?.getAllPost?.post[0]
 
@@ -217,9 +325,9 @@ const CreatePosts = () => {
         setValue('category', itemData?.category?._id)
         setValue(
           'images',
-          itemData?.primaryMedia.map(item => {
+          itemData?.primaryMedia?.map(item => {
             return item.url
-          })
+          }) ?? []
         )
         setValue(
           'video',
@@ -227,10 +335,11 @@ const CreatePosts = () => {
             itemData?.embeddedMediaFiles[0]?.url) ??
             null
         )
+        setTextCount(itemData?.title?.length)
         setImageUploadedData(
-          itemData?.primaryMedia.map(item => {
+          itemData?.primaryMedia?.map(item => {
             return { url: item.url, type: item.type }
-          })
+          }) ?? []
         )
         setSelectedCategory(itemData?.category?._id)
         setVideoUrl(
@@ -238,7 +347,7 @@ const CreatePosts = () => {
             itemData?.embeddedMediaFiles[0]?.url) ??
             ''
         )
-        setImageUrls(itemData?.primaryMedia.map(item => item.url))
+        setImageUrls(itemData?.primaryMedia?.map(item => item.url) ?? [])
         setSelectedAudienceType(itemData?.audienceType)
         setSelectedCompanyExcept(
           itemData?.audienceExceptions?.company?.length > 0
@@ -301,11 +410,12 @@ const CreatePosts = () => {
             : null
         )
         setSelectedPublishTimeType(
-          moment().isAfter(moment(new Date(itemData?.publishedAt)))
+          dayjs().isAfter(dayjs(new Date(itemData?.publishedAt)))
             ? 'now'
             : 'later'
         )
         setSelectedPublishDateTime(itemData?.publishedAt)
+        setSelectedDate(itemData?.dailyReadingDate)
       }
     }
   }, [loadingPost, dataPost, errorPost, setValue])
@@ -313,10 +423,24 @@ const CreatePosts = () => {
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
-        showToast('danger', 'Sorry, an error occured during updating of post.')
+        errorHandler(errorUpdate)
       }
       if (calledUpdate && dataUpdate) {
-        showToast('success', 'You have successfully updated a post.')
+        let message
+
+        switch (modalType) {
+          case 'unpublished':
+            message = 'You have successfully unpublished a post.'
+            break
+          case 'delete':
+            message = 'You have successfully sent an item to the trash.'
+            break
+          default:
+            message = 'You have successfully updated a post.'
+            break
+        }
+
+        showToast('success', message)
 
         if (modalType === 'preview') {
           goToPreviewPage()
@@ -325,15 +449,38 @@ const CreatePosts = () => {
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, reset])
 
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
+
   const goToBulletinPageLists = () => {
-    push('/posts/')
+    push(`/${routeName}/`)
   }
 
   const goToPreviewPage = () => {
-    push(`/posts/view/${query.id}`)
+    push(`/${routeName}/view/${query.id}`)
   }
 
   const onCountChar = e => {
@@ -352,7 +499,7 @@ const CreatePosts = () => {
 
       switch (type) {
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
           )
@@ -361,9 +508,18 @@ const CreatePosts = () => {
           break
         }
         case 'preview': {
-          setModalTitle('Preview Post')
+          setModalTitle('Save & Preview Post')
           setModalContent(
-            <UpdateCard type="preview" title={selected[0].title} />
+            <UpdateCard type="preview-edit" title={selected[0].title} />
+          )
+          setModalFooter(true)
+          setModalID(selected[0]._id)
+          break
+        }
+        case 'unpublished': {
+          setModalTitle('Unpublish Post')
+          setModalContent(
+            <UpdateCard type="unpublished" title={selected[0].title} />
           )
           setModalFooter(true)
           setModalID(selected[0]._id)
@@ -379,33 +535,37 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
-      payload,
-      {
+    await axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    )
-
-    if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
+      })
+      .then(function (response) {
+        if (response.data) {
+          response.data.map(item => {
+            setImageUrls(prevArr => [...prevArr, item.location])
+            return setImageUploadedData(prevArr => [
+              ...prevArr,
+              {
+                url: item.location,
+                type: item.mimetype
+              }
+            ])
+          })
+          setFileUploadError(null)
         }
       })
-
-      const combinedImages = [].concat(
-        imageUrls,
-        response.data.map(item => item.location)
-      )
-      const combinedUploadedImages = [].concat(imageUploadedData, imageData)
-
-      setImageUrls(combinedImages)
-      setImageUploadedData(combinedUploadedImages)
-    }
+      .catch(function (error) {
+        const errMsg = 'Failed to upload image. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('images', null)
+      })
+      .then(() => {
+        setLoading(false)
+      })
   }
 
   const onUploadImage = e => {
@@ -418,16 +578,17 @@ const CreatePosts = () => {
         showToast('info', `Maximum of ${maxImages} files only`)
       } else {
         setLoading(true)
+        setFileUploadError(null)
+
+        if (errors?.images?.message) {
+          errors.images.message = null
+        }
+
         for (const file of files) {
           const reader = new FileReader()
-
-          reader.onloadend = () => {
-            // setImageUrls(imageUrls => [...imageUrls, reader.result])
-            setLoading(false)
-          }
           reader.readAsDataURL(file)
 
-          formData.append('photos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
         setValue('images', fileList)
@@ -450,7 +611,7 @@ const CreatePosts = () => {
   }
 
   const onVideoChange = e => {
-    setVideoLoading(true)
+    setVideoLoading(e.target.value !== '')
     setVideoError(null)
     setVideoUrl(e.target.value)
   }
@@ -474,7 +635,7 @@ const CreatePosts = () => {
   const onSubmit = (data, status) => {
     if (
       data?.title === '' &&
-      data?.content === null &&
+      (data?.content === null || data?.content === '') &&
       data?.images === null &&
       data?.video === ''
     ) {
@@ -485,10 +646,13 @@ const CreatePosts = () => {
         data: {
           categoryId: data.category,
           title: data?.title || 'Untitled',
-          content: data?.content,
+          content:
+            data?.content === ''
+              ? null
+              : data?.content?.replace(/(&nbsp;)+/g, ''),
           audienceType: selectedAudienceType,
-          status: status,
-          primaryMedia: imageUploadedData,
+          primaryMedia:
+            imageUploadedData?.length > 0 ? imageUploadedData : null,
           embeddedMediaFiles: videoUrl
             ? [
                 {
@@ -497,6 +661,14 @@ const CreatePosts = () => {
               ]
             : null
         }
+      }
+
+      if (status) {
+        updateData.data.status =
+          !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
+          status !== 'draft'
+            ? 'scheduled'
+            : status
       }
 
       if (selectedPublishDateTime) {
@@ -568,6 +740,12 @@ const CreatePosts = () => {
           }
         }
       }
+
+      if (isDailyReadingsPage) {
+        updateData.data.dailyReadingDate = DATE.toFriendlyISO(
+          DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
+        )
+      }
       updatePost({ variables: updateData })
     }
   }
@@ -582,6 +760,10 @@ const CreatePosts = () => {
 
   const onSelectType = data => {
     setSelectedAudienceType(data)
+
+    if (data === 'all') {
+      resetAudienceSpecific()
+    }
   }
 
   const onSelectCompanyExcept = data => {
@@ -697,32 +879,13 @@ const CreatePosts = () => {
   }
 
   const onCancelPublishTime = () => {
-    const publishType = moment().isAfter(moment(new Date(post.publishedAt)))
+    const publishType = dayjs().isAfter(dayjs(new Date(post.publishedAt)))
       ? 'now'
       : 'later'
     setSelectedPublishDateTime(post.publishedAt)
     setSelectedPublishTimeType(publishType)
     handleShowPublishTimeModal()
   }
-
-  // const resetForm = () => {
-  //   setLoading(false)
-  //   setImageUrls([])
-  //   setImageUploadedData([])
-  //   setVideoUrl(null)
-  //   setVideoError(null)
-  //   setVideoLoading(false)
-  //   setTextCount(0)
-  //   setShowAudienceModal(false)
-  //   setShowPublishTimeModal(false)
-  //   setSelectedCategory(null)
-  //   setSelectedAudienceType('all')
-  //   setSelectedCompanyExcept(null)
-  //   setSelectedCompanySpecific(null)
-  //   setSelectedPublishTimeType('now')
-  //   setSelectedPublishDateTime(null)
-  //   setSelectedStatus('active')
-  // }
 
   const onUpdateStatus = data => {
     setSelectedStatus(data)
@@ -744,7 +907,62 @@ const CreatePosts = () => {
   }
 
   const onPreviewPost = () => {
-    onSubmit(getValues(), 'draft')
+    onSubmit(getValues())
+  }
+
+  const onUnpublishPost = async () => {
+    const updateData = {
+      id: modalID,
+      data: {
+        status: 'unpublished'
+      }
+    }
+
+    try {
+      await updatePost({ variables: updateData })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const downloadQR = () => {
+    const imageOptions = {
+      scale: 5,
+      encoderOptions: 1,
+      backgroundColor: 'white'
+    }
+
+    saveSvgAsPng.saveSvgAsPng(
+      document.querySelector('.qrCode > svg'),
+      'qr.png',
+      imageOptions
+    )
+  }
+
+  const handleDateChange = e => {
+    setSelectedDate(e)
+  }
+
+  const resetAudienceSpecific = () => {
+    if (accountType === ACCOUNT_TYPES.COMPYAD.value) {
+      const companyID = user?.accounts?.data[0]?.company?._id
+      setSelectedCompanySpecific([{ value: companyID }])
+      setSelectedComplexSpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
+      const complexID = user?.accounts?.data[0]?.complex?._id
+      setSelectedComplexSpecific([{ value: complexID }])
+      setSelectedCompanySpecific(null)
+      setSelectedBuildingSpecific(null)
+    } else if (accountType === ACCOUNT_TYPES.BUIGAD.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+    } else if (accountType === ACCOUNT_TYPES.RECEP.value) {
+      const buildingID = user?.accounts?.data[0]?.building?._id
+      setSelectedBuildingSpecific([{ value: buildingID }])
+      setSelectedCompanySpecific(null)
+      setSelectedComplexSpecific(null)
+    }
   }
 
   return (
@@ -753,6 +971,37 @@ const CreatePosts = () => {
       <div className={style.CreatePostContainer}>
         <h1 className={style.CreatePostHeader}>Edit a Post</h1>
         <form>
+          {isQRCodePage && (
+            <Card
+              header={<span className={style.CardHeader}>QR Code</span>}
+              content={
+                <div className={style.CreateContentContainer}>
+                  <div className={style.CreatePostVideoInput}>Article URL</div>
+                  <FormInput
+                    type="text"
+                    name="qr-input"
+                    value={`${window.location.origin}/public-qr-posts/view/${dataPost?.getAllPost?.post[0]._id}`}
+                    readOnly
+                  />
+                  <div className={style.CreatePostVideoInput}>QR Code</div>
+                  <div className="qrCode">
+                    <QRCode
+                      size={168}
+                      value={`${window.location.origin}/public-qr-posts/view/${dataPost?.getAllPost?.post[0]._id}`}
+                    />
+                    <Button
+                      default
+                      label="Download"
+                      onClick={downloadQR}
+                      leftIcon={<FiDownload />}
+                      className="mt-4"
+                    />
+                  </div>
+                </div>
+              }
+            />
+          )}
+
           <Card
             header={<span className={style.CardHeader}>Featured Media</span>}
             content={
@@ -763,7 +1012,7 @@ const CreatePosts = () => {
                   maxImages={maxImages}
                   images={imageUrls}
                   loading={loading}
-                  error={errors?.images?.message ?? null}
+                  error={errors?.images?.message ?? fileUploadError ?? null}
                   onUploadImage={onUploadImage}
                   onRemoveImage={onRemoveImage}
                 />
@@ -774,7 +1023,62 @@ const CreatePosts = () => {
           <Card
             content={
               <div className={style.CreateContentContainer}>
-                <h2 className={style.CreatePostHeaderSmall}>Title</h2>
+                {isDailyReadingsPage && (
+                  <>
+                    <h2 className={style.CreatePostHeaderSmall}>
+                      Daily Reading Date
+                    </h2>
+                    <div className={style.CreatePostCardContent}>
+                      <div className={style.CreatePostSubContent}>
+                        <Controller
+                          name="date"
+                          control={control}
+                          render={({ name, value, onChange }) => (
+                            <Datetime
+                              renderInput={(props, openCalendar) => (
+                                <>
+                                  <div className="relative">
+                                    <FormInput
+                                      {...props}
+                                      inputProps={{
+                                        style: { backgroundColor: 'white' }
+                                      }}
+                                      inputClassName={
+                                        style.CreatePostInputCustom
+                                      }
+                                      name="date"
+                                      value={dayjs(selectedDate).format(
+                                        'MMM DD, YYYY'
+                                      )}
+                                      error={errors?.date?.message ?? null}
+                                      readOnly
+                                    />
+                                    <i
+                                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                                      onClick={openCalendar}
+                                    />
+                                  </div>
+                                </>
+                              )}
+                              dateFormat="MMMM DD, YYYY"
+                              timeFormat={false}
+                              value={selectedDate}
+                              closeOnSelect
+                              onChange={e => {
+                                onChange(e)
+                                handleDateChange(e)
+                              }}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <h2 className={style.CreatePostHeaderSmall}>
+                  {isDailyReadingsPage ? 'Daily Reading Title' : 'Title'}
+                </h2>
                 <div className={style.CreatePostSubContent}>
                   <div className={style.CreatePostSubContentGrow}>
                     <Controller
@@ -859,6 +1163,9 @@ const CreatePosts = () => {
                           />
                         )}
                       />
+                      {videoError && (
+                        <p className={style.TextError}>{videoError}</p>
+                      )}
                     </div>
                     <FaTimes
                       className={`${style.CreatePostVideoButtonClose} ${
@@ -880,38 +1187,37 @@ const CreatePosts = () => {
                     onReady={onVideoReady}
                   />
                 )}
-
-                {videoError && <p className={style.TextError}>{videoError}</p>}
               </div>
             }
           />
-
-          <Card
-            header={<span className={style.CardHeader}>Category</span>}
-            content={
-              <div className={style.CreateContentContainer}>
-                <div className={style.CreatePostCardContent}>
-                  <Controller
-                    name="category"
-                    control={control}
-                    render={({ name, value, onChange }) => (
-                      <SelectCategory
-                        placeholder="Select a Category"
-                        type="post"
-                        onChange={e => {
-                          onChange(e.value)
-                          onCategorySelect(e)
-                        }}
-                        onClear={onClearCategory}
-                        error={errors?.category?.message ?? null}
-                        selected={selectedCategory}
-                      />
-                    )}
-                  />
+          {!isDailyReadingsPage && (
+            <Card
+              header={<span className={style.CardHeader}>Category</span>}
+              content={
+                <div className={style.CreateContentContainer}>
+                  <div className={style.CreatePostCardContent}>
+                    <Controller
+                      name="category"
+                      control={control}
+                      render={({ name, value, onChange }) => (
+                        <SelectCategory
+                          placeholder="Select a Category"
+                          type="post"
+                          onChange={e => {
+                            onChange(e.value)
+                            onCategorySelect(e)
+                          }}
+                          onClear={onClearCategory}
+                          error={errors?.category?.message ?? null}
+                          selected={selectedCategory}
+                        />
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
-            }
-          />
+              }
+            />
+          )}
 
           <Card
             header={<span className={style.CardHeader}>Publish Details</span>}
@@ -921,7 +1227,15 @@ const CreatePosts = () => {
                   <div className={style.CreatePostPublishSubContent}>
                     <span className="flex">
                       <span className={style.CreatePostSection}>Status: </span>
-                      <strong>New</strong>
+                      <strong>
+                        {post?.status === 'published'
+                          ? 'Published'
+                          : post?.status === 'unpublished'
+                          ? 'Unpublished'
+                          : post?.status === 'draft'
+                          ? 'Draft'
+                          : 'New'}
+                      </strong>
                     </span>
                     <span className="flex flex-col">
                       <div>
@@ -935,9 +1249,9 @@ const CreatePosts = () => {
                             ? ' Only show to those selected:'
                             : ' All those registered'}
                         </strong>
-                        {(systemType !== 'pray' ||
-                          (systemType === 'pray' &&
-                            accountType !== 'complex_admin')) && (
+                        {(systemType === 'home' ||
+                          (systemType !== 'home' &&
+                            accountType !== ACCOUNT_TYPES.COMPXAD.value)) && (
                           <span
                             className={style.CreatePostLink}
                             onClick={handleShowAudienceModal}
@@ -947,58 +1261,65 @@ const CreatePosts = () => {
                         )}
                       </div>
 
-                      {(selectedAudienceType === 'allExcept' ||
-                        selectedAudienceType === 'specific') && (
-                        <div className="flex">
-                          <span className={style.CreatePostSection} />
-                          <span>
-                            <strong>
-                              {selectedCompanyExcept &&
-                                selectedAudienceType === 'allExcept' && (
+                      <div className="flex">
+                        <span className={style.CreatePostSection} />
+                        <span>
+                          <strong>
+                            {accountType !== ACCOUNT_TYPES.COMPYAD.value && (
+                              <>
+                                {selectedCompanyExcept && (
                                   <div>{`Companies (${selectedCompanyExcept?.length}) `}</div>
                                 )}
-                              {selectedCompanySpecific &&
-                                selectedAudienceType === 'specific' && (
+                                {selectedCompanySpecific && (
                                   <div>{`Companies (${selectedCompanySpecific?.length}) `}</div>
                                 )}
-                              {selectedComplexExcept &&
-                                selectedAudienceType === 'allExcept' && (
+                              </>
+                            )}
+
+                            {accountType !== ACCOUNT_TYPES.COMPXAD.value && (
+                              <>
+                                {selectedComplexExcept && (
                                   <div>{`Complexes (${selectedComplexExcept?.length}) `}</div>
                                 )}
-                              {selectedComplexSpecific &&
-                                selectedAudienceType === 'specific' && (
+                                {selectedComplexSpecific && (
                                   <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
                                 )}
-                              {selectedBuildingExcept &&
-                                selectedAudienceType === 'allExcept' && (
+                              </>
+                            )}
+
+                            {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
+                              <>
+                                {selectedBuildingExcept && (
                                   <div>{`Buildings (${selectedBuildingExcept?.length}) `}</div>
                                 )}
-                              {selectedBuildingSpecific &&
-                                selectedAudienceType === 'specific' && (
+                                {selectedBuildingSpecific && (
                                   <div>{`Buildings (${selectedBuildingSpecific?.length}) `}</div>
                                 )}
-                            </strong>
-                          </span>
-                        </div>
-                      )}
+                              </>
+                            )}
+                          </strong>
+                        </span>
+                      </div>
                     </span>
                   </div>
 
-                  <div className={style.CreatePostPublishMarginContainer}>
+                  <div className="flex">
                     <span className={style.CreatePostSection}>Publish: </span>
                     <strong>
                       {selectedPublishTimeType === 'later'
-                        ? ` Scheduled, ${moment(selectedPublishDateTime).format(
+                        ? ` Scheduled, ${dayjs(selectedPublishDateTime).format(
                             'MMM DD, YYYY - hh:mm A'
                           )} `
                         : ' Immediately'}
                     </strong>
-                    <span
-                      className={style.CreatePostLink}
-                      onClick={handleShowPublishTimeModal}
-                    >
-                      Edit
-                    </span>
+                    {!isDailyReadingsPage && (
+                      <span
+                        className={style.CreatePostLink}
+                        onClick={handleShowPublishTimeModal}
+                      >
+                        Edit
+                      </span>
+                    )}
                   </div>
                   <span />
                 </div>
@@ -1032,46 +1353,76 @@ const CreatePosts = () => {
                   />
                 }
               />
-              <Can
-                perform="bulletin:draft"
-                yes={
-                  <Button
-                    default
-                    type="button"
-                    label="Save as Draft"
-                    className={style.CreatePostFooterButton}
-                    onMouseDown={() => onUpdateStatus('draft')}
-                    onClick={handleSubmit(e => {
-                      onSubmit(e, 'draft')
-                    })}
-                  />
-                }
-                no={
-                  <Button
-                    default
-                    disabled
-                    type="button"
-                    label="Save as Draft"
-                    className={style.CreatePostFooterButton}
-                  />
-                }
-              />
+
+              {post?.status === 'draft' && (
+                <Can
+                  perform="bulletin:draft"
+                  yes={
+                    <Button
+                      default
+                      type="button"
+                      label="Save as Draft"
+                      className={style.CreatePostFooterButton}
+                      onMouseDown={() => onUpdateStatus('draft')}
+                      onClick={handleSubmit(e => {
+                        onSubmit(e, 'draft')
+                      })}
+                    />
+                  }
+                  no={
+                    <Button
+                      default
+                      disabled
+                      type="button"
+                      label="Save as Draft"
+                      className={style.CreatePostFooterButton}
+                    />
+                  }
+                />
+              )}
+              {post?.status === 'published' && (
+                <Can
+                  perform="bulletin:unpublish"
+                  yes={
+                    <Button
+                      default
+                      type="button"
+                      label="Unpublish Post"
+                      className={style.CreatePostFooterButton}
+                      onMouseDown={() => onUpdateStatus('unpublished')}
+                      onClick={handleSubmit(e => {
+                        handleShowModal('unpublished')
+                      })}
+                    />
+                  }
+                  no={
+                    <Button
+                      default
+                      disabled
+                      type="button"
+                      label="Unpublish Post"
+                      className={style.CreatePostFooterButton}
+                    />
+                  }
+                />
+              )}
             </span>
 
             <span>
               <Button
                 default
                 type="button"
-                label="Preview"
+                label="Save & Preview"
                 className={style.CreatePostFooterButton}
                 onMouseDown={() => onUpdateStatus('draft')}
                 onClick={handleSubmit(e => {
                   handleShowModal('preview')
                 })}
               />
+
               <Button
                 type="button"
-                label="Publish Post"
+                label={post?.status === 'draft' ? 'Publish' : 'Update Post'}
                 primary
                 onMouseDown={() => onUpdateStatus('active')}
                 onClick={handleSubmit(e => {
@@ -1131,6 +1482,8 @@ const CreatePosts = () => {
               ? onDeletePost()
               : modalType === 'preview'
               ? onPreviewPost()
+              : modalType === 'unpublished'
+              ? onUnpublishPost()
               : null
           }
           onCancel={() => setShowModal(old => !old)}

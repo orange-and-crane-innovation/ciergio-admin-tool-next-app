@@ -5,12 +5,8 @@ import { useQuery } from '@apollo/client'
 import Tabs from '@app/components/tabs'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
-
 import { toFriendlyDate, friendlyDateTimeFormat } from '@app/utils/date'
-
-// import Button from '@app/components/button'
-// import { GoKebabHorizontal } from 'react-icons/go'
-
+import HISTORY_MESSAGES from '../constants'
 import { GET_ACCOUNT } from '../queries'
 
 const columns = [
@@ -58,7 +54,12 @@ function Profile() {
                 date: `${toFriendlyDate(
                   historyDate
                 )} - ${friendlyDateTimeFormat(historyDate, 'LT')}`,
-                activity: history?.action
+                activity:
+                  (HISTORY_MESSAGES[history.action] &&
+                    HISTORY_MESSAGES[history.action](
+                      JSON.parse(history?.data)
+                    )) ||
+                  'No activity'
               }
             })
           : []
@@ -71,19 +72,22 @@ function Profile() {
       <div className="w-full flex align-center justify-between mb-10">
         <div className="w-3/12 flex justify-start align-center">
           <img
-            src={`https://ui-avatars.com/api/?name=${fullName}`}
+            src={
+              data?.user?.avatar ??
+              `https://ui-avatars.com/api/?name=${fullName}`
+            }
             alt="profile-avatar"
-            className="border rounded-full mr-4"
+            className="border-8 border-white rounded-full mr-4 shadow-sm"
           />
           <div>
-            <h1 className="font-bold text-2xl capitalize mb-0">{fullName}</h1>
-            <h2 className="capitalize">{user?.jobTitle || accountType}</h2>
+            <h1 className="font-bold text-3xl capitalize mb-0">
+              {fullName ?? ''}
+            </h1>
+            <h2 className="capitalize">
+              {user?.jobTitle || accountType || ''}
+            </h2>
           </div>
         </div>
-
-        {/* <div>
-          <Button default icon={<GoKebabHorizontal />} />
-        </div> */}
       </div>
 
       <Tabs defaultTab="1">
@@ -96,7 +100,7 @@ function Profile() {
             <div className="w-full flex">
               <div className="w-8/12 mr-4">
                 <div className="w-full bg-white p-4 border-t border-x rounded">
-                  <h2 className="font-bold text-based">Recent Activity</h2>
+                  <h2 className="font-bold text-lg">Recent Activity</h2>
                 </div>
                 <Card
                   noPadding
@@ -105,45 +109,45 @@ function Profile() {
               </div>
               <div className="w-4/12">
                 <div className="w-full bg-white p-4 border-t border-x rounded">
-                  <h2 className="font-bold text-based">About</h2>
+                  <h2 className="font-bold text-lg">About</h2>
                 </div>
                 <Card
                   noPadding
                   content={
                     <div className="py-2">
                       <div className="p-4">
-                        <p className="font-xl text-gray-400 font-bold">
+                        <p className="text-base text-gray-400 font-bold">
                           Email Address
                         </p>
-                        <p className="font-xl">{user?.email}</p>
+                        <p className="text-base">{user?.email}</p>
                       </div>
 
                       <div className="p-4">
-                        <p className="font-xl text-gray-400 font-bold">
+                        <p className="text-base text-gray-400 font-bold">
                           Company
                         </p>
-                        <p className="font-xl">{companyName || 'No data'}</p>
+                        <p className="text-base">{companyName || 'No data'}</p>
                       </div>
 
                       <div className="p-4">
-                        <p className="font-xl text-gray-400 font-bold">
+                        <p className="text-base text-gray-400 font-bold">
                           Complex
                         </p>
-                        <p className="font-xl">{complexName || 'No data'}</p>
+                        <p className="text-base">{complexName || 'No data'}</p>
                       </div>
 
                       <div className="p-4">
-                        <p className="font-xl text-gray-400 font-bold">
+                        <p className="text-base text-gray-400 font-bold">
                           Building
                         </p>
-                        <p className="font-xl">{buildingName || 'No data'}</p>
+                        <p className="text-base">{buildingName || 'No data'}</p>
                       </div>
 
                       <div className="p-4">
-                        <p className="font-xl text-gray-400 font-bold">
+                        <p className="text-base text-gray-400 font-bold">
                           Assignments
                         </p>
-                        <p className="font-x">
+                        <p className="text-base">
                           <span className="capitalize">{`${
                             user?.jobTitle || accountType
                           }`}</span>{' '}

@@ -18,6 +18,7 @@ const VERIFY_CODE_QUERY = gql`
         lastName
         email
         accountType
+        existingUser
         company {
           name
         }
@@ -47,9 +48,11 @@ function JoinPage() {
 
   const { loading, data, error } = useQuery(VERIFY_CODE_QUERY, {
     onError: _e => {},
+    skip: router.query.code === undefined,
     variables: {
       where: {
-        code: router.query.code
+        code: router.query.code,
+        appType: 'admin'
       }
     }
   })
@@ -93,20 +96,25 @@ function JoinPage() {
 
   const onSubmit = useCallback(
     values => {
+      const createData = {
+        code: router.query.code
+      }
+
+      if (!profile?.existingUser) {
+        createData.data = {
+          firstName: values?.firstName,
+          lastName: values?.lastName,
+          password: values?.password
+        }
+      }
+
       try {
         createAccount({
-          variables: {
-            data: {
-              firstName: values?.firstName,
-              lastName: values?.lastName,
-              password: values?.password
-            },
-            code: router.query.code
-          }
+          variables: createData
         })
       } catch (err) {}
     },
-    [createAccount]
+    [router, profile, createAccount]
   )
 
   const errorHandler = data => {
@@ -133,7 +141,14 @@ function JoinPage() {
     }
   }
 
-  return <Join onSubmit={onSubmit} isSubmitting={loading} data={profile} />
+  return (
+    <Join
+      onSubmit={onSubmit}
+      isLoading={loading}
+      isSubmitting={loadingCreate}
+      data={profile}
+    />
+  )
 }
 
 export default JoinPage

@@ -4,6 +4,8 @@ import PropTypes from 'prop-types'
 import RadioBox from '@app/components/forms/form-radio'
 import Modal from '@app/components/modal'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+
 import SelectCompany from '@app/components/globals/SelectCompany'
 import SelectComplex from '@app/components/globals/SelectComplex'
 import SelectBuilding from '@app/components/globals/SelectBuilding'
@@ -140,15 +142,15 @@ const Component = ({
   }
 
   switch (accountType) {
-    case 'company_admin': {
+    case ACCOUNT_TYPES.COMPYAD.value: {
       userType = 'company'
       break
     }
-    case 'complex_admin': {
+    case ACCOUNT_TYPES.COMPXAD.value: {
       userType = 'complex'
       break
     }
-    case 'building_admin': {
+    case ACCOUNT_TYPES.BUIGAD.value: {
       userType = 'building'
       break
     }
@@ -233,7 +235,7 @@ const Component = ({
                   </p>
                 </div>
 
-                {accountType === 'administrator' && (
+                {accountType === ACCOUNT_TYPES.SUP.value && (
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Companies</p>
                     <SelectCompany
@@ -249,12 +251,13 @@ const Component = ({
                   </div>
                 )}
 
-                {accountType === 'company_admin' && (
+                {accountType === ACCOUNT_TYPES.COMPYAD.value && (
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Complexes</p>
                     <SelectComplex
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Complex"
                       companyId={user?.accounts?.data[0]?.company?._id}
                       onChange={handleSelectComplexExcept}
                       onClear={handleClearComplexExcept}
@@ -263,12 +266,13 @@ const Component = ({
                   </div>
                 )}
 
-                {accountType === 'complex_admin' && (
+                {accountType === ACCOUNT_TYPES.COMPXAD.value && (
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Buildings</p>
                     <SelectBuilding
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Building"
                       onChange={handleSelectBuildingExcept}
                       onClear={handleClearBuildingExcept}
                       selected={selectedBuildingExcept}
@@ -287,7 +291,7 @@ const Component = ({
                   </p>
                 </div>
 
-                {accountType === 'administrator' && (
+                {accountType === ACCOUNT_TYPES.SUP.value && (
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Companies</p>
                     <SelectCompany
@@ -303,12 +307,13 @@ const Component = ({
                   </div>
                 )}
 
-                {accountType === 'company_admin' && (
+                {accountType === ACCOUNT_TYPES.COMPYAD.value && (
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Complexes</p>
                     <SelectComplex
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Complex"
                       companyId={user?.accounts?.data[0]?.company?._id}
                       onChange={handleSelectComplexSpecific}
                       onClear={handleClearComplexSpecific}
@@ -317,12 +322,13 @@ const Component = ({
                   </div>
                 )}
 
-                {accountType === 'complex_admin' && (
+                {accountType === ACCOUNT_TYPES.COMPXAD.value && (
                   <div className="mb-4">
                     <p className="font-bold text-neutral-500 mb-2">Buildings</p>
                     <SelectBuilding
                       type="active"
                       userType={accountType}
+                      placeholder="Select a Building"
                       onChange={handleSelectBuildingSpecific}
                       onClear={handleClearBuildingSpecific}
                       selected={selectedBuildingSpecific}

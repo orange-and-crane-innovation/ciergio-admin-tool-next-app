@@ -43,8 +43,6 @@ const Dropdown = () => {
       }
       if (called && data) {
         localStorage.setItem('keep', data?.switchAccount?.slave)
-        router.push('/dashboard')
-
         const timer = setTimeout(() => {
           router.reload()
           clearInterval(timer)
@@ -157,12 +155,12 @@ const Dropdown = () => {
               <div className="section-title">My Account</div>
               <MenuItem
                 url={'/account/profile'}
-                icon={'ciergio-employees'}
+                icon={'ciergio-user'}
                 title={'My Profile'}
               />
               <MenuItem
                 url={'/dashboard'}
-                icon={'ciergio-settings'}
+                icon={'ciergio-gear'}
                 title={'Preferences'}
               />
             </div>
@@ -203,48 +201,69 @@ const Dropdown = () => {
                 />
               </div>
 
-              <div className="section-title">Switch Accounts</div>
-              {profile?.accounts?.data?.map((item, index) => {
-                return (
-                  index !== 0 &&
-                  [
-                    ACCOUNT_TYPES.SUP.value,
-                    ACCOUNT_TYPES.COMPYAD.value,
-                    ACCOUNT_TYPES.COMPXAD.value,
-                    ACCOUNT_TYPES.BUIGAD.value
-                  ].includes(item?.accountType) && (
-                    <div
-                      key={index}
-                      className="userinfo-wrap button"
-                      onClick={() => onSwitchAccount(item?._id)}
-                    >
-                      <Userinfo
-                        imgSrc={
-                          item?.accountType === ACCOUNT_TYPES.COMPYAD.value
-                            ? item?.company?.avatar ?? IMAGES.PROPERTY_AVATAR
-                            : item?.accountType === ACCOUNT_TYPES.COMPXAD.value
-                            ? item?.complex?.avatar ?? IMAGES.PROPERTY_AVATAR
-                            : item?.accountType === ACCOUNT_TYPES.BUIGAD.value
-                            ? item?.building?.avatar ?? IMAGES.PROPERTY_AVATAR
-                            : item?.company?.avatar ?? IMAGES.PROPERTY_AVATAR
-                        }
-                        imgAlt={'Logo'}
-                        userName={
-                          item?.accountType === ACCOUNT_TYPES.COMPYAD.value
-                            ? item?.company?.name
-                            : item?.accountType === ACCOUNT_TYPES.COMPXAD.value
-                            ? item?.complex?.name
-                            : item?.accountType === ACCOUNT_TYPES.BUIGAD.value
-                            ? item?.building?.name
-                            : item?.company?.name
-                        }
-                        userTitle={getAccountTypeName(item?.accountType)}
-                        size={'SM'}
-                      />
-                    </div>
-                  )
-                )
-              })}
+              {profile?.accounts?.data?.filter(item =>
+                [
+                  ACCOUNT_TYPES.SUP.value,
+                  ACCOUNT_TYPES.COMPYAD.value,
+                  ACCOUNT_TYPES.COMPXAD.value,
+                  ACCOUNT_TYPES.BUIGAD.value,
+                  ACCOUNT_TYPES.RECEP.value
+                ].includes(item?.accountType)
+              ).length > 1 && (
+                <>
+                  <div className="section-title">Switch Accounts</div>
+                  {profile?.accounts?.data?.map((item, index) => {
+                    return (
+                      index !== 0 &&
+                      [
+                        ACCOUNT_TYPES.SUP.value,
+                        ACCOUNT_TYPES.COMPYAD.value,
+                        ACCOUNT_TYPES.COMPXAD.value,
+                        ACCOUNT_TYPES.BUIGAD.value,
+                        ACCOUNT_TYPES.RECEP.value
+                      ].includes(item?.accountType) && (
+                        <div
+                          key={index}
+                          className="userinfo-wrap button"
+                          onClick={() => onSwitchAccount(item?._id)}
+                        >
+                          <Userinfo
+                            imgSrc={
+                              item?.accountType === ACCOUNT_TYPES.COMPYAD.value
+                                ? item?.company?.avatar ??
+                                  IMAGES.PROPERTY_AVATAR
+                                : item?.accountType ===
+                                  ACCOUNT_TYPES.COMPXAD.value
+                                ? item?.complex?.avatar ??
+                                  IMAGES.PROPERTY_AVATAR
+                                : item?.accountType ===
+                                  ACCOUNT_TYPES.BUIGAD.value
+                                ? item?.building?.avatar ??
+                                  IMAGES.PROPERTY_AVATAR
+                                : item?.company?.avatar ??
+                                  IMAGES.PROPERTY_AVATAR
+                            }
+                            imgAlt={'Logo'}
+                            userName={
+                              item?.accountType === ACCOUNT_TYPES.COMPYAD.value
+                                ? item?.company?.name
+                                : item?.accountType ===
+                                  ACCOUNT_TYPES.COMPXAD.value
+                                ? item?.complex?.name
+                                : item?.accountType ===
+                                  ACCOUNT_TYPES.BUIGAD.value
+                                ? item?.building?.name
+                                : item?.company?.name
+                            }
+                            userTitle={getAccountTypeName(item?.accountType)}
+                            size={'SM'}
+                          />
+                        </div>
+                      )
+                    )
+                  })}
+                </>
+              )}
             </div>
 
             <div className="dropdown-section">
@@ -254,7 +273,7 @@ const Dropdown = () => {
             <div className="dropdown-section">
               <MenuItem
                 url={'/auth/manage'}
-                icon={'ciergio-teams'}
+                icon={'ciergio-user-group'}
                 title={'Manage Accounts'}
               />
               <MenuItem

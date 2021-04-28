@@ -1,9 +1,10 @@
 .PageContainer {
   @apply flex items-start w-full lg:min-w-3xl lg:max-w-screen-md;
   @apply font-body font-normal text-base leading-6;
+  min-height: 100vh;
 
   .PageSubContainer {
-    @apply p-4;
+    @apply p-4 w-full;
 
     .PageHeader {
       @apply mb-4;
@@ -15,6 +16,14 @@
 
       .HeaderTitle {
         @apply font-black text-4xl leading-10;
+      }
+    }
+
+    .PageContent {
+      @apply mb-6;
+
+      a {
+        @apply text-info-900 hover:underline;
       }
     }
   }

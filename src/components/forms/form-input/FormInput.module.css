@@ -37,12 +37,13 @@
     }
 
     & span {
-      @apply text-neutral-dark font-body font-bold text-sm;
+      @apply text-neutral-dark font-body font-normal text-sm;
     }
   }
 
   .FormError {
-    @apply mb-4;
+    @apply mb-4 mt-1 block;
+    @apply text-danger-500 text-md font-bold;
   }
 
   .FormControl {
@@ -52,17 +53,18 @@
 
 .hasError {
   & [type='text'],
-  & [type='password'] {
-    @apply border-red-500;
+  & [type='password'],
+  & [type='email'] {
+    @apply border-danger-500;
   }
 
   &:hover {
-    @apply border-red-700;
+    @apply border-danger-700;
   }
 
   &:active {
     @apply outline-none;
-    @apply border-red-700;
+    @apply border-danger-700;
   }
 
   &:focus {
@@ -71,7 +73,22 @@
 
   & label {
     & span {
-      @apply text-red-500;
+      @apply text-danger-500;
     }
+  }
+}
+
+.Readonly {
+  & [type='text'],
+  & [type='password'] {
+    @apply bg-neutral-200;
+  }
+}
+
+.Disabled {
+  & [type='text'],
+  & [type='password'] {
+    @apply bg-neutral-200;
+    @apply cursor-not-allowed pointer-events-none;
   }
 }

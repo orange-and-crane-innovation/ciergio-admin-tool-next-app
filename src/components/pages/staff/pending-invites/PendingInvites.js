@@ -1,82 +1,42 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
-// import { useRouter } from 'next/router'
-
-// import Button from '@app/components/button'
-import FormInput from '@app/components/forms/form-input'
+import isEmpty from 'lodash/isEmpty'
 import SelectBulk from '@app/components/globals/SelectBulk'
-import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
-import SelectDropdown from '@app/components/select'
-import Modal from '@app/components/modal'
-import Pagination from '@app/components/pagination'
+import FormSelect from '@app/components/forms/form-select'
 import { Card } from '@app/components/globals'
-
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Empty from '../Empty'
-
-import { FaTimes, FaSearch } from 'react-icons/fa'
+import CancelInviteModal from './CancelInviteModal'
+import ResendInviteModal from '@app/components/globals/ResendBulkInvite'
+import Can from '@app/permissions/can'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
-
+import SearchComponent from '@app/components/globals/SearchControl'
 import {
   GET_PENDING_INVITES,
   GET_COMPANIES,
-  BULK_UPDATE_MUTATION,
   CANCEL_INVITE,
   RESEND_INVITE
 } from '../queries'
-
 import {
   BUILDING_ADMIN,
   COMPANY_ADMIN,
   COMPLEX_ADMIN,
   RECEPTIONIST,
-  UNIT_OWNER
+  UNIT_OWNER,
+  STAFF_ROLES,
+  ALL_ROLES,
+  parseAccountType
 } from '../constants'
-
-const roles = [
-  {
-    label: 'Company Admin',
-    value: COMPANY_ADMIN
-  },
-  {
-    label: 'Complex Admin',
-    value: COMPLEX_ADMIN
-  },
-  {
-    label: 'Building Administrator',
-    value: BUILDING_ADMIN
-  },
-  {
-    label: 'Unit Owner',
-    value: UNIT_OWNER
-  },
-  {
-    label: 'Receptionist',
-    value: RECEPTIONIST
-  }
-]
-
-const ALL_ROLES = [
-  BUILDING_ADMIN,
-  COMPANY_ADMIN,
-  COMPLEX_ADMIN,
-  RECEPTIONIST,
-  UNIT_OWNER
-]
 
 const bulkOptions = [
   {
-    label: 'Unpublished',
-    value: 'unpublish'
-  },
-  {
-    label: 'Move to Trash',
-    value: 'trash'
+    label: 'Resend Invite',
+    value: 'resend-invites'
   }
 ]
 
@@ -97,14 +57,14 @@ const getAssignment = invite => {
 }
 
 function PendingInvites() {
-  // const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedAssignment, setSelectedAssignment] = useState(null)
   const [selectedData, setSelectedData] = useState([])
+  const [selectedInvite, setSelectedInvite] = useState(null)
   const [isBulkDisabled, setIsBulkDisabled] = useState(false)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(false)
-  const [selectedBulk, setSelectedBulk] = useState([])
+  const [selectedBulk, setSelectedBulk] = useState('')
   const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const [showResendInviteModal, setShowResendInviteModal] = useState(false)
   const [activePage, setActivePage] = useState(1)
@@ -129,15 +89,11 @@ function PendingInvites() {
   })
   const { data: companies } = useQuery(GET_COMPANIES)
 
-  const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
-    BULK_UPDATE_MUTATION
-  )
-
   const [resendInvite, { loading: resendingInvite }] = useMutation(
     RESEND_INVITE,
     {
       onCompleted: () => {
-        showToast('success', 'Invitation has been resent succesfully.')
+        showToast('success', 'Invitation has been resent successfully.')
         handleClearModal('resend')
         refetchInvites()
       }
@@ -147,66 +103,45 @@ function PendingInvites() {
     CANCEL_INVITE,
     {
       onCompleted: () => {
-        showToast('success', 'Invitation has been cancelled.')
+        showToast(
+          'success',
+          `You have successfully removed ${
+            selectedInvite?.email
+          } as ${parseAccountType(selectedInvite?.accountType)}`
+        )
         handleClearModal('cancel')
         refetchInvites()
       }
     }
   )
 
-  useEffect(() => {
-    if (calledBulk && dataBulk) {
-      if (dataBulk?.bulkUpdatePost?.message === 'success') {
-        const allCheck = document.getElementsByName('checkbox_select_all')[0]
-        const itemsCheck = document.getElementsByName('checkbox')
+  const onCheck = e => {
+    const data = e.target.getAttribute('data-id')
+    const allCheck = document.getElementsByName('checkbox_select_all')[0]
+    const checkboxes = document.querySelectorAll(
+      'input[name="checkbox"]:checked'
+    )
 
-        if (allCheck.checked) {
-          allCheck.click()
-        }
-
-        for (let i = 0; i < itemsCheck.length; i++) {
-          if (itemsCheck[i].checked) {
-            itemsCheck[i].click()
-          }
-        }
-
+    if (e.target.checked) {
+      if (!selectedData.includes(data)) {
+        setSelectedData(prevState => [...prevState, data])
+      }
+      setIsBulkDisabled(false)
+    } else {
+      setSelectedData(prevState => [...prevState.filter(item => item !== data)])
+      if (checkboxes.length === 0) {
+        setSelectedBulk(null)
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk('')
-
-        showToast('success', `You have successfully updated a contact`)
-        refetchInvites()
-      } else {
-        showToast('danger', `Bulk update failed`)
       }
     }
-  }, [calledBulk, dataBulk, refetchInvites])
 
-  const onCheck = useCallback(
-    e => {
-      const data = e.target.getAttribute('data-id')
-      const checkboxes = document.querySelectorAll(
-        'input[name="checkbox"]:checked'
-      )
-
-      if (e.target.checked) {
-        if (!selectedData.includes(data)) {
-          setSelectedData(prevState => [...prevState, data])
-        }
-        setIsBulkDisabled(false)
-      } else {
-        setSelectedData(prevState => [
-          ...prevState.filter(item => item !== data)
-        ])
-        if (checkboxes.length === 0) {
-          setSelectedBulk('')
-          setIsBulkDisabled(true)
-          setIsBulkButtonDisabled(true)
-        }
-      }
-    },
-    [selectedData]
-  )
+    if (checkboxes.length === limitPage) {
+      allCheck.checked = true
+    } else {
+      allCheck.checked = false
+    }
+  }
 
   const onCheckAll = useCallback(
     e => {
@@ -236,17 +171,22 @@ function PendingInvites() {
   )
 
   const onBulkSubmit = () => {
-    const data = { id: selectedData, status: selectedBulk }
-    bulkUpdate({ variables: data })
+    resendInvite({
+      variables: {
+        data: {
+          inviteIds: selectedData
+        }
+      }
+    })
   }
 
   const onClearBulk = () => {
-    setSelectedBulk('')
+    setSelectedBulk(null)
   }
 
-  const onBulkChange = e => {
-    setSelectedBulk(e.target.value)
-    if (e.target.value !== '') {
+  const onBulkChange = value => {
+    setSelectedBulk(value.value)
+    if (!isEmpty(value)) {
       setIsBulkButtonDisabled(false)
     } else {
       setIsBulkButtonDisabled(true)
@@ -257,16 +197,7 @@ function PendingInvites() {
     cancelInvite({
       variables: {
         data: {
-          invitationId: selectedData?._id
-        }
-      }
-    })
-  }
-  const handleResendInvite = () => {
-    resendInvite({
-      variables: {
-        data: {
-          inviteIds: [selectedData?._id]
+          invitationId: selectedData[0]
         }
       }
     })
@@ -283,15 +214,6 @@ function PendingInvites() {
       default:
         console.log('Error: wrong type!')
     }
-  }
-
-  const onPageClick = e => {
-    setActivePage(e)
-    setOffsetPage(e * limitPage)
-  }
-
-  const onLimitChange = e => {
-    setLimitPage(Number(e.target.value))
   }
 
   const columns = useMemo(
@@ -338,20 +260,23 @@ function PendingInvites() {
       data:
         invites?.getPendingRegistration?.data?.length > 0
           ? invites.getPendingRegistration.data.map(invite => {
+              const roleType = parseAccountType(invite?.accountType)
               const dropdownData = [
                 {
                   label: 'Resend Invite',
-                  icon: <span className="ciergio-edit" />,
+                  icon: <span className="ciergio-mail" />,
                   function: () => {
-                    setSelectedData(invite)
+                    setSelectedInvite(invite)
+                    setSelectedData([invite?._id])
                     setShowResendInviteModal(old => !old)
                   }
                 },
                 {
-                  label: 'Delete Invite',
+                  label: 'Cancel Invite',
                   icon: <span className="ciergio-trash" />,
                   function: () => {
-                    setSelectedData(invite)
+                    setSelectedInvite(invite)
+                    setSelectedData([invite?._id])
                     setShowCancelInviteModal(old => !old)
                   }
                 }
@@ -368,17 +293,18 @@ function PendingInvites() {
                   />
                 ),
                 invites: invite.email,
-                accountType: (
-                  <span className="capitalize">
-                    {invite.accountType.replace('_', ' ')}
-                  </span>
-                ),
+                accountType: <span className="capitalize">{roleType}</span>,
                 assignment: getAssignment(invite),
                 createdAt: friendlyDateTimeFormat(invite.createdAt, 'LL'),
                 dropdown: (
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
+                  <Can
+                    perform="staff:resend::cancel"
+                    yes={
+                      <Dropdown
+                        label={<AiOutlineEllipsis />}
+                        items={dropdownData}
+                      />
+                    }
                   />
                 )
               }
@@ -405,30 +331,32 @@ function PendingInvites() {
       <h1 className="content-title">Pending Staff Invites</h1>
       <div className="flex items-center justify-between mt-6 flex-col md:flex-row">
         <SelectBulk
-          placeholder="Select"
+          placeholder="Bulk Action"
           options={bulkOptions}
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
           onBulkChange={onBulkChange}
-          onBulkSubmit={onBulkSubmit}
+          onBulkSubmit={() => setShowResendInviteModal(old => !old)}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
         />
         <div className="flex items-center justify-between w-8/12">
-          <div className="w-full mr-2 relative -top-2">
-            <SelectDropdown
+          <div className="w-full mr-2 relative">
+            <FormSelect
               placeholder="Filter Role"
-              options={roles}
+              options={STAFF_ROLES}
               onChange={selectedValue => {
                 setSelectedRole(selectedValue)
                 setActivePage(1)
                 setLimitPage(10)
                 setOffsetPage(0)
               }}
+              isClearable
+              onClear={() => setSelectedRole(null)}
             />
           </div>
-          <div className="w-full mr-2 relative -top-2">
-            <SelectDropdown
+          <div className="w-full mr-2 relative">
+            <FormSelect
               placeholder="Filter Assignment"
               options={filterOptions}
               onChange={selectedValue => {
@@ -437,98 +365,55 @@ function PendingInvites() {
                 setLimitPage(10)
                 setOffsetPage(0)
               }}
+              isClearable
+              onClear={() => setSelectedAssignment(null)}
             />
           </div>
           <div className="w-full relative">
-            <FormInput
-              name="search"
+            <SearchComponent
               placeholder="Search"
-              inputClassName="pr-8"
-              onChange={e => setSearchText(e.target.value)}
-              value={searchText}
+              searchText={searchText}
+              onClearSearch={() => setSearchText('')}
+              onSearch={e => setSearchText(e.target.value)}
             />
-            <span className="absolute top-4 right-4">
-              {searchText ? (
-                <FaTimes className="cursor-pointer" onClick={() => {}} />
-              ) : (
-                <FaSearch />
-              )}
-            </span>
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Pending Invites (${
-          invites?.getPendingRegistration?.count || 0
-        })`}</h1>
-      </div>
       <Card
         noPadding
+        title={
+          <h1 className="font-bold text-base px-8 py-4">{`Pending Invites (${
+            invites?.getPendingRegistration?.count || 0
+          })`}</h1>
+        }
         content={
-          <>
-            <Table
-              rowNames={columns}
-              items={staffData}
-              loading={loadingInvites}
-              emptyText={<Empty />}
-            />
-            {!loadingInvites && staffData && (
-              <div className="px-8">
-                <Pagination
-                  items={staffData}
-                  activePage={activePage}
-                  onPageClick={onPageClick}
-                  onLimitChange={onLimitChange}
-                />
-              </div>
-            )}
-          </>
+          <PrimaryDataTable
+            columns={columns}
+            data={staffData}
+            loading={loadingInvites}
+            currentPage={activePage}
+            setCurrentPage={setActivePage}
+            setPageOffset={setOffsetPage}
+            pageLimit={limitPage}
+            setPageLimit={setLimitPage}
+            emptyText={<Empty />}
+          />
         }
       />
-      <Modal
-        title="Resend Invite"
-        okText="Resend Invite"
-        visible={showResendInviteModal}
-        onClose={() => handleClearModal('resend')}
+      <ResendInviteModal
         onCancel={() => handleClearModal('resend')}
-        okButtonProps={{
-          loading: resendingInvite
-        }}
-        onOk={handleResendInvite}
-      >
-        <div className="p-4">
-          <p>
-            Are you sure you want to resend invite for{' '}
-            <span className="font-bold">{selectedData?.email}</span> as
-            <span className="capitalize">
-              {selectedData?.accountType?.replace('_', ' ')}
-            </span>
-            ?
-          </p>
-        </div>
-      </Modal>
-      <Modal
-        title="Cancel Invite"
-        okText="Cancel Invite"
-        visible={showCancelInviteModal}
-        onClose={() => handleClearModal('cancel')}
+        onOk={onBulkSubmit}
+        open={showResendInviteModal}
+        loading={resendingInvite}
+        module="staff"
+      />
+      <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}
-        okButtonProps={{
-          loading: cancellingInvite
-        }}
         onOk={handleCancelInvite}
-      >
-        <div className="p-4">
-          <p>
-            Are you sure you want to cancel invite for{' '}
-            <span className="font-bold">{selectedData?.email}</span> as
-            <span className="capitalize">
-              {selectedData?.accountType?.replace('_', ' ')}
-            </span>
-            ?
-          </p>
-        </div>
-      </Modal>
+        data={selectedInvite}
+        open={showCancelInviteModal}
+        loading={cancellingInvite}
+      />
     </section>
   )
 }

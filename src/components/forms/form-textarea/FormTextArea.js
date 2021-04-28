@@ -2,19 +2,20 @@ import React, { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import P from 'prop-types'
 import dynamic from 'next/dynamic'
-import {
-  EditorState,
-  convertToRaw,
-  ContentState,
-  convertFromHTML,
-  RichUtils
-} from 'draft-js'
+import { EditorState, convertToRaw, ContentState } from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
-import { convertToHTML } from 'draft-convert'
+import htmlToDraft from 'html-to-draftjs'
 
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 
 import styles from './FormTextArea.module.css'
+
+const Editor = dynamic(
+  () => {
+    return import('react-draft-wysiwyg').then(mod => mod.Editor)
+  },
+  { ssr: false }
+)
 
 const FormTextArea = ({
   maxLength,
@@ -27,6 +28,7 @@ const FormTextArea = ({
   onChange,
   isEdit,
   toolbarHidden,
+  stripHtmls,
   editorClassName
 }) => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
@@ -39,23 +41,31 @@ const FormTextArea = ({
     [error]
   )
 
-  const Editor = dynamic(
-    () => {
-      return import('react-draft-wysiwyg').then(mod => mod.Editor)
-    },
-    { ssr: false }
-  )
-
   const onEditorStateChange = e => {
+    const content = e.getCurrentContent()
+    const isEditorEmpty = !content.hasText()
+    const currentPlainText = content.getPlainText()
+    const lengthOfTrimmedContent = currentPlainText.trim().length
+    const isContainOnlySpaces = !isEditorEmpty && !lengthOfTrimmedContent
+
     setEditorState(e)
-    onChange(convertToHTML(e.getCurrentContent()))
+
+    if (!isContainOnlySpaces) {
+      if (stripHtmls) {
+        onChange(currentPlainText)
+      } else {
+        onChange(draftToHtml(convertToRaw(content)))
+      }
+    } else {
+      onChange('')
+    }
   }
 
   useEffect(() => {
     if (isEdit && value !== null) {
       setEditorState(
         EditorState.createWithContent(
-          ContentState.createFromBlockArray(convertFromHTML(value))
+          ContentState.createFromBlockArray(htmlToDraft(value))
         )
       )
     }
@@ -64,56 +74,49 @@ const FormTextArea = ({
   return (
     <div className={styles.FormTextAreaContainer}>
       <div className={containerClasses}>
-        {editorState && (
-          <Editor
-            editorClassName={editorClassName}
-            toolbarHidden={toolbarHidden}
-            editorState={editorState}
-            placeholder={placeholder}
-            spellCheck={true}
-            stripPastedStyles={true}
-            toolbar={{
-              options: options,
-              inline: {
-                options: ['bold', 'italic', 'underline', 'strikethrough']
-              },
-              list: {
-                options: ['unordered', 'ordered']
-              },
-              colorPicker: {
-                colors: [
-                  'rgb(19,33,55)',
-                  'rgb(10,102,227)',
-                  'rgb(135,180,239)',
-                  'rgb(61,207,83)',
-                  'rgb(244,67,54)'
-                ]
-              }
-            }}
-            onEditorStateChange={onEditorStateChange}
-            handleBeforeInput={val => {
-              const textLength = editorState.getCurrentContent().getPlainText()
-                .length
-              if (val && textLength >= maxLength) {
-                return 'handled'
-              }
-              return 'not-handled'
-            }}
-            handlePastedText={val => {
-              const textLength = editorState.getCurrentContent().getPlainText()
-                .length
-              return val.length + textLength >= maxLength
-            }}
-            handleReturn={(e, editorState) => {
-              onEditorStateChange(
-                RichUtils.insertSoftNewline(editorState),
-                'content'
-              )
-
+        <Editor
+          editorClassName={editorClassName}
+          toolbarHidden={toolbarHidden}
+          editorState={editorState}
+          placeholder={placeholder}
+          spellCheck={true}
+          stripPastedStyles={true}
+          toolbar={{
+            options: options,
+            inline: {
+              options: ['bold', 'italic', 'underline', 'strikethrough']
+            },
+            list: {
+              options: ['unordered', 'ordered']
+            },
+            colorPicker: {
+              colors: [
+                'rgb(19,33,55)',
+                'rgb(10,102,227)',
+                'rgb(135,180,239)',
+                'rgb(61,207,83)',
+                'rgb(244,67,54)'
+              ]
+            },
+            link: {
+              defaultTargetOption: '_blank'
+            }
+          }}
+          onEditorStateChange={onEditorStateChange}
+          handleBeforeInput={val => {
+            const textLength = editorState.getCurrentContent().getPlainText()
+              .length
+            if (val && textLength >= maxLength) {
               return 'handled'
-            }}
-          />
-        )}
+            }
+            return 'not-handled'
+          }}
+          handlePastedText={val => {
+            const textLength = editorState.getCurrentContent().getPlainText()
+              .length
+            return val.length + textLength >= maxLength
+          }}
+        />
       </div>
 
       <div className={styles.FormTextContainer}>
@@ -142,7 +145,8 @@ const FormTextArea = ({
 }
 
 FormTextArea.defaultProps = {
-  toolbarHidden: false
+  toolbarHidden: false,
+  stripHtmls: false
 }
 
 FormTextArea.propTypes = {
@@ -157,6 +161,7 @@ FormTextArea.propTypes = {
   onChange: P.func,
   isEdit: P.bool,
   toolbarHidden: P.bool,
+  stripHtmls: P.bool,
   editorClassName: P.string
 }
 

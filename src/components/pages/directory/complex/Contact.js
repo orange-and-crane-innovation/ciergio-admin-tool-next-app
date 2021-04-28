@@ -1,28 +1,24 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/router'
 import P from 'prop-types'
 import * as yup from 'yup'
-
+import omit from 'lodash/omit'
+import isEmpty from 'lodash/isEmpty'
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import Button from '@app/components/button'
-import FormInput from '@app/components/forms/form-input'
-import FormSelect from '@app/components/forms/form-select'
-import FormAddress from '@app/components/forms/form-address'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Modal from '@app/components/modal'
-import UploaderImage from '@app/components/uploader/image'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
-
 import showToast from '@app/utils/toast'
-
+import axios from '@app/utils/axios'
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-
-import { initializeApollo } from '@app/lib/apollo/client'
+import ContactModal from './ContactModal'
 import {
-  GET_COMPLEXES,
   GET_COMPLEX,
   GET_CONTACTS,
   GET_CONTACT_CATEGORY,
@@ -33,32 +29,95 @@ import {
 import Can from '@app/permissions/can'
 
 const validationSchema = yup.object().shape({
-  name: yup.string().label('Contact Name').required(),
-  contactNumber: yup.string().label('Contact Number').required(),
-  address: yup.string().label('Contact Address'),
-  category: yup.string().required
+  name: yup.string().required('This field is required'),
+  contactNumber: yup.string().required('This field is required'),
+  address: yup
+    .object()
+    .shape({
+      formattedAddress: yup.string(),
+      city: yup.string()
+    })
+    .nullable(),
+  category: yup
+    .object()
+    .shape({
+      label: yup.string(),
+      value: yup.string().required('This field is required')
+    })
+    .nullable()
 })
 
-function Contact({ id }) {
-  const { handleSubmit, control, errors, reset, setValue } = useForm({
-    resolver: yupResolver(validationSchema),
-    defaultValues: {
-      name: '',
-      contactNumber: '',
-      address: '',
-      category: ''
-    }
-  })
+const columns = [
+  {
+    name: '',
+    width: ''
+  },
+  {
+    name: 'Name',
+    width: '35%'
+  },
+  {
+    name: 'Category',
+    width: ''
+  },
+  {
+    name: 'Address',
+    width: ''
+  },
+  {
+    name: '',
+    width: ''
+  }
+]
 
-  const [showModal, setShowModal] = useState(false)
-  const [imageUrl, setImageUrl] = useState([])
+const formatNumber = number => {
+  if (number) {
+    const split = number.split('')
+    return split.map((s, i) => {
+      if (i === 2 || i === 3 || i === 7) {
+        return `${s} `
+      }
+      return s
+    })
+  }
+  return ''
+}
+
+function Contact({ id }) {
+  const router = useRouter()
+  const profile = JSON.parse(window.localStorage.getItem('profile'))
+  const profileData = profile?.accounts?.data[0]
+  const companyId = router?.query?.companyId ?? profileData?.company?._id
+  const complexId = id ?? profileData?.complex?._id
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(false)
-  const [selectedContact, setSelectedContact] = useState(undefined)
-  const [showEditContactModal, setShowEditContactModal] = useState(false)
+  const [selectedContact, setSelectedContact] = useState(null)
   const [showDeleteContactModal, setShowDeleteContactModal] = useState(false)
   const [pageLimit, setPageLimit] = useState(10)
   const [offset, setPageOffset] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
+  const [fileUploadedData, setFileUploadedData] = useState([])
+
+  const {
+    getValues,
+    control,
+    errors,
+    reset,
+    setValue,
+    trigger,
+    setError,
+    watch
+  } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      logo: null,
+      name: '',
+      contactNumber: '',
+      address: null,
+      category: null
+    }
+  })
 
   const { data: complexes } = useQuery(GET_COMPLEX, {
     variables: {
@@ -71,50 +130,62 @@ function Contact({ id }) {
     loading: loadingContacts
   } = useQuery(GET_CONTACTS, {
     variables: {
-      complexId: id,
+      complexId: complexId ?? null,
+      companyId: companyId ?? null,
       limit: pageLimit,
       offset
     }
   })
   const { data: categories } = useQuery(GET_CONTACT_CATEGORY, {
     variables: {
-      complexId: id
+      complexId: complexId ?? null,
+      companyId: companyId ?? null
     }
   })
+
+  const handleRefetchContacts = () => {
+    refetchContacts({
+      variables: {
+        complexId: complexId ?? null,
+        companyId: companyId ?? null,
+        limit: pageLimit,
+        offset
+      }
+    })
+  }
 
   const [createContact, { loading: creatingContact }] = useMutation(
     CREATE_CONTACT,
     {
       onCompleted: () => {
-        handleClearModal('create')
+        handleContactModal()
         showToast('success', `You have successfully added a new contact`)
-        refetchContacts()
+        handleRefetchContacts()
       }
     }
   )
   const [editContact, { loading: editingContact }] = useMutation(EDIT_CONTACT, {
     onCompleted: () => {
-      handleClearModal('edit')
+      handleContactModal()
       showToast('success', `You have successfully updated a contact`)
-      refetchContacts()
+      handleRefetchContacts()
     }
   })
   const [deleteContact, { loading: deletingContact }] = useMutation(
     DELETE_CONTACT,
     {
       onCompleted: () => {
-        handleClearModal('delete')
+        setShowDeleteContactModal(old => !old)
         showToast('success', `You have successfully deleted a contact`)
-        refetchContacts()
+        handleRefetchContacts()
       }
     }
   )
 
   const name = complexes?.getComplexes?.data[0]?.name || ''
-  const companyId = complexes?.getComplexes?.data[0]?.company._id || ''
 
   useEffect(() => {
-    if (selectedContact !== undefined) {
+    if (selectedContact) {
       reset({
         category: selectedContact?.category?._id,
         name: selectedContact.name,
@@ -124,72 +195,77 @@ function Contact({ id }) {
     }
   }, [reset, selectedContact])
 
-  const handleShowModal = view => {
-    switch (view) {
-      case 'create':
-        setShowModal(old => !old)
-        break
-      case 'edit':
-        setShowEditContactModal(old => !old)
-        break
-      case 'delete':
-        setShowDeleteContactModal(old => !old)
-        break
-      default:
-        break
-    }
-  }
-
-  const handleClearModal = type => {
-    setSelectedContact(undefined)
+  const handleContactModal = () => {
+    if (selectedContact) setSelectedContact(null)
     reset({
-      category: '',
+      category: null,
       name: '',
       contactNumber: '',
-      address: ''
+      address: null
     })
-    handleShowModal(type)
+    setFileUploadedData([])
+    setImageUrls([])
+    setValue('images', null)
+    setShowContactModal(old => !old)
   }
 
-  const handleCreateContact = values => {
+  const handleCreateContact = async () => {
+    const values = getValues()
     const { category, name, contactNumber, address } = values
-
-    const contactData = {
-      name,
-      logo: null,
-      description: 'Test description',
-      contactNumber,
-      address: address !== '' ? address : null,
-      categoryId: category || categories?.getContactCategories?.data[0]._id
+    const validated = await trigger()
+    const phoneNumber = parsePhoneNumberFromString(contactNumber, 'PH')
+    if (validated && !phoneNumber.isValid()) {
+      setError('contactNumber', {
+        type: 'manual',
+        message:
+          'Invalid phone/mobile number, must be a valid Philippine phone or mobile number'
+      })
     }
 
-    createContact({
-      variables: {
-        data: contactData,
-        companyId,
-        complexId: id
-      }
-    })
-  }
-
-  const handleEditContact = values => {
-    const { category, name, contactNumber, address } = values
-
-    const contactData = {
-      name,
-      logo: null,
-      description: 'Test description',
-      contactNumber,
-      address: address !== '' ? address : null,
-      categoryId: category || categories?.getContactCategories?.data[0]._id
+    let addressData = {}
+    if (selectedContact) {
+      addressData = address?.formattedAddress
+        ? {
+            ...omit(address, '__typename')
+          }
+        : {
+            ...omit(selectedContact?.address, '__typename')
+          }
+    } else {
+      addressData = address
     }
 
-    editContact({
-      variables: {
-        data: contactData,
-        contactId: selectedContact._id
+    let contactData = {
+      name,
+      logo: fileUploadedData[0]?.url,
+      contactNumber,
+      categoryId: category.value ?? selectedContact?.category?._id
+    }
+
+    if (!isEmpty(addressData)) {
+      contactData = { ...contactData, address: addressData }
+    }
+
+    if (validated && phoneNumber.isValid()) {
+      setFileUploadedData([])
+      if (selectedContact) {
+        setSelectedContact(null)
+        editContact({
+          variables: {
+            data: contactData,
+            contactId: selectedContact._id
+          }
+        })
+        return
       }
-    })
+      createContact({
+        variables: {
+          data: contactData,
+          companyId: companyId,
+          complexId: complexId
+        }
+      })
+    }
   }
 
   const handleDeleteContact = () => {
@@ -200,47 +276,53 @@ function Contact({ id }) {
     })
   }
 
-  const handleUploadImage = e => {
-    const reader = new FileReader()
-    const formData = new FormData()
-    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0]
-
-    setLoading(true)
-    if (file) {
-      reader.onloadend = () => {
-        setImageUrl(reader.result)
-      }
-      reader.readAsDataURL(file)
-      formData.append('photos', file)
+  const uploadApi = async payload => {
+    const response = await axios.post('/', payload)
+    if (response?.data) {
+      console.log('res', response.data)
+      const files = response.data.map(item => {
+        return {
+          url: item.location,
+          type: item.mimetype
+        }
+      })
       setLoading(false)
+      setFileUploadedData(files)
     }
   }
 
-  const handleRemoveImage = () => {
-    setImageUrl(null)
+  const handleUploadImage = e => {
+    const files = e.target.files ? e.target.files : e.dataTransfer.files
+    const formData = new FormData()
+    const fileList = []
+
+    if (files) {
+      setLoading(true)
+      for (const file of files) {
+        const reader = new FileReader()
+
+        reader.onloadend = () => {
+          setImageUrls(imageUrls => [...imageUrls, reader.result])
+        }
+        reader.readAsDataURL(file)
+
+        formData.append('files', file)
+        fileList.push(file)
+      }
+      setValue('images', fileList)
+
+      uploadApi(formData)
+    }
   }
 
-  const columns = useMemo(
-    () => [
-      {
-        name: 'Name',
-        width: '35%'
-      },
-      {
-        name: 'Category',
-        width: ''
-      },
-      {
-        name: 'Address',
-        width: ''
-      },
-      {
-        name: '',
-        width: ''
-      }
-    ],
-    []
-  )
+  const handleRemoveImage = e => {
+    const images = imageUrls.filter(image => {
+      return image !== e.currentTarget.dataset.id
+    })
+    setImageUrls(images)
+    setFileUploadedData([])
+    setValue('images', images.length !== 0 ? images : null)
+  }
 
   const getMapValue = e => {
     setValue('location', e?.address?.formattedAddress)
@@ -260,7 +342,7 @@ function Contact({ id }) {
               icon: <span className="ciergio-edit" />,
               function: () => {
                 setSelectedContact(contact)
-                handleShowModal('edit')
+                handleContactModal()
               }
             },
             {
@@ -268,27 +350,31 @@ function Contact({ id }) {
               icon: <span className="ciergio-trash" />,
               function: () => {
                 setSelectedContact(contact)
-                handleShowModal('delete')
+                setShowDeleteContactModal(old => !old)
               }
             }
           ]
 
           return {
+            image: (
+              <div className="flex justify-end">
+                <img
+                  className="w-12 h-12 rounded-full border-4 border-white"
+                  src={
+                    contact?.logo ??
+                    `https://ui-avatars.com/api/?name=${contact.name}`
+                  }
+                  alt="contact-avatar"
+                />
+              </div>
+            ),
             name: (
               <div className="flex items-center justify-start">
                 <div>
-                  <img
-                    className="w-8 h-8 rounded-full"
-                    src={
-                      contact?.logo ??
-                      `https://ui-avatars.com/api/?name=${contact.name}&rounded=true&size=32`
-                    }
-                    alt="contact-avatar"
-                  />
-                </div>
-                <div className="ml-4">
                   <p>{contact.name}</p>
-                  <p className="text-gray-600">{contact.contactNumber}</p>
+                  <p className="text-gray-600">
+                    {formatNumber(contact.contactNumber)}
+                  </p>
                 </div>
               </div>
             ),
@@ -309,7 +395,7 @@ function Contact({ id }) {
           }
         }) || []
     }
-  }, [contacts?.getContacts])
+  }, [contacts?.getContacts?.data])
 
   const categoryOptions = useMemo(() => {
     if (categories?.getContactCategories?.data?.length > 0) {
@@ -320,23 +406,25 @@ function Contact({ id }) {
     }
 
     return []
-  }, [categories?.getContactCategories])
+  }, [categories?.getContactCategories?.data])
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
       <h1 className="content-title capitalize">{`${name} Directory`}</h1>
       <div className="flex items-center justify-between bg-white border rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Directory (${contacts?.getContacts?.count})`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`Directory (${
+          contacts?.getContacts?.count ?? 0
+        })`}</h1>
 
         <div className="flex items-center">
           <Can
-            perform="directory:create"
+            perform="directory:contact:create"
             yes={
               <Button
                 default
                 leftIcon={<FaPlusCircle />}
                 label="Add Contact"
-                onClick={() => setShowModal(old => !old)}
+                onClick={handleContactModal}
                 className="my-4 mx-4"
               />
             }
@@ -360,190 +448,31 @@ function Contact({ id }) {
         }
         className="rounded-t-none"
       />
-      <Modal
-        title="Add a Contact"
-        okText="Okay"
-        visible={showModal}
-        onClose={() => handleClearModal('create')}
-        onCancel={() => handleClearModal('create')}
-        onOk={handleSubmit(handleCreateContact)}
-        cancelText="Close"
-        okButtonProps={{
-          loading: creatingContact
+      <ContactModal
+        onCancel={handleContactModal}
+        open={showContactModal}
+        onUploadImage={handleUploadImage}
+        onRemoveImage={handleRemoveImage}
+        onOk={handleCreateContact}
+        categoryOptions={categoryOptions}
+        onGetMapValue={getMapValue}
+        imageURLs={imageUrls}
+        form={{
+          control,
+          errors,
+          setValue,
+          watch
         }}
-      >
-        <div className="w-full p-4">
-          <h1 className="text-base font-bold mb-4">Contact Details</h1>
-          <form>
-            <div className="flex justify-between mb-4">
-              <p>
-                Upload a photo that’s easily recognizable by your residents.
-              </p>
-
-              <div>
-                <UploaderImage
-                  imageUrls={imageUrl}
-                  loading={loading}
-                  onUploadImage={handleUploadImage}
-                  onRemoveImage={handleRemoveImage}
-                  maxImages={3}
-                />
-              </div>
-            </div>
-            <Controller
-              name="category"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormSelect
-                  name={name}
-                  options={categoryOptions}
-                  placeholder="Choose a contact category"
-                  onChange={onChange}
-                  value={value}
-                />
-              )}
-            />
-            <Controller
-              name="name"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Name"
-                  placeholder="Enter contact name"
-                  onChange={onChange}
-                  name={name}
-                  value={value}
-                  error={errors?.contact_name?.message ?? null}
-                />
-              )}
-            />
-            <Controller
-              name="contactNumber"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Number"
-                  placeholder="Enter contact number"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_number?.message}
-                />
-              )}
-            />
-            <Controller
-              name="address"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormAddress
-                  label="Contact Address"
-                  placeholder="(optional) Enter contact address"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_address?.message}
-                  getValue={getMapValue}
-                />
-              )}
-            />
-          </form>
-        </div>
-      </Modal>
-      <Modal
-        title="Edit Contact"
-        okText="Okay"
-        visible={showEditContactModal}
-        onClose={() => handleClearModal('edit')}
-        onCancel={() => handleClearModal('edit')}
-        onOk={handleSubmit(handleEditContact)}
-        cancelText="Close"
-        okButtonProps={{
-          loading: editingContact
-        }}
-        width={550}
-      >
-        <div className="w-full p-4">
-          <h1 className="text-base font-bold mb-4">Contact Details</h1>
-          <form>
-            <div className="flex justify-between mb-4">
-              <p>
-                Upload a photo that’s easily recognizable by your residents.
-              </p>
-
-              <div>
-                <UploaderImage
-                  imageUrls={imageUrl}
-                  loading={loading}
-                  onUploadImage={handleUploadImage}
-                  onRemoveImage={handleRemoveImage}
-                  maxImages={3}
-                />
-              </div>
-            </div>
-            <Controller
-              name="category"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormSelect
-                  name={name}
-                  options={categoryOptions}
-                  placeholder="Choose a contact category"
-                  onChange={onChange}
-                  value={value}
-                />
-              )}
-            />
-            <Controller
-              name="name"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Name"
-                  placeholder="Enter contact name"
-                  onChange={onChange}
-                  name={name}
-                  value={value || selectedContact?.name}
-                  error={errors?.contact_name?.message ?? null}
-                />
-              )}
-            />
-            <Controller
-              name="contactNumber"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Number"
-                  placeholder="Enter contact number"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  error={errors?.contact_number?.message}
-                />
-              )}
-            />
-            <Controller
-              name="address"
-              control={control}
-              render={({ name, value, onChange }) => (
-                <FormInput
-                  label="Contact Address"
-                  placeholder="(optional) Enter contact address"
-                  name={name}
-                  onChange={onChange}
-                  value={value}
-                  errors={errors?.contact_address?.message}
-                />
-              )}
-            />
-          </form>
-        </div>
-      </Modal>
+        loading={creatingContact || editingContact}
+        uploading={loading}
+        selected={selectedContact}
+      />
       <Modal
         title="Delete Category"
         okText="Yes, delete"
         visible={showDeleteContactModal}
-        onClose={() => handleClearModal('delete')}
-        onCancel={() => handleClearModal('delete')}
+        onClose={() => setShowDeleteContactModal(old => !old)}
+        onCancel={() => setShowDeleteContactModal(old => !old)}
         onOk={handleDeleteContact}
         okButtonProps={{
           loading: deletingContact
@@ -570,53 +499,6 @@ function Contact({ id }) {
 
 Contact.propTypes = {
   id: P.string
-}
-
-const apolloClient = initializeApollo()
-
-export async function getStaticPaths() {
-  const complexes = await apolloClient.query({
-    query: GET_COMPLEXES
-  })
-
-  const paths = complexes?.getComplexes?.data.map(c => ({
-    params: { id: c._id }
-  }))
-
-  return {
-    paths,
-    fallback: false
-  }
-}
-
-export async function getStaticProps({ params }) {
-  const { id } = params
-  await apolloClient.query({
-    query: GET_COMPLEX,
-    variables: {
-      id
-    }
-  })
-
-  await apolloClient.query({
-    query: GET_CONTACTS,
-    variables: {
-      complexId: id
-    }
-  })
-
-  await apolloClient.query({
-    query: GET_CONTACT_CATEGORY,
-    variables: {
-      complexId: id
-    }
-  })
-
-  return {
-    props: {
-      initialApolloState: apolloClient.cache.extract()
-    }
-  }
 }
 
 export default Contact

@@ -90,7 +90,6 @@ const Component = ({
             {selectedPublishType === 'later' && (
               <>
                 <div className="mb-4">
-                  <p className="font-bold">{`Don't share with`}</p>
                   <p>
                     You can create the post now then publish it at a later time.
                   </p>
@@ -103,6 +102,12 @@ const Component = ({
                         <div className="relative">
                           <FormInput
                             {...props}
+                            inputProps={{
+                              style: {
+                                backgroundColor: 'white',
+                                cursor: 'pointer'
+                              }
+                            }}
                             name="date"
                             value={moment(selectedDate).format('MMMM DD, YYYY')}
                             readOnly
@@ -126,6 +131,12 @@ const Component = ({
                         <div className="relative">
                           <FormInput
                             {...props}
+                            inputProps={{
+                              style: {
+                                backgroundColor: 'white',
+                                cursor: 'pointer'
+                              }
+                            }}
                             name="time"
                             value={moment(selectedDate).format('h:mm A')}
                             readOnly

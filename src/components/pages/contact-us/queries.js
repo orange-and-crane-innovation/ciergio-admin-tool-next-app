@@ -1,15 +1,45 @@
 import gql from 'graphql-tag'
 
 export const GET_CONTACTS = gql`
-  {
-    getContacts(where: { type: contactus }) {
+  query getContacts(
+    $where: GetContactCategoriesParams
+    $contactWhere: GetContactsParams
+    $contactsSkip: Int
+    $contactsLimit: Int
+    $limit: Int
+    $skip: Int
+  ) {
+    getContactCategories(where: $where, limit: $limit, skip: $skip) {
       count
       limit
       data {
         _id
         name
-        email
-        description
+        order
+        contacts(
+          where: $contactWhere
+          limit: $contactsLimit
+          skip: $contactsSkip
+        ) {
+          count
+          limit
+          skip
+          data {
+            _id
+            name
+            email
+            contactNumber
+            description
+            building {
+              _id
+              name
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
       }
       __typename
     }
@@ -24,7 +54,9 @@ export const GET_COMPANIES = gql`
       data {
         _id
         name
+        __typename
       }
+      __typename
     }
   }
 `
@@ -35,21 +67,25 @@ export const GET_COMPANY = gql`
       data {
         name
         _id
+        __typename
       }
+      __typename
     }
   }
 `
 
 export const GET_COMPLEXES = gql`
-  {
-    getComplexes {
+  query getComplexes($where: GetComplexesParams) {
+    getComplexes(where: $where) {
       count
       limit
       skip
       data {
         _id
         name
+        __typename
       }
+      __typename
     }
   }
 `
@@ -62,8 +98,11 @@ export const GET_COMPLEX = gql`
         name
         company {
           _id
+          __typename
         }
+        __typename
       }
+      __typename
     }
   }
 `
@@ -74,15 +113,17 @@ export const GET_BUILDINGS = gql`
       data {
         _id
         name
+        __typename
       }
+      __typename
     }
   }
 `
 
 export const GET_CONTACT_CATEGORY = gql`
-  query getCategoriesByComplexId($complexId: String) {
+  query getCategoriesByComplexId($complexId: String, $companyId: String) {
     getContactCategories(
-      where: { complexId: $complexId, type: contactus }
+      where: { complexId: $complexId, companyId: $companyId, type: contactus }
       limit: 10
       skip: 0
     ) {
@@ -92,6 +133,7 @@ export const GET_CONTACT_CATEGORY = gql`
         _id
         name
         order
+        __typename
       }
       __typename
     }

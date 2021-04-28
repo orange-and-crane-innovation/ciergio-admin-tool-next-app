@@ -15,15 +15,18 @@ import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
 import Modal from '@app/components/modal'
+
 import Can from '@app/permissions/can'
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import ViewsCard from './components/ViewsCard'
 import UpdateCard from './components/UpdateCard'
 import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SearchControl from '@app/components/globals/SearchControl'
+import NotifCard from '@app/components/globals/NotifCard'
 
 import styles from './Main.module.css'
 
@@ -53,6 +56,7 @@ const GET_ALL_POST_QUERY = gql`
         updatedAt
         publishedAt
         author {
+          _id
           user {
             firstName
             lastName
@@ -61,12 +65,15 @@ const GET_ALL_POST_QUERY = gql`
           }
           accountType
           company {
+            _id
             name
           }
           complex {
+            _id
             name
           }
           building {
+            _id
             name
           }
         }
@@ -123,6 +130,7 @@ const PostComponent = () => {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
 
   const tableRowData = [
     {
@@ -138,19 +146,15 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: '40%'
+      width: '30%'
     },
     {
       name: 'Author',
       width: '30%'
     },
     {
-      name: 'Category',
-      width: ''
-    },
-    {
       name: 'Status',
-      width: ''
+      width: '15%'
     },
     {
       name: '',
@@ -224,19 +228,23 @@ const PostComponent = () => {
             ]
 
             switch (item.author?.accountType) {
-              case 'administrator': {
+              case ACCOUNT_TYPES.SUP.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'company_admin': {
+              case ACCOUNT_TYPES.COMPYAD.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'complex_admin': {
+              case ACCOUNT_TYPES.COMPXAD.value: {
                 buildingName = item.author?.complex?.name
                 break
               }
-              case 'building_admin': {
+              case ACCOUNT_TYPES.BUIGAD.value: {
+                buildingName = item.author?.building?.name
+                break
+              }
+              case ACCOUNT_TYPES.RECEP.value: {
                 buildingName = item.author?.building?.name
                 break
               }
@@ -263,13 +271,13 @@ const PostComponent = () => {
 
             if (
               user._id === item.author._id ||
-              item.author.accountType === accountType ||
-              accountType === 'administrator' ||
-              (item.author.accountType !== 'administrator' &&
-                accountType === 'company_admin') ||
-              (item.author.accountType !== 'administrator' &&
-                item.author.accountType !== 'company_admin' &&
-                accountType === 'complex_admin')
+              accountType === ACCOUNT_TYPES.SUP.value ||
+              (((item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                accountType === ACCOUNT_TYPES.COMPYAD.value) ||
+                (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                  item.author.accountType !== ACCOUNT_TYPES.COMPYAD.value &&
+                  accountType === ACCOUNT_TYPES.COMPXAD.value)) &&
+                item.author.company._id === companyID)
             ) {
               isMine = true
               checkbox = (
@@ -287,7 +295,7 @@ const PostComponent = () => {
             }
 
             return {
-              checkbox: checkbox,
+              checkbox: checkbox || '',
               title: (
                 <div className="flex flex-col">
                   {item.title}
@@ -304,7 +312,7 @@ const PostComponent = () => {
                           </span>
                           {` | `}
                           <span
-                            className="mx-2 cursor-pointer hover:underline"
+                            className="mx-2 text-danger-500 cursor-pointer hover:underline"
                             onClick={() => handleShowModal('delete', item._id)}
                           >
                             Permanently Delete
@@ -327,7 +335,7 @@ const PostComponent = () => {
                 <div className="flex flex-col">
                   <span>{status}</span>
                   <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
+                    {DATE.toFriendlyShortDate(item.createdAt)}
                   </span>
                 </div>
               ),
@@ -349,16 +357,14 @@ const PostComponent = () => {
 
   useEffect(() => {
     if (!loadingBulk && errorBulk) {
-      showToast(
-        'danger',
-        `An error occured during update. Please contact your system administrator.`
-      )
+      showToast('danger', 'Bulk update failed')
     }
 
     if (!loadingBulk && calledBulk && dataBulk) {
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
+        let message
 
         if (allCheck.checked) {
           allCheck.click()
@@ -375,7 +381,19 @@ const PostComponent = () => {
         setSelectedBulk(null)
         setShowModal(old => !old)
 
-        showToast('success', `You have successfully updated a post`)
+        switch (selectedBulk) {
+          case 'deleted':
+            message = `You have successfully deleted (${selectedData?.length}) items.`
+            break
+          case 'draft':
+            message = `You have successfully restored (${selectedData?.length}) items.`
+            break
+          default:
+            message = `You have successfully updated a post.`
+            break
+        }
+
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Bulk update failed`)
@@ -388,8 +406,22 @@ const PostComponent = () => {
       showToast('danger', `Update failed`)
     } else if (!loadingUpdate && calledUpdate && dataUpdate) {
       if (dataUpdate?.updatePost?.message === 'success') {
+        let message
+
+        switch (modalType) {
+          case 'delete':
+            message = 'You have successfully deleted an item.'
+            break
+          case 'draft':
+            message = 'You have successfully restored an item.'
+            break
+          default:
+            message = 'You have successfully updated a post'
+            break
+        }
+
         setShowModal(old => !old)
-        showToast('success', `You have successfully updated a post`)
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Update failed`)
@@ -503,7 +535,7 @@ const PostComponent = () => {
         case 'delete': {
           setModalTitle('Delete Form')
           setModalContent(
-            <UpdateCard type="trashed" title={selected[0].title} />
+            <UpdateCard type="deleted" title={selected[0].title} />
           )
           setModalFooter(true)
           setModalID(selected[0]._id)
@@ -630,7 +662,19 @@ const PostComponent = () => {
           loading ? (
             <PageLoader />
           ) : (
-            posts && <Table rowNames={tableRowData} items={posts} />
+            posts && (
+              <Table
+                rowNames={tableRowData}
+                items={posts}
+                emptyText={
+                  <NotifCard
+                    icon={<FiFileText />}
+                    header="You haven’t created any downloadable forms yet"
+                    content="Give your members easier access to forms and documents by uploading them to the app."
+                  />
+                }
+              />
+            )
           )
         }
       />
@@ -648,7 +692,7 @@ const PostComponent = () => {
         visible={showModal}
         onClose={handleClearModal}
         footer={modalFooter}
-        okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
+        okText={modalType === 'delete' ? 'Yes, delete permanently' : 'Yes'}
         onOk={() =>
           modalType === 'delete'
             ? onDeletePost()

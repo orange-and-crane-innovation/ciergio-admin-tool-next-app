@@ -1,8 +1,7 @@
 import AllResidents from '@app/components/pages/residents/all-residents'
-import Page from '@app/permissions/page'
 
 function AllResidentsPage() {
-  return <Page route="/residents" page={<AllResidents />} />
+  return <AllResidents />
 }
 
 export default AllResidentsPage

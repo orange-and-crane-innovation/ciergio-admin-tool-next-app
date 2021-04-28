@@ -2,26 +2,35 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/jsx-key */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { debounce } from 'lodash'
-import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
+import {
+  FaPlusCircle,
+  FaEllipsisH,
+  FaAngleUp,
+  FaAngleDown,
+  FaTimes
+} from 'react-icons/fa'
 import { FiFileText, FiEye } from 'react-icons/fi'
+import Datetime from 'react-datetime'
 
 import PageLoader from '@app/components/page-loader'
 import Card from '@app/components/card'
+import FormInput from '@app/components/forms/form-input'
 import Checkbox from '@app/components/forms/form-checkbox'
 import Button from '@app/components/button'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
-import { Draggable } from '@app/components/globals'
 import Modal from '@app/components/modal'
+import Tooltip from '@app/components/tooltip'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import ViewsCard from './components/ViewsCard'
 import UpdateCard from './components/UpdateCard'
@@ -29,6 +38,8 @@ import PostDetailsCard from './components/PostDetailsCard'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SearchControl from '@app/components/globals/SearchControl'
+import NotifCard from '@app/components/globals/NotifCard'
+
 import Can from '@app/permissions/can'
 import styles from './Main.module.css'
 
@@ -44,8 +55,13 @@ const bulkOptions = [
 ]
 
 const GET_ALL_POST_QUERY = gql`
-  query getAllPost($where: AllPostInput, $limit: Int, $offset: Int) {
-    getAllPost(where: $where, limit: $limit, offset: $offset) {
+  query getAllPost(
+    $where: AllPostInput
+    $limit: Int
+    $offset: Int
+    $sort: PostSort
+  ) {
+    getAllPost(where: $where, limit: $limit, offset: $offset, sort: $sort) {
       count
       limit
       offset
@@ -58,6 +74,7 @@ const GET_ALL_POST_QUERY = gql`
         updatedAt
         publishedAt
         author {
+          _id
           user {
             firstName
             lastName
@@ -66,12 +83,15 @@ const GET_ALL_POST_QUERY = gql`
           }
           accountType
           company {
+            _id
             name
           }
           complex {
+            _id
             name
           }
           building {
+            _id
             name
           }
         }
@@ -89,6 +109,67 @@ const GET_ALL_POST_QUERY = gql`
             }
           }
         }
+      }
+    }
+  }
+`
+
+const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
+  query getAllPost(
+    $where: AllPostInput
+    $limit: Int
+    $offset: Int
+    $sort: PostSort
+  ) {
+    getAllPost(where: $where, limit: $limit, offset: $offset, sort: $sort) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          _id
+          user {
+            firstName
+            lastName
+            email
+            avatar
+          }
+          accountType
+          company {
+            _id
+            name
+          }
+          complex {
+            _id
+            name
+          }
+          building {
+            _id
+            name
+          }
+        }
+        category {
+          name
+        }
+        views {
+          count
+          unique {
+            count
+            users {
+              firstName
+              lastName
+              avatar
+            }
+          }
+        }
+        dailyReadingDate
       }
     }
   }
@@ -113,6 +194,16 @@ const UPDATE_POST_MUTATION = gql`
   }
 `
 
+const SWITCH_POST_MUTATION = gql`
+  mutation($data: switchPostPositionInput) {
+    switchPostPosition(data: $data) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
 const PostComponent = () => {
   const router = useRouter()
   const [posts, setPosts] = useState()
@@ -121,7 +212,6 @@ const PostComponent = () => {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [reorder, setReorder] = useState(false)
-  const [reOrderedLists, setReOrderedLists] = useState()
   const [selectedData, setSelectedData] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
@@ -133,8 +223,30 @@ const PostComponent = () => {
   const [selectedBulk, setSelectedBulk] = useState()
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
+  const [isBulkButtonHidden, setIsBulkButtonHidden] = useState(false)
+  const [temporaryDate, setTemporaryDate] = useState('')
+  const [temporaryMonth, setTemporaryMonth] = useState('')
+  const [selectedDate, setSelectedDate] = useState()
+  const [selectedMonth, setSelectedMonth] = useState()
+  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
+  const isAttractionsEventsPage = router.pathname === '/attractions-events'
+  const isQRCodePage = router.pathname === '/qr-code'
+  const isDailyReadingsPage = router.pathname === '/daily-readings'
+  const routeName = isAttractionsEventsPage
+    ? 'attractions-events'
+    : isQRCodePage
+    ? 'qr-code'
+    : isDailyReadingsPage
+    ? 'daily-readings'
+    : 'posts'
+  const headerName = isQRCodePage
+    ? 'Active QR Codes'
+    : isDailyReadingsPage
+    ? 'Daily Readings'
+    : 'Bulletin Board'
 
   const tableRowData = [
     {
@@ -146,11 +258,12 @@ const PostComponent = () => {
           onChange={e => onCheckAll(e)}
         />
       ),
-      width: '5%'
+      width: '5%',
+      hidden: reorder
     },
     {
       name: 'Title',
-      width: '20%'
+      width: '30%'
     },
     {
       name: 'Author',
@@ -158,40 +271,74 @@ const PostComponent = () => {
     },
     {
       name: 'Category',
-      width: ''
+      width: '15%',
+      hidden: isDailyReadingsPage
     },
     {
-      name: 'Status',
-      width: ''
+      name: reorder ? 'Reorder' : isQRCodePage ? 'QR Code' : 'Status',
+      width: '15%'
     },
     {
-      name: '',
+      name: reorder ? 'Reorder' : '',
       width: ''
     }
   ]
 
+  const fetchFilter = {
+    status: ['published'],
+    type: 'post',
+    categoryId: selectedCategory !== '' ? selectedCategory : null,
+    search: {
+      allpost: searchText
+    }
+  }
+
+  if (systemType === 'circle') {
+    fetchFilter.qr = false
+
+    if (isQRCodePage) {
+      fetchFilter.qr = true
+    }
+  }
+
+  if (isDailyReadingsPage) {
+    fetchFilter.type = 'daily_reading'
+
+    if (selectedDate && selectedDate !== '') {
+      fetchFilter.dailyReadingDate = selectedDate
+    }
+
+    if (selectedMonth && selectedMonth !== '') {
+      fetchFilter.dailyReadingDateRange = selectedMonth
+    }
+  }
+
   const { loading, data, error, refetch: refetchPosts } = useQuery(
-    GET_ALL_POST_QUERY,
+    isDailyReadingsPage
+      ? GET_ALL_POST_DAILY_READINGS_QUERY
+      : GET_ALL_POST_QUERY,
     {
       enabled: false,
       variables: {
-        where: {
-          status: ['published', 'draft', 'unpublished', 'scheduled'],
-          type: 'post',
-          categoryId: selectedCategory !== '' ? selectedCategory : null,
-          search: {
-            allpost: searchText
-          }
-        },
+        where: fetchFilter,
         limit: limitPage,
-        offset: offsetPage
+        offset: offsetPage,
+        sort: {
+          by: isDailyReadingsPage ? 'dailyReadingDate' : 'createdAt',
+          order: 'desc'
+        }
       }
     }
   )
 
   const [
     bulkUpdate,
-    { loading: loadingBulk, called: calledBulk, data: dataBulk }
+    {
+      loading: loadingBulk,
+      called: calledBulk,
+      error: errorBulk,
+      data: dataBulk
+    }
   ] = useMutation(BULK_UPDATE_MUTATION)
 
   const [
@@ -204,11 +351,25 @@ const PostComponent = () => {
     }
   ] = useMutation(UPDATE_POST_MUTATION)
 
+  const [
+    switchPost,
+    {
+      loading: loadingSwitch,
+      called: calledSwitch,
+      data: dataSwitch,
+      error: errorSwitch
+    }
+  ] = useMutation(SWITCH_POST_MUTATION)
+
   useEffect(() => {
+    setIsBulkButtonHidden(isDailyReadingsPage)
     refetchPosts()
   }, [])
 
   useEffect(() => {
+    if (error) {
+      errorHandler(error)
+    }
     if (!loading && data) {
       let isMine, checkbox
       const tableData = {
@@ -220,7 +381,9 @@ const PostComponent = () => {
             let buildingName, status
             const dropdownData = [
               {
-                label: 'Article Details',
+                label: isDailyReadingsPage
+                  ? 'Daily Reading Details'
+                  : 'Article Details',
                 icon: <FiFileText />,
                 function: () => handleShowModal('details', item._id)
               },
@@ -232,19 +395,23 @@ const PostComponent = () => {
             ]
 
             switch (item.author?.accountType) {
-              case 'administrator': {
+              case ACCOUNT_TYPES.SUP.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'company_admin': {
+              case ACCOUNT_TYPES.COMPYAD.value: {
                 buildingName = item.author?.company?.name
                 break
               }
-              case 'complex_admin': {
+              case ACCOUNT_TYPES.COMPXAD.value: {
                 buildingName = item.author?.complex?.name
                 break
               }
-              case 'building_admin': {
+              case ACCOUNT_TYPES.BUIGAD.value: {
+                buildingName = item.author?.building?.name
+                break
+              }
+              case ACCOUNT_TYPES.RECEP.value: {
                 buildingName = item.author?.building?.name
                 break
               }
@@ -270,14 +437,15 @@ const PostComponent = () => {
             }
 
             if (
-              user._id === item.author._id ||
-              item.author.accountType === accountType ||
-              accountType === 'administrator' ||
-              (item.author.accountType !== 'administrator' &&
-                accountType === 'company_admin') ||
-              (item.author.accountType !== 'administrator' &&
-                item.author.accountType !== 'company_admin' &&
-                accountType === 'complex_admin')
+              !reorder &&
+              (user._id === item.author._id ||
+                accountType === ACCOUNT_TYPES.SUP.value ||
+                (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                  accountType === ACCOUNT_TYPES.COMPYAD.value) ||
+                (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+                  item.author.accountType !== ACCOUNT_TYPES.COMPYAD.value &&
+                  accountType === ACCOUNT_TYPES.COMPXAD.value &&
+                  item.author.company._id === companyID))
             ) {
               isMine = true
               checkbox = (
@@ -295,22 +463,27 @@ const PostComponent = () => {
             }
 
             return {
-              checkbox: checkbox,
+              id: item._id,
+              checkbox: checkbox || '',
               title: (
                 <div className="flex flex-col">
                   {item.title}
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
-                      <Link href={`/posts/view/${item._id}`}>
-                        <a className="mr-2 hover:underline">View</a>
+                      <Link href={`/${routeName}/edit/${item._id}`}>
+                        <a className="mr-2 hover:underline">Edit</a>
                       </Link>
                       {` | `}
-                      <Link href={`/posts/edit/${item._id}`}>
-                        <a className="mx-2 hover:underline">Edit</a>
+                      <Link href={`/${routeName}/view/${item._id}`}>
+                        <a className="mx-2 hover:underline">View</a>
                       </Link>
                       {` | `}
                       <Can
-                        perform="bulletin:delete"
+                        perform={
+                          isAttractionsEventsPage
+                            ? 'attractions:delete'
+                            : 'bulletin:delete'
+                        }
                         yes={
                           <span
                             className="mx-2 cursor-pointer hover:underline"
@@ -323,10 +496,14 @@ const PostComponent = () => {
                     </div>
                   ) : (
                     <Can
-                      perform="bulletin:view"
+                      perform={
+                        isAttractionsEventsPage
+                          ? 'attractions:view'
+                          : 'bulletin:view'
+                      }
                       yes={
                         <div className="flex text-info-500 text-sm">
-                          <Link href={`/posts/view/${item._id}`}>
+                          <Link href={`/${routeName}/view/${item._id}`}>
                             <a className="mr-2 hover:underline">View</a>
                           </Link>
                         </div>
@@ -343,18 +520,44 @@ const PostComponent = () => {
                   </span>
                 </div>
               ),
-              category: item.category?.name ?? 'Uncategorized',
-              status: (
+              category:
+                !isDailyReadingsPage &&
+                (item.category?.name ?? 'Uncategorized'),
+              status: reorder ? (
+                <>
+                  <Button
+                    default
+                    leftIcon={<FaAngleUp className="text-2xl" />}
+                    className="mr-4"
+                    onClick={e => reorderRow(e, 'up')}
+                  />
+                  <Button
+                    default
+                    leftIcon={<FaAngleDown className="text-2xl" />}
+                    onClick={e => reorderRow(e, 'down')}
+                  />
+                </>
+              ) : isQRCodePage ? (
+                <Button
+                  default
+                  label="Download QR"
+                  onClick={() => handleShowModal('download-qr', item._id)}
+                />
+              ) : (
                 <div className="flex flex-col">
                   <span>{status}</span>
                   <span className="text-neutral-500 text-sm">
-                    {DATE.toFriendlyDate(item.createdAt)}
+                    {DATE.toFriendlyShortDate(item.createdAt)}
                   </span>
                 </div>
               ),
               button: (
                 <Can
-                  perform="bulletin:view"
+                  perform={
+                    isAttractionsEventsPage
+                      ? 'attractions:view'
+                      : 'bulletin:view'
+                  }
                   yes={
                     <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                   }
@@ -365,21 +568,19 @@ const PostComponent = () => {
       }
 
       setPosts(tableData)
-
-      setReOrderedLists(
-        tableData.data.map((item, index) => ({
-          ...item,
-          id: index
-        }))
-      )
     }
   }, [loading, data, error])
 
   useEffect(() => {
+    if (!loadingBulk && errorBulk) {
+      showToast('danger', 'Bulk update failed')
+    }
+
     if (!loadingBulk && calledBulk && dataBulk) {
       if (dataBulk?.bulkUpdatePost?.message === 'success') {
         const allCheck = document.getElementsByName('checkbox_select_all')[0]
         const itemsCheck = document.getElementsByName('checkbox')
+        let message
 
         if (allCheck.checked) {
           allCheck.click()
@@ -391,12 +592,26 @@ const PostComponent = () => {
           }
         }
 
+        setSelectedBulk(null)
+        setSelectedData([])
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setSelectedBulk(null)
+        setIsBulkButtonHidden(isDailyReadingsPage)
         setShowModal(old => !old)
 
-        showToast('success', `You have successfully updated a post`)
+        switch (selectedBulk) {
+          case 'unpublished':
+            message = `You have successfully unpublished (${selectedData?.length}) items.`
+            break
+          case 'trashed':
+            message = `You have successfully sent (${selectedData?.length}) items to the trash.`
+            break
+          default:
+            message = `You have successfully updated a post.`
+            break
+        }
+
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Bulk update failed`)
@@ -409,14 +624,38 @@ const PostComponent = () => {
       showToast('danger', `Update failed`)
     } else if (!loadingUpdate && calledUpdate && dataUpdate) {
       if (dataUpdate?.updatePost?.message === 'success') {
+        let message
+
+        switch (modalType) {
+          case 'delete':
+            message = 'You have successfully sent item to the trash.'
+            break
+          default:
+            message = 'You have successfully updated a post'
+            break
+        }
+
         setShowModal(old => !old)
-        showToast('success', `You have successfully updated a post`)
+        showToast('success', message)
         refetchPosts()
       } else {
         showToast('danger', `Update failed`)
       }
     }
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate, refetchPosts])
+
+  useEffect(() => {
+    if (errorSwitch) {
+      showToast('danger', `Switch posts failed`)
+      refetchPosts()
+    } else if (!loadingSwitch && calledSwitch && dataSwitch) {
+      if (dataSwitch.switchPostPosition?.message === 'success') {
+        showToast('success', `You have successfully switched a post`)
+      } else {
+        showToast('danger', `Switch posts failed`)
+      }
+    }
+  }, [loadingSwitch, calledSwitch, dataSwitch, errorSwitch])
 
   const onSearch = debounce(e => {
     setSearchText(e.target.value !== '' ? e.target.value : null)
@@ -434,14 +673,11 @@ const PostComponent = () => {
   const onClearBulk = () => {
     setSelectedBulk(null)
     setIsBulkButtonDisabled(true)
+    setIsBulkButtonHidden(isDailyReadingsPage)
   }
 
   const goToCreatePage = () => {
-    if (router.pathname === '/attractions-events') {
-      router.push('/attractions-events/create')
-    } else {
-      router.push('posts/create')
-    }
+    router.push(`${routeName}/create`)
   }
 
   const onPageClick = e => {
@@ -468,6 +704,7 @@ const PostComponent = () => {
         }
         checkboxes[i].checked = true
         setIsBulkDisabled(false)
+        setIsBulkButtonHidden(false)
       } else {
         setSelectedData(prevState => [
           ...prevState.filter(item => item !== data)
@@ -495,6 +732,7 @@ const PostComponent = () => {
         setSelectedBulk(null)
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
+        setIsBulkButtonHidden(isDailyReadingsPage)
       }
     }
 
@@ -534,7 +772,7 @@ const PostComponent = () => {
           break
         }
         case 'delete': {
-          setModalTitle('Delete Post')
+          setModalTitle('Move to Trash')
           setModalContent(
             <UpdateCard type="trashed" title={selected[0].title} />
           )
@@ -551,6 +789,12 @@ const PostComponent = () => {
             />
           )
           setModalFooter(true)
+          break
+        }
+        case 'download-qr': {
+          setModalTitle('Download QR')
+          setModalContent(<UpdateCard type="download-qr" data={selected[0]} />)
+          setModalFooter(null)
           break
         }
       }
@@ -576,8 +820,10 @@ const PostComponent = () => {
     setSelectedBulk(e.value)
     if (e.value !== '') {
       setIsBulkButtonDisabled(false)
+      setIsBulkButtonHidden(false)
     } else {
       setIsBulkButtonDisabled(true)
+      setIsBulkButtonHidden(isDailyReadingsPage)
     }
   }
 
@@ -606,6 +852,327 @@ const PostComponent = () => {
     }
   }
 
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        if (networkError?.result?.errors[0]?.code === 4000) {
+          showToast('danger', 'Category name already exists')
+        } else {
+          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+        }
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
+
+  const handleReorder = () => {
+    setReorder(prevState => !prevState)
+  }
+
+  const reorderRow = (e, direction) => {
+    let index = e.target.closest('tr').rowIndex
+    const table = document.getElementById('table')
+    const rows = table.rows
+    const parent = rows[index].parentNode
+    const currentRowID = table.rows[index].getAttribute('data-id')
+    let updateData
+
+    if (direction === 'up') {
+      if (index > 1) {
+        const upRowID = table.rows[index - 1].getAttribute('data-id')
+
+        parent.insertBefore(rows[index], rows[index - 1])
+        index--
+
+        updateData = {
+          data: {
+            post1: currentRowID,
+            post2: upRowID,
+            complexId: user?.accounts?.data[0]?.complex?._id
+          }
+        }
+        switchPost({ variables: updateData })
+      }
+    }
+
+    if (direction === 'down') {
+      if (index < rows.length - 1) {
+        const downRowID = table.rows[index + 1].getAttribute('data-id')
+
+        parent.insertBefore(rows[index + 1], rows[index])
+        index++
+
+        updateData = {
+          data: {
+            post1: currentRowID,
+            post2: downRowID,
+            complexId: user?.accounts?.data[0]?.complex?._id
+          }
+        }
+        switchPost({ variables: updateData })
+      }
+    }
+  }
+
+  const handleDateChange = e => {
+    setTemporaryDate(e)
+    setTemporaryMonth('')
+  }
+
+  const handleMonthChange = e => {
+    setTemporaryDate('')
+    setTemporaryMonth(e)
+  }
+
+  const onApplyDate = () => {
+    if (temporaryDate !== '') {
+      setSelectedDate(DATE.toFriendlyISO(DATE.setInitialTime(temporaryDate)))
+      setSelectedMonth('')
+    }
+
+    if (temporaryMonth !== '') {
+      setSelectedDate('')
+      setSelectedMonth([
+        DATE.toFriendlyISO(DATE.toBeginningOfMonth(temporaryMonth)),
+        DATE.toFriendlyISO(DATE.toEndOfMonth(temporaryMonth))
+      ])
+    }
+  }
+
+  const handleClearDate = () => {
+    setSelectedDate('')
+    setTemporaryDate('')
+  }
+
+  const handleClearMonth = () => {
+    setSelectedMonth('')
+    setTemporaryMonth('')
+  }
+
+  const tableData = useMemo(() => {
+    let isMine, checkbox
+    return data?.getAllPost?.post?.map((item, index) => {
+      let buildingName, status
+
+      const dropdownData = [
+        {
+          label: isDailyReadingsPage
+            ? 'Daily Reading Details'
+            : 'Article Details',
+          icon: <FiFileText />,
+          function: () => handleShowModal('details', item._id)
+        },
+        {
+          label: 'Who View this Article',
+          icon: <FiEye />,
+          function: () => handleShowModal('views', item._id)
+        }
+      ]
+
+      switch (item.author?.accountType) {
+        case ACCOUNT_TYPES.SUP.value: {
+          buildingName = item.author?.company?.name
+          break
+        }
+        case ACCOUNT_TYPES.COMPYAD.value: {
+          buildingName = item.author?.company?.name
+          break
+        }
+        case ACCOUNT_TYPES.COMPXAD.value: {
+          buildingName = item.author?.complex?.name
+          break
+        }
+        case ACCOUNT_TYPES.BUIGAD.value: {
+          buildingName = item.author?.building?.name
+          break
+        }
+        case ACCOUNT_TYPES.RECEP.value: {
+          buildingName = item.author?.building?.name
+          break
+        }
+      }
+
+      switch (item.status) {
+        case 'published': {
+          status = 'Published'
+          break
+        }
+        case 'unpublished': {
+          status = 'Unpublished'
+          break
+        }
+        case 'draft': {
+          status = 'Draft'
+          break
+        }
+        case 'trashed': {
+          status = 'Trashed'
+          break
+        }
+        case 'scheduled': {
+          status = 'Scheduled'
+          break
+        }
+      }
+
+      if (
+        !reorder &&
+        (user._id === item.author._id ||
+          accountType === ACCOUNT_TYPES.SUP.value ||
+          (((item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+            accountType === ACCOUNT_TYPES.COMPYAD.value) ||
+            (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
+              item.author.accountType !== ACCOUNT_TYPES.COMPYAD.value &&
+              accountType === ACCOUNT_TYPES.COMPXAD.value)) &&
+            item.author.company._id === companyID))
+      ) {
+        isMine = true
+        checkbox = (
+          <Checkbox
+            primary
+            id={`checkbox-${item._id}`}
+            name="checkbox"
+            data-id={item._id}
+            onChange={onCheck}
+          />
+        )
+      } else {
+        isMine = false
+        checkbox = false
+      }
+
+      return (
+        <tr key={index} data-id={item._id}>
+          {!reorder && <td>{checkbox}</td>}
+          <td>
+            <div className="flex flex-col">
+              {isDailyReadingsPage ? (
+                <Tooltip text={item?.title}>
+                  {DATE.toFriendlyShortDate(item?.dailyReadingDate)}
+                </Tooltip>
+              ) : (
+                <span className={styles.TextWrapper}>{item?.title}</span>
+              )}
+              {isMine ? (
+                <div className="flex text-info-500 text-sm">
+                  <Link href={`/${routeName}/edit/${item._id}`}>
+                    <a className="mr-2 hover:underline">Edit</a>
+                  </Link>
+                  {` | `}
+                  <Link href={`/${routeName}/view/${item._id}`}>
+                    <a className="mx-2 hover:underline">View</a>
+                  </Link>
+                  {` | `}
+                  <Can
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:delete'
+                        : 'bulletin:delete'
+                    }
+                    yes={
+                      <span
+                        className="mx-2 text-danger-500 cursor-pointer hover:underline"
+                        onClick={() => handleShowModal('delete', item._id)}
+                      >
+                        Move to Trash
+                      </span>
+                    }
+                  />
+                </div>
+              ) : (
+                <Can
+                  perform={
+                    isAttractionsEventsPage
+                      ? 'attractions:view'
+                      : 'bulletin:view'
+                  }
+                  yes={
+                    <div className="flex text-info-500 text-sm">
+                      <Link href={`/${routeName}/view/${item._id}`}>
+                        <a className="mr-2 hover:underline">View</a>
+                      </Link>
+                    </div>
+                  }
+                />
+              )}
+            </div>
+          </td>
+          <td>
+            <div className="flex flex-col">
+              <span>{buildingName}</span>
+              <span className="text-neutral-500 text-sm">
+                {`${item.author?.user?.firstName} ${item.author?.user?.lastName} | ${item.author?.user?.email}`}
+              </span>
+            </div>
+          </td>
+
+          {!isDailyReadingsPage && (
+            <td>{item.category?.name ?? 'Uncategorized'}</td>
+          )}
+          <td>
+            {reorder ? (
+              <>
+                <Button
+                  default
+                  leftIcon={<FaAngleUp className="text-2xl" />}
+                  className="mr-4"
+                  onClick={e => reorderRow(e, 'up')}
+                />
+                <Button
+                  default
+                  leftIcon={<FaAngleDown className="text-2xl" />}
+                  onClick={e => reorderRow(e, 'down')}
+                />
+              </>
+            ) : isQRCodePage ? (
+              <Button
+                default
+                label="Download QR"
+                onClick={() => handleShowModal('download-qr', item._id)}
+              />
+            ) : (
+              <div className="flex flex-col">
+                <span>{status}</span>
+                <span className="text-neutral-500 text-sm">
+                  {DATE.toFriendlyShortDate(item.createdAt)}
+                </span>
+              </div>
+            )}
+          </td>
+          {!reorder && (
+            <td>
+              <Can
+                perform={
+                  isAttractionsEventsPage ? 'attractions:view' : 'bulletin:view'
+                }
+                yes={
+                  !reorder && (
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  )
+                }
+              />
+            </td>
+          )}
+        </tr>
+      )
+    })
+  }, [posts, reorder])
+
   return (
     <>
       <div className={styles.MainControl}>
@@ -614,20 +1181,113 @@ const PostComponent = () => {
           options={bulkOptions}
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
+          isButtonHidden={isBulkButtonHidden}
           onBulkChange={onBulkChange}
           onBulkSubmit={() => handleShowModal('bulk')}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
+          custom={isDailyReadingsPage}
         />
+        {isDailyReadingsPage && (
+          <div className="mx-2 w-full md:w-72">
+            <Datetime
+              renderInput={(props, openCalendar) => (
+                <>
+                  <div className="relative">
+                    <FormInput
+                      {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
+                      name="date_month"
+                      placeholder="Filter Month"
+                      value={
+                        temporaryMonth &&
+                        DATE.toFriendlyYearMonth(temporaryMonth)
+                      }
+                      readOnly
+                    />
+                    {temporaryMonth !== '' && (
+                      <FaTimes
+                        className="cursor-pointer absolute top-3 right-10"
+                        onClick={handleClearMonth}
+                      />
+                    )}
+                    <i
+                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                      onClick={openCalendar}
+                    />
+                  </div>
+                </>
+              )}
+              dateFormat="YYYY-MMMM"
+              timeFormat={false}
+              value={temporaryMonth}
+              closeOnSelect
+              onChange={handleMonthChange}
+            />
+          </div>
+        )}
+
+        {isDailyReadingsPage && (
+          <div className="w-full md:w-72">
+            <Datetime
+              renderInput={(props, openCalendar) => (
+                <>
+                  <div className="relative">
+                    <FormInput
+                      {...props}
+                      inputProps={{ style: { backgroundColor: 'white' } }}
+                      id="date"
+                      name="date"
+                      placeholder="Choose a date"
+                      value={
+                        temporaryDate && DATE.toFriendlyShortDate(temporaryDate)
+                      }
+                      readOnly
+                    />
+                    {temporaryDate !== '' && (
+                      <FaTimes
+                        className="cursor-pointer absolute top-3 right-10"
+                        onClick={handleClearDate}
+                      />
+                    )}
+                    <i
+                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                      onClick={openCalendar}
+                    />
+                  </div>
+                </>
+              )}
+              dateFormat="MMM DD, YYYY"
+              timeFormat={false}
+              value={temporaryDate}
+              closeOnSelect
+              onChange={handleDateChange}
+            />
+          </div>
+        )}
+
+        {isDailyReadingsPage && (
+          <div className="mx-2 w-full md:w-72">
+            <Button
+              type="button"
+              label="Apply"
+              onClick={onApplyDate}
+              disabled={!temporaryDate && !temporaryMonth}
+            />
+          </div>
+        )}
 
         <div className={styles.CategoryControl}>
-          <SelectCategory
-            placeholder="Filter Category"
-            type="post"
-            onChange={onCategorySelect}
-            onClear={onClearCategory}
-            selected={selectedCategory}
-          />
+          {!isDailyReadingsPage && (
+            <SelectCategory
+              placeholder="Filter Category"
+              type="post"
+              onChange={onCategorySelect}
+              onClear={onClearCategory}
+              selected={selectedCategory}
+            />
+          )}
+
           <SearchControl
             placeholder="Search by title"
             searchText={searchText}
@@ -646,59 +1306,54 @@ const PostComponent = () => {
                 ? 'Reorder Posts'
                 : searchText
                 ? `Search result for "${searchText}" (${posts?.count || 0})`
-                : `All Posts (${posts?.count || 0})`}
+                : `${headerName} (${posts?.count || 0})`}
             </span>
 
             <div className={styles.ContentFlex}>
               {reorder ? (
-                <>
-                  <Button
-                    default
-                    label="Cancel"
-                    onClick={() => setReorder(prevState => !prevState)}
-                    className="mr-4"
-                  />
-                  <Button
-                    primary
-                    label="Save"
-                    onClick={() => {
-                      setPosts({
-                        ...posts,
-                        data: reOrderedLists
-                      })
-                      setReorder(prevState => !prevState)
-                    }}
-                  />
-                </>
+                <Button
+                  default
+                  label="Close"
+                  onClick={() => setReorder(prevState => !prevState)}
+                  className="mr-4"
+                />
               ) : (
                 <>
                   <Can
-                    perform="bulletin:view"
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:reorder'
+                        : isDailyReadingsPage
+                        ? 'daily-reading:reorder'
+                        : 'bulletin:reorder'
+                    }
                     yes={
                       <Button
                         default
                         label="Reorder"
-                        onClick={() => setReorder(prevState => !prevState)}
-                        className="mr-4"
-                      />
-                    }
-                    no={
-                      <Button
-                        default
-                        disabled
-                        label="Reorder"
+                        onClick={handleReorder}
                         className="mr-4"
                       />
                     }
                   />
 
                   <Can
-                    perform="bulletin:create"
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:create'
+                        : 'bulletin:create'
+                    }
                     yes={
                       <Button
                         default
                         leftIcon={<FaPlusCircle />}
-                        label="Create Post"
+                        label={
+                          isQRCodePage
+                            ? 'Generate QR Code'
+                            : isDailyReadingsPage
+                            ? 'Add Daily Reading'
+                            : 'Create Post'
+                        }
                         onClick={goToCreatePage}
                       />
                     }
@@ -707,7 +1362,9 @@ const PostComponent = () => {
                         disabled
                         default
                         leftIcon={<FaPlusCircle />}
-                        label="Create Post"
+                        label={
+                          isQRCodePage ? 'Generate QR Code' : 'Create Post'
+                        }
                       />
                     }
                   />
@@ -719,19 +1376,25 @@ const PostComponent = () => {
         content={
           loading ? (
             <PageLoader />
-          ) : reorder ? (
-            posts && (
-              <Draggable
-                list={reOrderedLists}
-                onListChange={setReOrderedLists}
+          ) : (
+            tableData && (
+              <Table
+                custom
                 rowNames={tableRowData}
+                customBody={tableData}
+                emptyText={
+                  <NotifCard
+                    icon={<FiFileText />}
+                    header="You haven’t created a bulletin post yet"
+                    content="Bulletin posts are a great way to share information with your members. Create one now!"
+                  />
+                }
               />
             )
-          ) : (
-            posts && <Table rowNames={tableRowData} items={posts} />
           )
         }
       />
+
       {!loading && posts && (
         <Pagination
           items={posts}

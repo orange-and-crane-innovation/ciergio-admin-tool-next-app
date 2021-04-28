@@ -21,7 +21,7 @@ const GET_COMPANIES_QUERY = gql`
   }
 `
 
-const SelectCategoryComponent = ({
+const SelectCompanyComponent = ({
   name,
   type,
   userType,
@@ -88,11 +88,11 @@ const SelectCategoryComponent = ({
   )
 }
 
-SelectCategoryComponent.defaultProps = {
+SelectCompanyComponent.defaultProps = {
   name: 'companyIds'
 }
 
-SelectCategoryComponent.propTypes = {
+SelectCompanyComponent.propTypes = {
   name: PropTypes.string,
   type: PropTypes.string,
   userType: PropTypes.string,
@@ -104,4 +104,4 @@ SelectCategoryComponent.propTypes = {
   isMulti: PropTypes.bool
 }
 
-export default SelectCategoryComponent
+export default SelectCompanyComponent

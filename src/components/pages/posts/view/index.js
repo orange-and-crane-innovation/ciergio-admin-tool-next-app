@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { gql, useQuery } from '@apollo/client'
+import { gql, useLazyQuery } from '@apollo/client'
 import PropTypes from 'prop-types'
 import ReactHtmlParser from 'react-html-parser'
 
@@ -54,38 +54,159 @@ const GET_POST_QUERY = gql`
   }
 `
 
-const Component = () => {
-  const { query } = useRouter()
-  const [post, setPost] = useState()
-
-  const { loading, data, error, refetch } = useQuery(GET_POST_QUERY, {
-    variables: {
-      where: {
-        _id: query.id
+const GET_POST_DAILY_READINGS_QUERY = gql`
+  query getAllPost($where: AllPostInput) {
+    getAllPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        _id
+        title
+        content
+        status
+        createdAt
+        updatedAt
+        publishedAt
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+        category {
+          name
+        }
+        primaryMedia {
+          url
+          type
+        }
+        embeddedMediaFiles {
+          url
+          type
+        }
+        dailyReadingDate
       }
     }
-  })
+  }
+`
+
+export const GET_POST_FROM_EMAIL_QUERY = gql`
+  query getPostFromEmail($postID: String, $accountID: String) {
+    getPostFromEmail(where: { _id: $postID, requesterAccountId: $accountID }) {
+      content
+      title
+      createdAt
+      primaryMedia {
+        url
+      }
+      embeddedMediaFiles {
+        url
+        platform
+      }
+      category {
+        name
+      }
+      author {
+        user {
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+`
+
+export const GET_PUBLIC_POST_QUERY = gql`
+  query getPublicPost($where: PublicPostInput) {
+    getPublicPost(where: $where) {
+      count
+      limit
+      offset
+      post {
+        content
+        title
+        createdAt
+        primaryMedia {
+          url
+        }
+        embeddedMediaFiles {
+          url
+          platform
+        }
+        category {
+          name
+        }
+        author {
+          user {
+            firstName
+            lastName
+          }
+        }
+      }
+    }
+  }
+`
+
+const Component = () => {
+  const { query, pathname } = useRouter()
+  const [post, setPost] = useState()
+  const isDailyReadingsPage = pathname === '/daily-readings/view/[id]'
+  const isPublicPostsPage = pathname === '/public-posts/view/[id]/[aid]'
+  const isPublicQrPostsPage = pathname === '/public-qr-posts/view/[id]'
+
+  const [fetchPost, { loading, data, error }] = useLazyQuery(
+    isDailyReadingsPage
+      ? GET_POST_DAILY_READINGS_QUERY
+      : isPublicPostsPage
+      ? GET_POST_FROM_EMAIL_QUERY
+      : isPublicQrPostsPage
+      ? GET_PUBLIC_POST_QUERY
+      : GET_POST_QUERY,
+    {
+      fetchPolicy: 'network-only'
+    }
+  )
 
   useEffect(() => {
-    refetch()
-  }, [])
+    let fetchData
+
+    if (query?.id) {
+      if (isPublicPostsPage) {
+        fetchData = {
+          postID: query.id,
+          accountID: query.aid
+        }
+      } else {
+        fetchData = {
+          where: {
+            _id: query.id
+          }
+        }
+      }
+      fetchPost({ variables: fetchData })
+    }
+  }, [query.id, query.aid])
 
   useEffect(() => {
     if (error) {
       showToast('danger', `Sorry, there's an error occured on fetching.`)
     } else if (!loading && data) {
-      const itemData = data?.getAllPost?.post[0]
+      const itemData =
+        data?.getAllPost?.post[0] ||
+        data?.getPostFromEmail ||
+        data?.getPublicPost?.post[0]
 
       if (itemData) {
         setPost({
-          category: itemData?.category?.name || '',
-          title: itemData?.title || '',
+          category: itemData?.category?.name ?? '',
+          title: itemData?.title ?? '',
           author:
             `${itemData?.author?.user?.firstName} ${itemData?.author?.user?.lastName}` ||
             '',
-          date: DATE.displayDateCreated(itemData?.createdAt) || '',
+          date: DATE.displayDateCreated(itemData?.createdAt) ?? '',
           images:
-            itemData?.primaryMedia.map(item => {
+            itemData?.primaryMedia?.map(item => {
               return {
                 original: item.url
               }
@@ -94,7 +215,8 @@ const Component = () => {
             (itemData?.embeddedMediaFiles &&
               itemData?.embeddedMediaFiles[0]?.url) ||
             null,
-          content: itemData?.content
+          content: itemData?.content,
+          dailyReadingDate: itemData?.dailyReadingDate ?? null
         })
       }
     }
@@ -116,22 +238,55 @@ const Component = () => {
         <div className={styles.PageSubContainer}>
           <div className={styles.PageHeader}>
             <div className={styles.HeaderCategory}>
-              {post.category.toUpperCase()}
+              {isDailyReadingsPage ? '' : post.category.toUpperCase()}
             </div>
-            <div className={styles.HeaderTitle}>{post.title}</div>
+            <div className={styles.HeaderTitle}>
+              {isDailyReadingsPage ? '' : post.title}
+            </div>
           </div>
-          <div className="mb-4">
-            <ImageSlider images={post.images} />
-          </div>
-          <div className="mb-12">
-            <strong>By {post.author}</strong> / {post.date}
-          </div>
-          {post.videos && (
+          {post?.images && (
+            <div className="mb-4">
+              <ImageSlider images={post?.images} />
+            </div>
+          )}
+
+          {!isDailyReadingsPage && (
+            <div className="mb-12">
+              <strong>By {post.author}</strong> / {post.date}
+            </div>
+          )}
+
+          {isDailyReadingsPage && (
+            <center>
+              <div className="my-6 text-3xl leading-10">
+                <strong>
+                  {DATE.toFriendlyShortDate(post.dailyReadingDate)}
+                </strong>
+              </div>
+            </center>
+          )}
+
+          {post.videos && !isDailyReadingsPage && (
             <div className="mb-6">
               <VideoPlayer url={post.videos} />
             </div>
           )}
-          <div className="mb-6">{ReactHtmlParser(post.content)}</div>
+
+          {isDailyReadingsPage && (
+            <div className="mb-2">
+              <strong>{post.title}</strong>
+            </div>
+          )}
+
+          {post.videos && isDailyReadingsPage && (
+            <div className="mb-6">
+              <VideoPlayer url={post.videos} />
+            </div>
+          )}
+
+          <div className={styles.PageContent}>
+            {ReactHtmlParser(post.content)}
+          </div>
         </div>
       </div>
     )

@@ -32,6 +32,8 @@ function ResetPasswordPage() {
       }
       if (called && data) {
         if (data?.resetPassword.message === 'success') {
+          localStorage.removeItem('reset_token')
+
           showToast(
             'success',
             'You successfully created a new password. Please log in to view your dashboard!'
@@ -72,7 +74,11 @@ function ResetPasswordPage() {
         )
 
       if (networkError?.result?.errors) {
-        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+        if (errors?.networkError?.result?.errors[0]?.code === 5002) {
+          showToast('danger', 'Invalid reset code')
+        } else {
+          showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+        }
       }
 
       if (

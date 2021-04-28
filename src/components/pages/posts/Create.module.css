@@ -53,11 +53,11 @@
   }
 
   .CreatePostCardContent {
-    @apply max-w-lg;
+    @apply mb-4 w-full md:max-w-xs;
   }
 
   .CreatePostVideoContent {
-    @apply max-w-xl;
+    @apply w-full md:max-w-xl;
   }
 
   .CreatePostVideoInputContent {
@@ -79,9 +79,10 @@
   }
 
   .CreatePostPublishContent {
-    @apply flex items-start justify-between;
+    @apply flex flex-col items-start justify-between md:flex-row;
 
     .CreatePostPublishSubContent {
+      @apply mr-4;
       @apply flex flex-col;
 
       > span {

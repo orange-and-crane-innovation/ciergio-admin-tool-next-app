@@ -25,18 +25,22 @@ function FormInput({
   inputProps,
   icon,
   iconOnClick,
-  readOnly
+  readOnly,
+  defaultValue,
+  ...rest
 }) {
   const [showPassword, setShowPassword] = useState(false)
 
   const containerClasses = useMemo(
     () =>
       clsx(styles.FormInput, containerClassName, {
-        [styles.hasError]: !!error
+        [styles.hasError]: !!error,
+        [styles.Readonly]: !!readOnly,
+        [styles.Disabled]: !!disabled
       }),
-    [containerClassName, error]
+    [containerClassName, error, readOnly, disabled]
   )
-  const labelClasses = useMemo(() => clsx(styles.formLabel, labelClassName), [
+  const labelClasses = useMemo(() => clsx(labelClassName, styles.formLabel), [
     labelClassName
   ])
   const inputClasses = useMemo(() => clsx(styles.FormControl, inputClassName), [
@@ -66,10 +70,13 @@ function FormInput({
           className={inputClasses}
           placeholder={placeholder}
           value={value}
+          defaultValue={defaultValue}
           maxLength={maxLength}
           readOnly={readOnly}
+          disabled={disabled}
           onChange={onChange}
           {...inputProps}
+          {...rest}
         />
         {type !== 'password' && icon && (
           <button
@@ -118,12 +125,10 @@ function FormInput({
   return (
     <div className={containerClasses}>
       <div className={styles.FormInputContainer}>
-        <label htmlFor={id || name}>
-          {renderLabel}
-          {description || null}
-          {renderInput}
-          {renderError}
-        </label>
+        <label htmlFor={id || name}>{renderLabel}</label>
+        {description || null}
+        {renderInput}
+        {renderError}
       </div>
     </div>
   )
@@ -154,7 +159,8 @@ FormInput.propTypes = {
   description: P.node || P.string,
   icon: P.any,
   iconOnClick: P.func,
-  readOnly: P.bool
+  readOnly: P.bool,
+  defaultValue: P.string
 }
 
 export default FormInput

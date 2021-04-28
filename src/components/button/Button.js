@@ -14,6 +14,7 @@ function Button({
   danger,
   warning,
   info,
+  link,
   loading,
   leftIcon,
   rightIcon,
@@ -31,6 +32,7 @@ function Button({
         [styles.isDanger]: danger,
         [styles.isWarning]: warning,
         [styles.isInfo]: info,
+        [styles.isLink]: link,
         [styles.isFluid]: fluid,
         [styles.disabled]: disabled,
         [styles.noBorder]: noBorder,
@@ -43,6 +45,7 @@ function Button({
       warning,
       info,
       fluid,
+      link,
       className,
       disabled,
       noBorder
@@ -59,13 +62,13 @@ function Button({
 
   const renderLeftIcon = useMemo(() => {
     return !loading && leftIcon ? (
-      <span className="mr-2">{leftIcon}</span>
+      <span className={label ? 'mr-2' : ''}>{leftIcon}</span>
     ) : null
   }, [leftIcon, loading])
 
   const renderRightIcon = useMemo(() => {
     return !loading && rightIcon ? (
-      <span className="ml-2 text-white">{rightIcon}</span>
+      <span className={label ? 'ml-2' : ''}>{rightIcon}</span>
     ) : null
   }, [loading, rightIcon])
 
@@ -84,8 +87,7 @@ function Button({
 }
 
 Button.defaultProps = {
-  type: 'button',
-  label: 'Button'
+  type: 'button'
 }
 
 Button.propTypes = {
@@ -97,6 +99,7 @@ Button.propTypes = {
   danger: P.bool,
   warning: P.bool,
   info: P.bool,
+  link: P.bool,
   loading: P.bool,
   leftIcon: P.node,
   rightIcon: P.node,

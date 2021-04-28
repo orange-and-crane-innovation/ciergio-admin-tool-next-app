@@ -10,7 +10,7 @@ import {
 
 import styles from './Toast.module.css'
 
-function Toast({ variant, children, onDismiss }) {
+function Toast({ variant, icon, children, hasCloseButton, onDismiss }) {
   let variantStyle, iconStyle
 
   if (variant) {
@@ -31,18 +31,22 @@ function Toast({ variant, children, onDismiss }) {
 
   return (
     <div className={`${styles.toast} ${variantStyle}`}>
-      <span className={styles.icon}>{iconStyle}</span>
+      <span className={styles.icon}>{icon || iconStyle}</span>
       <span className={styles.content}>{children}</span>
-      <button className={styles.button} onClick={onDismiss}>
-        <span>×</span>
-      </button>
+      {hasCloseButton && (
+        <button className={styles.button} onClick={onDismiss}>
+          <span>×</span>
+        </button>
+      )}
     </div>
   )
 }
 
 Toast.propTypes = {
   variant: P.string,
+  icon: P.any,
   children: P.any,
+  hasCloseButton: P.bool,
   onDismiss: P.func
 }
 

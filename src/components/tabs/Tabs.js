@@ -4,10 +4,10 @@ import P from 'prop-types'
 import styles from './Tabs.module.css'
 
 const Tabs = ({ children, defaultTab }) => {
-  const [activeId, setActiveId] = useState(defaultTab)
-  const handleClick = useCallback(id => setActiveId(id), [])
+  const [activeid, setActiveId] = useState(defaultTab)
+  const handleclick = useCallback(id => setActiveId(id), [])
   const _children = React.Children.map(children, child =>
-    React.cloneElement(child, { activeId, handleClick })
+    React.cloneElement(child, { activeid, handleclick })
   )
 
   return <div className={styles.tabContainer}>{_children}</div>

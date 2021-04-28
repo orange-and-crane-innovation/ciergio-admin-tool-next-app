@@ -66,6 +66,7 @@ const UPDATE_POST_CATEGORY_MUTATION = gql`
 `
 
 const CategoriesComponent = () => {
+  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const [categories, setCategories] = useState()
   const [categoryType, setCategoryType] = useState('post')
   const [activePage, setActivePage] = useState(1)
@@ -75,6 +76,7 @@ const CategoriesComponent = () => {
   const [modalType, setModalType] = useState('create')
   const [modalTitle, setModalTitle] = useState('')
   const [modalData, setModalData] = useState()
+  const isSystemPray = system === 'pray'
   let pageHeader = ''
 
   const pillData = [
@@ -83,7 +85,7 @@ const CategoriesComponent = () => {
       value: 'post'
     },
     {
-      name: 'Maintenance and Repairs',
+      name: isSystemPray ? 'Prayer Requests' : 'Maintenance and Repairs',
       value: 'issue'
     },
     {
@@ -174,7 +176,7 @@ const CategoriesComponent = () => {
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
-        errorHandler(errorCreate)
+        errorHandler(errorUpdate)
       }
       if (calledUpdate && dataUpdate) {
         showToast('success', 'You have successfully updated a category.')
@@ -268,7 +270,7 @@ const CategoriesComponent = () => {
   if (categoryType === 'post') {
     pageHeader = 'Bulletin Board'
   } else if (categoryType === 'issue') {
-    pageHeader = 'Maintenance and Repairs'
+    pageHeader = isSystemPray ? 'Prayer Requests' : 'Maintenance and Repairs'
   } else if (categoryType === 'flash') {
     pageHeader = 'Flash Notifications'
   }

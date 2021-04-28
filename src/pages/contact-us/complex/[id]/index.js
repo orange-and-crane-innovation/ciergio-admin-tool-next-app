@@ -6,7 +6,7 @@ function ContactList() {
   const router = useRouter()
   const { id } = router.query
 
-  return <Page route="/contact-us" page={<Contacts id={id} />} />
+  return <Page route="/contact-us" ne page={<Contacts id={id} />} />
 }
 
 export default ContactList

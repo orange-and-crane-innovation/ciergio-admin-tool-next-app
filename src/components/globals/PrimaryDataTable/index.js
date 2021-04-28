@@ -10,7 +10,10 @@ function PrimaryDataTable({
   setCurrentPage,
   setPageOffset,
   pageLimit,
-  setPageLimit
+  setPageLimit,
+  emptyText,
+  customize,
+  customBody
 }) {
   const onPageClick = e => {
     setCurrentPage(e)
@@ -21,7 +24,23 @@ function PrimaryDataTable({
 
   return (
     <>
-      <Table rowNames={columns} items={data} loading={loading} />
+      {customize ? (
+        <Table
+          loading={loading}
+          rowNames={columns}
+          custom={customize}
+          customBody={customBody}
+          emptyText={emptyText}
+        />
+      ) : (
+        <Table
+          rowNames={columns}
+          items={data}
+          loading={loading}
+          emptyText={emptyText}
+        />
+      )}
+
       {!loading && data && (
         <div className="px-8">
           <Pagination
@@ -44,7 +63,10 @@ PrimaryDataTable.propTypes = {
   pageLimit: P.number,
   setCurrentPage: P.func,
   setPageOffset: P.func,
-  setPageLimit: P.func
+  setPageLimit: P.func,
+  emptyText: P.oneOfType([P.element, P.node, P.string]),
+  customize: P.bool,
+  customBody: P.object
 }
 
 export default PrimaryDataTable

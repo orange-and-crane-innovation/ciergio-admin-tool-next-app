@@ -9,7 +9,7 @@ import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
 
-import AddResidentModal from '@app/components/pages/residents/AddResidentModal'
+import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
 import ViewResidentModal from './ViewResidentModal'
 
 const tableRows = [
