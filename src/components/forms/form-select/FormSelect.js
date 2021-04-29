@@ -69,9 +69,10 @@ const InputSelect = ({
       {subLabel || null}
       <Select
         styles={{
-          control: styles => ({
-            ...styles,
-            borderColor: error ? 'red' : styles.borderColor
+          control: base => ({
+            ...base,
+            borderColor: error ? 'red' : base.borderColor,
+            boxShadow: 'none'
           })
         }}
         classNamePrefix={styles.FormSelect}

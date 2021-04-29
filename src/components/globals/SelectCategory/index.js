@@ -9,8 +9,18 @@ import { ACCOUNT_TYPES } from '@app/constants'
 import styles from './index.module.css'
 
 const GET_POST_CATEGORY_QUERY = gql`
-  query getPostCategory($where: PostCategoryInput, $limit: Int, $offset: Int) {
-    getPostCategory(where: $where, limit: $limit, offset: $offset) {
+  query getPostCategory(
+    $where: PostCategoryInput
+    $limit: Int
+    $offset: Int
+    $sort: PostCategorySort
+  ) {
+    getPostCategory(
+      where: $where
+      limit: $limit
+      offset: $offset
+      sort: $sort
+    ) {
       count
       category {
         _id
@@ -71,6 +81,10 @@ const SelectCategoryComponent = ({
     variables: {
       where: {
         type: type
+      },
+      sort: {
+        by: 'name',
+        order: 'asc'
       },
       limit: 500,
       offset: 0
