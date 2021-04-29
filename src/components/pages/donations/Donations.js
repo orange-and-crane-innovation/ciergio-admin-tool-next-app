@@ -208,7 +208,7 @@ function Donations() {
             <td>{ATTR.toCurrency(item?.amount)}</td>
             <td>{ATTR.toCurrency(item?.bankCharges)}</td>
             <td>{ATTR.toCurrency(item?.ociFee)}</td>
-            <td>{ATTR.toCurrency(item?.amount)}</td>
+            <td>{ATTR.toCurrency(item?.netAmount)}</td>
             <td>
               <div className="flex flex-col text-sm">
                 {item?.senderReferenceCode && (
