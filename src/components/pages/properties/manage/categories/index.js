@@ -101,7 +101,7 @@ const CategoriesComponent = () => {
         type: categoryType
       },
       sort: {
-        // by: 'name',
+        by: 'name',
         order: 'asc'
       },
       limit: limitPage,
@@ -134,6 +134,9 @@ const CategoriesComponent = () => {
   }, [])
 
   useEffect(() => {
+    if (error) {
+      errorHandler(error)
+    }
     if (!loading && data) {
       const tableData = {
         count: data?.getPostCategory.count || 0,
@@ -221,10 +224,15 @@ const CategoriesComponent = () => {
 
   const onLimitChange = e => {
     setLimitPage(Number(e.value))
+    setActivePage(1)
+    setOffsetPage(0)
   }
 
   const onCategorySelect = type => {
     setCategoryType(type)
+    setActivePage(1)
+    setLimitPage(10)
+    setOffsetPage(0)
   }
 
   const onSubmit = async (type, data) => {
@@ -278,15 +286,15 @@ const CategoriesComponent = () => {
   return (
     <div className={styles.PageContainer}>
       <h1 className={styles.PageHeader}>Manage Global Categories</h1>
-      <div className="flex">
-        <div className="w-1/4 mr-4">
+      <div className="flex flex-col md:flex-row">
+        <div className="w-full md:w-1/4 mr-4">
           <Pills
             data={pillData}
             activeKey={categoryType}
             onClick={onCategorySelect}
           />
         </div>
-        <div className="w-3/4">
+        <div className="w-full md:w-3/4">
           <Card
             noPadding
             header={
