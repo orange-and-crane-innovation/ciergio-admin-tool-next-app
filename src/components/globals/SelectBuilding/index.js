@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import PropTypes from 'prop-types'
-import { FaSpinner } from 'react-icons/fa'
 
 import FormSelect from '@app/components/forms/form-select'
 
@@ -58,14 +57,6 @@ const SelectBuildingComponent = ({
     }
   }, [loadingBuildings, dataBuildings, errorBuildings])
 
-  if (loadingBuildings) {
-    return (
-      <div className={styles.SelectCategorySpinnerContainer}>
-        <FaSpinner className="icon-spin" />
-      </div>
-    )
-  }
-
   return (
     <div className={styles.SelectCompanyContainer}>
       <FormSelect
@@ -75,6 +66,7 @@ const SelectBuildingComponent = ({
         noOptionsMessage={() => 'No item found.'}
         defaultValue={selected}
         options={lists || []}
+        loading={loadingBuildings}
         onChange={onChange}
         onClear={onClear}
         isMulti={true}
