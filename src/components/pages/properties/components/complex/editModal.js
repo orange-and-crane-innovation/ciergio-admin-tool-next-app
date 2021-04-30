@@ -48,7 +48,7 @@ const Component = ({
     if (data) {
       register({ name: 'id' })
       setValue('id', data?._id)
-      setValue('logo', [data?.avatar] ?? [])
+      setValue('logo', data?.avatar ? [data?.avatar] : [])
       setValue('name', data?.name ?? '')
       setValue('location', data?.address?.formattedAddress ?? '')
       setValue('address', data?.address ?? '')
