@@ -358,7 +358,7 @@ const CompanyDataComponent = () => {
         const createData = {
           data: {
             name: data?.name,
-            avatar: data?.logo[0]?.url,
+            avatar: data?.logo[0],
             address: {
               formattedAddress: data?.address?.formattedAddress,
               city: data?.address?.city
