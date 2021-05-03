@@ -19,6 +19,8 @@ import { FiDownload } from 'react-icons/fi'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import useDebounce from '@app/utils/useDebounce'
 import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
+
 import Can from '@app/permissions/can'
 import { initializeApollo } from '@app/lib/apollo/client'
 import {
@@ -217,9 +219,12 @@ function AllStaff() {
           skip: skipCount === 0 ? null : skipCount
         }
       })
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
-  console.log({ selectedRoles })
+
   const handleShowModal = type => {
     switch (type) {
       case 'create':

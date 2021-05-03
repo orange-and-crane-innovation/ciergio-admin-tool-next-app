@@ -78,7 +78,8 @@ const navigation = [
         url: '/messages',
         icon: 'ciergio-mail',
         title: 'Messages',
-        items: []
+        items: [],
+        badge: 'unreadMsg'
       },
       {
         url: '/posts',

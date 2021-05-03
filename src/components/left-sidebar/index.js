@@ -30,6 +30,7 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
                       items={l0.items}
                       url={l0.url}
                       title={l0.title}
+                      badge={l0.badge}
                     />
                     <ul>
                       {l0.items.map((l1, b) => {
