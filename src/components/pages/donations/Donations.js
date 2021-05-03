@@ -253,11 +253,13 @@ function Donations() {
 
   const onPageClick = e => {
     setActivePage(e)
-    setPageOffset(e * pageLimit - 10)
+    setPageOffset(pageLimit * (e - 1))
   }
 
   const onLimitChange = e => {
-    setPageLimit(Number(e))
+    setActivePage(1)
+    setPageOffset(0)
+    setPageLimit(Number(e.value))
   }
 
   const onSearch = debounce(e => {
