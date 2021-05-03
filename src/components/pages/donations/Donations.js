@@ -208,7 +208,7 @@ function Donations() {
             <td>{ATTR.toCurrency(item?.amount)}</td>
             <td>{ATTR.toCurrency(item?.bankCharges)}</td>
             <td>{ATTR.toCurrency(item?.ociFee)}</td>
-            <td>{ATTR.toCurrency(item?.amount)}</td>
+            <td>{ATTR.toCurrency(item?.netAmount)}</td>
             <td>
               <div className="flex flex-col text-sm">
                 {item?.senderReferenceCode && (
@@ -253,11 +253,13 @@ function Donations() {
 
   const onPageClick = e => {
     setActivePage(e)
-    setPageOffset(e * pageLimit - 10)
+    setPageOffset(pageLimit * (e - 1))
   }
 
   const onLimitChange = e => {
-    setPageLimit(Number(e))
+    setActivePage(1)
+    setPageOffset(0)
+    setPageLimit(Number(e.value))
   }
 
   const onSearch = debounce(e => {

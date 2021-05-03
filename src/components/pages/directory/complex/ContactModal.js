@@ -62,7 +62,7 @@ function ContactModal({
 
   return (
     <Modal
-      title={`${selected ? 'Edit' : 'Add a'} Contact`}
+      title={`${selected ? 'Edit' : 'Add'} a Contact`}
       okText="Okay"
       visible={open}
       onClose={handleClose}
@@ -120,22 +120,25 @@ function ContactModal({
               />
             )}
           />
-          <Controller
-            name="name"
-            control={control}
-            render={({ name, value, onChange }) => (
-              <FormInput
-                label="Contact Name"
-                labelClassName="font-bold text-neutral-500"
-                placeholder="Enter contact name"
-                onChange={onChange}
-                name={name}
-                value={value}
-                error={errors?.name?.message}
-                defaultValue={selected?.name}
-              />
-            )}
-          />
+          <div>
+            <span className="font-bold text-neutral-500">Contact Name</span>
+            <Controller
+              name="name"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <FormInput
+                  inputClassName="mt-2"
+                  placeholder="Enter contact name"
+                  onChange={onChange}
+                  name={name}
+                  value={value}
+                  error={errors?.name?.message}
+                  defaultValue={selected?.name}
+                />
+              )}
+            />
+          </div>
+
           <Controller
             name="contactNumber"
             control={control}
@@ -161,7 +164,7 @@ function ContactModal({
                 placeholder="(optional) Enter contact address"
                 name={name}
                 onChange={onChange}
-                value={value?.formattedAddress}
+                value={value?.formattedAddress || value || ''}
                 error={errors?.address?.message}
                 getValue={onGetMapValue}
               />

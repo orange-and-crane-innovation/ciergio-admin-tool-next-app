@@ -81,6 +81,7 @@ select:active {
 
 .content-wrap {
   @apply py-5 px-8;
+  @apply text-base leading-5;
 }
 
 .content-wrap .toolbar {

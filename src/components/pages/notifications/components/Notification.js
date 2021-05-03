@@ -662,7 +662,9 @@ function Notifications({
             loading={loadingNotifications}
             currentPage={activePage}
             setCurrentPage={onPageClick}
+            setPageOffset={setCurrentOffset}
             setPageLimit={onLimitChange}
+            pageLimit={currentLimit}
             emptyText={
               <NotifCard
                 icon={<FiFileText />}

@@ -110,14 +110,6 @@ const CompanyDataComponent = () => {
     router.push(`/properties/company/${id}/overview`)
   }
 
-  const companyDropdownData = [
-    {
-      label: 'Edit Company',
-      icon: <FiEdit2 />,
-      function: () => handleShowModal('edit', companyProfile)
-    }
-  ]
-
   const tableRowNames = [
     {
       name: 'Company Name',
@@ -156,22 +148,6 @@ const CompanyDataComponent = () => {
     }
   })
 
-  const {
-    loading: loadingProfile,
-    data: dataProfile,
-    error: errorProfile,
-    refetch: refetchProfile
-  } = useQuery(GET_COMPANIES_QUERY, {
-    enabled: false,
-    variables: {
-      where: {
-        _id: profile.accounts.data[0].company._id
-      },
-      limit: limitPage,
-      skip: offsetPage
-    }
-  })
-
   const [
     createCompany,
     {
@@ -204,7 +180,7 @@ const CompanyDataComponent = () => {
 
   useEffect(() => {
     refetch()
-    refetchProfile()
+    setCompanyProfile(profile.accounts.data[0].company)
   }, [])
 
   useEffect(() => {
@@ -271,16 +247,6 @@ const CompanyDataComponent = () => {
   }, [loading, data, error])
 
   useEffect(() => {
-    if (!loadingProfile) {
-      if (errorProfile) {
-        errorHandler(errorProfile)
-      } else if (dataProfile) {
-        setCompanyProfile(dataProfile?.getCompanies?.data[0])
-      }
-    }
-  }, [loadingProfile, dataProfile, errorProfile])
-
-  useEffect(() => {
     if (!loadingCreate) {
       if (errorCreate) {
         errorHandler(errorCreate)
@@ -345,7 +311,7 @@ const CompanyDataComponent = () => {
 
   const onPageClick = e => {
     setActivePage(e)
-    setOffsetPage(e * limitPage - 10)
+    setOffsetPage(limitPage * (e - 1))
   }
 
   const onLimitChange = e => {
@@ -358,7 +324,7 @@ const CompanyDataComponent = () => {
         const createData = {
           data: {
             name: data?.name,
-            avatar: data?.logo[0]?.url,
+            avatar: data?.logo[0],
             address: {
               formattedAddress: data?.address?.formattedAddress,
               city: data?.address?.city
@@ -443,10 +409,6 @@ const CompanyDataComponent = () => {
             <h1 className={styles.PageHeader}>{companyProfile?.name ?? ''}</h1>
             <h2 className={styles.PageHeaderSmall}>Company</h2>
           </div>
-        </div>
-
-        <div className={styles.PageButton}>
-          <Dropdown label={<FaEllipsisH />} items={companyDropdownData} />
         </div>
       </div>
 

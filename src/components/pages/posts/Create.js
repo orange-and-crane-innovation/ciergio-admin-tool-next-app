@@ -114,6 +114,7 @@ const CreatePosts = () => {
   )
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [errorSelectedDate, setErrorSelectedDate] = useState()
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
@@ -259,13 +260,16 @@ const CreatePosts = () => {
       })
       .then(function (response) {
         if (response.data) {
-          const imageData = response.data.map(item => {
-            return {
-              url: item.location,
-              type: item.mimetype
-            }
+          response.data.map(item => {
+            setImageUrls(prevArr => [...prevArr, item.location])
+            return setImageUploadedData(prevArr => [
+              ...prevArr,
+              {
+                url: item.location,
+                type: item.mimetype
+              }
+            ])
           })
-          setImageUploadedData(imageData)
           setFileUploadError(null)
         }
       })
@@ -287,7 +291,7 @@ const CreatePosts = () => {
     const fileList = []
 
     if (files) {
-      if (files.length > maxImages) {
+      if (files.length + imageUrls?.length > maxImages) {
         showToast('info', `Maximum of ${maxImages} files only`)
       } else {
         setLoading(true)
@@ -299,10 +303,6 @@ const CreatePosts = () => {
 
         for (const file of files) {
           const reader = new FileReader()
-
-          reader.onloadend = () => {
-            setImageUrls(imageUrls => [...imageUrls, reader.result])
-          }
           reader.readAsDataURL(file)
 
           formData.append('files', file)
@@ -319,7 +319,11 @@ const CreatePosts = () => {
     const images = imageUrls.filter(image => {
       return image !== e.currentTarget.dataset.id
     })
+    const uploadedImages = imageUploadedData.filter(image => {
+      return image.url !== e.currentTarget.dataset.id
+    })
     setImageUrls(images)
+    setImageUploadedData(uploadedImages)
     setValue('images', images.length !== 0 ? images : null)
   }
 
@@ -489,11 +493,28 @@ const CreatePosts = () => {
   }
 
   const onSelectPublishDateTime = data => {
+    const isIn = dayjs(DATE.toFriendlyISO(data)).diff(new Date(), 'minutes')
+
+    if (isIn < 5) {
+      setErrorSelectedDate('Requires at least 5 minutes')
+    } else {
+      setErrorSelectedDate(null)
+    }
     setSelectedPublishDateTime(data)
   }
 
   const onSavePublishTime = () => {
-    handleShowPublishTimeModal()
+    const isIn = dayjs(DATE.toFriendlyISO(selectedPublishDateTime)).diff(
+      new Date(),
+      'minutes'
+    )
+
+    if (isIn < 5) {
+      setErrorSelectedDate('Requires at least 5 minutes')
+    } else {
+      setErrorSelectedDate(null)
+      handleShowPublishTimeModal()
+    }
   }
 
   const onCancelPublishTime = () => {
@@ -982,6 +1003,7 @@ const CreatePosts = () => {
           isShown={showPublishTimeModal}
           valuePublishType={selectedPublishTimeType}
           valueDateTime={selectedPublishDateTime}
+          errorSelectedDate={errorSelectedDate}
         />
 
         <Modal

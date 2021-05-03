@@ -238,6 +238,7 @@ const CreatePosts = () => {
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState()
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [errorSelectedDate, setErrorSelectedDate] = useState()
   const [isEdit, setIsEdit] = useState(true)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -414,7 +415,7 @@ const CreatePosts = () => {
             ? 'now'
             : 'later'
         )
-        setSelectedPublishDateTime(itemData?.publishedAt)
+        setSelectedPublishDateTime(new Date(itemData?.publishedAt))
         setSelectedDate(itemData?.dailyReadingDate)
       }
     }
@@ -544,12 +545,15 @@ const CreatePosts = () => {
       .then(function (response) {
         if (response.data) {
           response.data.map(item => {
-            return imageUploadedData.push({
-              url: item.location,
-              type: item.mimetype
-            })
+            setImageUrls(prevArr => [...prevArr, item.location])
+            return setImageUploadedData(prevArr => [
+              ...prevArr,
+              {
+                url: item.location,
+                type: item.mimetype
+              }
+            ])
           })
-          setImageUploadedData(imageUploadedData)
           setFileUploadError(null)
         }
       })
@@ -571,7 +575,7 @@ const CreatePosts = () => {
     const fileList = []
 
     if (files) {
-      if (files.length > maxImages) {
+      if (files.length + imageUrls?.length > maxImages) {
         showToast('info', `Maximum of ${maxImages} files only`)
       } else {
         setLoading(true)
@@ -583,10 +587,6 @@ const CreatePosts = () => {
 
         for (const file of files) {
           const reader = new FileReader()
-
-          reader.onloadend = () => {
-            setImageUrls(imageUrls => [...imageUrls, reader.result])
-          }
           reader.readAsDataURL(file)
 
           formData.append('files', file)
@@ -747,8 +747,7 @@ const CreatePosts = () => {
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
       }
-      console.log(updateData)
-      // updatePost({ variables: updateData })
+      updatePost({ variables: updateData })
     }
   }
 
@@ -873,11 +872,28 @@ const CreatePosts = () => {
   }
 
   const onSelectPublishDateTime = data => {
+    const isIn = dayjs(DATE.toFriendlyISO(data)).diff(new Date(), 'minutes')
+
+    if (isIn < 5) {
+      setErrorSelectedDate('Requires at least 5 minutes')
+    } else {
+      setErrorSelectedDate(null)
+    }
     setSelectedPublishDateTime(data)
   }
 
   const onSavePublishTime = () => {
-    handleShowPublishTimeModal()
+    const isIn = dayjs(DATE.toFriendlyISO(selectedPublishDateTime)).diff(
+      new Date(),
+      'minutes'
+    )
+
+    if (isIn < 5) {
+      setErrorSelectedDate('Requires at least 5 minutes')
+    } else {
+      setErrorSelectedDate(null)
+      handleShowPublishTimeModal()
+    }
   }
 
   const onCancelPublishTime = () => {
@@ -1465,6 +1481,7 @@ const CreatePosts = () => {
           isShown={showPublishTimeModal}
           valuePublishType={selectedPublishTimeType}
           valueDateTime={selectedPublishDateTime}
+          errorSelectedDate={errorSelectedDate}
         />
 
         <Modal

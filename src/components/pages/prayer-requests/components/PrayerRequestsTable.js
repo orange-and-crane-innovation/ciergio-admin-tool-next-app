@@ -129,6 +129,9 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
             categoryId: category?.value || null
           }
         })
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
@@ -163,9 +166,9 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
           data: {
             authorAccountId: accountId,
             companyId,
-            complexId: complexId ?? null,
+            complexId: complexId ?? '',
             categoryId: category?.value,
-            content: message,
+            content: message && message !== '' ? message : null,
             prayer: {
               for: prayerFor,
               from: prayerFrom,
@@ -275,7 +278,8 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   title: (
                     <Link href={path}>
                       <p className="cursor-pointer font-bold hover:underline">
-                        <span>{category.name}</span> - <span>{prayer.for}</span>
+                        <span>{category?.name}</span> -{' '}
+                        <span>{prayer.for}</span>
                       </p>
                     </Link>
                   ),
@@ -297,6 +301,30 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
           : []
     }
   }, [prayerRequests?.issue])
+
+  const errorHandler = data => {
+    const errors = JSON.parse(JSON.stringify(data))
+
+    if (errors) {
+      const { graphQLErrors, networkError, message } = errors
+      if (graphQLErrors)
+        graphQLErrors.map(({ message, locations, path }) =>
+          showToast('danger', message)
+        )
+
+      if (networkError?.result?.errors) {
+        showToast('danger', errors?.networkError?.result?.errors[0]?.message)
+      }
+
+      if (
+        message &&
+        graphQLErrors?.length === 0 &&
+        !networkError?.result?.errors
+      ) {
+        showToast('danger', message)
+      }
+    }
+  }
 
   return (
     <>

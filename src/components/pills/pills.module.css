@@ -1,9 +1,9 @@
 .pageContainer {
-  @apply flex flex-col items-start;
+  @apply flex flex-wrap items-start md:flex-col;
   @apply font-body font-normal text-base leading-normal;
 
   .itemContainer {
-    @apply w-full mb-2;
+    @apply md:w-full mb-2;
     @apply rounded-md;
 
     button {

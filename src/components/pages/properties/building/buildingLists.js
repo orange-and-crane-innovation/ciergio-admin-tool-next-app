@@ -341,7 +341,7 @@ const CompanyDataComponent = () => {
 
   const onPageClick = e => {
     setActivePage(e)
-    setOffsetPage(e * limitPage - 10)
+    setOffsetPage(limitPage * (e - 1))
   }
 
   const onLimitChange = e => {
@@ -354,7 +354,7 @@ const CompanyDataComponent = () => {
         const createData = {
           data: {
             name: data?.name,
-            avatar: data?.logo[0]?.url,
+            avatar: data?.logo[0],
             address: {
               formattedAddress: data?.address?.formattedAddress,
               city: data?.address?.city

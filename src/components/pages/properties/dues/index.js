@@ -121,7 +121,7 @@ const DuesComponent = ({ unit, header }) => {
 
   const onPageClick = e => {
     setActivePage(e)
-    setOffsetPage(e * limitPage - 10)
+    setOffsetPage(limitPage * (e - 1))
   }
 
   const onLimitChange = e => {

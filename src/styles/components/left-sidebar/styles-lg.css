@@ -44,7 +44,7 @@
       @apply uppercase font-bold text-base tracking-wider;
       @apply flex flex-row items-center justify-start;
       @apply h-20 w-full whitespace-nowrap pl-4;
-      max-width: calc(theme('spacing.1') * 72);
+      width: 260px;
       @apply text-primary-900;
       span {
         transition: all 0.15s ease-in-out;
@@ -55,7 +55,7 @@
         }
       }
       [data-collapsed='true'] & {
-        max-width: calc(theme('spacing.1') * 16);
+        width: 60px;
         span {
           @apply invisible opacity-0;
         }
@@ -67,20 +67,24 @@
   }
 
   .left-sidebar-item {
-    @apply font-body flex flex-row h-16 items-center;
+    @apply relative font-body flex flex-row h-16 items-center;
     @apply text-base justify-start relative whitespace-nowrap;
     @apply truncate w-full rounded-none border-0 outline-none;
     @apply focus:outline-none py-4;
-    min-width: calc(theme('spacing.1') * 16);
-    max-width: calc(theme('spacing.1') * 72);
-    width: calc(theme('spacing.1') * 72);
+    min-width: 60px;
+    width: 100%;
     > svg {
-      width: calc(theme('spacing.1') * 16);
+      width: 60px;
     }
     [data-collapsed='true'] & {
-      width: calc(theme('spacing.1') * 16);
+      width: 60px;
       > .title {
         width: 0;
+      }
+      > .badge {
+        @apply absolute right-0 w-4 h-4;
+        top: 14px;
+        font-size: 0.625rem;
       }
     }
     &.open-sibling {
@@ -124,8 +128,13 @@
   [data-collapsed='true'] {
     .l0 {
       > .left-sidebar-item {
-        > .title {
-          @apply invisible opacity-0;
+        > .title,
+        svg {
+          @apply hidden;
+        }
+
+        > i {
+          @apply ml-2;
         }
       }
     }
@@ -198,7 +207,10 @@
       border-color: color(theme('colors.gray.900') tint(10%));
     }
     .badge {
-      @apply hidden !important;
+      @apply flex items-center justify-center ml-auto mr-4 w-6 h-6;
+      @apply text-sm font-medium  text-white;
+      @apply bg-primary-900;
+      @apply rounded-full;
     }
     [data-collapsed='true'][data-left-sidebar='light'] & {
       ul > li {

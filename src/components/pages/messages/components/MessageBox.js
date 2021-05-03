@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'

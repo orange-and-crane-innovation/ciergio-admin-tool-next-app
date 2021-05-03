@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo, useContext, useRef } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
+import { useRouter } from 'next/router'
 import { FiEdit } from 'react-icons/fi'
 
 import InfiniteScroll from 'react-infinite-scroll-component'
 
 import Toggle from '@app/components/toggle'
 import Spinner from '@app/components/spinner'
+import FormSelect from '@app/components/forms/form-select'
 
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
@@ -27,9 +29,6 @@ import {
   seenMessage,
   GET_UNREAD_MESSAGE_QUERY
 } from './queries'
-import { FormSelect } from '@app/components/globals'
-
-import { useRouter } from 'next/router'
 
 import { Context } from '@app/lib/global/store'
 
@@ -64,6 +63,8 @@ export default function Main() {
   const [offset, setOffset] = useState(0)
   const [offsetConvo, setOffsetConvo] = useState(0)
   const [messageData, setMessageData] = useState()
+  const [firstConvo, setFirstConvo] = useState()
+  const [isFirst, setIsFirst] = useState(true)
   const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
 
@@ -142,11 +143,12 @@ export default function Main() {
     }
   })
 
-  const firstConvo = useMemo(() => {
-    if (convos?.getConversations?.count > 0) {
-      return convos?.getConversations?.data[0]
+  useEffect(() => {
+    if (convos?.getConversations?.count > 0 && isFirst) {
+      setFirstConvo(convos?.getConversations?.data[0])
+      setIsFirst(false)
     }
-  })
+  }, [convos])
 
   useEffect(() => {
     if (convos?.getConversations) {
@@ -505,7 +507,7 @@ export default function Main() {
   const onSelectConvoType = e => {
     setConversations({})
     setOffsetConvo(0)
-    setConvoType(e.target.value)
+    setConvoType(e.value)
   }
 
   const errorHandler = data => {
@@ -537,8 +539,14 @@ export default function Main() {
       <div className={styles.messagesListContainer}>
         <div className={styles.messagesListHeader}>
           {/* <h3 className="text-lg font-bold">Members</h3> */}
-          <div className="w-3/4">
-            <FormSelect options={convoOptions} onChange={onSelectConvoType} />
+          <div className="w-3/4 mt-4">
+            <FormSelect
+              options={convoOptions}
+              onChange={onSelectConvoType}
+              defaultValue={convoOptions.filter(
+                item => item.value === convoType
+              )}
+            />
           </div>
           <div className="flex items-center">
             {/* <button className={styles.messagesButton}>

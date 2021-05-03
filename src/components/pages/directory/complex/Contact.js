@@ -14,6 +14,8 @@ import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
+
 import axios from '@app/utils/axios'
 import { FaPlusCircle } from 'react-icons/fa'
 import { AiOutlineEllipsis } from 'react-icons/ai'
@@ -161,6 +163,9 @@ function Contact({ id }) {
         handleContactModal()
         showToast('success', `You have successfully added a new contact`)
         handleRefetchContacts()
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
@@ -169,6 +174,9 @@ function Contact({ id }) {
       handleContactModal()
       showToast('success', `You have successfully updated a contact`)
       handleRefetchContacts()
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
   const [deleteContact, { loading: deletingContact }] = useMutation(
@@ -178,6 +186,9 @@ function Contact({ id }) {
         setShowDeleteContactModal(old => !old)
         showToast('success', `You have successfully deleted a contact`)
         handleRefetchContacts()
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
@@ -239,7 +250,7 @@ function Contact({ id }) {
       name,
       logo: fileUploadedData[0]?.url,
       contactNumber,
-      categoryId: category.value ?? selectedContact?.category?._id
+      categoryId: category?.value ?? selectedContact?.category?._id
     }
 
     if (!isEmpty(addressData)) {
@@ -468,7 +479,7 @@ function Contact({ id }) {
         selected={selectedContact}
       />
       <Modal
-        title="Delete Category"
+        title="Delete Contact"
         okText="Yes, delete"
         visible={showDeleteContactModal}
         onClose={() => setShowDeleteContactModal(old => !old)}

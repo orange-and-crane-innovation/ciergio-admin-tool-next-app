@@ -54,14 +54,14 @@ const Component = ({
     if (data) {
       register({ name: 'id' })
       setValue('id', data?._id)
-      setValue('logo', [data?.avatar] ?? [])
+      setValue('logo', data?.avatar ? [data?.avatar] : [])
       setValue('name', data?.name ?? '')
       setValue('location', data?.address?.formattedAddress ?? '')
       setValue('address', data?.address ?? '')
       setValue('email', data?.email ?? null)
       setValue('contact', data?.contactNumber ?? null)
       setValue('tin', data?.tinNumber ?? null)
-      setImageUrls([data?.avatar])
+      setImageUrls(data?.avatar ? [data?.avatar] : [])
     }
   }, [])
 

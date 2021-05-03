@@ -14,6 +14,8 @@ import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Can from '@app/permissions/can'
 import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
+
 import ManageDirectory from './ManageDirectory'
 
 import { initializeApollo } from '@app/lib/apollo/client'
@@ -84,12 +86,18 @@ function Directory() {
     onCompleted: () => {
       handleClearModal('edit')
       refetchCategories()
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
   const [deleteCategory] = useMutation(DELETE_CATEGORY, {
     onCompleted: () => {
       handleClearModal('delete')
       refetchCategories()
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
 

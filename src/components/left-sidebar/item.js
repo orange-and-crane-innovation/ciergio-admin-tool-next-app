@@ -6,14 +6,13 @@ import { FiChevronRight } from 'react-icons/fi'
 
 import { Context } from '@app/lib/global/store'
 
-const Item = ({ url, icon, title, items }) => {
+const Item = ({ url, icon, title, items, badge }) => {
   const [state] = useContext(Context)
   const [hidden, setHidden] = useState(true)
   const [sidebarItem, setSidebarItem] = useState(null)
   const router = useRouter()
   const { pathname } = { ...router }
   const active = pathname === url
-  const unreadMsg = state.unreadMsg
 
   useEffect(() => {
     let parentUrl = ''
@@ -23,10 +22,8 @@ const Item = ({ url, icon, title, items }) => {
           <a className={`left-sidebar-item ${active ? 'active' : ''}`}>
             {icon && <i className={`icon ${icon}`}></i>}
             <span className="title">{title}</span>
-            {title === 'Messages' && unreadMsg > 0 && (
-              <div className="flex items-center justify-center ml-auto mr-4 w-6 h-6 text-sm font-medium bg-primary-900 text-white rounded-full">
-                {unreadMsg}
-              </div>
+            {badge && state[badge] > 0 && (
+              <div className="badge">{state[badge]}</div>
             )}
           </a>
         </Link>
@@ -40,7 +37,7 @@ const Item = ({ url, icon, title, items }) => {
         }
       }
     }
-  }, [items, url, icon, items, pathname, unreadMsg])
+  }, [items, url, icon, items, pathname, badge, state])
 
   return (
     <>
@@ -63,7 +60,8 @@ Item.propTypes = {
   url: P.string,
   icon: P.string,
   title: P.string,
-  items: P.array
+  items: P.array,
+  badge: P.string
 }
 
 export default Item

@@ -182,13 +182,16 @@ const CreatePosts = () => {
       })
       .then(function (response) {
         if (response.data) {
-          const imageData = response.data.map(item => {
-            return {
-              url: item.location,
-              type: item.mimetype
-            }
+          response.data.map(item => {
+            setFileUrls(prevArr => [...prevArr, item.location])
+            return setFileUploadedData(prevArr => [
+              ...prevArr,
+              {
+                url: item.location,
+                type: item.mimetype
+              }
+            ])
           })
-          setFileUploadedData(imageData)
           setFileUploadError(null)
         }
       })
@@ -217,7 +220,7 @@ const CreatePosts = () => {
         }
       }
 
-      if (files.length > maxFiles) {
+      if (files.length + fileUrls?.length > maxFiles) {
         showToast('info', `Maximum of ${maxFiles} files only`)
       } else if (maxSize > 0) {
         showToast(
@@ -234,11 +237,6 @@ const CreatePosts = () => {
 
         for (const file of files) {
           const reader = new FileReader()
-
-          reader.onloadend = () => {
-            setFiles(prevArr => [...prevArr, file])
-            setFileUrls(prevArr => [...prevArr, reader.result])
-          }
           reader.readAsDataURL(file)
 
           formData.append('files', file)
@@ -252,11 +250,15 @@ const CreatePosts = () => {
   }
 
   const onRemoveFile = e => {
-    const data = fileUrls.filter(item => {
+    const files = fileUrls.filter(item => {
       return item !== e.currentTarget.dataset.id
     })
-    setFileUrls(data)
-    setValue('embeddedFiles', data.length !== 0 ? data : null)
+    const uploadedFiles = fileUploadedData.filter(image => {
+      return image.url !== e.currentTarget.dataset.id
+    })
+    setFileUrls(files)
+    setFileUploadedData(uploadedFiles)
+    setValue('embeddedFiles', files.length !== 0 ? files : null)
   }
 
   const onSubmit = (data, status) => {
@@ -497,7 +499,7 @@ const CreatePosts = () => {
                 <br />
                 <Uploader
                   multiple
-                  files={files}
+                  files={fileUploadedData}
                   fileUrls={fileUrls}
                   loading={loading}
                   error={

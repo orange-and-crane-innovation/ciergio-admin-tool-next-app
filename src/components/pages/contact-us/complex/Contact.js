@@ -24,6 +24,8 @@ import {
   DELETE_CONTACT
 } from '../queries'
 import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
+
 import ContactModal from './ContactModal'
 
 const validationSchema = yup.object().shape({
@@ -124,6 +126,9 @@ function Contact({ id }) {
         handleContactModal()
         showToast('success', `You have successfully added a new contact`)
         handleRefetchContacts()
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
@@ -132,6 +137,9 @@ function Contact({ id }) {
       handleContactModal()
       showToast('success', `You have successfully updated a contact`)
       handleRefetchContacts()
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
   const [deleteContact, { loading: deletingContact }] = useMutation(
@@ -141,6 +149,9 @@ function Contact({ id }) {
         setShowDeleteContactModal(old => !old)
         showToast('success', `You have successfully deleted a contact`)
         handleRefetchContacts()
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )

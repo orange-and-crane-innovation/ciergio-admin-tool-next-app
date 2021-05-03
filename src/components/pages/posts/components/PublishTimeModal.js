@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Datetime from 'react-datetime'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { FiClock } from 'react-icons/fi'
 
 import FormInput from '@app/components/forms/form-input'
@@ -22,14 +22,14 @@ const Component = ({
   onSave,
   onCancel,
   valuePublishType,
-  valueDateTime
+  valueDateTime,
+  errorSelectedDate
 }) => {
   const [selectedDate, setSelectedDate] = useState(valueDateTime)
   const [selectedPublishType, setSelectedPublishType] = useState(
     valuePublishType
   )
-  const [errorSelectedDate, setErrorSelectedDate] = useState()
-
+  console.log(errorSelectedDate)
   useEffect(() => {
     setSelectedPublishType(valuePublishType)
     setSelectedDate(valueDateTime)
@@ -45,20 +45,12 @@ const Component = ({
     onSelectDateTime(e)
   }
 
-  useEffect(() => {
-    if (selectedDate) {
-      const isIn = moment(DATE.toFriendlyISO(selectedDate)).diff(
-        new Date(),
-        'minutes'
-      )
-
-      if (isIn < 5) {
-        setErrorSelectedDate('Requires at least 5 minutes')
-      } else {
-        setErrorSelectedDate(null)
-      }
+  const validateDate = currentDate => {
+    if (currentDate) {
+      return currentDate.isSameOrAfter(dayjs(new Date()))
     }
-  }, [selectedDate])
+    return true
+  }
 
   return (
     <Modal
@@ -127,7 +119,7 @@ const Component = ({
                               }
                             }}
                             name="date"
-                            value={moment(selectedDate).format('MMMM DD, YYYY')}
+                            value={dayjs(selectedDate).format('MMMM DD, YYYY')}
                             readOnly
                           />
                           <i
@@ -141,6 +133,8 @@ const Component = ({
                     timeFormat={false}
                     value={selectedDate}
                     onChange={handleDateChange}
+                    isValidDate={validateDate}
+                    closeOnSelect
                   />
                   <Datetime
                     renderInput={(props, openCalendar) => (
@@ -156,7 +150,7 @@ const Component = ({
                               }
                             }}
                             name="time"
-                            value={moment(selectedDate).format('h:mm A')}
+                            value={dayjs(selectedDate).format('h:mm A')}
                             error={errorSelectedDate}
                             readOnly
                           />
@@ -192,7 +186,8 @@ Component.propTypes = {
   onSave: PropTypes.func,
   onCancel: PropTypes.func,
   valuePublishType: PropTypes.string,
-  valueDateTime: PropTypes.string
+  valueDateTime: PropTypes.any,
+  errorSelectedDate: PropTypes.string
 }
 
 export default Component

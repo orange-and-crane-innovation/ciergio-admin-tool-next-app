@@ -20,7 +20,7 @@
       @apply uppercase font-bold text-base tracking-wider;
       @apply flex flex-row items-center justify-start h-16;
       @apply w-full whitespace-nowrap pl-4;
-      max-width: calc(theme('spacing.1') * 72);
+      width: 260px;
       @apply text-primary-900;
       span {
         @apply block;
@@ -32,15 +32,14 @@
   }
 
   .left-sidebar-item {
-    @apply font-body flex flex-row h-16 items-center;
+    @apply relative font-body flex flex-row h-16 items-center;
     @apply text-base justify-start relative;
     @apply whitespace-nowrap rounded-none border-0;
     @apply outline-none focus:outline-none py-4;
-    min-width: calc(theme('spacing.1') * 16);
-    max-width: calc(theme('spacing.1') * 72);
-    width: calc(theme('spacing.1') * 72);
+    min-width: 60px;
+    width: 100%;
     > svg {
-      width: calc(theme('spacing.1') * 16);
+      width: 60px;
     }
     &.open-sibling {
       @apply text-primary-900;
@@ -110,7 +109,10 @@
       border-color: color(theme('colors.gray.900') tint(10%));
     }
     .badge {
-      @apply hidden !important;
+      @apply flex items-center justify-center ml-auto mr-4 w-6 h-6;
+      @apply text-sm font-medium  text-white;
+      @apply bg-primary-900;
+      @apply rounded-full;
     }
     i.icon {
       @apply px-4 text-xl;
