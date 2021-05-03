@@ -22,7 +22,7 @@ const Logo = ({ onToggle, isCollapsed }) => {
         onClick={() => {
           onToggle(!isCollapsed)
         }}
-        className="ml-auto mr-4 block md:hidden lg:hidden"
+        className="ml-auto mr-6 block md:hidden lg:hidden"
       >
         <FiMenu size={20} />
       </button>
