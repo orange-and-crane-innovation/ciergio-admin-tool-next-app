@@ -10,13 +10,24 @@ function DownloadCSV({
   headers,
   label,
   variant,
+  disabled,
   ...rest
 }) {
   return (
     <>
-      <CSVLink data={data} filename={`${fileName}.csv`} headers={headers}>
-        <Button icon={<FiDownload />} variant {...rest} label={label} />
-      </CSVLink>
+      {!disabled ? (
+        <CSVLink data={data} filename={`${fileName}.csv`} headers={headers}>
+          <Button icon={<FiDownload />} variant {...rest} label={label} />
+        </CSVLink>
+      ) : (
+        <Button
+          disabled={disabled}
+          icon={<FiDownload />}
+          variant
+          {...rest}
+          label={label}
+        />
+      )}
     </>
   )
 }
@@ -27,6 +38,7 @@ DownloadCSV.propTypes = {
   headers: P.array,
   title: P.string,
   label: P.string,
+  disabled: P.bool,
   variant: P.oneOf(['primary', 'success', 'danger', 'warning', 'info', 'link'])
 }
 

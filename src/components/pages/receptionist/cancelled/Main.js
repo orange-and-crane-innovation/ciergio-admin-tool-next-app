@@ -28,6 +28,7 @@ import useKeyPress from '@app/utils/useKeyPress'
 import DownloadCSV from '@app/components/globals/DownloadCSV'
 import { DATE } from '@app/utils'
 import PrintTable from '@app/components/globals/PrintTable'
+import Can from '@app/permissions/can'
 
 const rowName = [
   {
@@ -174,24 +175,47 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
           ),
           addOrView: (
             <div>
-              <Button
-                link
-                label={`View ${
-                  registry.notesCount > 0 ? registry.notesCount : ''
-                }`}
-                onClick={e => handleModals('viewnotes', registry._id)}
+              <Can
+                perform="guestanddeliveries:viewnote"
+                yes={
+                  <Button
+                    link
+                    label={`View ${
+                      registry.notesCount > 0 ? registry.notesCount : ''
+                    }`}
+                    onClick={e => handleModals('viewnotes', registry._id)}
+                  />
+                }
+                no={
+                  <Button
+                    link
+                    label={`View ${
+                      registry.notesCount > 0 ? registry.notesCount : ''
+                    }`}
+                    disabled
+                  />
+                }
               />{' '}
               |{' '}
-              <Button
-                link
-                label="Add Note"
-                onClick={e => handleModals('addnotes', registry._id)}
+              <Can
+                perform="guestanddeliveries:addnote"
+                yes={
+                  <Button
+                    link
+                    label="Add Note"
+                    onClick={e => handleModals('addnotes', registry._id)}
+                  />
+                }
+                no={<Button link label="Add Note" disabled />}
               />
             </div>
           ),
           options: (
             <div className="h-full w-full flex justify-center items-center">
-              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              <Can
+                perform="guestanddeliveries:view:cancel:message"
+                yes={<Dropdown label={<FaEllipsisH />} items={dropdownData} />}
+              />
             </div>
           )
         })
@@ -287,7 +311,7 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
           break
         case 'viewnotes':
           setModalTitle('Notes')
-          console.log({ view: id })
+
           setModalContent(<ViewNotesModalContent id={id} />)
           break
         case 'addnotes':
@@ -343,33 +367,76 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
                 : `Cancelled ${name} (${data?.getRegistryRecords?.count || 0})`}
             </b>
             <div className={styles.ReceptionistButtonCard}>
-              <PrintTable
-                header="Cancelled Visistor"
-                tableHeader={[
-                  '#',
-                  'Unit No.',
-                  'Unit Owner',
-                  "Visitor's Name",
-                  "Visitor's Company"
-                ]}
-                tableData={printableData}
-                subHeaders={[
-                  { title: 'Building Name', content: buildingName },
-                  { title: 'Date', content: DATE.toFriendlyDate(new Date()) }
-                ]}
+              <Can
+                perform="guestanddeliveries:print"
+                yes={
+                  <PrintTable
+                    header="Cancelled Visistor"
+                    tableHeader={[
+                      '#',
+                      'Unit No.',
+                      'Unit Owner',
+                      "Visitor's Name",
+                      "Visitor's Company"
+                    ]}
+                    tableData={printableData}
+                    subHeaders={[
+                      { title: 'Building Name', content: buildingName },
+                      {
+                        title: 'Date',
+                        content: DATE.toFriendlyDate(new Date())
+                      }
+                    ]}
+                  />
+                }
+                no={
+                  <PrintTable
+                    header="Cancelled Visistor"
+                    tableHeader={[]}
+                    tableData={printableData}
+                    subHeaders={[]}
+                    disabled
+                  />
+                }
+              />
+              <Can
+                perform="guestanddeliveries:download"
+                yes={
+                  <DownloadCSV
+                    data={csvData}
+                    title="Cancelled Visitor"
+                    fileName="Cancelled"
+                  />
+                }
+                no={
+                  <DownloadCSV
+                    data={csvData}
+                    disabled
+                    title="Cancelled Visitor"
+                    fileName="Cancelled"
+                  />
+                }
               />
 
-              <DownloadCSV
-                data={csvData}
-                title="Cancelled Visitor"
-                fileName="Cancelled"
-              />
-
-              <Button
-                primary
-                label={`Add ${name}`}
-                leftIcon={<BsPlusCircle />}
-                onClick={handleShowModal}
+              <Can
+                perform="guestanddeliveries:addschedule"
+                yes={
+                  <Button
+                    primary
+                    label={`Add ${name}`}
+                    leftIcon={<BsPlusCircle />}
+                    onClick={handleShowModal}
+                  />
+                }
+                no={
+                  <Button
+                    primary
+                    disabled
+                    label={`Add ${name}`}
+                    leftIcon={<BsPlusCircle />}
+                    onClick={handleShowModal}
+                  />
+                }
               />
             </div>
           </div>

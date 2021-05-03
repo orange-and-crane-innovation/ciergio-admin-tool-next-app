@@ -6,6 +6,7 @@ import FormInput from '@app/components/forms/form-input'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import P from 'prop-types'
 import SearchControl from '@app/components/globals/SearchControl'
+import Can from '@app/permissions/can'
 
 function SelectDate({
   date,
@@ -55,7 +56,11 @@ function SelectDate({
               />
             </div>
             <div className="flex items-end">
-              <Button default label="Show" onClick={showTableData} />
+              <Can
+                perform="guestanddeliveries:view"
+                yes={<Button default label="Show" onClick={showTableData} />}
+                no={<Button default label="Show" disabled />}
+              />
             </div>
           </div>
         )}

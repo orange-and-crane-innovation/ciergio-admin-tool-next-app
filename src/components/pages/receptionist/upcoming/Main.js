@@ -25,6 +25,8 @@ import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import PageLoader from '@app/components/page-loader'
+import { useRouter } from 'next/router'
+import Can from '@app/permissions/can'
 
 const COLCOUNT = 6
 const rowName = [
@@ -82,6 +84,7 @@ const validationSchema = yup.object().shape({
 })
 
 export default function Upcoming({ buildingId, categoryId, status, name }) {
+  const router = useRouter()
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
@@ -196,7 +199,11 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
           {
             label: 'Message Resident',
             icon: <AiOutlineMessage />,
-            function: () => console.log('wew')
+            function: () =>
+              registry?.forWho?.conversations?.count > 0 &&
+              router.push(
+                `/messages/${registry?.forWho?.conversations?.data[0]._id}`
+              )
           },
           {
             label: 'View More Details',
@@ -243,21 +250,46 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
                 />
               </td>
               <td>
-                <Button
-                  label="Checked In"
-                  onClick={e => updateMyRecord(e, registry._id)}
+                <Can
+                  perform="guestanddeliveries:checkinschedule"
+                  yes={
+                    <Button
+                      label="Checked In"
+                      onClick={e => updateMyRecord(e, registry._id)}
+                    />
+                  }
+                  no={
+                    <Button
+                      label="Checked In"
+                      disabled
+                      onClick={e => updateMyRecord(e, registry._id)}
+                    />
+                  }
                 />
               </td>
               <td>
-                <Button
-                  link
-                  label="Add Note"
-                  onClick={e => handleViewMoreModal('addnote', registry._id)}
+                <Can
+                  perform="guestanddeliveries:addnote"
+                  yes={
+                    <Button
+                      link
+                      label="Add Note"
+                      onClick={e =>
+                        handleViewMoreModal('addnote', registry._id)
+                      }
+                    />
+                  }
+                  no={<Button link disabled label="Add Note" />}
                 />
               </td>
               <td>
                 <div className="h-full w-full flex justify-center items-center">
-                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  <Can
+                    perform="guestanddeliveries:view:cancel:message"
+                    yes={
+                      <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                    }
+                  />
                 </div>
               </td>
             </tr>
@@ -287,21 +319,46 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
                 />
               </td>
               <td>
-                <Button
-                  label="Checked In"
-                  onClick={e => updateMyRecord(e, registry._id)}
+                <Can
+                  perform="guestanddeliveries:checkinschedule"
+                  yes={
+                    <Button
+                      label="Checked In"
+                      onClick={e => updateMyRecord(e, registry._id)}
+                    />
+                  }
+                  no={
+                    <Button
+                      label="Checked In"
+                      disabled
+                      onClick={e => updateMyRecord(e, registry._id)}
+                    />
+                  }
                 />
               </td>
               <td>
-                <Button
-                  link
-                  label="Add Note"
-                  onClick={e => handleViewMoreModal('addnote', registry._id)}
+                <Can
+                  perform="guestanddeliveries:addnote"
+                  yes={
+                    <Button
+                      link
+                      label="Add Note"
+                      onClick={e =>
+                        handleViewMoreModal('addnote', registry._id)
+                      }
+                    />
+                  }
+                  no={<Button link disabled label="Add Note" />}
                 />
               </td>
               <td>
                 <div className="h-full w-full flex justify-center items-center">
-                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  <Can
+                    perform="guestanddeliveries:view:cancel:message"
+                    yes={
+                      <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                    }
+                  />
                 </div>
               </td>
             </tr>
@@ -337,21 +394,49 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
                   />
                 </td>
                 <td>
-                  <Button
-                    label="Checked In"
-                    onClick={e => updateMyRecord(e, registry._id)}
+                  <Can
+                    perform="guestanddeliveries:checkinschedule"
+                    yes={
+                      <Button
+                        label="Checked In"
+                        onClick={e => updateMyRecord(e, registry._id)}
+                      />
+                    }
+                    no={
+                      <Button
+                        label="Checked In"
+                        disabled
+                        onClick={e => updateMyRecord(e, registry._id)}
+                      />
+                    }
                   />
                 </td>
                 <td>
-                  <Button
-                    link
-                    label="Add Note"
-                    onClick={e => handleViewMoreModal('addnote', registry._id)}
+                  <Can
+                    perform="guestanddeliveries:addnote"
+                    yes={
+                      <Button
+                        link
+                        label="Add Note"
+                        onClick={e =>
+                          handleViewMoreModal('addnote', registry._id)
+                        }
+                      />
+                    }
+                    no={<Button link disabled label="Add Note" />}
                   />
                 </td>
                 <td>
                   <div className="h-full w-full flex justify-center items-center">
-                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                    <Can
+                      perform="guestanddeliveries:view:cancel:message"
+                      yes={
+                        <Dropdown
+                          label={<FaEllipsisH />}
+                          items={dropdownData}
+                        />
+                      }
+                    />
                   </div>
                 </td>
               </tr>
@@ -368,8 +453,6 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
           </tr>
         )
       }
-
-      console.log(tableTomorrow)
 
       if (tableToday.length > 0) {
         tableToday.unshift(
@@ -539,11 +622,24 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
                 ? `Search results from "${search}"`
                 : `Upcoming ${name} (${data?.getRegistryRecords?.count || 0})`}
             </b>
-            <Button
-              primary
-              label={`Add ${singularName(name) || name}`}
-              leftIcon={<BsPlusCircle />}
-              onClick={handleShowModal}
+            <Can
+              perform="guestanddeliveries:addschedule"
+              yes={
+                <Button
+                  primary
+                  label={`Add ${singularName(name) || name}`}
+                  leftIcon={<BsPlusCircle />}
+                  onClick={handleShowModal}
+                />
+              }
+              no={
+                <Button
+                  primary
+                  label={`Add ${singularName(name) || name}`}
+                  leftIcon={<BsPlusCircle />}
+                  disabled
+                />
+              }
             />
           </div>
         }
@@ -565,6 +661,7 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
           onLimitChange={onLimitChange}
         />
       )}
+
       <AddVisitorModal
         showModal={showModal}
         onShowModal={handleShowModal}
@@ -574,6 +671,7 @@ export default function Upcoming({ buildingId, categoryId, status, name }) {
         refetch={willRefetch}
         name={name}
       />
+
       <Modal
         title={modalTitle}
         visible={showViewMoreDetails}
