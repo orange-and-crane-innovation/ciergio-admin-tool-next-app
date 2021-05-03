@@ -39,6 +39,7 @@ function LoginPage() {
   const router = useRouter()
   const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const isSystemPray = system === 'pray'
+  const isSystemCircle = system === 'circle'
 
   const [login, { loading, data, client, called, error }] = useMutation(
     LOGIN_MUTATION,
@@ -76,7 +77,10 @@ function LoginPage() {
         const profile = dataProfile ? dataProfile.getProfile : {}
         const accountType = profile?.accounts?.data[0]?.accountType
 
-        if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
+        if (
+          (isSystemPray || isSystemCircle) &&
+          accountType !== ACCOUNT_TYPES.SUP.value
+        ) {
           router.replace('/messages')
         } else {
           router.replace('/properties')
