@@ -301,7 +301,7 @@ function ManageCategories({ complexID, accountType }) {
             </div>
           ) : (
             <SelectInput
-              categories={categories || []}
+              categories={categories}
               selectChange={handleSelectChange}
             />
           )}

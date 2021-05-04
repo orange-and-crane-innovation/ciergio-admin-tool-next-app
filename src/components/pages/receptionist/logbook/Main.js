@@ -26,6 +26,7 @@ import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import PageLoader from '@app/components/page-loader'
 import { useRouter } from 'next/router'
+import Can from '@app/permissions/can'
 
 const NUMBEROFCOLUMN = 6
 
@@ -243,26 +244,43 @@ function LogBook({ buildingId, categoryId, status, name }) {
           checkedOut: registry.checkedOutAt ? (
             DATE.toFriendlyTime(dateCheckoutUTC.toUTCString())
           ) : (
-            <Button
-              label="Checked Out"
-              onClick={e => updateMyRecord(e, registry._id)}
+            <Can
+              perform="guestanddeliveries:checkoutschedule"
+              yes={
+                <Button
+                  label="Checked Out"
+                  onClick={e => updateMyRecord(e, registry._id)}
+                />
+              }
+              no={<Button label="Checked Out" disabled />}
             />
           ),
           addNote: (
-            <Button
-              link
-              label="Add Note"
-              onClick={e => handleViewMoreModal('addnote', registry._id)}
+            <Can
+              perform="guestanddeliveries:addnote"
+              yes={
+                <Button
+                  link
+                  label="Add Note"
+                  onClick={e => handleViewMoreModal('addnote', registry._id)}
+                />
+              }
+              no={<Button link label="Add Note" disabled />}
             />
           ),
           options: (
             <div className="h-full w-full flex justify-center items-center">
-              <Dropdown
-                label={<FaEllipsisH />}
-                items={
-                  !registry.checkedOutAt
-                    ? dropdownData
-                    : [dropdownData[0], dropdownData[1]]
+              <Can
+                perform="guestanddeliveries:view:cancel:message"
+                yes={
+                  <Dropdown
+                    label={<FaEllipsisH />}
+                    items={
+                      !registry.checkedOutAt
+                        ? dropdownData
+                        : [dropdownData[0], dropdownData[1]]
+                    }
+                  />
                 }
               />
             </div>
@@ -431,11 +449,24 @@ function LogBook({ buildingId, categoryId, status, name }) {
                 ? `Search results from "${search}"`
                 : `${name} Logbook (${data?.getRegistryRecords?.count || 0})`}
             </b>
-            <Button
-              primary
-              label={`Add ${singularName(name) || name}`}
-              leftIcon={<BsPlusCircle />}
-              onClick={handleShowModal}
+            <Can
+              perform="guestanddeliveries:addschedule"
+              yes={
+                <Button
+                  primary
+                  label={`Add ${singularName(name) || name}`}
+                  leftIcon={<BsPlusCircle />}
+                  onClick={handleShowModal}
+                />
+              }
+              no={
+                <Button
+                  primary
+                  label={`Add ${singularName(name) || name}`}
+                  leftIcon={<BsPlusCircle />}
+                  disabled
+                />
+              }
             />
           </div>
         }

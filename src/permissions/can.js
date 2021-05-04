@@ -37,7 +37,7 @@ const Can = ({ perform, yes, no }) => {
 
 Can.propTypes = {
   perform: P.string,
-  yes: P.oneOfType([P.element, P.node]),
+  yes: P.oneOfType([P.element, P.node, P.func]),
   no: P.oneOfType([P.element, P.node])
 }
 

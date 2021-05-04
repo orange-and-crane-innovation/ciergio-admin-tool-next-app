@@ -634,13 +634,40 @@ const rules = {
         'dues:update',
         'dues:send',
         'guestanddeliveries:view',
-        'guestanddeliveries:createvisitor',
-        'guestanddeliveries:updatevisitor',
-        'guestanddeliveries:cancelvisitor',
-        'guestanddeliveries:checkinvisitor',
-        'guestanddeliveries:checkoutvisitor',
+        'guestanddeliveries:addschedule',
+        'guestanddeliveries:updateschedule',
+        'guestanddeliveries:cancelschedule',
+        'guestanddeliveries:checkinschedule',
+        'guestanddeliveries:checkoutschedule',
+        'guestanddeliveries:viewnote',
         'guestanddeliveries:addnote',
-        'guestanddeliveries:addimages'
+        'guestanddeliveries:addimages',
+        'guestanddeliveries:print',
+        'guestanddeliveries:download'
+      ]
+    },
+    receptionist: {
+      allowedRoutes: ['/properties', '/messages', '/receptionist'],
+      allowedNestedRoutes: [
+        '/properties/building',
+        '/receptionist/visitors',
+        '/receptionist/deliveries',
+        '/receptionist/pick-ups',
+        '/receptionist/services'
+      ],
+      actions: [
+        'guestanddeliveries:view',
+        'guestanddeliveries:view:cancel:message',
+        'guestanddeliveries:addschedule',
+        'guestanddeliveries:updateschedule',
+        'guestanddeliveries:cancelschedule',
+        'guestanddeliveries:checkinschedule',
+        'guestanddeliveries:checkoutschedule',
+        'guestanddeliveries:addnote',
+        'guestanddeliveries:viewnote',
+        'guestanddeliveries:addimages',
+        'guestanddeliveries:print',
+        'guestanddeliveries:download'
       ]
     }
   },
