@@ -5,7 +5,7 @@ import Button from '@app/components/button'
 import PageLoader from '@app/components/page-loader'
 import { FaPlusCircle, FaTrashAlt } from 'react-icons/fa'
 import Modal from '@app/components/modal'
-import FormSelect from '@app/components/globals/FormSelect'
+import FormSelect from '@app/components/forms/form-select'
 import { useQuery, useMutation } from '@apollo/client'
 import * as Query from './Query'
 import * as Mutation from './Mutation'
@@ -34,13 +34,16 @@ const SelectInput = ({ categories, selectChange }) => {
   const onCategorySelect = selected => {
     selectChange(selected.target.value)
   }
+  console.log(categories)
   return (
     <FormSelect
+      placeholder=""
       onChange={onCategorySelect}
       options={categories}
       label="Category Name"
       classNames="w-full"
       name="category"
+      noOptionsMessage={() => 'No item found.'}
     />
   )
 }
@@ -184,7 +187,7 @@ function ManageCategories({ complexID, accountType }) {
       const dataOptions = []
       data?.getBillCategory?.category?.forEach((item, index) => {
         dataOptions.push({
-          label: item?.name,
+          label: <ColorWithLabel name={item?.name} color={item?.color} />,
           value: item?._id
         })
       })
