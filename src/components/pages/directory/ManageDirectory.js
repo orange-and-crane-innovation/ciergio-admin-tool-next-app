@@ -10,6 +10,10 @@ const directoryRowNames = [
   },
   {
     name: 'Category'
+  },
+  {
+    name: '',
+    width: '5%'
   }
 ]
 
