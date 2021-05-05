@@ -404,6 +404,7 @@ function PendingInvites() {
         onCancel={() => handleClearModal('resend')}
         onOk={onBulkSubmit}
         open={showResendInviteModal}
+        data={selectedInvite}
         loading={resendingInvite}
         module="staff"
       />

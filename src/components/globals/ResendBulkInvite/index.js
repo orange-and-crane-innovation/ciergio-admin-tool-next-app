@@ -1,44 +1,43 @@
 import Modal from '@app/components/modal'
 import P from 'prop-types'
-import Button from '@app/components/button'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 function ResendBulkInvite({
   open,
   onCancel,
   onOk,
   bulkInvitesLength,
+  data,
   loading,
   module
 }) {
   const description =
-    module === 'staff'
-      ? `You are about to resend an invite from the list, do you want to continue?`
-      : `You are about to "Resend Invite (${bulkInvitesLength}) item" from the list, do you want
+    module === 'staff' ? (
+      <span>
+        Are you sure you want to resend invite for{' '}
+        {<strong>{data?.email}</strong>} as{' '}
+        {getAccountTypeName(data?.accountType)}?
+      </span>
+    ) : (
+      `You are about to "Resend Invite (${bulkInvitesLength}) item" from the list, do you want
   to continue?`
+    )
 
   return (
     <Modal
+      title="Resend Invite"
+      okText="Yes"
+      cancelText="No"
       visible={open}
-      footer={null}
       onClose={onCancel}
-      modalProps={{
-        showCloseButton: false
+      onCancel={onCancel}
+      okButtonProps={{
+        loading
       }}
+      onOk={onOk}
     >
-      <div className="pt-4">
-        <p className="text-xl text-neutral-500 text-center px-4">
-          {description}
-        </p>
-        <div className="flex items-center justify-center w-full pt-2">
-          <Button label="No" className="mr-2 w-36 py-2" onClick={onCancel} />
-          <Button
-            primary
-            label="Yes"
-            className="w-36 py-2"
-            onClick={onOk}
-            loading={loading}
-          />
-        </div>
+      <div className="p-4">
+        <p className="text-base leading-7">{description}</p>
       </div>
     </Modal>
   )
@@ -53,6 +52,7 @@ ResendBulkInvite.propTypes = {
   onCancel: P.func.isRequired,
   onOk: P.func.isRequired,
   bulkInvitesLength: P.number,
+  data: P.object,
   loading: P.bool,
   module: P.string.isRequired
 }
