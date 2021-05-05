@@ -441,10 +441,12 @@ const CreatePosts = () => {
             break
         }
 
+        handleShowModal()
         showToast('success', message)
 
         if (modalType === 'preview') {
           goToPreviewPage()
+          refetch()
         } else {
           goToBulletinPageLists()
         }
@@ -481,7 +483,7 @@ const CreatePosts = () => {
   }
 
   const goToPreviewPage = () => {
-    push(`/${routeName}/view/${query.id}`)
+    window.open(`/${routeName}/view/${query.id}`, '_blank')
   }
 
   const onCountChar = e => {

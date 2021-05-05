@@ -29,7 +29,7 @@ const Component = ({
   const [selectedPublishType, setSelectedPublishType] = useState(
     valuePublishType
   )
-  console.log(errorSelectedDate)
+
   useEffect(() => {
     setSelectedPublishType(valuePublishType)
     setSelectedDate(valueDateTime)

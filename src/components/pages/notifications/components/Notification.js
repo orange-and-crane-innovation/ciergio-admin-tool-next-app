@@ -515,7 +515,7 @@ function Notifications({
               const dropdownData = [
                 {
                   label: 'View User',
-                  icon: <span className="ciergio-employees" />,
+                  icon: <span className="ciergio-user" />,
                   function: () => {}
                 }
               ]
@@ -720,16 +720,16 @@ function Notifications({
         <div className="p-4">
           <div className="w-full flex justify-start items-start mb-8">
             <div className="w-1/2">
-              <h4 className="text-base">Date Created</h4>
+              <h4 className="text-base leading-5 mb-2">Date Created</h4>
               <p className="font-medium text-base">
                 {friendlyDateTimeFormat(POST_HISTORY?.post?.[0]?.date, 'll')}
               </p>
             </div>
             <div className="w-1/2">
-              <h4 className="text-base">Created By</h4>
+              <h4 className="text-base leading-5 mb-2">Created By</h4>
               <div className="flex items-center">
                 <img
-                  src={`https://ui-avatars.com/api/?name=${PARSED_JSON_HISTORY?.authorName}&rounded=true&size=25`}
+                  src={`https://ui-avatars.com/api/?name=${PARSED_JSON_HISTORY?.authorName}&rounded=true&size=16`}
                   alt="avatar"
                   className="max-w-sm"
                 />
@@ -739,16 +739,21 @@ function Notifications({
               </div>
             </div>
           </div>
-          <Table
-            rowNames={modalColumns}
-            items={editHistoryData}
-            emptyText={
-              <div className="p-4">
-                <BsFillClockFill className="ciergio-employees text-gray-500 text-7xl" />
-                <p className="text-gray-500">{`No history yet.`}</p>
-              </div>
-            }
-          />
+          <div>
+            <h4 className="font-bold text-base mb-4">Edit History</h4>
+            <div className="-mx-8">
+              <Table
+                rowNames={modalColumns}
+                items={editHistoryData}
+                emptyText={
+                  <div className="p-4">
+                    <BsFillClockFill className="ciergio-user text-gray-500 text-7xl" />
+                    <p className="text-gray-500">{`No history yet.`}</p>
+                  </div>
+                }
+              />
+            </div>
+          </div>
         </div>
       </Modal>
       <Modal
@@ -762,14 +767,14 @@ function Notifications({
         <div className="p-4">
           <div className="w-full flex justify-start items-start mb-8">
             <div className="w-1/2">
-              <h4 className="text-base">Viewed By</h4>
+              <h4 className="text-base leading-5 mb-2">Viewed By</h4>
               <p className="font-medium text-base">
                 {`${VIEWS_HISTORY?.count?.uniqViews || 0} `}
                 <span className="text-neutral-500">users</span>
               </p>
             </div>
             <div className="w-1/2">
-              <h4 className="text-base">Not Viewed By</h4>
+              <h4 className="text-base leading-5 mb-2">Not Viewed By</h4>
               <p className="font-medium text-base">
                 {`${
                   VIEWS_HISTORY?.count?.audience -
@@ -780,29 +785,19 @@ function Notifications({
             </div>
           </div>
           <div>
-            <h4 className="font-bold text-xl">View History</h4>
-            <Table
-              rowNames={[
-                { name: '', width: '5%' },
-                { name: '', width: '90%' },
-                {
-                  name: '',
-                  width: '5%'
+            <h4 className="font-bold text-base mb-4">View History</h4>
+            <div className="-mx-8">
+              <Table
+                items={viewsHistoryData}
+                emptyText={
+                  <NotifCard
+                    icon={<i className="ciergio-user" />}
+                    header="No viewer yet"
+                    content="Sorry, this post don't have any viewer yet."
+                  />
                 }
-              ]}
-              items={viewsHistoryData}
-              emptyText={
-                <div className="p-4">
-                  <span className="ciergio-employees text-gray-500 text-7xl" />
-                  <p className="text-gray-500 font-bold text-base">
-                    No viewer yet.
-                  </p>
-                  <p className="text-gray-500">
-                    {`Sorry, this post don't have any viewer yet.`}
-                  </p>
-                </div>
-              }
-            />
+              />
+            </div>
           </div>
         </div>
       </Modal>

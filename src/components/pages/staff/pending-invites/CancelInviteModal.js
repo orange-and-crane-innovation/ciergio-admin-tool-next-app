@@ -16,7 +16,7 @@ function CancelInviteModal({ open, onCancel, data, loading, onOk }) {
       onOk={onOk}
     >
       <div className="p-4">
-        <p className="text-lg">
+        <p className="text-base leading-7">
           Are you sure you want to cancel invite for{' '}
           <span className="font-bold">{data?.email}</span> as
           <span className="capitalize">

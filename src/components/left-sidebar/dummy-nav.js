@@ -264,7 +264,7 @@ const navigation = [
       },
       {
         url: '/my-members',
-        icon: 'ciergio-employees',
+        icon: 'ciergio-user',
         title: 'My Members',
         items: []
       },

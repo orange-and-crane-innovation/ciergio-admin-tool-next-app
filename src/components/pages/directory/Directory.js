@@ -202,7 +202,7 @@ function Directory() {
               ]
 
               return {
-                name: <span className="capitalize">{c.name}</span>,
+                name: c.name,
                 dropdown: (
                   <Can
                     perform="directory:categories:update::delete"
@@ -234,7 +234,9 @@ function Directory() {
               noPadding
               title={
                 <div className="flex items-center justify-between">
-                  <span>Companies</span>
+                  <span className="text-base leading-5 font-bold">
+                    Companies
+                  </span>
                 </div>
               }
               content={<Table rowNames={columns} items={directoryData} />}
