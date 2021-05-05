@@ -1,27 +1,35 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
+import useDebounce from '@app/utils/useDebounce'
 import isEmpty from 'lodash/isEmpty'
-import SelectBulk from '@app/components/globals/SelectBulk'
+import { AiOutlineEllipsis } from 'react-icons/ai'
+
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
 import FormSelect from '@app/components/forms/form-select'
+
 import { Card } from '@app/components/globals'
+import SelectBulk from '@app/components/globals/SelectBulk'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import Empty from '../Empty'
-import CancelInviteModal from './CancelInviteModal'
 import ResendInviteModal from '@app/components/globals/ResendBulkInvite'
-import Can from '@app/permissions/can'
-import { AiOutlineEllipsis } from 'react-icons/ai'
+import SearchComponent from '@app/components/globals/SearchControl'
+
 import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
-import useDebounce from '@app/utils/useDebounce'
-import SearchComponent from '@app/components/globals/SearchControl'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+
+import Empty from '../Empty'
+import CancelInviteModal from './CancelInviteModal'
+
+import Can from '@app/permissions/can'
+
 import {
   GET_PENDING_INVITES,
   GET_COMPANIES,
   CANCEL_INVITE,
   RESEND_INVITE
 } from '../queries'
+
 import {
   BUILDING_ADMIN,
   COMPANY_ADMIN,
@@ -29,8 +37,7 @@ import {
   RECEPTIONIST,
   UNIT_OWNER,
   STAFF_ROLES,
-  ALL_ROLES,
-  parseAccountType
+  ALL_ROLES
 } from '../constants'
 
 const bulkOptions = [
@@ -260,7 +267,7 @@ function PendingInvites() {
       data:
         invites?.getPendingRegistration?.data?.length > 0
           ? invites.getPendingRegistration.data.map(invite => {
-              const roleType = parseAccountType(invite?.accountType)
+              const roleType = getAccountTypeName(invite?.accountType)
               const dropdownData = [
                 {
                   label: 'Resend Invite',

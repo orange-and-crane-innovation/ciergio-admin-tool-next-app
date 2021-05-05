@@ -1,28 +1,33 @@
 import React, { useState, useMemo } from 'react'
+import { initializeApollo } from '@app/lib/apollo/client'
 import { useRouter } from 'next/router'
 import { useMutation, useQuery } from '@apollo/client'
+import useDebounce from '@app/utils/useDebounce'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
+import { FaPlusCircle } from 'react-icons/fa'
+import { HiOutlinePrinter } from 'react-icons/hi'
+import { FiDownload } from 'react-icons/fi'
+import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import { Card } from '@app/components/globals'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import FormSelect from '@app/components/forms/form-select'
+
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchComponent from '@app/components/globals/SearchControl'
+
+import showToast from '@app/utils/toast'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import errorHandler from '@app/utils/errorHandler'
+
 import InviteStaffModal from './InviteStaffModal'
 import EditStaffModal from './EditStaffModal'
 import RemoveStaffModal from './RemoveStaffModal'
-import { FaPlusCircle } from 'react-icons/fa'
-import { HiOutlinePrinter } from 'react-icons/hi'
-import { FiDownload } from 'react-icons/fi'
-import { AiOutlineEllipsis } from 'react-icons/ai'
-import useDebounce from '@app/utils/useDebounce'
-import showToast from '@app/utils/toast'
-import errorHandler from '@app/utils/errorHandler'
 
 import Can from '@app/permissions/can'
-import { initializeApollo } from '@app/lib/apollo/client'
+
 import {
   ADD_BUILDING_ADMIN,
   ADD_COMPANY_ADMIN,
@@ -34,6 +39,7 @@ import {
   UPDATE_USER,
   DELETE_USER
 } from '../queries'
+
 import {
   BUILDING_ADMIN,
   COMPANY_ADMIN,
@@ -42,8 +48,7 @@ import {
   UNIT_OWNER,
   columns,
   ALL_ROLES,
-  STAFF_ROLES,
-  parseAccountType
+  STAFF_ROLES
 } from '../constants'
 import {
   editStaffValidationSchema,
@@ -201,7 +206,7 @@ function AllStaff() {
   const [deleteUser, { loading: deletingUser }] = useMutation(DELETE_USER, {
     onCompleted: () => {
       const staff = selectedStaff?.user
-      const accountType = parseAccountType(selectedStaff?.accountType)
+      const accountType = getAccountTypeName(selectedStaff?.accountType)
       showToast(
         'success',
         `You have successfully remove ${staff.firstName} ${staff.lastName} as ${accountType}`
@@ -375,7 +380,7 @@ function AllStaff() {
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
               const { user, company, accountType } = staff
-              const roleType = parseAccountType(accountType)
+              const roleType = getAccountTypeName(accountType)
 
               let dropdownData = [
                 {

@@ -2,6 +2,7 @@
   @apply flex items-start w-full lg:min-w-3xl lg:max-w-screen-md;
   @apply font-body font-normal text-base leading-6;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 
   .PageSubContainer {
     @apply p-4 w-full;

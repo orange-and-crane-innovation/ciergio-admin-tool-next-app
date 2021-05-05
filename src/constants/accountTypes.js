@@ -36,7 +36,7 @@ const accountTypes = {
     name: 'Parish Admin'
   },
   PARISHHEAD: {
-    value: 'company_admin',
+    value: 'complex_admin',
     name: 'Parish Head'
   }
 }

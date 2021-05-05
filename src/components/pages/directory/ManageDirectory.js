@@ -58,7 +58,7 @@ function ManageDirectory({
 }
 
 ManageDirectory.propTypes = {
-  data: P.array,
+  data: P.object,
   currentPage: P.number,
   pageLimit: P.number,
   setPageOffset: P.func,
