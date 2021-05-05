@@ -718,7 +718,6 @@ const CreatePosts = () => {
                       value={value}
                       error={errors?.content?.message ?? null}
                       onChange={onChange}
-                      hasPreview
                     />
                   )}
                 />
