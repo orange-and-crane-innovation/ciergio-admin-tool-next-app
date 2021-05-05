@@ -56,7 +56,7 @@ export const toFriendlyShortDate = data => {
   if (data) {
     const dateObj = new Date(data)
     const dayObj = dayjs(dateObj)
-    convertedDate = dayObj.format('MMM. DD, YYYY')
+    convertedDate = dayObj.format('MMM DD, YYYY')
   }
 
   return convertedDate
