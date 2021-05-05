@@ -81,7 +81,7 @@ export default function MessagePreviewItem({
           {newestMessage ?? 'Start writing a message'}
         </p>
       </div>
-      <div className="absolute right-8 text-neutral-500">
+      <div className="absolute right-6 text-neutral-500">
         <Tooltip text={toFriendlyDateTime(data?.updatedAt)} effect="solid">
           <span className={styles.updateDate}>
             {displayDays(data?.updatedAt)}
@@ -89,7 +89,7 @@ export default function MessagePreviewItem({
         </Tooltip>
       </div>
       {!isSeen && !isSelected ? (
-        <div className="w-3 h-3 bg-primary-500 rounded-full absolute right-4 bottom-10" />
+        <div className="w-3 h-3 bg-primary-500 rounded-full absolute right-6 bottom-6" />
       ) : null}
     </div>
   )
