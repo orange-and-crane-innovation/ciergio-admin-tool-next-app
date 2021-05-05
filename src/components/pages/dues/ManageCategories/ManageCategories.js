@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Table from '@app/components/table'
 import Card from '@app/components/card'
 import Button from '@app/components/button'
@@ -32,12 +32,12 @@ const ColorWithLabel = ({ color, name }) => {
 
 const SelectInput = ({ categories, selectChange }) => {
   const onCategorySelect = selected => {
-    selectChange(selected.target.value)
+    selectChange(selected.value)
   }
-  console.log(categories)
+
   return (
     <FormSelect
-      placeholder=""
+      placeholder="Select"
       onChange={onCategorySelect}
       options={categories}
       label="Category Name"
@@ -51,10 +51,7 @@ const SelectInput = ({ categories, selectChange }) => {
 function ManageCategories({ complexID, accountType }) {
   const [selectedCategory, setSelectedCategory] = useState()
   const [showModal, setShowModal] = useState(false)
-  const [categories, setCategories] = useState()
-  const [allowedCategory, setAllowedCategory] = useState({
-    data: []
-  })
+
   const [deleteCategoryModal, setDeleteCategoryModal] = useState(false)
   const [deleteItemId, setDeleteItemId] = useState(null)
 
@@ -76,7 +73,7 @@ function ManageCategories({ complexID, accountType }) {
     }
   ] = useMutation(Mutation.SAVE_ALLOWED_CATEGORY)
 
-  const { loading, data, error } = useQuery(Query.GET_CATEGORIES, {
+  const { loading, data } = useQuery(Query.GET_CATEGORIES, {
     variables: {
       where: null
     }
@@ -85,13 +82,12 @@ function ManageCategories({ complexID, accountType }) {
   const {
     loading: loadingAllowedCategory,
     data: dataAllowedCategory,
-    error: errorAllowedCategory,
     refetch: refetchAllowedCategory
   } = useQuery(Query.GET_ALLOWED_CATEGORIES, {
     variables: {
       where: {
         accountId: complexID,
-        accountType: 'complex'
+        accountType: 'company'
       }
     }
   })
@@ -128,25 +124,18 @@ function ManageCategories({ complexID, accountType }) {
 
   const onDeleteBill = e => {
     e.preventDefault()
-
     setDeleteItemId(e.target.name)
     setShowModal(show => !show)
     setDeleteCategoryModal(true)
   }
 
-  useEffect(() => {
-    if (
-      !loadingAllowedCategory &&
-      !errorAllowedCategory &&
-      dataAllowedCategory
-    ) {
-      const dataTable = []
-
-      _.forEach(
+  const tableAllowedCategory = useMemo(() => {
+    if (!loadingAllowedCategory) {
+      const table = _.map(
         dataAllowedCategory?.getAllowedBillCategory?.data,
         function (value) {
-          _.forEach(value.categories, function (val) {
-            dataTable.push({
+          return _.map(value.categories, function (val) {
+            return {
               [`${val._id}`]: (
                 <ColorWithLabel
                   key={val._id}
@@ -156,44 +145,63 @@ function ManageCategories({ complexID, accountType }) {
               ),
               delButton: (
                 <Can
-                  perform="dues:delete"
+                  perform="dues:categories:delete"
                   yes={
                     <Button
                       name={val._id}
-                      onClick={e => onDeleteBill(e)}
-                      label={<FaTrashAlt size="14" value="ad" name={val._id} />}
+                      onClick={onDeleteBill}
+                      icon={<FaTrashAlt size="14" value="ad" name={val._id} />}
+                    />
+                  }
+                  no={
+                    <Button
+                      name={val._id}
+                      disabled
+                      icon={<FaTrashAlt size="14" value="ad" name={val._id} />}
                     />
                   }
                 />
               )
-            })
+            }
           })
         }
       )
 
-      setAllowedCategory({
-        data: dataTable || []
+      return { data: table[0] || [] }
+    }
+  }, [loadingAllowedCategory, dataAllowedCategory, refetchAllowedCategory])
+
+  const optionsCategory = useMemo(() => {
+    if (!loading && !loadingAllowedCategory) {
+      const existedCategories = {}
+      _.forEach(
+        dataAllowedCategory?.getAllowedBillCategory?.data,
+        function (value) {
+          return _.forEach(value.categories, function (val) {
+            existedCategories[`${val._id}`] = val._id
+          })
+        }
+      )
+
+      const filteredCategories = []
+      data?.getBillCategory?.category?.forEach((item, index) => {
+        if (!existedCategories[item._id]) {
+          filteredCategories.push({
+            label: <ColorWithLabel name={item?.name} color={item?.color} />,
+            value: item?._id
+          })
+        }
       })
+
+      return filteredCategories
     }
   }, [
-    loadingAllowedCategory,
+    loading,
+    data,
     dataAllowedCategory,
-    errorAllowedCategory,
+    loadingAllowedCategory,
     refetchAllowedCategory
   ])
-
-  useEffect(() => {
-    if (!loading && !error && data) {
-      const dataOptions = []
-      data?.getBillCategory?.category?.forEach((item, index) => {
-        dataOptions.push({
-          label: <ColorWithLabel name={item?.name} color={item?.color} />,
-          value: item?._id
-        })
-      })
-      setCategories(dataOptions)
-    }
-  }, [loading, data, error])
 
   const handleCloseModal = () => {
     setShowModal(false)
@@ -205,7 +213,7 @@ function ManageCategories({ complexID, accountType }) {
         if (selectedCategory || selectedCategory !== '') {
           await addBillCategory({
             variables: {
-              accountType: accountType,
+              accountType: 'company',
               accountId: complexID,
               categoryIds: [selectedCategory]
             }
@@ -219,7 +227,7 @@ function ManageCategories({ complexID, accountType }) {
         if (deleteItemId || deleteItemId !== '') {
           await deleteBillCategory({
             variables: {
-              accountType: accountType,
+              accountType: 'company',
               accountId: complexID,
               categoryIds: [deleteItemId]
             }
@@ -252,7 +260,6 @@ function ManageCategories({ complexID, accountType }) {
                   perform="dues:create"
                   yes={
                     <Button
-                      full
                       primary
                       onClick={e => setShowModal(show => !show)}
                       label="Add Category"
@@ -261,7 +268,6 @@ function ManageCategories({ complexID, accountType }) {
                   }
                   no={
                     <Button
-                      full
                       primary
                       disabled
                       label="Add Category"
@@ -275,7 +281,7 @@ function ManageCategories({ complexID, accountType }) {
           content={
             !loadingAllowedCategory ? (
               <Table
-                items={allowedCategory || []}
+                items={tableAllowedCategory || []}
                 emptyText="No Categories added"
               />
             ) : (
@@ -303,10 +309,12 @@ function ManageCategories({ complexID, accountType }) {
               </p>
             </div>
           ) : (
-            <SelectInput
-              categories={categories}
-              selectChange={handleSelectChange}
-            />
+            optionsCategory && (
+              <SelectInput
+                categories={optionsCategory}
+                selectChange={handleSelectChange}
+              />
+            )
           )}
         </div>
       </Modal>

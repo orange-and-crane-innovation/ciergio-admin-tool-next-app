@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import styles from './Main.module.css'
 import SearchControl from '@app/components/globals/SearchControl'
-import FormSelect from '@app/components/globals/FormSelect'
+import FormSelect from '@app/components/forms/form-select'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Button from '@app/components/button'
@@ -98,7 +98,7 @@ function Unsent({ month, year }) {
   const [search, setSearch] = useState(null)
 
   const [showModal, setShowModal] = useState(false)
-  const [dues, setDues] = useState()
+
   const [floors, setFloors] = useState([])
 
   // Pagination states
@@ -317,113 +317,123 @@ function Unsent({ month, year }) {
     }
   }
 
-  // Hooks for formatting table row
-  const useTableRows = rows => {
-    const rowData = []
-    let num = 0
+  const memoTable = useMemo(() => {
+    if (!loading) {
+      const rowData = []
+      let num = 0
+      if (data?.getDuesPerUnit?.data) {
+        data?.getDuesPerUnit?.data.forEach((row, index) => {
+          if (num !== row.floorNumber) {
+            rowData.push({
+              floorNumber: row.floorNumber,
+              b: '',
+              bl: '',
+              bla: '',
+              blan: '',
+              blank: '',
+              blankrow: ''
+            })
+          }
 
-    if (rows) {
-      rows.forEach((row, index) => {
-        if (num !== row.floorNumber) {
+          const unitName = row.name
+          const unitOwner = `${row?.unitOwner?.user?.lastName},
+          ${row?.unitOwner?.user?.lastName}`
+          const uploadFile = (
+            <FileUpload
+              label="Upload File"
+              name={`file${index}`}
+              getFile={handleFile}
+              loading={loader}
+              maxSize={5}
+              key={index}
+            />
+          )
+
+          const amount = (
+            <FormInput
+              onChange={onChangeAmount}
+              name={`amount${index}`}
+              type="text"
+              placeholder="0.0"
+              key={index}
+              value={
+                amountPerRow[`form${index}`] !== undefined
+                  ? amountPerRow[`form${index}`].amount
+                  : ''
+              }
+            />
+          )
+          const isAmountEmpty = !!(
+            amountPerRow[`form${index}`] &&
+            amountPerRow[`form${index}`].amount !== ''
+          )
+          const isDueDateEmpty = !_.isEmpty(datePerRow[`form${index}`])
+          const isFileEmpty = !_.isEmpty(fileUploadedData[`form${index}`])
+
+          const sendButton = (
+            <Can
+              perform="dues:create"
+              yes={
+                <Button
+                  primary={!isSent[`form${index}`]}
+                  success={isSent[`form${index}`]}
+                  danger={notSent[`form${index}`]}
+                  disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
+                  label={
+                    isSent[`form${index}`] ? (
+                      <FaCheck />
+                    ) : notSent[`form${index}`] ? (
+                      <FaExclamation />
+                    ) : (
+                      'Send'
+                    )
+                  }
+                  name={`form${index}`}
+                  onClick={e => submitForm(e)}
+                />
+              }
+              no={<Button disabled label="Send" />}
+            />
+          )
+
+          const fieldData = {
+            Name: `date${index}`,
+            ChangeHandler: handleChangeDate,
+            value: perDate,
+            minDate: date,
+            allDate: modalDate
+          }
+
+          const dueDate = <DueDate fieldData={fieldData} />
+
           rowData.push({
-            floorNumber: row.floorNumber,
-            b: '',
-            bl: '',
-            bla: '',
-            blan: '',
             blank: '',
-            blankrow: ''
+            unitName,
+            unitOwner,
+            uploadFile,
+            amount,
+            dueDate,
+            sendButton
           })
-        }
-
-        const unitName = row.name
-        const unitOwner = `${row?.unitOwner?.user?.lastName},
-        ${row?.unitOwner?.user?.lastName}`
-        const uploadFile = (
-          <FileUpload
-            label="Upload File"
-            name={`file${index}`}
-            getFile={handleFile}
-            loading={loader}
-            maxSize={5}
-            key={index}
-          />
-        )
-
-        const amount = (
-          <FormInput
-            onChange={onChangeAmount}
-            name={`amount${index}`}
-            type="text"
-            placeholder="0.0"
-            key={index}
-            value={
-              amountPerRow[`form${index}`] !== undefined
-                ? amountPerRow[`form${index}`].amount
-                : ''
-            }
-          />
-        )
-        const isAmountEmpty = !!(
-          amountPerRow[`form${index}`] &&
-          amountPerRow[`form${index}`].amount !== ''
-        )
-        const isDueDateEmpty = !_.isEmpty(datePerRow[`form${index}`])
-        const isFileEmpty = !_.isEmpty(fileUploadedData[`form${index}`])
-
-        const sendButton = (
-          <Can
-            perform="dues:create"
-            yes={
-              <Button
-                primary={!isSent[`form${index}`]}
-                success={isSent[`form${index}`]}
-                danger={notSent[`form${index}`]}
-                disabled={!(isAmountEmpty && isDueDateEmpty && isFileEmpty)}
-                label={
-                  isSent[`form${index}`] ? (
-                    <FaCheck />
-                  ) : notSent[`form${index}`] ? (
-                    <FaExclamation />
-                  ) : (
-                    'Send'
-                  )
-                }
-                name={`form${index}`}
-                onClick={e => submitForm(e)}
-              />
-            }
-            no={<Button disabled label="Send" />}
-          />
-        )
-
-        const fieldData = {
-          Name: `date${index}`,
-          ChangeHandler: handleChangeDate,
-          value: perDate,
-          minDate: date,
-          allDate: modalDate
-        }
-
-        const dueDate = <DueDate fieldData={fieldData} />
-
-        rowData.push({
-          blank: '',
-          unitName,
-          unitOwner,
-          uploadFile,
-          amount,
-          dueDate,
-          sendButton
+          num = row.floorNumber
         })
-        num = row.floorNumber
-      })
+      }
+
+      return rowData
     }
-
-    return rowData
-  }
-
-  const table = useTableRows(!loading && data && data?.getDuesPerUnit?.data)
+  }, [
+    loading,
+    data,
+    error,
+    date,
+    perDate,
+    amountPerRow,
+    datePerRow,
+    fileUploadedData,
+    isSent,
+    sentLoading,
+    notSent
+  ])
 
   useEffect(() => {
     if (!loading && !error && data) {
@@ -439,28 +449,8 @@ function Unsent({ month, year }) {
       setCompanyIdPerRow(companyIDArray)
       setComplexIdPerRow(complexIDArray)
       setUnitIdPerRow(unitIDArray)
-
-      const duesTable = {
-        count: data?.getDuesPerUnit.count || 0,
-        limit: data?.getDuesPerUnit.limit || 0,
-        offset: data?.getDuesPerUnit.offset || 0,
-        data: table || []
-      }
-      setDues(duesTable)
     }
-  }, [
-    loading,
-    data,
-    error,
-    date,
-    perDate,
-    amountPerRow,
-    datePerRow,
-    fileUploadedData,
-    isSent,
-    sentLoading,
-    notSent
-  ])
+  }, [loading, data, error])
 
   useEffect(() => {
     let optionsData = [
@@ -503,13 +493,10 @@ function Unsent({ month, year }) {
     handleCloseModal()
   }
 
-  //   Select Floors onchange
   const onFloorSelect = e => {
-    setSelectedFloor(e.target.value)
+    setSelectedFloor(e.value)
   }
-  // =============
 
-  // useEffect for useKeyPress
   useEffect(() => {
     if (keyPressed) {
       setSearch(searchText)
@@ -525,15 +512,11 @@ function Unsent({ month, year }) {
       setSearchText(e.target.value)
     }
   }
-  // ==========
 
-  // Clear searches
   const onClearSearch = e => {
     setSearchText(null)
   }
-  // ==============
 
-  // Click pagination
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
@@ -543,7 +526,6 @@ function Unsent({ month, year }) {
     setNotSent({})
   }
 
-  // setting limit in pagination
   const onLimitChange = e => {
     setLimitPage(parseInt(e.target.value))
   }
@@ -597,14 +579,27 @@ function Unsent({ month, year }) {
           loading ? (
             <PageLoader />
           ) : (
-            <Table rowNames={tableRowData} items={dues} />
+            <Table
+              rowNames={tableRowData}
+              items={{
+                count: data?.getDuesPerUnit.count || 0,
+                limit: data?.getDuesPerUnit.limit || 0,
+                offset: data?.getDuesPerUnit.offset || 0,
+                data: memoTable
+              }}
+            />
           )
         }
       />
 
-      {!loading && dues && (
+      {!loading && (
         <Pagination
-          items={dues}
+          items={{
+            count: data?.getDuesPerUnit.count || 0,
+            limit: data?.getDuesPerUnit.limit || 0,
+            offset: data?.getDuesPerUnit.offset || 0,
+            data: memoTable
+          }}
           activePage={activePage}
           onPageClick={onPageClick}
           onLimitChange={onLimitChange}

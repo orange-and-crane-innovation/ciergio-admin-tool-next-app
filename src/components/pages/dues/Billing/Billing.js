@@ -7,6 +7,7 @@ import P from 'prop-types'
 import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
+import { BsInfoCircle } from 'react-icons/bs'
 
 const Billing = ({ categoriesBiling, buildingName }) => {
   const router = useRouter()
@@ -35,58 +36,89 @@ const Billing = ({ categoriesBiling, buildingName }) => {
     setYear(handlingMonthOrYear(date))
   }
 
+  console.log({ wew: categoriesBiling })
+
   return (
     <>
-      <div className={styles.PageHeaderTitle}>
-        <h1 className={styles.PageHeader}>
-          {buildingName || user?.accounts?.data[0]?.building?.name}
-        </h1>
-      </div>
-      <Tabs defaultTab="1">
-        <Tabs.TabLabels>
-          <Tabs.TabLabel id="1">
-            {categoriesBiling &&
-              categoriesBiling.map((category, index) => {
-                return (
-                  <Tabs.TabLabel key={index} id={String(index + 1)}>
-                    <Link href={`/dues/billing/${buildingID}/${category._id}`}>
-                      <a>{category.name}</a>
-                    </Link>
-                  </Tabs.TabLabel>
-                )
-              })}
-          </Tabs.TabLabel>
-        </Tabs.TabLabels>
+      {categoriesBiling ? (
+        <>
+          {' '}
+          <div className={styles.PageHeaderTitle}>
+            <h1 className={styles.PageHeader}>
+              {buildingName || user?.accounts?.data[0]?.building?.name}
+            </h1>
+          </div>
+          <Tabs defaultTab="1">
+            <Tabs.TabLabels>
+              {categoriesBiling &&
+                categoriesBiling.map((category, index) => {
+                  return (
+                    <Tabs.TabLabel key={index} id={String(index + 1)}>
+                      <Link
+                        href={`/dues/billing/${buildingID}/${category._id}`}
+                      >
+                        <a>{category.name}</a>
+                      </Link>
+                    </Tabs.TabLabel>
+                  )
+                })}
+            </Tabs.TabLabels>
 
-        <Tabs.TabPanels>
-          <Tabs.TabPanel id="1">
-            <div className={styles.BillingPeriodContainer}>
-              <DatePicker
-                date={selectedDate}
-                onChange={handleDateChange}
-                label={'Billing Period'}
-                showMonthYearPicker
-                rightIcon
-              />
-            </div>
+            <Tabs.TabPanels>
+              {categoriesBiling &&
+                categoriesBiling.map((category, index) => {
+                  return (
+                    <Tabs.TabPanel id={String(index + 1)} key={index}>
+                      <div className={styles.BillingPeriodContainer}>
+                        <DatePicker
+                          date={selectedDate}
+                          onChange={handleDateChange}
+                          label="Billing Period"
+                          showMonthYearPicker
+                          rightIcon
+                        />
+                      </div>
 
-            <Tabs defaultTab="1">
-              <Tabs.TabLabels>
-                <Tabs.TabLabel id="1">Unsent</Tabs.TabLabel>
-                <Tabs.TabLabel id="2">Sent</Tabs.TabLabel>
-              </Tabs.TabLabels>
-              <Tabs.TabPanels>
-                <Tabs.TabPanel id="1">
-                  <Unsent month={parseInt(month)} year={parseInt(year)} />
-                </Tabs.TabPanel>
-                <Tabs.TabPanel id="2">
-                  <Sent month={parseInt(month)} year={parseInt(year)} />
-                </Tabs.TabPanel>
-              </Tabs.TabPanels>
-            </Tabs>
-          </Tabs.TabPanel>
-        </Tabs.TabPanels>
-      </Tabs>
+                      <Tabs defaultTab="1">
+                        <Tabs.TabLabels>
+                          <Tabs.TabLabel id="1">Unsent</Tabs.TabLabel>
+                          <Tabs.TabLabel id="2">Sent</Tabs.TabLabel>
+                        </Tabs.TabLabels>
+                        <Tabs.TabPanels>
+                          <Tabs.TabPanel id="1">
+                            <Unsent
+                              month={parseInt(month)}
+                              year={parseInt(year)}
+                            />
+                          </Tabs.TabPanel>
+                          <Tabs.TabPanel id="2">
+                            <Sent
+                              month={parseInt(month)}
+                              year={parseInt(year)}
+                            />
+                          </Tabs.TabPanel>
+                        </Tabs.TabPanels>
+                      </Tabs>
+                    </Tabs.TabPanel>
+                  )
+                })}
+            </Tabs.TabPanels>
+          </Tabs>{' '}
+        </>
+      ) : (
+        <div className="w-full h-full flex justify-center items-center content-center">
+          <div className="w-1/4 flex-col justify-center items-center content-center text-center">
+            <BsInfoCircle
+              size="100"
+              className="w-full text-center"
+              fill="rgb(238,52,12)"
+            />
+            <h3 className="text-5xl">
+              Billing has not been setup. Please contact your administrator
+            </h3>
+          </div>
+        </div>
+      )}
     </>
   )
 }
