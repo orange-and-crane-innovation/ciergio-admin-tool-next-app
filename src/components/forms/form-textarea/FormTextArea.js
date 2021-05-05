@@ -2,8 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react'
 import clsx from 'clsx'
 import P from 'prop-types'
 import dynamic from 'next/dynamic'
-import { EditorState, convertToRaw, ContentState } from 'draft-js'
-import draftToHtml from 'draftjs-to-html'
+import { EditorState, ContentState, RichUtils, Modifier } from 'draft-js'
+import { stateToHTML } from 'draft-js-export-html'
 import htmlToDraft from 'html-to-draftjs'
 
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
@@ -32,6 +32,9 @@ const FormTextArea = ({
   editorClassName
 }) => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
+  const defaultOptions = {
+    defaultBlockTag: 'div'
+  }
 
   const containerClasses = useMemo(
     () =>
@@ -54,7 +57,7 @@ const FormTextArea = ({
       if (stripHtmls) {
         onChange(currentPlainText)
       } else {
-        onChange(draftToHtml(convertToRaw(content)))
+        onChange(stateToHTML(content, defaultOptions))
       }
     } else {
       onChange('')
@@ -70,6 +73,34 @@ const FormTextArea = ({
       )
     }
   }, [isEdit, value])
+
+  const onTab = e => {
+    e.preventDefault()
+    const currentState = editorState
+
+    const selection = currentState.getSelection()
+    const blockType = currentState
+      .getCurrentContent()
+      .getBlockForKey(selection.getStartKey())
+      .getType()
+
+    if (
+      blockType === 'unordered-list-item' ||
+      blockType === 'ordered-list-item'
+    ) {
+      setEditorState(RichUtils.onTab(e, currentState, 3))
+    } else {
+      const newContentState = Modifier.replaceText(
+        currentState.getCurrentContent(),
+        currentState.getSelection(),
+        '    '
+      )
+
+      setEditorState(
+        EditorState.push(currentState, newContentState, 'insert-characters')
+      )
+    }
+  }
 
   return (
     <div className={styles.FormTextAreaContainer}>
@@ -116,6 +147,7 @@ const FormTextArea = ({
               .length
             return val.length + textLength >= maxLength
           }}
+          onTab={onTab}
         />
       </div>
 
@@ -137,7 +169,7 @@ const FormTextArea = ({
         <textarea
           className="h-64"
           disabled
-          value={draftToHtml(convertToRaw(editorState.getCurrentContent()))}
+          value={stateToHTML(editorState.getCurrentContent(), defaultOptions)}
         />
       )}
     </div>

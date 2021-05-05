@@ -157,6 +157,10 @@ p {
   display: none !important;
 }
 
+.public-DraftStyleDefault-block {
+  margin: auto !important;
+}
+
 /* END WSIWYG EDITOR */
 
 /* REACH DIALOG */
