@@ -25,6 +25,17 @@
       a {
         @apply text-info-900 hover:underline;
       }
+
+      ul,
+      ol {
+        list-style: initial;
+        margin: initial;
+        padding: 0 0 0 40px;
+      }
+
+      ol {
+        list-style-type: decimal;
+      }
     }
   }
 }

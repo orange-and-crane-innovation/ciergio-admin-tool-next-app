@@ -442,7 +442,9 @@ const PostComponent = () => {
                   {isMine ? (
                     <div className="flex text-info-500 text-sm">
                       <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline">View</a>
+                        <a className="mr-2 hover:underline" target="_blank">
+                          View
+                        </a>
                       </Link>
                       {` | `}
                       <span
@@ -462,7 +464,9 @@ const PostComponent = () => {
                   ) : (
                     <div className="flex text-info-500 text-sm">
                       <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline">View</a>
+                        <a className="mr-2 hover:underline" target="_blank">
+                          View
+                        </a>
                       </Link>
                     </div>
                   )}

@@ -222,82 +222,80 @@ const Component = () => {
     }
   }, [loading, data, error])
 
-  if (loading) {
-    return <PageLoader />
-  } else if (error) {
-    return (
-      <NotifCard
-        icon={<FiXCircle />}
-        header="Error"
-        content="Sorry, there's an error occured on fetching."
-      />
-    )
-  } else if (!loading && post) {
-    return (
-      <div className={styles.PageContainer}>
-        <div className={styles.PageSubContainer}>
-          <div className={styles.PageHeader}>
-            <div className={styles.HeaderCategory}>
-              {isDailyReadingsPage ? '' : post.category.toUpperCase()}
-            </div>
-            <div className={styles.HeaderTitle}>
-              {isDailyReadingsPage ? '' : post.title}
-            </div>
-          </div>
-          {post?.images && (
-            <div className="mb-4">
-              <ImageSlider images={post?.images} />
-            </div>
-          )}
-
-          {!isDailyReadingsPage && (
-            <div className="mb-12">
-              <strong>By {post.author}</strong> / {post.date}
-            </div>
-          )}
-
-          {isDailyReadingsPage && (
-            <center>
-              <div className="my-6 text-3xl leading-10">
-                <strong>
-                  {DATE.toFriendlyShortDate(post.dailyReadingDate)}
-                </strong>
-              </div>
-            </center>
-          )}
-
-          {post.videos && !isDailyReadingsPage && (
-            <div className="mb-6">
-              <VideoPlayer url={post.videos} />
-            </div>
-          )}
-
-          {isDailyReadingsPage && (
-            <div className="mb-2">
-              <strong>{post.title}</strong>
-            </div>
-          )}
-
-          {post.videos && isDailyReadingsPage && (
-            <div className="mb-6">
-              <VideoPlayer url={post.videos} />
-            </div>
-          )}
-
-          <div className={styles.PageContent}>
-            {ReactHtmlParser(post.content)}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <NotifCard
-      icon={<FiFileText />}
-      header="Post not found"
-      content="Sorry, this post doesn't exists."
-    />
+    <div className={styles.PageContainer}>
+      <div className={styles.PageSubContainer}>
+        {loading ? (
+          <PageLoader fullPage />
+        ) : error ? (
+          <NotifCard
+            icon={<FiXCircle />}
+            header="Error"
+            content="Sorry, there's an error occured on fetching."
+          />
+        ) : !loading && post ? (
+          <>
+            <div className={styles.PageHeader}>
+              <div className={styles.HeaderCategory}>
+                {isDailyReadingsPage ? '' : post.category.toUpperCase()}
+              </div>
+              <div className={styles.HeaderTitle}>
+                {isDailyReadingsPage ? '' : post.title}
+              </div>
+            </div>
+            {post?.images && (
+              <div className="mb-4">
+                <ImageSlider images={post?.images} />
+              </div>
+            )}
+
+            {!isDailyReadingsPage && (
+              <div className="mb-12">
+                <strong>By {post.author}</strong> / {post.date}
+              </div>
+            )}
+
+            {isDailyReadingsPage && (
+              <center>
+                <div className="my-6 text-3xl leading-10">
+                  <strong>
+                    {DATE.toFriendlyShortDate(post.dailyReadingDate)}
+                  </strong>
+                </div>
+              </center>
+            )}
+
+            {post.videos && !isDailyReadingsPage && (
+              <div className="mb-6">
+                <VideoPlayer url={post.videos} />
+              </div>
+            )}
+
+            {isDailyReadingsPage && (
+              <div className="mb-2">
+                <strong>{post.title}</strong>
+              </div>
+            )}
+
+            {post.videos && isDailyReadingsPage && (
+              <div className="mb-6">
+                <VideoPlayer url={post.videos} />
+              </div>
+            )}
+
+            <div className={styles.PageContent}>
+              {ReactHtmlParser(post.content)}
+            </div>
+          </>
+        ) : (
+          <NotifCard
+            icon={<FiFileText />}
+            header="Post not found"
+            content="Sorry, this post doesn't exists."
+          />
+        )}
+      </div>
+    </div>
   )
 }
 
