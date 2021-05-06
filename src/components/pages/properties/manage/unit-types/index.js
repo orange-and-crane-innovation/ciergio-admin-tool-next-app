@@ -73,13 +73,12 @@ const UnitTypeComponent = () => {
   const [modalData, setModalData] = useState()
 
   const { loading, data, error, refetch } = useQuery(GET_UNIT_TYPES_QUERY, {
-    enabled: false,
     variables: {
       where: {
         status: 'active'
       },
       limit: limitPage,
-      offset: offsetPage
+      skip: offsetPage
     }
   })
 
@@ -91,7 +90,9 @@ const UnitTypeComponent = () => {
       data: dataCreate,
       error: errorCreate
     }
-  ] = useMutation(CREATE_UNIT_TYPE_MUTATION)
+  ] = useMutation(CREATE_UNIT_TYPE_MUTATION, {
+    onError: e => {}
+  })
 
   const [
     updateUnitType,
@@ -101,7 +102,9 @@ const UnitTypeComponent = () => {
       data: dataUpdate,
       error: errorUpdate
     }
-  ] = useMutation(UPDATE_UNIT_TYPE_MUTATION)
+  ] = useMutation(UPDATE_UNIT_TYPE_MUTATION, {
+    onError: e => {}
+  })
 
   const [
     deleteUnitType,
@@ -111,7 +114,9 @@ const UnitTypeComponent = () => {
       data: dataDelete,
       error: errorDelete
     }
-  ] = useMutation(DELETE_UNIT_TYPE_MUTATION)
+  ] = useMutation(DELETE_UNIT_TYPE_MUTATION, {
+    onError: e => {}
+  })
 
   useEffect(() => {
     refetch()
@@ -152,7 +157,7 @@ const UnitTypeComponent = () => {
   useEffect(() => {
     if (!loadingCreate) {
       if (errorCreate) {
-        errorHandler(dataUpdate)
+        errorHandler(errorCreate)
       } else if (calledCreate && dataCreate) {
         showToast('success', 'You have successfully created a category.')
         onCancel()
@@ -221,29 +226,26 @@ const UnitTypeComponent = () => {
     setLimitPage(Number(e.value))
   }
 
-  const onSubmit = async (type, data) => {
+  const onSubmit = (type, data) => {
     setIsLoading(true)
-    try {
-      if (type === 'create') {
-        await createUnitType({ variables: data })
-      } else if (type === 'edit') {
-        const updateData = {
-          unitTypeId: data.id,
-          data: {
-            name: data.name
-          }
+
+    if (type === 'create') {
+      createUnitType({ variables: { data } })
+    } else if (type === 'edit') {
+      const updateData = {
+        unitTypeId: data.id,
+        data: {
+          name: data.name
         }
-        await updateUnitType({ variables: updateData })
-      } else if (type === 'delete') {
-        const updateData = {
-          data: {
-            unitTypeId: data.id
-          }
-        }
-        await deleteUnitType({ variables: updateData })
       }
-    } catch (e) {
-      console.log(e)
+      updateUnitType({ variables: updateData })
+    } else if (type === 'delete') {
+      const updateData = {
+        data: {
+          unitTypeId: data.id
+        }
+      }
+      deleteUnitType({ variables: updateData })
     }
   }
 
