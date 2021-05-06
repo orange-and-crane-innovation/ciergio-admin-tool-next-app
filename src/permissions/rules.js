@@ -490,11 +490,12 @@ const rules = {
         '/forms',
         '/forms/create',
         '/forms/edit',
-        '/dues/billing/:id',
         '/notifications/list',
         '/notifications/create',
         '/dues/overview',
-        '/dues/manage-categories'
+        '/dues/manage-categories',
+        '/dues/billing/:id',
+        '/dues/billing/:id/:categoryId'
       ],
       actions: [
         'messages:view',
@@ -552,7 +553,8 @@ const rules = {
         'maintenance:resolve',
         'dues:create',
         'dues:update',
-        'dues:send'
+        'dues:send',
+        'dues:categories:delete'
       ]
     },
     building_admin: {
@@ -597,7 +599,9 @@ const rules = {
         '/receptionist/deliveries',
         '/receptionist/pick-ups',
         '/receptionist/services',
-        '/dues/billing'
+        '/dues/billing',
+        '/dues/billing/:id',
+        '/dues/billing/:id/:categoryId'
       ],
       actions: [
         'messages:view',

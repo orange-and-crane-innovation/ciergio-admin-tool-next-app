@@ -98,7 +98,7 @@ export default function FileUpload({
           </div>
         ) : (
           <Button
-            full
+            link
             label={label || 'Upload File'}
             onClick={handleFileUpload}
           />
