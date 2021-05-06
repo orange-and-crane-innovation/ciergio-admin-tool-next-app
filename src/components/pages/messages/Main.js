@@ -143,18 +143,12 @@ export default function Main() {
 
   useEffect(() => {
     if (convos?.getConversations?.count > 0 && isFirst) {
-      setFirstConvo(
-        convos?.getConversations?.data.find(item => item.selected === true)
+      const convoFilter = convos?.getConversations?.data.find(
+        item => item.selected === true
       )
-      setIsFirst(false)
-    }
-  }, [convos])
+      const convoFirst = convos?.getConversations?.data[0]
 
-  useEffect(() => {
-    if (convos?.getConversations?.count > 0 && isFirst) {
-      setFirstConvo(
-        convos?.getConversations?.data.find(item => item.selected === true)
-      )
+      setFirstConvo(convoFilter || convoFirst)
       setIsFirst(false)
     }
   }, [convos])
