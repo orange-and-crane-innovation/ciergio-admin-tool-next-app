@@ -26,6 +26,12 @@ function Dues({ complexId, bid }) {
     }
   })
 
+  useEffect(() => {
+    if ((buildingID || bid) && !_.isEmpty(categories)) {
+      router.push(`/dues/billing/${buildingID}/${categories[0]._id}`)
+    }
+  }, [categories])
+
   const {
     loading: loadingBuilding,
     data: dataBuilding,

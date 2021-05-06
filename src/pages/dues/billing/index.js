@@ -14,10 +14,11 @@ export default function DuesPage() {
       <Page
         route="/dues"
         nestedRoute="/dues/billing"
-        page={<Billing complexId={complexID} bid={buildingId} />}
+        page={<Billing complexId={complexID} bid={buildingID} />}
       />
     )
   } else {
-    router.push(`/dues/billing/${buildingID}`)
+    router.push(`/dues/billing/${buildingId}`)
   }
+  return null
 }

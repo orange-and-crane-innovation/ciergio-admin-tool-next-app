@@ -89,7 +89,7 @@ const DueDate = ({ fieldData }) => {
   )
 }
 
-function Unsent({ month, year }) {
+function Unsent({ month, year, buildingName }) {
   const router = useRouter()
   const { buildingID, categoryID } = router.query
   // components state
@@ -120,7 +120,7 @@ function Unsent({ month, year }) {
     month: month,
     year: year
   })
-  const [title, setTitle] = useState(`Test Category ${month} - ${year}`)
+  const [title, setTitle] = useState(`${buildingName} ${month} - ${year}`)
   const [amountPerRow, setAmountPerRow] = useState({})
   const [perDate, setPerDate] = useState([])
   const [companyIdPerRow, setCompanyIdPerRow] = useState({})
@@ -138,25 +138,28 @@ function Unsent({ month, year }) {
   ] = useMutation(Mutation.CREATE_DUES)
 
   // graphQLFetching
-  const { loading, data, error } = useQuery(Query.GET_UNSENT_DUES_QUERY, {
-    variables: {
-      unit: {
-        buildingId: buildingID,
-        search,
-        floorNumber: selectedFloor
-      },
-      filter: { sent: false },
-      dues: {
-        categoryId: categoryID,
-        period: {
-          month: month,
-          year: year
-        }
-      },
-      offset: offsetPage,
-      limit: limitPage
+  const { loading, data, error, refetch } = useQuery(
+    Query.GET_UNSENT_DUES_QUERY,
+    {
+      variables: {
+        unit: {
+          buildingId: buildingID,
+          search,
+          floorNumber: String(selectedFloor)
+        },
+        filter: { sent: false },
+        dues: {
+          categoryId: categoryID,
+          period: {
+            month: month,
+            year: year
+          }
+        },
+        offset: offsetPage,
+        limit: limitPage
+      }
     }
-  })
+  )
 
   const {
     loading: loadingFloorNumbers,
@@ -432,11 +435,13 @@ function Unsent({ month, year }) {
     fileUploadedData,
     isSent,
     sentLoading,
+    selectedFloor,
     notSent
   ])
 
   useEffect(() => {
     if (!loading && !error && data) {
+      console.log({ data })
       const companyIDArray = {}
       const complexIDArray = {}
       const unitIDArray = {}
@@ -473,6 +478,11 @@ function Unsent({ month, year }) {
     amountPerRow,
     datePerRow
   ])
+
+  useEffect(() => {
+    refetch()
+    setActivePage(1)
+  }, [selectedFloor])
 
   const handleModal = () => setShowModal(show => !show)
 
@@ -633,7 +643,8 @@ DueDate.propTypes = {
 
 Unsent.propTypes = {
   month: P.number.isRequired,
-  year: P.number.isRequired
+  year: P.number.isRequired,
+  buildingName: P.string.isRequired
 }
 
 export default Unsent

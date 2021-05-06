@@ -36,8 +36,6 @@ const Billing = ({ categoriesBiling, buildingName }) => {
     setYear(handlingMonthOrYear(date))
   }
 
-  console.log({ wew: categoriesBiling })
-
   return (
     <>
       {categoriesBiling ? (
@@ -89,6 +87,7 @@ const Billing = ({ categoriesBiling, buildingName }) => {
                             <Unsent
                               month={parseInt(month)}
                               year={parseInt(year)}
+                              buildingName={buildingName}
                             />
                           </Tabs.TabPanel>
                           <Tabs.TabPanel id="2">
