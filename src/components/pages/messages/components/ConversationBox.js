@@ -19,6 +19,7 @@ const ConversationBox = ({
     <>
       {conversations?.count > 0 ? (
         <div
+          className="scrollableContainer"
           id="scrollableConvo"
           style={{
             height: '100%',
