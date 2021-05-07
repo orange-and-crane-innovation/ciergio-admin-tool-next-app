@@ -6,7 +6,7 @@ import Dropdown from '@app/components/dropdown'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Card from '@app/components/card'
-import FormSelect from '@app/components/globals/FormSelect'
+import FormSelect from '@app/components/forms/form-select'
 import PageLoader from '@app/components/page-loader'
 import showToast from '@app/utils/toast'
 import { FaEye, FaEllipsisH, FaPencilAlt, FaRegFileAlt } from 'react-icons/fa'
@@ -356,13 +356,12 @@ function Sent({ month, year }) {
 
   //   Select Floors onchange
   const onFloorSelect = e => {
-    setFloorNumber(e.target.value)
+    setFloorNumber(e.value)
   }
   // =============
 
   const onStatusSelect = e => {
-    const value =
-      e.target.value === 'paid' ? ['settled'] : ['overdue', 'unpaid']
+    const value = e.value === 'paid' ? ['settled'] : ['overdue', 'unpaid']
     setStatus(value)
   }
 

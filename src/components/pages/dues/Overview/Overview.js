@@ -3,7 +3,7 @@ import Card from '@app/components/card'
 import PageLoader from '@app/components/page-loader'
 import Table from '@app/components/table'
 import DatePicker from '@app/components/forms/form-datepicker/'
-import FormSelect from '@app/components/globals/FormSelect'
+import FormSelect from '@app/components/forms/form-select'
 import { HorizontalBar } from '@reactchartjs/react-chart.js'
 import Tabs from '@app/components/tabs'
 import * as Query from './Query'
@@ -65,7 +65,6 @@ function Overview({ complexID, complexName, accountType }) {
 
   useEffect(() => {
     if (!loadingBreakdown && dataBreakdown && !errorBreakdown) {
-      console.log('wewe')
       const dataChart = dataBreakdown?.getDueBreakdown2?.data.map(item => {
         return {
           sent: item.count.sentDues,
@@ -106,7 +105,7 @@ function Overview({ complexID, complexName, accountType }) {
         })
         buildingIdsArray.push(building._id)
       })
-      console.log(buildingIdsArray)
+
       setBuildingIds(buildingIdsArray)
       setTableData({
         data: tableArray || []
