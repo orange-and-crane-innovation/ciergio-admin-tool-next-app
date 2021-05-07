@@ -299,6 +299,7 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/properties/company',
+        '/properties/unit',
         '/properties/manage/unit-types',
         '/properties/manage/categories',
         '/staff/all-staff',
@@ -387,6 +388,7 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/properties/company',
+        '/properties/unit',
         '/staff/all-staff',
         '/staff/pending-invites',
         '/residents/all-residents',
@@ -477,6 +479,7 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/properties/complex',
+        '/properties/unit',
         '/staff/all-staff',
         '/staff/pending-invites',
         '/residents/all-residents',
