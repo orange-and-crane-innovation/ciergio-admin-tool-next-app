@@ -23,7 +23,7 @@ const Table = ({
   }
   let listItem = []
   return (
-    <div className={styles.tableContainer}>
+    <div className={`scrollableContainer ${styles.tableContainer}`}>
       <table id="table" className={styles.tableControl}>
         <thead className={styles.tableHeader}>
           <tr>

@@ -71,6 +71,7 @@ const SelectCategoryComponent = ({
   const company = user?.accounts?.data[0]?.company?._id
   const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const isSystemPray = system === 'pray'
+  const isSystemCircle = system === 'circle'
 
   const [
     getCategories,
@@ -117,7 +118,11 @@ const SelectCategoryComponent = ({
   })
 
   useEffect(() => {
-    if (isSystemPray || accountType === ACCOUNT_TYPES.SUP.value) {
+    if (
+      isSystemPray ||
+      isSystemCircle ||
+      accountType === ACCOUNT_TYPES.SUP.value
+    ) {
       getCategories()
     } else {
       getAllowedCategories()

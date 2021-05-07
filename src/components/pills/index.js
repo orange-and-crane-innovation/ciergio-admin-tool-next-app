@@ -11,10 +11,10 @@ const Pills = ({ data, activeKey, onClick }) => {
           <li
             key={index}
             className={`${styles.itemContainer} ${
-              activeKey === item.value && styles.itemActive
-            }`}
+              activeKey === item?.value && styles.itemActive
+            } ${item?.hidden && 'hidden'}`}
           >
-            <button onClick={() => onClick(item.value)}>{item.name}</button>
+            <button onClick={() => onClick(item?.value)}>{item?.name}</button>
           </li>
         )
       })}

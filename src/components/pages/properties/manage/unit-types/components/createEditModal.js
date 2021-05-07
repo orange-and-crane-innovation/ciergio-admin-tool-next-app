@@ -3,13 +3,12 @@ import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { FaSpinner } from 'react-icons/fa'
 
 import FormInput from '@app/components/forms/form-input'
 import Modal from '@app/components/modal'
 
 const validationSchema = yup.object().shape({
-  name: yup.string().label('Category Name').nullable().trim().required()
+  name: yup.string().label('Unit Type Name').nullable().trim().required()
 })
 
 const Component = ({
@@ -21,7 +20,7 @@ const Component = ({
   onSave,
   onCancel
 }) => {
-  const [unitName, setUnitName] = useState()
+  const [unitName, setUnitName] = useState('')
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -32,7 +31,6 @@ const Component = ({
   useEffect(() => {
     if (data) {
       register({ name: 'id' })
-      register({ name: 'name' })
       setValue('id', data._id)
       setValue('name', data.name)
       setUnitName(data.name)
@@ -44,15 +42,7 @@ const Component = ({
       title={title}
       visible={isShown}
       onClose={onCancel}
-      okText={
-        loading ? (
-          <FaSpinner className="icon-spin" />
-        ) : processType === 'delete' ? (
-          'Yes, delete unit type'
-        ) : (
-          'Save'
-        )
-      }
+      okText={processType === 'delete' ? 'Yes, delete unit type' : 'Save'}
       onOk={handleSubmit(onSave)}
       onCancel={onCancel}
     >
@@ -81,7 +71,7 @@ const Component = ({
                     id={name}
                     name={name}
                     placeholder="Enter unit type name"
-                    value={value || unitName}
+                    value={value}
                     error={errors?.name?.message ?? null}
                     onChange={onChange}
                   />

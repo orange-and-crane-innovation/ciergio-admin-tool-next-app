@@ -70,7 +70,7 @@ function Profile() {
   return (
     <section className="content-wrap">
       <div className="w-full flex align-center justify-between mb-10">
-        <div className="w-3/12 flex justify-start align-center">
+        <div className="flex justify-start items-center">
           <img
             src={
               data?.user?.avatar ??
@@ -80,7 +80,7 @@ function Profile() {
             className="border-8 border-white rounded-full mr-4 shadow-sm"
           />
           <div>
-            <h1 className="font-bold text-3xl capitalize mb-0">
+            <h1 className="font-bold text-3xl leading-10 capitalize mb-0">
               {fullName ?? ''}
             </h1>
             <h2 className="capitalize">
@@ -99,60 +99,51 @@ function Profile() {
           <Tabs.TabPanel id="1">
             <div className="w-full flex">
               <div className="w-8/12 mr-4">
-                <div className="w-full bg-white p-4 border-t border-x rounded">
-                  <h2 className="font-bold text-lg">Recent Activity</h2>
-                </div>
                 <Card
                   noPadding
+                  title={
+                    <h2 className="-mt-2 font-bold text-lg">Recent Activity</h2>
+                  }
                   content={<Table rowNames={columns} items={activityData} />}
                 />
               </div>
-              <div className="w-4/12">
-                <div className="w-full bg-white p-4 border-t border-x rounded">
-                  <h2 className="font-bold text-lg">About</h2>
-                </div>
+              <div className="w-4/12 text-base leading-7">
                 <Card
                   noPadding
+                  title={<h2 className="-mt-4 font-bold text-lg">About</h2>}
                   content={
-                    <div className="py-2">
+                    <div className="border-t">
                       <div className="p-4">
-                        <p className="text-base text-gray-400 font-bold">
+                        <div className="text-gray-400 font-bold">
                           Email Address
-                        </p>
-                        <p className="text-base">{user?.email}</p>
+                        </div>
+                        <div>{user?.email}</div>
                       </div>
 
                       <div className="p-4">
-                        <p className="text-base text-gray-400 font-bold">
-                          Company
-                        </p>
-                        <p className="text-base">{companyName || 'No data'}</p>
+                        <div className="text-gray-400 font-bold">Company</div>
+                        <div>{companyName || 'No data'}</div>
                       </div>
 
                       <div className="p-4">
-                        <p className="text-base text-gray-400 font-bold">
-                          Complex
-                        </p>
-                        <p className="text-base">{complexName || 'No data'}</p>
+                        <div className="text-gray-400 font-bold">Complex</div>
+                        <div>{complexName || 'No data'}</div>
                       </div>
 
                       <div className="p-4">
-                        <p className="text-base text-gray-400 font-bold">
-                          Building
-                        </p>
-                        <p className="text-base">{buildingName || 'No data'}</p>
+                        <div className=" text-gray-400 font-bold">Building</div>
+                        <div>{buildingName || 'No data'}</div>
                       </div>
 
                       <div className="p-4">
-                        <p className="text-base text-gray-400 font-bold">
+                        <div className=" text-gray-400 font-bold">
                           Assignments
-                        </p>
-                        <p className="text-base">
-                          <span className="capitalize">{`${
-                            user?.jobTitle || accountType
-                          }`}</span>{' '}
-                          at {buildingName || complexName || companyName}
-                        </p>
+                        </div>
+                        <div className="capitalize">
+                          {`${user?.jobTitle || accountType} at ${
+                            buildingName || complexName || companyName
+                          }`}
+                        </div>
                       </div>
                     </div>
                   }

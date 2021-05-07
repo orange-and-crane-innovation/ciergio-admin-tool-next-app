@@ -126,17 +126,13 @@ const Component = ({
                   onChange={e => {
                     onChange(e.value)
                   }}
-                  defaultValue={{
-                    value: data?.unitType?._id,
-                    label: data?.unitType?.name
-                  }}
-                  value={value}
+                  value={unitTypes?.filter(item => item.value === value)}
                   error={errors?.unitType?.message ?? null}
-                  isClearable
                 />
               )}
             />
           </span>
+
           <span className="w-full md:w-1/2">
             <div className="font-semibold mb-2">Floor Area</div>
             <Controller

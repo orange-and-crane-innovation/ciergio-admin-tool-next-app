@@ -299,6 +299,7 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/properties/company',
+        '/properties/unit',
         '/properties/manage/unit-types',
         '/properties/manage/categories',
         '/staff/all-staff',
@@ -387,6 +388,7 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/properties/company',
+        '/properties/unit',
         '/staff/all-staff',
         '/staff/pending-invites',
         '/residents/all-residents',
@@ -477,6 +479,7 @@ const rules = {
       ],
       allowedNestedRoutes: [
         '/properties/complex',
+        '/properties/unit',
         '/staff/all-staff',
         '/staff/pending-invites',
         '/residents/all-residents',
@@ -796,7 +799,6 @@ const rules = {
     },
     company_admin: {
       allowedRoutes: [
-        '/messages',
         '/attractions-events',
         '/qr-code',
         '/forms',
@@ -884,7 +886,6 @@ const rules = {
     },
     complex_admin: {
       allowedRoutes: [
-        '/messages',
         '/attractions-events',
         '/qr-code',
         '/forms',
@@ -908,8 +909,6 @@ const rules = {
         '/notifications/create'
       ],
       actions: [
-        'messages:create',
-        'messages:view',
         'attractions:create',
         'attractions:view',
         'attractions:update',
@@ -965,7 +964,6 @@ const rules = {
     },
     member: {
       allowedRoutes: [
-        '/messages',
         '/attractions-events',
         '/qr-code',
         '/forms',
@@ -980,8 +978,6 @@ const rules = {
         '/notifications/list'
       ],
       actions: [
-        'messages:create',
-        'messages:view',
         'bulletin:view',
         'forms:view',
         'directory:view',

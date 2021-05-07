@@ -148,6 +148,7 @@ export default function MessageBox({
         {loading ? <Spinner /> : null}
         {messages?.length > 0 && (
           <div
+            className="scrollableContainer"
             id="scrollableDiv"
             style={{
               height: '100%',
