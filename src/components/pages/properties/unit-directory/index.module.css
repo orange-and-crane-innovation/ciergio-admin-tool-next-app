@@ -99,10 +99,26 @@
 
   .LinkText {
     @apply text-info-500 hover:underline;
+    @apply cursor-pointer;
+  }
+
+  .LinkTextSmall {
+    @apply text-sm hover:underline;
+    @apply cursor-pointer;
   }
 
   .ContentLink {
     @apply font-bold hover:underline;
     @apply cursor-pointer;
+  }
+
+  .ContentLinkNormal {
+    @apply hover:underline;
+    @apply cursor-pointer;
+  }
+
+  .DataContainer {
+    @apply flex flex-col;
+    @apply text-neutral-900;
   }
 }

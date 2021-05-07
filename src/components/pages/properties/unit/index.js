@@ -35,6 +35,8 @@ const GET_UNITS_QUERY = gql`
         floorNumber
         createdAt
         unitOwner {
+          _id
+          accountType
           user {
             _id
             firstName
@@ -79,6 +81,9 @@ const GET_EXTENSION_ACCOUNTS_QUERY = gql`
         unit {
           name
         }
+        account {
+          _id
+        }
       }
     }
   }
@@ -110,7 +115,7 @@ const DELETE_ACCOUNT_QUERY = gql`
 const UnitDirectoryComponent = () => {
   const router = useRouter()
   const [unit, setUnit] = useState()
-  const [, setUnitOwner] = useState()
+  const [unitOwner, setUnitOwner] = useState()
   const [residents, setResidents] = useState()
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
@@ -171,7 +176,7 @@ const UnitDirectoryComponent = () => {
         errorHandler(error)
       } else if (data) {
         setUnit(data?.getUnits?.data[0])
-        setUnitOwner(data?.getUnits?.data[0].unitOwner)
+        setUnitOwner(data?.getUnits?.data[0]?.unitOwner)
       }
     }
   }, [loading, data, error])
@@ -180,56 +185,97 @@ const UnitDirectoryComponent = () => {
     if (!loadingResidents) {
       if (errorResidents) {
         errorHandler(errorResidents)
-      } else if (dataResidents) {
+      } else if (dataResidents && unitOwner) {
+        const unitOwnerData =
+          [unitOwner]?.map(item => {
+            const dropdownData = [
+              {
+                label: 'More Details',
+                icon: <FaInfoCircle />,
+                function: () => goToResidentData(item?._id)
+              },
+              {
+                label: 'Delete Resident',
+                icon: <FiTrash2 />,
+                function: () => handleShowModal('delete', item?.user)
+              }
+            ]
+
+            return {
+              name: (
+                <div className="flex items-center">
+                  <div className={styles.PageContentLogo}>
+                    <img
+                      alt="logo"
+                      src={item?.avatar ?? IMAGES.DEFAULT_AVATAR}
+                    />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-neutral-500">
+                      {getAccountTypeName(item?.accountType)}
+                    </span>
+                    <span>{`${item?.user?.firstName} ${item?.user?.lastName}`}</span>
+                  </div>
+                </div>
+              ),
+              button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            }
+          }) || null
+        const residentsData =
+          dataResidents?.getExtensionAccountRequests?.data.map(item => {
+            const dropdownData = [
+              {
+                label: 'More Details',
+                icon: <FaInfoCircle />,
+                function: () => goToResidentData(item?.account?._id)
+              },
+              {
+                label: 'Delete Resident',
+                icon: <FiTrash2 />,
+                function: () => handleShowModal('delete', item)
+              }
+            ]
+
+            return {
+              name: (
+                <div className="flex items-center">
+                  <div className={styles.PageContentLogo}>
+                    <img
+                      alt="logo"
+                      src={item?.avatar ?? IMAGES.DEFAULT_AVATAR}
+                    />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-neutral-500">
+                      {item?.status === 'pending'
+                        ? 'Pending registration'
+                        : getAccountTypeName(item?.accountType)}
+                    </span>
+                    <span>{`${item?.firstName} ${item?.lastName}`}</span>
+                  </div>
+                </div>
+              ),
+              button:
+                item?.status !== 'pending' && item?.account?._id ? (
+                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                ) : (
+                  ''
+                )
+            }
+          }) || null
+        const allResidents = [...unitOwnerData, ...residentsData]
+
         const tableData = {
           count: dataResidents?.getExtensionAccountRequests.count || 0,
           limit: dataResidents?.getExtensionAccountRequests.limit || 0,
           offset: dataResidents?.getExtensionAccountRequests.skip || 0,
-          data:
-            dataResidents?.getExtensionAccountRequests?.data.map(item => {
-              const dropdownData = [
-                {
-                  label: 'More Details',
-                  icon: <FaInfoCircle />,
-                  function: () => goToResidentData(item?._id)
-                },
-                {
-                  label: 'Delete Resident',
-                  icon: <FiTrash2 />,
-                  function: () => handleShowModal('delete', item)
-                }
-              ]
-
-              return {
-                name: (
-                  <div className="flex items-center">
-                    <div className={styles.PageContentLogo}>
-                      <img
-                        alt="logo"
-                        src={item?.avatar ?? IMAGES.DEFAULT_AVATAR}
-                      />
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <span className="text-neutral-500">
-                        {item?.status === 'pending'
-                          ? 'Pending registration'
-                          : getAccountTypeName(item?.accountType)}
-                      </span>
-                      <span>{`${item?.firstName} ${item?.lastName}`}</span>
-                    </div>
-                  </div>
-                ),
-                button: item?.status !== 'pending' && (
-                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-                )
-              }
-            }) || null
+          data: allResidents
         }
 
         setResidents(tableData)
       }
     }
-  }, [loadingResidents, dataResidents, errorResidents])
+  }, [loadingResidents, dataResidents, errorResidents, unitOwner])
 
   useEffect(() => {
     if (!loadingCreate) {
@@ -268,7 +314,7 @@ const UnitDirectoryComponent = () => {
   }, [loadingDelete, calledDelete, dataDelete, errorDelete])
 
   const goToResidentData = id => {
-    router.push(`/residents/${id}`)
+    router.push(`/residents/view/${id}`)
   }
 
   const onPageClick = e => {
