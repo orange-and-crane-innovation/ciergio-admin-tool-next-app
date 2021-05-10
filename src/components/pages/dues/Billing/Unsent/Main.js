@@ -20,6 +20,7 @@ import axios from 'axios'
 import * as Mutation from './Mutation'
 import { FaCheck, FaExclamation } from 'react-icons/fa'
 import { useRouter } from 'next/router'
+import { DateInput } from '@app/components/datetime'
 
 import Can from '@app/permissions/can'
 
@@ -220,7 +221,7 @@ function Unsent({ month, year, buildingName }) {
   }
 
   const handleModalChangeDate = date => {
-    setModalDate(date)
+    setModalDate(new Date(date))
   }
 
   const uploadApi = async (payload, name) => {
@@ -624,12 +625,12 @@ function Unsent({ month, year, buildingName }) {
         onOk={handleOkModal}
       >
         <div className="w-full flex flex-col p-4">
-          <DatePicker
-            rightIcon
-            disabledPreviousDate={date && date}
+          <DateInput
             date={modalDate}
-            onChange={handleModalChangeDate}
-            containerClassname={'flex w-full justify-center '}
+            onDateChange={handleModalChangeDate}
+            dateFormat="MMMM dd y"
+            minDate={new Date()}
+            label="yowww"
           />
         </div>
       </Modal>
