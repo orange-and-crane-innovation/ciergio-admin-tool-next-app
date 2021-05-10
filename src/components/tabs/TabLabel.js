@@ -1,11 +1,16 @@
 import React from 'react'
 import P from 'prop-types'
-
+import { useRouter } from 'next/router'
 import TabButton from './tab-button'
 
-const TabLabel = ({ id, activeid, children, handleclick, isHidden }) => {
+const TabLabel = ({ id, activeid, children, handleclick, isHidden, route }) => {
+  const router = useRouter()
   const selectTab = () => {
     handleclick(id)
+
+    if (route || route !== '') {
+      router.push(route)
+    }
   }
 
   return (
@@ -26,7 +31,7 @@ TabLabel.propTypes = {
   activeid: P.string,
   children: P.any,
   handleclick: P.func,
-  isHidden: P.bool
+  isHidden: P.string
 }
 
 export default TabLabel

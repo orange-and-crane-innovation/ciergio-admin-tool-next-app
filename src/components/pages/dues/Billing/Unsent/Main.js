@@ -626,11 +626,10 @@ function Unsent({ month, year, buildingName }) {
       >
         <div className="w-full flex flex-col p-4">
           <DateInput
-            date={modalDate}
+            date={date}
             onDateChange={handleModalChangeDate}
-            dateFormat="MMMM dd y"
+            dateFormat="MMMM DD, YYYY"
             minDate={new Date()}
-            label="yowww"
           />
         </div>
       </Modal>

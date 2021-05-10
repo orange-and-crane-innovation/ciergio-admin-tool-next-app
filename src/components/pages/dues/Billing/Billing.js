@@ -3,7 +3,6 @@ import styles from './Billing.module.css'
 import Unsent from './Unsent'
 import Sent from './Sent'
 import P from 'prop-types'
-import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
 import { BsInfoCircle } from 'react-icons/bs'
@@ -51,12 +50,13 @@ const Billing = ({ categoriesBiling, buildingName }) => {
               {categoriesBiling &&
                 categoriesBiling.map((category, index) => {
                   return (
-                    <Tabs.TabLabel key={index} id={String(index + 1)}>
-                      <Link
-                        href={`/dues/billing/${buildingID}/${category._id}`}
-                      >
-                        <a>{category.name}</a>
-                      </Link>
+                    <Tabs.TabLabel
+                      key={index}
+                      id={String(index + 1)}
+                      handleClick={() => alert('test')}
+                      route={`/dues/billing/${buildingID}/${category._id}`}
+                    >
+                      {category.name}
                     </Tabs.TabLabel>
                   )
                 })}
@@ -72,9 +72,7 @@ const Billing = ({ categoriesBiling, buildingName }) => {
                           date={selectedDate}
                           onDateChange={handleDateChange}
                           dateFormat="MMMM"
-                          minDate={new Date()}
-                          renderMonth={true}
-                          className="px-4"
+                          showMonth={true}
                         />
                       </div>
 
