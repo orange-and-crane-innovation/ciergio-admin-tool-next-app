@@ -3,17 +3,14 @@ import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
 import { FiEdit } from 'react-icons/fi'
 
-import InfiniteScroll from 'react-infinite-scroll-component'
-
 import Toggle from '@app/components/toggle'
-import Spinner from '@app/components/spinner'
 import FormSelect from '@app/components/forms/form-select'
 
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
 
-import MessagePreviewItem from './components/MessagePreviewItem'
+import ConversationBox from './components/ConversationBox'
 import MessageBox from './components/MessageBox'
 import NewMessageModal from './components/NewMessageModal'
 
@@ -69,7 +66,7 @@ export default function Main() {
   const debouncedSearch = useDebounce(search, 500)
 
   const router = useRouter()
-  const { convoID } = router.query
+  const { id: convoID } = router.query
   const [state, dispatch] = useContext(Context)
   const newMsg = state.newMsg
 
@@ -98,6 +95,7 @@ export default function Main() {
     loading: loadingConvo,
     refetch: refetchConversations
   } = useQuery(getConversations, {
+    fetchPolicy: 'network-only',
     variables: {
       where: {
         participants: [accountId],
@@ -145,7 +143,12 @@ export default function Main() {
 
   useEffect(() => {
     if (convos?.getConversations?.count > 0 && isFirst) {
-      setFirstConvo(convos?.getConversations?.data[0])
+      const convoFilter = convos?.getConversations?.data.find(
+        item => item.selected === true
+      )
+      const convoFirst = convos?.getConversations?.data[0]
+
+      setFirstConvo(convoFilter || convoFirst)
       setIsFirst(false)
     }
   }, [convos])
@@ -224,7 +227,7 @@ export default function Main() {
           limit: 10,
           skip: 0,
           where: {
-            conversationId: selectedConvo?._id
+            conversationId: convoID || selectedConvo?._id
           }
         }
       })
@@ -333,6 +336,10 @@ export default function Main() {
 
   const togglePendingMessages = checked => {
     setConversations({})
+    setOffsetConvo(0)
+    setConvoMessages({})
+    setSelectedConvo(null)
+    setIsFirst(true)
     setShowPendingMessages(checked)
   }
 
@@ -507,6 +514,9 @@ export default function Main() {
   const onSelectConvoType = e => {
     setConversations({})
     setOffsetConvo(0)
+    setConvoMessages({})
+    setSelectedConvo(null)
+    setIsFirst(true)
     setConvoType(e.value)
   }
 
@@ -585,43 +595,15 @@ export default function Main() {
           <Toggle onChange={togglePendingMessages} />
         </div>
         <div className={styles.messagesListItems}>
-          {conversations?.count > 0 ? (
-            <div
-              id="scrollableConvo"
-              style={{
-                height: '100%',
-                overflow: 'auto',
-                display: 'flex',
-                flexDirection: 'column'
-              }}
-            >
-              <InfiniteScroll
-                dataLength={conversations?.data?.length || 0}
-                next={onFetchMoreConversations}
-                hasMore={conversations?.data?.length < conversations?.count}
-                loader={<Spinner />}
-                scrollableTarget="scrollableConvo"
-              >
-                {conversations.data.map(convo => (
-                  <MessagePreviewItem
-                    key={convo._id}
-                    onClick={handleMessagePreviewClick}
-                    data={convo}
-                    isSelected={selectedConvo?._id === convo._id}
-                    currentUserid={profile?._id}
-                    convoId={convo._id}
-                    newMessage={newMsg || messageData}
-                  />
-                ))}
-              </InfiniteScroll>
-            </div>
-          ) : loadingConvo ? (
-            <Spinner />
-          ) : conversations?.count === 0 ? (
-            <div className="h-full flex items-center justify-center">
-              <p>No conversations found.</p>
-            </div>
-          ) : null}
+          <ConversationBox
+            conversations={conversations}
+            loading={loadingConvo}
+            selectedConvo={selectedConvo?._id}
+            currentUserId={profile?._id}
+            newMessage={newMsg || messageData}
+            onFetchMore={onFetchMoreConversations}
+            onConvoSelect={handleMessagePreviewClick}
+          />
         </div>
       </div>
       <MessageBox

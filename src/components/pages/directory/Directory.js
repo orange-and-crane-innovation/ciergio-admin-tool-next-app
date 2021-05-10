@@ -32,7 +32,11 @@ import {
 } from './queries'
 
 const validationSchema = yup.object().shape({
-  category_name: yup.string().label('New Category Name').required()
+  category_name: yup.string().label('Category Name').required()
+})
+
+const validationSchemaEdit = yup.object().shape({
+  edit_category_name: yup.string().label('Category Name').required()
 })
 
 const columns = [
@@ -43,15 +47,25 @@ const columns = [
 ]
 
 function Directory() {
-  const { handleSubmit, control, reset, watch } = useForm({
-    resolver: yupResolver(validationSchema),
-    defaultValues: {
-      category_name: ''
-    }
-  })
   const [categoryPageLimit, setCategoryPageLimit] = useState(10)
   const [categoryPageOffset, setCategoryPageOffset] = useState(0)
   const [categoryCurrentPage, setCategoryCurrentPage] = useState(1)
+  const [newCategory, setNewCategory] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [selectedId, setSelectedId] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
+
+  const { handleSubmit, control, reset, watch, setValue, errors } = useForm({
+    resolver: yupResolver(
+      showEditCategoryModal ? validationSchemaEdit : validationSchema
+    ),
+    defaultValues: {
+      category_name: '',
+      edit_category_name: ''
+    }
+  })
 
   const { data: companies } = useQuery(GET_COMPANIES)
   const { data: categories, refetch: refetchCategories } = useQuery(
@@ -67,7 +81,7 @@ function Directory() {
   const handleOnError = err => {
     const statusCode = err.networkError.statusCode
     if (statusCode === 409) {
-      const categoryName = watch('category_name')
+      const categoryName = watch('category_name') || watch('edit_category_name')
       showToast('danger', `${categoryName} already exists.`)
     } else {
       showToast('danger', `Unexpected Error. Please try again.`)
@@ -82,6 +96,7 @@ function Directory() {
     },
     onError: handleOnError
   })
+
   const [editCategory] = useMutation(EDIT_CATEGORY, {
     onCompleted: () => {
       handleClearModal('edit')
@@ -91,6 +106,7 @@ function Directory() {
       errorHandler(e)
     }
   })
+
   const [deleteCategory] = useMutation(DELETE_CATEGORY, {
     onCompleted: () => {
       handleClearModal('delete')
@@ -100,13 +116,6 @@ function Directory() {
       errorHandler(e)
     }
   })
-
-  const [newCategory, setNewCategory] = useState('')
-  const [showModal, setShowModal] = useState(false)
-  const [selectedId, setSelectedId] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
-  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
 
   const handleShowModal = (view, id) => {
     setSelectedId(id)
@@ -130,7 +139,8 @@ function Directory() {
       setNewCategory('')
     }
     reset({
-      category_name: ''
+      category_name: '',
+      edit_category_name: ''
     })
     handleShowModal(type, '')
   }
@@ -140,10 +150,11 @@ function Directory() {
   }
 
   const handleEditCategory = values => {
+    console.log(values)
     setSelectedCategory('')
     editCategory({
       variables: {
-        data: { name: values.category_name },
+        data: { name: values.edit_category_name },
         categoryId: selectedId
       }
     })
@@ -187,6 +198,7 @@ function Directory() {
                   label: 'Edit Category',
                   icon: <span className="ciergio-edit" />,
                   function: () => {
+                    setValue('edit_category_name', c.name)
                     setSelectedCategory(c.name)
                     handleShowModal('edit', c._id)
                   }
@@ -202,7 +214,7 @@ function Directory() {
               ]
 
               return {
-                name: <span className="capitalize">{c.name}</span>,
+                name: c.name,
                 dropdown: (
                   <Can
                     perform="directory:categories:update::delete"
@@ -234,7 +246,9 @@ function Directory() {
               noPadding
               title={
                 <div className="flex items-center justify-between">
-                  <span>Companies</span>
+                  <span className="text-base leading-5 font-bold">
+                    Companies
+                  </span>
                 </div>
               }
               content={<Table rowNames={columns} items={directoryData} />}
@@ -250,7 +264,7 @@ function Directory() {
                   default
                   leftIcon={<FaPlusCircle />}
                   label="Add Category"
-                  onClick={() => setShowModal('create', null)}
+                  onClick={() => handleShowModal('create', null)}
                 />
               ]}
               content={
@@ -275,16 +289,19 @@ function Directory() {
             >
               <div className="w-full p-4">
                 <form>
+                  <p className="text-base leading-5 font-semibold">
+                    New Category Name
+                  </p>
                   <Controller
                     name="category_name"
                     control={control}
                     render={({ value, onChange, name }) => (
                       <FormInput
                         name={name}
-                        label="New Category Name"
                         placeholder="Enter new category"
                         onChange={onChange}
                         value={value}
+                        error={errors?.category_name?.message ?? null}
                       />
                     )}
                   />
@@ -302,16 +319,19 @@ function Directory() {
             >
               <div className="w-full p-4">
                 <form>
+                  <p className="text-base leading-5 font-semibold">
+                    New Category Name
+                  </p>
                   <Controller
-                    name="category_name"
+                    name="edit_category_name"
                     control={control}
                     render={({ value, onChange, name }) => (
                       <FormInput
                         name={name}
-                        label="New Category Name"
                         placeholder="Enter new category"
                         onChange={onChange}
-                        value={value || selectedCategory}
+                        value={value}
+                        error={errors?.edit_category_name?.message ?? null}
                       />
                     )}
                   />

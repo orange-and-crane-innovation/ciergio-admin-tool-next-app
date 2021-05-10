@@ -82,8 +82,8 @@ function Profile() {
         />
         <div className="ml-4">
           <h4 className="text-neutral-dark">
-            <span className="text-2xl font-bold block">{fullName}</span>
-            <small className="block mt-4 capitalize text-sm">
+            <span className="text-3xl font-bold block">{fullName}</span>
+            <small className="block mt-4 capitalize text-base">
               {resident?.accountType.replace('_', ' ')}
             </small>
           </h4>
@@ -100,26 +100,28 @@ function Profile() {
           <Card
             title="About"
             content={
-              <div className="p-4">
+              <div className="p-4 border-t text-base leading-7">
                 <div className="mb-4">
-                  <h4 className="text-sm text-neutral-500">Email Address</h4>
-                  <p className="text-sm">{residentProfile?.email ?? 'N/A'}</p>
+                  <h4 className="text-neutral-500 font-semibold">
+                    Email Address
+                  </h4>
+                  <p>{residentProfile?.email ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
-                  <h4 className="text-sm text-neutral-500">Company</h4>
-                  <p className="text-sm">{resident?.company?.name ?? 'N/A'}</p>
+                  <h4 className="text-neutral-500 font-semibold">Company</h4>
+                  <p>{resident?.company?.name ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
-                  <h4 className="text-sm text-neutral-500">Complex</h4>
-                  <p className="text-sm">{resident?.complex?.name ?? 'N/A'}</p>
+                  <h4 className="text-neutral-500 font-semibold">Complex</h4>
+                  <p>{resident?.complex?.name ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
-                  <h4 className="text-sm text-neutral-500">Building</h4>
-                  <p className="text-sm">{resident?.building?.name ?? 'N/A'}</p>
+                  <h4 className="text-neutral-500 font-semibold">Building</h4>
+                  <p>{resident?.building?.name ?? 'N/A'}</p>
                 </div>
                 <div className="mb-4">
-                  <h4 className="text-sm text-neutral-500">Unit</h4>
-                  <p className="text-sm">{resident?.unit?.name ?? 'N/A'}</p>
+                  <h4 className="text-neutral-500 font-semibold">Unit</h4>
+                  <p>{resident?.unit?.name ?? 'N/A'}</p>
                 </div>
               </div>
             }

@@ -15,8 +15,9 @@ import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
 
-import styles from '../messages.module.css'
 import MessageInput from './MessageInput'
+
+import styles from '../messages.module.css'
 
 export default function MessageBox({
   endMessageRef,
@@ -35,8 +36,6 @@ export default function MessageBox({
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
   const [message, setMessage] = useState(undefined)
   const [disabledSendBtn, setDisabledSendBtn] = useState(true)
-  // const { height } = useWindowDimensions()
-  // const [isOver, setIsOver] = useState(false)
 
   const messages = useMemo(() => {
     if (conversation?.data?.length > 0) {
@@ -70,9 +69,12 @@ export default function MessageBox({
     }
   }, [participant?.participants])
 
-  const name = `${getAccountTypeName(accountType)} - ${user?.firstName} ${
-    user?.lastName
-  }`
+  const name =
+    user?.firstName && user?.lastName
+      ? `${getAccountTypeName(accountType)} - ${user?.firstName} ${
+          user?.lastName
+        }`
+      : ''
 
   // NOTE: temporarily removed to align with old UI
   // const handleChange = () => {
@@ -140,16 +142,13 @@ export default function MessageBox({
   return (
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
-        {user?.firstName && user?.lastName ? (
-          <h2 className="font-bold text text-base">{name || ''}</h2>
-        ) : (
-          <div />
-        )}
+        <h2 className="font-bold text text-base">{name || ''}</h2>
       </div>
       <div className={styles.messageBoxList}>
         {loading ? <Spinner /> : null}
         {messages?.length > 0 && (
           <div
+            className="scrollableContainer"
             id="scrollableDiv"
             style={{
               height: '100%',
@@ -191,7 +190,7 @@ export default function MessageBox({
                     key={item._id}
                     className={`${
                       isCurrentUserMessage ? 'self-end ' : 'self-start '
-                    }w-8/12 mt-2`}
+                    }w-8/12 mt-2 mr-6`}
                   >
                     {isSameAuthor ? (
                       <div
@@ -226,7 +225,7 @@ export default function MessageBox({
                         )}
                       </p>
                       <div className="flex items-center justify-end w-full text-right">
-                        <p
+                        <span
                           className={`${styles.messageDateStamp} ${
                             isCurrentUserMessage
                               ? 'text-white'
@@ -241,7 +240,7 @@ export default function MessageBox({
                               {toFriendlyShortDate(item.createdAt)}
                             </span>
                           </Tooltip>
-                        </p>
+                        </span>
                         {isCurrentUserMessage &&
                         (item.status === 'seen' || item.viewers.count > 0) ? (
                           <div className="ml-2">
@@ -256,6 +255,7 @@ export default function MessageBox({
                             if (index >= 4) {
                               moreViewers++
                             } else {
+                              const viewerName = `${v?.user?.firstName} ${v?.user?.lastName}`
                               if (v?.user?._id !== currentUserid) {
                                 const img =
                                   v?.user?.avatar && v?.user?.avatar !== ''
@@ -272,7 +272,7 @@ export default function MessageBox({
                                   <span className="capitalize">
                                     <Tooltip
                                       key={v?._id}
-                                      text={`${v?.user?.firstName} ${v?.user?.lastName}`}
+                                      text={viewerName.toLowerCase()}
                                       effect="solid"
                                     >
                                       <img

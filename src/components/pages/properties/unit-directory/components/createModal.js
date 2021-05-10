@@ -11,14 +11,14 @@ import Modal from '@app/components/modal'
 const validationSchema = yup.object().shape({
   floorNo: yup
     .number()
-    .required()
     .positive('Floor number must be greater than zero')
     .integer()
     .label('Floor number')
     .typeError('Floor number must be a number')
-    .nullable(),
+    .nullable()
+    .required(),
   unitName: yup.string().label('Unit number').nullable().required(),
-  unitType: yup.string().ensure().label('Unit Type').required(),
+  unitType: yup.string().label('Unit Type').required(),
   unitSize: yup
     .number()
     .positive('Floor Area must be greater than zero')
@@ -46,7 +46,7 @@ const Component = ({
       unitName: '',
       unitType: '',
       unitSize: '',
-      email: null
+      email: ''
     }
   })
 
@@ -116,9 +116,8 @@ const Component = ({
                   onChange={e => {
                     onChange(e.value)
                   }}
-                  value={value}
+                  value={unitTypes?.filter(item => item.value === value)}
                   error={errors?.unitType?.message ?? null}
-                  isClearable
                 />
               )}
             />

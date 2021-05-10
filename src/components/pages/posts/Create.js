@@ -181,6 +181,9 @@ const CreatePosts = () => {
       if (calledCreate && dataCreate) {
         let message
 
+        if (modalType === 'preview') {
+          goToPreviewPage(dataCreate?.createPost?._id)
+        }
         reset()
         resetForm()
         goToBulletinPageLists()
@@ -221,6 +224,10 @@ const CreatePosts = () => {
         showToast('danger', message)
       }
     }
+  }
+
+  const goToPreviewPage = id => {
+    window.open(`/${routeName}/view/${id}`, '_blank')
   }
 
   const onCountChar = e => {

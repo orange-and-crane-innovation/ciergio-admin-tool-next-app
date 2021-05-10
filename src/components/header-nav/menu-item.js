@@ -26,7 +26,7 @@ const MenuItem = ({ url, icon, iconClass, title, onClick }) => {
 }
 MenuItem.defaultProps = {
   url: undefined,
-  icon: 'ciergio-employees',
+  icon: 'ciergio-user',
   name: 'My Profile',
   iconClass: '',
   onClick: () => {

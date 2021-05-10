@@ -23,7 +23,7 @@ const Table = ({
   }
   let listItem = []
   return (
-    <div className={styles.tableContainer}>
+    <div className={`scrollableContainer ${styles.tableContainer}`}>
       <table id="table" className={styles.tableControl}>
         <thead className={styles.tableHeader}>
           <tr>
@@ -76,7 +76,7 @@ const Table = ({
           {listItem.length === 0 && (customBody?.length === 0 || !customBody) && (
             <tr>
               <td
-                className="border px-8 py-4 text-center"
+                className="border-t px-8 py-4 text-center"
                 colSpan={rowNames?.length}
               >
                 {emptyText || 'No data'}

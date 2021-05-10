@@ -2,15 +2,17 @@
 import Link from 'next/link'
 import dayjs from '@app/utils/date'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
-export const BUILDING_ADMIN = 'building_admin'
-export const COMPANY_ADMIN = 'company_admin'
-export const COMPLEX_ADMIN = 'complex_admin'
-export const RECEPTIONIST = 'receptionist'
-export const UNIT_OWNER = 'unit_owner'
-export const MEMBER = 'member'
-export const SUPER_ADMIN = 'administrator'
+export const SUPER_ADMIN = ACCOUNT_TYPES.SUP.value
+export const COMPANY_ADMIN = ACCOUNT_TYPES.COMPYAD.value
+export const COMPLEX_ADMIN = ACCOUNT_TYPES.COMPXAD.value
+export const BUILDING_ADMIN = ACCOUNT_TYPES.BUIGAD.value
+export const RECEPTIONIST = ACCOUNT_TYPES.RECEP.value
+export const UNIT_OWNER = ACCOUNT_TYPES.UNIT.value
+export const MEMBER = ACCOUNT_TYPES.MEM.value
 
 export const columns = [
   {
@@ -37,30 +39,30 @@ export const columns = [
 
 const prayStaffRoles = [
   {
-    label: 'Super User',
+    label: ACCOUNT_TYPES.SUP.name,
     value: SUPER_ADMIN
   },
   {
-    label: 'Parish Head',
+    label: ACCOUNT_TYPES.PARISHADMIN.name,
     value: COMPANY_ADMIN
   },
   {
-    label: 'Parish Admin',
+    label: ACCOUNT_TYPES.PARISHHEAD.name,
     value: COMPLEX_ADMIN
   }
 ]
 
 const roles = [
   {
-    label: 'Super User',
+    label: ACCOUNT_TYPES.SUP.name,
     value: SUPER_ADMIN
   },
   {
-    label: 'Company Admin',
+    label: ACCOUNT_TYPES.COMPYAD.name,
     value: COMPANY_ADMIN
   },
   {
-    label: 'Complex Admin',
+    label: ACCOUNT_TYPES.COMPXAD.name,
     value: COMPLEX_ADMIN
   }
 ]
@@ -68,11 +70,11 @@ const roles = [
 export let STAFF_ROLES = roles
 export let CREATE_STAFF_ROLES = [
   {
-    label: 'Company Admin',
+    label: ACCOUNT_TYPES.COMPYAD.name,
     value: COMPANY_ADMIN
   },
   {
-    label: 'Complex Admin',
+    label: ACCOUNT_TYPES.COMPXAD.name,
     value: COMPLEX_ADMIN
   }
 ]
@@ -81,39 +83,23 @@ if (systemType === 'pray') {
   STAFF_ROLES = prayStaffRoles
   CREATE_STAFF_ROLES = [
     {
-      label: 'Parish Head',
+      label: ACCOUNT_TYPES.PARISHADMIN.name,
       value: COMPANY_ADMIN
     },
     {
-      label: 'Parish Admin',
+      label: ACCOUNT_TYPES.PARISHHEAD.name,
       value: COMPLEX_ADMIN
     }
   ]
 }
 
-export let ALL_ROLES = [SUPER_ADMIN, COMPLEX_ADMIN, COMPANY_ADMIN]
-
-if (systemType === 'pray' || systemType === 'circle') {
-  ALL_ROLES = [...ALL_ROLES, MEMBER]
-}
-
-export const parseAccountType = type => {
-  const system = systemType?.toLowerCase()
-  if (system === 'pray') {
-    switch (type) {
-      case 'company_admin':
-        return 'Parish Head'
-      case 'complex_admin':
-        return 'Parish Admin'
-      case 'administrator':
-        return 'Super Admin'
-      default:
-        return type
-    }
-  } else {
-    return type?.replace('_', ' ')
-  }
-}
+export const ALL_ROLES = [
+  SUPER_ADMIN,
+  COMPLEX_ADMIN,
+  COMPANY_ADMIN,
+  BUILDING_ADMIN,
+  RECEPTIONIST
+]
 
 const historyMessages = {
   CreateUnitType: data =>

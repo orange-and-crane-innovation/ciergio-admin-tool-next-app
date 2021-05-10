@@ -62,11 +62,32 @@ body,
  */
 ::-webkit-scrollbar {
   display: none;
-  width: 0 !important;
+  width: 0;
 }
 .disable-scrollbars {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */
+}
+
+.scrollableContainer {
+  &::-webkit-scrollbar {
+    @apply block w-2 h-2;
+    @apply opacity-90;
+    @apply bg-neutral-200;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @apply bg-neutral-500;
+    @apply rounded-lg;
+
+    &:hover {
+      @apply bg-neutral-900;
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    @apply rounded-lg;
+  }
 }
 
 a {
@@ -155,6 +176,10 @@ p {
 
 .rdw-colorpicker-modal-header {
   display: none !important;
+}
+
+.public-DraftStyleDefault-block {
+  margin: auto !important;
 }
 
 /* END WSIWYG EDITOR */

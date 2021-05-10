@@ -46,6 +46,8 @@ const GET_UNITS_QUERY = gql`
         floorNumber
         createdAt
         unitOwner {
+          _id
+          accountType
           user {
             _id
             firstName
@@ -316,7 +318,7 @@ const UnitDirectoryComponent = ({ title, profile }) => {
                 {
                   label: 'View Unit',
                   icon: <FiFile />,
-                  function: () => alert('clicked')
+                  function: () => goToUnitData(item?._id)
                 },
                 {
                   label: 'Edit Unit',
@@ -354,20 +356,25 @@ const UnitDirectoryComponent = ({ title, profile }) => {
                   </span>
                 ),
                 owner: item?.unitOwner ? (
-                  `${item?.unitOwner?.user?.firstName} ${item?.unitOwner?.user?.lastName}`
+                  <span
+                    className={styles.ContentLinkNormal}
+                    onClick={() => goToResidentData(item?.unitOwner?._id)}
+                  >
+                    {`${item?.unitOwner?.user?.firstName} ${item?.unitOwner?.user?.lastName}`}
+                  </span>
                 ) : item?.reservee ? (
-                  <div className="flex flex-col text-neutral-900">
+                  <div className={styles.DataContainer}>
                     <span>{item?.reservee?.email}</span>
                     <span>
                       <span
-                        className="text-sm cursor-pointer hover:underline"
+                        className={styles.LinkTextSmall}
                         onClick={() => handleShowModal('reinvite', item)}
                       >
                         Resend invite
                       </span>
                       {` | `}
                       <span
-                        className="text-sm cursor-pointer hover:underline"
+                        className={styles.LinkTextSmall}
                         onClick={() => handleShowModal('cancel', item)}
                       >
                         Cancel invite
@@ -375,10 +382,10 @@ const UnitDirectoryComponent = ({ title, profile }) => {
                     </span>
                   </div>
                 ) : (
-                  <div className="flex flex-col text-neutral-900">
+                  <div className={styles.DataContainer}>
                     <span>No registered resident</span>
                     <span
-                      className="text-sm cursor-pointer hover:underline"
+                      className={styles.LinkTextSmall}
                       onClick={() => handleShowModal('invite', item)}
                     >
                       Invite unit owner
@@ -573,6 +580,10 @@ const UnitDirectoryComponent = ({ title, profile }) => {
     router.push(`/properties/unit/${id}/overview`)
   }
 
+  const goToResidentData = id => {
+    router.push(`/residents/view/${id}`)
+  }
+
   const onPageClick = e => {
     setActivePage(e)
     setOffsetPage(limitPage * (e - 1))
@@ -688,7 +699,7 @@ const UnitDirectoryComponent = ({ title, profile }) => {
             unitTypeId: data?.unitType,
             unitSize: data?.unitSize
           },
-          unitOwnerEmail: data?.email,
+          unitOwnerEmail: data?.email !== '' ? data?.email : null,
           buildingId: router.query.id
         }
         await createUnit({ variables: createData })
@@ -854,6 +865,10 @@ const UnitDirectoryComponent = ({ title, profile }) => {
     }
   ]
 
+  const goToOverviewData = () => {
+    document.getElementById('overview').click()
+  }
+
   const onSearch = debounce(e => {
     setSearchText(e.target.value !== '' ? e.target.value : null)
     resetPages()
@@ -881,12 +896,9 @@ const UnitDirectoryComponent = ({ title, profile }) => {
         <p>
           Here you can see all unit details. To manage unit types and sizes,
           visit{' '}
-          <a
-            className={styles.LinkText}
-            href={`/properties/buiilding/${router.query.id}/overview"`}
-          >
+          <span className={styles.LinkText} onClick={() => goToOverviewData()}>
             Building Profile
-          </a>
+          </span>
           .
         </p>
       </div>

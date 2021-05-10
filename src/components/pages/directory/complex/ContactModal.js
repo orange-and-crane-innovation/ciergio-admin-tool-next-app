@@ -34,7 +34,9 @@ function ContactModal({
         value: selected?.category?._id
       })
     }
-    setValue('address', selected?.address)
+    if (selected) {
+      setValue('address', selected?.address)
+    }
     if (!canReplace && selected) {
       setCanReplace(true)
       if (selected?.logo) {

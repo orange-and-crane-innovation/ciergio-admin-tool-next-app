@@ -1,6 +1,7 @@
 import P from 'prop-types'
 import Modal from '@app/components/modal'
-import { parseAccountType } from '../constants'
+
+import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 function CancelInviteModal({ open, onCancel, data, loading, onOk }) {
   return (
@@ -16,12 +17,12 @@ function CancelInviteModal({ open, onCancel, data, loading, onOk }) {
       onOk={onOk}
     >
       <div className="p-4">
-        <p className="text-lg">
+        <p className="text-base leading-7">
           Are you sure you want to cancel invite for{' '}
           <span className="font-bold">{data?.email}</span> as
           <span className="capitalize">
             {' '}
-            {parseAccountType(data?.accountType)}
+            {getAccountTypeName(data?.accountType)}
           </span>
           ?
         </p>

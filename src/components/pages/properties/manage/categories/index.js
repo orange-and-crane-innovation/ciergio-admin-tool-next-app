@@ -77,6 +77,7 @@ const CategoriesComponent = () => {
   const [modalTitle, setModalTitle] = useState('')
   const [modalData, setModalData] = useState()
   const isSystemPray = system === 'pray'
+  const isSystemCircle = system === 'circle'
   let pageHeader = ''
 
   const pillData = [
@@ -86,7 +87,8 @@ const CategoriesComponent = () => {
     },
     {
       name: isSystemPray ? 'Prayer Requests' : 'Maintenance and Repairs',
-      value: 'issue'
+      value: 'issue',
+      hidden: isSystemCircle
     },
     {
       name: 'Notifications',

@@ -13,7 +13,7 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
   const allowedNestedRoutes = rule?.allowedNestedRoutes || []
 
   return (
-    <div className="left-sidebar left-sidebar-1">
+    <div className="left-sidebar left-sidebar-1 scrollableContainer">
       <Logo show={true} onToggle={onToggle} isCollapsed={isCollapsed} />
       {navigation.map((menu, i) => (
         <React.Fragment key={i}>

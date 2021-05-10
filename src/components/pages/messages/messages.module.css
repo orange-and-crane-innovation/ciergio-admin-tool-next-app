@@ -53,8 +53,7 @@
   }
 
   .messageBoxList {
-    @apply h-full overflow-y-scroll overflow-x-hidden pl-4 pr-10 pt-4 pb-5 flex flex-col;
-    /* min-height: calc(100vh - 190px); */
+    @apply h-full overflow-y-scroll overflow-x-hidden px-4 pt-4 pb-5 flex flex-col;
   }
 
   .messageAttachmentsContainer {
