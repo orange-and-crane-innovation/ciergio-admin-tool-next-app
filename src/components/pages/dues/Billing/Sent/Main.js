@@ -30,11 +30,11 @@ const statusOptions = [
   },
   {
     label: 'Paid',
-    value: 'paid'
+    value: 'settled'
   },
   {
     label: 'Unpaid',
-    value: 'unpaid'
+    value: 'due'
   }
 ]
 
@@ -242,6 +242,19 @@ function Sent({ month, year }) {
   const handleClearModal = () => {
     handleShowModal()
   }
+
+  const updateDue = async (id, type) => {
+    try {
+      await updateDues({
+        variables: {
+          id,
+          data: { status: type }
+        }
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
   // Hooks for formatting table row
   const useTableRows = rows => {
     const rowData = []
@@ -249,6 +262,7 @@ function Sent({ month, year }) {
 
     if (rows) {
       rows.forEach(row => {
+        console.log(row)
         const dropdownData = [
           {
             label: 'Update Bills',
@@ -287,17 +301,43 @@ function Sent({ month, year }) {
         )
         const amount = `₱${row?.dues[0]?.amount.toFixed(2)}`
         const status =
-          row?.dues[0]?.status === 'overdue' ||
-          row?.dues[0]?.status === 'unpaid' ? (
-            <Button className={styles.paid} disabled full label="Unpaid" />
+          row?.dues[0]?.status === 'due' ? (
+            <Can
+              perform="dues:payment"
+              yes={
+                <Button
+                  className={styles.paid}
+                  onClick={e => updateDue(row?.dues[0]?._id, 'settled')}
+                  fluid
+                  label="Unpaid"
+                />
+              }
+              no={
+                <Button
+                  className={styles.paid}
+                  label="Unpaid"
+                  primary
+                  disabled
+                />
+              }
+            />
           ) : (
-            <Button full disabled onClick={() => alert('paid')} label="Paid" />
+            <Can
+              perform="dues:payment"
+              yes={
+                <Button
+                  info
+                  onClick={e => updateDue(row?.dues[0]?._id, 'due')}
+                  label="Paid"
+                />
+              }
+              no={<Button label="Paid" disabled />}
+            />
           )
         const seen = row?.dues[0]?.views.count ? <FaEye /> : null
         const dueDate = toFriendlyDate(row?.dues[0]?.dueDate)
         const unitName = row?.name
-        const unitOwner = `${row?.unitOwner?.user?.lastName},
-            ${row?.unitOwner?.user?.lastName}`
+        const unitOwner = `${row?.unitOwner?.user?.lastName}, ${row?.unitOwner?.user?.lastName}`
         const dropDown = (
           <Can
             perform="dues:view::update"
@@ -334,6 +374,7 @@ function Sent({ month, year }) {
         offset: data?.getDuesPerUnit.offset || 0,
         data: table || []
       }
+
       setDues(duesData)
     }
   }, [loading, data, error, refetch])
@@ -361,7 +402,9 @@ function Sent({ month, year }) {
   // =============
 
   const onStatusSelect = e => {
-    const value = e.value === 'paid' ? ['settled'] : ['overdue', 'unpaid']
+    console.log(e.value)
+    const value =
+      e.value === 'settled' ? ['settled'] : ['overdue', 'unpaid', 'due']
     setStatus(value)
   }
 
@@ -472,7 +515,7 @@ function Sent({ month, year }) {
         onClose={handleClearModal}
         footer={null}
         onOk={handleOkModal}
-        onCancel={() => setShowModal(old => !old)}
+        onCancel={() => setShowModal(false)}
       >
         <div className="w-full px-5">{modalContent}</div>
       </Modal>

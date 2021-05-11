@@ -12,10 +12,10 @@ export default function HistoryBills({ dues }) {
               dues.map((due, index) => {
                 return (
                   <div key={index} className="tabled-item item w-full">
-                    <span className="text-gray-700 font-bold inline-block w-1/2">
+                    <span className="text-gray-700 text-md font-bold inline-block w-1/2">
                       {toFriendlyDate(due.dueDate)}
                     </span>
-                    <span className="text-gray-700 font-bold inline-block w-1/2">
+                    <span className="text-gray-700 text-md font-bold inline-block w-1/2">
                       {due.category.name}
                     </span>
                   </div>

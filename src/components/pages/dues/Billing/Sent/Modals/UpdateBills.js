@@ -1,12 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import P from 'prop-types'
 import FormInput from '@app/components/forms/form-input'
-import DatePicker from '@app/components/forms/form-datepicker/'
 import FileUpload from '@app/components/forms/form-fileupload'
 import Modal from '@app/components/modal'
 import Button from '@app/components/button'
 import axios from 'axios'
-
+import { DateInput } from '@app/components/datetime'
 import Can from '@app/permissions/can'
 
 export default function UpdateBills({
@@ -17,21 +16,22 @@ export default function UpdateBills({
   isClose,
   id
 }) {
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(new Date(dueDate))
 
   const [data, setData] = useState({
     attachment: {
       fileUrl,
       fileType: 'pdf'
     },
+    amount,
     dueDate: dueDate,
     id
   })
   const [confirmationModal, setConfirmationModal] = useState(false)
-
-  const handleChangeDate = dueDate => {
-    setSelectedDate(dueDate)
-    setData(prevState => ({ ...prevState, dueDate }))
+  const handleChangeDate = date => {
+    console.log(date)
+    setSelectedDate(new Date(date))
+    setData(prevState => ({ ...prevState, dueDate: new Date(date) }))
   }
 
   const handleTextChange = e => {
@@ -42,7 +42,7 @@ export default function UpdateBills({
   }
 
   const handleClearConfirmationModal = () => {
-    setConfirmationModal(show => !show)
+    setConfirmationModal(false)
   }
 
   const uploadApi = async (payload, name) => {
@@ -88,8 +88,30 @@ export default function UpdateBills({
     if (data) {
       getData(data)
       isClose(true)
+      setConfirmationModal(false)
     }
   }
+
+  const submitButton = useMemo(() => {
+    return (
+      <Can
+        perform="dues:update"
+        yes={
+          <Button
+            primary
+            disabled={
+              data.dueDate === dueDate &&
+              data.amount === amount &&
+              data.attachment.fileUrl === fileUrl
+            }
+            label="Submit"
+            onClick={() => setConfirmationModal(show => !show)}
+          />
+        }
+        no={<Button primary disabled label="Submit" />}
+      />
+    )
+  }, [data])
 
   return (
     <>
@@ -120,14 +142,12 @@ export default function UpdateBills({
           />
           {selectedDate && (
             <>
-              <label className="text-gray-700 font-semibold" htmlFor="dueDate">
-                Due Date
-              </label>
-              <DatePicker
-                inputClassname="w-screen"
-                disabledPreviousDate={dueDate}
+              <DateInput
                 date={selectedDate}
-                onChange={handleChangeDate}
+                onDateChange={handleChangeDate}
+                minDate={true}
+                label="Due Date"
+                dateFormat="MMMM DD, YYYY"
               />
             </>
           )}
@@ -139,17 +159,7 @@ export default function UpdateBills({
             label="Cancel"
             onClick={() => setConfirmationModal(false)}
           />
-          <Can
-            perform="dues:update"
-            yes={
-              <Button
-                primary
-                label="Submit"
-                onClick={() => setConfirmationModal(show => !show)}
-              />
-            }
-            no={<Button primary disabled label="Submit" />}
-          />
+          {submitButton}
         </div>
       </form>
 

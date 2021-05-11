@@ -39,7 +39,6 @@ const Billing = ({ categoriesBiling, buildingName }) => {
     <>
       {categoriesBiling ? (
         <>
-          {' '}
           <div className={styles.PageHeaderTitle}>
             <h1 className={styles.PageHeader}>
               {buildingName || user?.accounts?.data[0]?.building?.name}
