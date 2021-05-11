@@ -70,7 +70,7 @@ const Billing = ({ categoriesBiling, buildingName }) => {
                         <DateInput
                           date={selectedDate}
                           onDateChange={handleDateChange}
-                          dateFormat="MMMM"
+                          dateFormat="MMMM YYYY"
                           showMonth={true}
                         />
                       </div>

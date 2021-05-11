@@ -29,7 +29,6 @@ export default function UpdateBills({
   })
   const [confirmationModal, setConfirmationModal] = useState(false)
   const handleChangeDate = date => {
-    console.log(date)
     setSelectedDate(new Date(date))
     setData(prevState => ({ ...prevState, dueDate: new Date(date) }))
   }

@@ -26,7 +26,7 @@ import Can from '@app/permissions/can'
 const statusOptions = [
   {
     label: 'All Status',
-    value: null
+    value: 'all'
   },
   {
     label: 'Paid',
@@ -79,8 +79,8 @@ const tableRowData = [
 
 function Sent({ month, year }) {
   const router = useRouter()
-  const { buildingID } = router.query
-  const [limitPage, setLimitPage] = useState(10)
+  const { buildingID, categoryID } = router.query
+  const [limitPage, , setLimitPage] = useState(10)
   const [activePage, setActivePage] = useState(1)
   const [offsetPage, setOffsetPage] = useState(0)
   const [dues, setDues] = useState()
@@ -113,6 +113,7 @@ function Sent({ month, year }) {
           status: status
         },
         dues: {
+          categoryId: categoryID,
           period: {
             month: month,
             year: year
@@ -262,7 +263,6 @@ function Sent({ month, year }) {
 
     if (rows) {
       rows.forEach(row => {
-        console.log(row)
         const dropdownData = [
           {
             label: 'Update Bills',
@@ -327,6 +327,7 @@ function Sent({ month, year }) {
               yes={
                 <Button
                   info
+                  fluid
                   onClick={e => updateDue(row?.dues[0]?._id, 'due')}
                   label="Paid"
                 />
@@ -402,10 +403,12 @@ function Sent({ month, year }) {
   // =============
 
   const onStatusSelect = e => {
-    console.log(e.value)
     const value =
-      e.value === 'settled' ? ['settled'] : ['overdue', 'unpaid', 'due']
+      (e.value === 'settled' && ['settled']) ||
+      (e.value === 'due' && ['due']) ||
+      (e.value === 'all' && ['due', 'overdue', 'settled'])
     setStatus(value)
+    refetch()
   }
 
   // useEffect for useKeyPress

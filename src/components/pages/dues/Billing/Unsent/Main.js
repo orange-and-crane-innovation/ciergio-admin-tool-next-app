@@ -121,7 +121,7 @@ function Unsent({ month, year, buildingName }) {
     month: month,
     year: year
   })
-  const [title, setTitle] = useState(`${buildingName} ${month} - ${year}`)
+  const title = `${buildingName} ${month} - ${year}`
   const [amountPerRow, setAmountPerRow] = useState({})
   const [perDate, setPerDate] = useState([])
   const [companyIdPerRow, setCompanyIdPerRow] = useState({})
@@ -198,7 +198,6 @@ function Unsent({ month, year, buildingName }) {
     )}-${year}`
     setDate(formatTodate)
     setPerDate([])
-    setTitle(`Test ${month} - ${year}`)
     setPeriod({
       month,
       year
@@ -442,7 +441,6 @@ function Unsent({ month, year, buildingName }) {
 
   useEffect(() => {
     if (!loading && !error && data) {
-      console.log({ data })
       const companyIDArray = {}
       const complexIDArray = {}
       const unitIDArray = {}

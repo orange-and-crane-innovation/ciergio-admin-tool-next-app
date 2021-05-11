@@ -554,6 +554,7 @@ const rules = {
         'maintenance:update',
         'maintenance:reopen',
         'maintenance:resolve',
+        'dues:view',
         'dues:create',
         'dues:update',
         'dues:send',
