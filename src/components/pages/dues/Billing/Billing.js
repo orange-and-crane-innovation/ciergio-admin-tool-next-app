@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import styles from './Billing.module.css'
-import DatePicker from '@app/components/forms/form-datepicker/'
 import Unsent from './Unsent'
 import Sent from './Sent'
 import P from 'prop-types'
-import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
 import { BsInfoCircle } from 'react-icons/bs'
+import { DateInput } from '@app/components/datetime'
 
 const Billing = ({ categoriesBiling, buildingName }) => {
   const router = useRouter()
@@ -30,33 +29,33 @@ const Billing = ({ categoriesBiling, buildingName }) => {
     return new Date()
   }
 
-  const handleDateChange = date => {
-    setSelectedDate(date)
-    setMonth(handlingMonthOrYear(date, 'month'))
-    setYear(handlingMonthOrYear(date))
+  const handleDateChange = e => {
+    setSelectedDate(new Date(e))
+    setMonth(handlingMonthOrYear(new Date(e), 'month'))
+    setYear(handlingMonthOrYear(new Date(e)))
   }
 
   return (
     <>
       {categoriesBiling ? (
         <>
-          {' '}
           <div className={styles.PageHeaderTitle}>
             <h1 className={styles.PageHeader}>
               {buildingName || user?.accounts?.data[0]?.building?.name}
             </h1>
           </div>
-          <Tabs defaultTab="1">
+          <Tabs defaultTab="1" className="px-4">
             <Tabs.TabLabels>
               {categoriesBiling &&
                 categoriesBiling.map((category, index) => {
                   return (
-                    <Tabs.TabLabel key={index} id={String(index + 1)}>
-                      <Link
-                        href={`/dues/billing/${buildingID}/${category._id}`}
-                      >
-                        <a>{category.name}</a>
-                      </Link>
+                    <Tabs.TabLabel
+                      key={index}
+                      id={String(index + 1)}
+                      handleClick={() => alert('test')}
+                      route={`/dues/billing/${buildingID}/${category._id}`}
+                    >
+                      {category.name}
                     </Tabs.TabLabel>
                   )
                 })}
@@ -68,12 +67,11 @@ const Billing = ({ categoriesBiling, buildingName }) => {
                   return (
                     <Tabs.TabPanel id={String(index + 1)} key={index}>
                       <div className={styles.BillingPeriodContainer}>
-                        <DatePicker
+                        <DateInput
                           date={selectedDate}
-                          onChange={handleDateChange}
-                          label="Billing Period"
-                          showMonthYearPicker
-                          rightIcon
+                          onDateChange={handleDateChange}
+                          dateFormat="MMMM YYYY"
+                          showMonth={true}
                         />
                       </div>
 

@@ -9,7 +9,8 @@ export default function DuesPage() {
   const buildingId = user?.accounts?.data[0]?.building?._id
   const complexID = user?.accounts?.data[0]?.complex?._id
 
-  if (buildingId === undefined) {
+  if (buildingID) {
+    console.log('test')
     return (
       <Page
         route="/dues"
@@ -18,6 +19,7 @@ export default function DuesPage() {
       />
     )
   } else {
+    console.log('teerrst')
     router.push(`/dues/billing/${buildingId}`)
   }
   return null

@@ -20,6 +20,7 @@ import axios from 'axios'
 import * as Mutation from './Mutation'
 import { FaCheck, FaExclamation } from 'react-icons/fa'
 import { useRouter } from 'next/router'
+import { DateInput } from '@app/components/datetime'
 
 import Can from '@app/permissions/can'
 
@@ -120,7 +121,7 @@ function Unsent({ month, year, buildingName }) {
     month: month,
     year: year
   })
-  const [title, setTitle] = useState(`${buildingName} ${month} - ${year}`)
+  const title = `${buildingName} ${month} - ${year}`
   const [amountPerRow, setAmountPerRow] = useState({})
   const [perDate, setPerDate] = useState([])
   const [companyIdPerRow, setCompanyIdPerRow] = useState({})
@@ -197,7 +198,6 @@ function Unsent({ month, year, buildingName }) {
     )}-${year}`
     setDate(formatTodate)
     setPerDate([])
-    setTitle(`Test ${month} - ${year}`)
     setPeriod({
       month,
       year
@@ -220,7 +220,7 @@ function Unsent({ month, year, buildingName }) {
   }
 
   const handleModalChangeDate = date => {
-    setModalDate(date)
+    setModalDate(new Date(date))
   }
 
   const uploadApi = async (payload, name) => {
@@ -441,7 +441,6 @@ function Unsent({ month, year, buildingName }) {
 
   useEffect(() => {
     if (!loading && !error && data) {
-      console.log({ data })
       const companyIDArray = {}
       const complexIDArray = {}
       const unitIDArray = {}
@@ -624,12 +623,11 @@ function Unsent({ month, year, buildingName }) {
         onOk={handleOkModal}
       >
         <div className="w-full flex flex-col p-4">
-          <DatePicker
-            rightIcon
-            disabledPreviousDate={date && date}
-            date={modalDate}
-            onChange={handleModalChangeDate}
-            containerClassname={'flex w-full justify-center '}
+          <DateInput
+            date={date}
+            onDateChange={handleModalChangeDate}
+            dateFormat="MMMM DD, YYYY"
+            minDate={new Date()}
           />
         </div>
       </Modal>

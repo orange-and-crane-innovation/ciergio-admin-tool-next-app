@@ -24,7 +24,8 @@ function DateInput({
   constraints,
   maxDate,
   minDate,
-  error
+  error,
+  showMonth
 }) {
   let dateValue = toFriendlyDateTime(date)
 
@@ -43,6 +44,25 @@ function DateInput({
       if (minDate) return currentDate.isSameOrAfter(dayjs(minDate))
     }
     return true
+  }
+
+  const displayMonth = (props, month, year, selectedDate) => {
+    // Display the month index in the months view
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ]
+    return <td {...props}>{months[month]}</td>
   }
 
   return (
@@ -82,6 +102,7 @@ function DateInput({
       onChange={onDateChange}
       disabled={disabled}
       closeOnSelect
+      renderMonth={showMonth && displayMonth}
     />
   )
 }
@@ -166,7 +187,8 @@ DateInput.propTypes = {
   maxDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
   minDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
   constraints: P.any,
-  error: P.string
+  error: P.string,
+  showMonth: P.bool
 }
 
 TimeInput.defaultProps = {

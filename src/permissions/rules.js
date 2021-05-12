@@ -554,10 +554,13 @@ const rules = {
         'maintenance:update',
         'maintenance:reopen',
         'maintenance:resolve',
+        'dues:view',
         'dues:create',
         'dues:update',
         'dues:send',
-        'dues:categories:delete'
+        'dues:categories:delete',
+        'dues:view::update',
+        'dues:payment'
       ]
     },
     building_admin: {
@@ -663,6 +666,8 @@ const rules = {
         'dues:create',
         'dues:update',
         'dues:send',
+        'dues:view::update',
+        'dues:payment',
         'guestanddeliveries:view',
         'guestanddeliveries:addschedule',
         'guestanddeliveries:updateschedule',

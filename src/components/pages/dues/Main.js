@@ -28,7 +28,7 @@ function Dues({ complexId, bid }) {
 
   useEffect(() => {
     if ((buildingID || bid) && !_.isEmpty(categories)) {
-      router.push(`/dues/billing/${buildingID}/${categories[0]._id}`)
+      router.push(`/dues/billing/${buildingID || bid}/${categories[0]._id}`)
     }
   }, [categories])
 
@@ -51,7 +51,7 @@ function Dues({ complexId, bid }) {
       const listOfCategory = data?.getAllowedBillCategory?.data.map(
         category => category.categories
       )
-      console.log({ listOfCategory })
+
       setCategories(...listOfCategory)
     }
   }, [loading, data, error])
