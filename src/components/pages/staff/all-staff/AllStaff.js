@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { initializeApollo } from '@app/lib/apollo/client'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useMutation, useQuery } from '@apollo/client'
 import useDebounce from '@app/utils/useDebounce'
@@ -418,9 +419,9 @@ function AllStaff() {
 
               return {
                 avatar: (
-                  <div>
+                  <div className="w-11 h-11 rounded-full overflow-auto">
                     <img
-                      className="w-11 h-11 rounded"
+                      className="h-full w-full object-contain object-center"
                       src={
                         user?.avatar ||
                         `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
@@ -430,7 +431,11 @@ function AllStaff() {
                   </div>
                 ),
                 name: (
-                  <span className="capitalize">{`${user?.firstName} ${user?.lastName}`}</span>
+                  <Link href={`/staff/view/${user?._id}`}>
+                    <a className="mx-2 hover:underline capitalize font-bold">
+                      {`${user?.firstName} ${user?.lastName}`}
+                    </a>
+                  </Link>
                 ),
                 role: <span className="capitalize">{roleType}</span>,
                 assignment: (
@@ -517,7 +522,7 @@ function AllStaff() {
       <Card
         noPadding
         title={
-          <h1 className="font-bold text-base px-8 py-4">{`All Staff (${
+          <h1 className="font-bold text-base">{`All Staff (${
             accounts?.getAccounts?.count || 0
           })`}</h1>
         }
@@ -527,7 +532,6 @@ function AllStaff() {
             default
             icon={<HiOutlinePrinter />}
             onClick={() => {}}
-            className="mr-4 mt-4"
             disabled
           />,
           <Button
@@ -535,7 +539,6 @@ function AllStaff() {
             default
             icon={<FiDownload />}
             onClick={() => {}}
-            className="mr-4 mt-4"
             disabled
           />,
           <Button
@@ -544,7 +547,6 @@ function AllStaff() {
             leftIcon={<FaPlusCircle />}
             label="Invite Staff"
             onClick={() => handleShowModal('create')}
-            className="mr-4 mt-4"
           />
         ]}
         content={

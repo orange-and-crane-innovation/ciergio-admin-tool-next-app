@@ -102,6 +102,11 @@ const FormTextArea = ({
     }
   }
 
+  const editorLabels = {
+    'components.controls.link.linkTitle': 'Website Link Title',
+    'components.controls.link.linkTarget': 'Website Link Target'
+  }
+
   return (
     <div className={styles.FormTextAreaContainer}>
       <div className={containerClasses}>
@@ -112,6 +117,7 @@ const FormTextArea = ({
           placeholder={placeholder}
           spellCheck={true}
           stripPastedStyles={true}
+          localization={{ locale: 'en', translations: editorLabels }}
           toolbar={{
             options: options,
             inline: {

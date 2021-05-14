@@ -137,4 +137,8 @@
   .CreatePostSection {
     min-width: 65px;
   }
+
+  .CreateVideoIcon {
+    @apply text-info-900 mt-1 mr-4;
+  }
 }

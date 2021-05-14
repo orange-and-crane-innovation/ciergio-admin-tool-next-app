@@ -96,7 +96,7 @@ export default function NewMessageModal({
           )}
         </span>
       </div>
-      <div className={styles.newMessageAccountsList}>
+      <div className={`${styles.newMessageAccountsList} scrollableContainer`}>
         {loadingUsers ? <Spinner /> : null}
         {mappedAdmins?.length > 0 ? (
           <h4 className="font-bold text-base px-4 py-2">Admins</h4>

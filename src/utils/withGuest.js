@@ -70,11 +70,13 @@ const withGuest = WrappedComponent => {
           const profile = data ? data.getProfile : {}
           const accountType = profile?.accounts?.data[0]?.accountType
 
-          if (
-            (isSystemPray || isSystemCircle) &&
+          if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
+            router.push('/messages')
+          } else if (
+            isSystemCircle &&
             accountType !== ACCOUNT_TYPES.SUP.value
           ) {
-            router.push('/messages')
+            router.push('/attractions-events')
           } else {
             router.push('/properties')
           }

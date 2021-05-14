@@ -15,7 +15,7 @@
       }
 
       th {
-        @apply px-8 py-4;
+        @apply p-4;
         @apply text-left;
         @apply border-t;
       }
@@ -37,13 +37,9 @@
       }
 
       td {
-        @apply px-8 py-4 max-w-lg;
+        @apply p-4 max-w-lg;
         @apply border-b;
         @apply break-words;
-      }
-
-      td:first-child {
-        @apply px-8 py-4;
       }
     }
   }

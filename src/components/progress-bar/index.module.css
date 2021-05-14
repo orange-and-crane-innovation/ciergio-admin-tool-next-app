@@ -1,0 +1,21 @@
+.progressBarContainer {
+  @apply relative w-full max-w-xs pr-10;
+
+  .progressBarSubContainer {
+    @apply h-4;
+    @apply flex;
+    @apply bg-neutral-100;
+    @apply overflow-hidden rounded-md;
+
+    .progressBarContent {
+      @apply flex flex-col justify-center;
+      @apply bg-secondary-500;
+      @apply shadow-none;
+    }
+  }
+
+  .progressBarText {
+    @apply absolute -top-1 right-0;
+    @apply text-md;
+  }
+}

@@ -73,6 +73,10 @@ const InputSelect = ({
             ...base,
             borderColor: error ? 'red' : base.borderColor,
             boxShadow: 'none'
+          }),
+          option: (base, state) => ({
+            ...base,
+            backgroundColor: state.isSelected ? '#F56222' : base.backgroundColor
           })
         }}
         classNamePrefix={styles.FormSelect}

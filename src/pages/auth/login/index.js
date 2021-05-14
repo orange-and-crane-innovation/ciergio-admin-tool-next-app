@@ -77,11 +77,10 @@ function LoginPage() {
         const profile = dataProfile ? dataProfile.getProfile : {}
         const accountType = profile?.accounts?.data[0]?.accountType
 
-        if (
-          (isSystemPray || isSystemCircle) &&
-          accountType !== ACCOUNT_TYPES.SUP.value
-        ) {
+        if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
           router.replace('/messages')
+        } else if (isSystemCircle && accountType !== ACCOUNT_TYPES.SUP.value) {
+          router.push('/attractions-events')
         } else {
           router.replace('/properties')
         }

@@ -150,7 +150,6 @@ function Directory() {
   }
 
   const handleEditCategory = values => {
-    console.log(values)
     setSelectedCategory('')
     editCategory({
       variables: {
