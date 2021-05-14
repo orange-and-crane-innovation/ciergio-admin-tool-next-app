@@ -61,9 +61,23 @@ body,
  * hide scrollbars
  */
 ::-webkit-scrollbar {
-  display: none;
-  width: 0;
+  @apply hidden w-2 h-2;
+  @apply opacity-90;
 }
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-400;
+  @apply rounded-lg;
+
+  &:hover {
+    @apply bg-neutral-600;
+  }
+}
+
+::-webkit-scrollbar-track {
+  @apply rounded-lg;
+}
+
 .disable-scrollbars {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */
@@ -71,22 +85,7 @@ body,
 
 .scrollableContainer {
   &::-webkit-scrollbar {
-    @apply block w-2 h-2;
-    @apply opacity-90;
-    @apply bg-neutral-200;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    @apply bg-neutral-500;
-    @apply rounded-lg;
-
-    &:hover {
-      @apply bg-neutral-900;
-    }
-  }
-
-  &::-webkit-scrollbar-track {
-    @apply rounded-lg;
+    @apply block;
   }
 }
 
@@ -164,10 +163,15 @@ p {
   &:active {
     @apply bg-primary-900 !important;
   }
+
+  &:disabled {
+    @apply bg-neutral-200 !important;
+    @apply pointer-events-none;
+  }
 }
 
 .rdw-editor-toolbar {
-  @apply mt-2 border-t-0 !important;
+  @apply mt-2 border-t-0 border-l-0 border-r-0 !important;
 }
 
 .rdw-colorpicker-modal {
@@ -176,6 +180,18 @@ p {
 
 .rdw-colorpicker-modal-header {
   display: none !important;
+}
+
+#openLinkInNewWindow {
+  @apply rounded;
+
+  &:checked {
+    @apply bg-primary-900 !important;
+  }
+
+  &:focus {
+    @apply border border-neutral-500;
+  }
 }
 
 .public-DraftStyleDefault-block {
