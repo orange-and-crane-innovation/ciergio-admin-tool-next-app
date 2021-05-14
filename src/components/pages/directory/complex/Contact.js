@@ -290,7 +290,6 @@ function Contact({ id }) {
   const uploadApi = async payload => {
     const response = await axios.post('/', payload)
     if (response?.data) {
-      console.log('res', response.data)
       const files = response.data.map(item => {
         return {
           url: item.location,
