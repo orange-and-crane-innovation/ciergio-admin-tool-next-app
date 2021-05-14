@@ -69,24 +69,22 @@ function Profile() {
 
   return (
     <section className="content-wrap">
-      <div className="w-full flex align-center justify-between mb-10">
-        <div className="flex justify-start items-center">
+      <div className="w-full flex items-center mb-4">
+        <div className="h-32 w-32 overflow-auto shadow-md rounded-full">
           <img
+            className="h-full w-full object-contain object-center"
             src={
               data?.user?.avatar ??
               `https://ui-avatars.com/api/?name=${fullName}`
             }
             alt="profile-avatar"
-            className="border-8 border-white rounded-full mr-4 shadow-sm"
           />
-          <div>
-            <h1 className="font-bold text-3xl leading-10 capitalize mb-0">
-              {fullName ?? ''}
-            </h1>
-            <h2 className="capitalize">
-              {user?.jobTitle || accountType || ''}
-            </h2>
-          </div>
+        </div>
+        <div className="ml-4">
+          <h1 className="font-bold text-3xl leading-10 capitalize">
+            {fullName ?? ''}
+          </h1>
+          <h2 className="capitalize">{user?.jobTitle || accountType || ''}</h2>
         </div>
       </div>
 
