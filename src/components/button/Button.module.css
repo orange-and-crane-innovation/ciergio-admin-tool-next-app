@@ -36,7 +36,7 @@
 
   &.disabled {
     @apply bg-neutral-300 border-neutral-300;
-    @apply text-white;
+    @apply text-neutral-500;
     @apply cursor-not-allowed;
     @apply pointer-events-none;
   }
