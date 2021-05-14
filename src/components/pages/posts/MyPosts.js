@@ -233,11 +233,16 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: '30%'
+      width: isDailyReadingsPage ? '20%' : '30%'
+    },
+    {
+      name: '',
+      width: '25%',
+      hidden: !isDailyReadingsPage
     },
     {
       name: 'Author',
-      width: '30%'
+      width: '25%'
     },
     {
       name: 'Category',
@@ -464,6 +469,9 @@ const PostComponent = () => {
                     </div>
                   )}
                 </div>
+              ),
+              title2: isDailyReadingsPage && (
+                <span className={styles.TextWrapper}>{item?.title}</span>
               ),
               author: (
                 <div className="flex flex-col">
@@ -775,7 +783,11 @@ const PostComponent = () => {
 
   const onApplyDate = () => {
     if (temporaryDate !== '') {
-      setSelectedDate(DATE.toFriendlyISO(DATE.setInitialTime(temporaryDate)))
+      setSelectedDate(
+        DATE.toFriendlyISO(
+          DATE.addTime(DATE.setInitialTime(temporaryDate), 'hours', 8)
+        )
+      )
       setSelectedMonth('')
     }
 
@@ -814,7 +826,7 @@ const PostComponent = () => {
           custom={isDailyReadingsPage}
         />
         {isDailyReadingsPage && (
-          <div className="mx-2 w-full md:w-72">
+          <div className="mx-2 w-full md:w-72 hidden">
             <Datetime
               renderInput={(props, openCalendar) => (
                 <>
@@ -853,7 +865,7 @@ const PostComponent = () => {
         )}
 
         {isDailyReadingsPage && (
-          <div className="w-full md:w-72">
+          <div className="ml-2 w-full md:w-72">
             <Datetime
               renderInput={(props, openCalendar) => (
                 <>
