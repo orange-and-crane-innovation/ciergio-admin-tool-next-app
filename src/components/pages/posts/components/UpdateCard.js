@@ -82,6 +82,13 @@ const Component = ({ type, title, data }) => {
             this post to trash?
           </p>
         </>
+      ) : type === 'remove-video' ? (
+        <>
+          <p>
+            To successfuly update this article with a new video, you need to
+            save this post after uploading the new video.
+          </p>
+        </>
       ) : (
         <>
           <p>

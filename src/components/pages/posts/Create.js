@@ -8,6 +8,7 @@ import { gql, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import { FaSpinner, FaTimes } from 'react-icons/fa'
+import { FiVideo, FiFilm } from 'react-icons/fi'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -19,8 +20,10 @@ import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
 import Button from '@app/components/button'
 import UploaderImage from '@app/components/uploader/image'
+import FileUpload from '@app/components/uploader/simple'
 import Modal from '@app/components/modal'
 import PageLoader from '@app/components/page-loader'
+import ProgressBar from '@app/components/progress-bar'
 
 import { DATE } from '@app/utils'
 import { ACCOUNT_TYPES } from '@app/constants'
@@ -55,7 +58,8 @@ const validationSchema = yup.object().shape({
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
-  category: yup.string().label('Category').nullable().required()
+  category: yup.string().label('Category').nullable().required(),
+  embeddedVideo: yup.array().label('File').nullable()
 })
 
 const validationSchemaDraft = yup.object().shape({
@@ -66,7 +70,8 @@ const validationSchemaDraft = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
   content: yup.mixed().nullable(),
-  category: yup.string().nullable()
+  category: yup.string().nullable(),
+  embeddedVideo: yup.string().nullable()
 })
 
 const validationSchemaDailyReadings = yup.object().shape({
@@ -84,9 +89,18 @@ const validationSchemaDailyReadings = yup.object().shape({
 const CreatePosts = () => {
   const { push, pathname } = useRouter()
   const [loading, setLoading] = useState(false)
+  const [fileLoading, setFileLoading] = useState(false)
+  const [fileFormData, setFileFormData] = useState(false)
+  const [uploadPercentage, setUploadPercentage] = useState(0)
   const [maxImages] = useState(3)
+  const [maxFiles] = useState(1)
+  const [fileMaxSize] = useState(104857600) // 100MB
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
+  const [fileUploadedData, setFileUploadedData] = useState([])
+  const [selectedFiles, setSelectedFiles] = useState([])
+  const [fileUrls, setFileUrls] = useState([])
+  const [imageUploadError, setImageUploadError] = useState()
   const [fileUploadError, setFileUploadError] = useState()
   const [videoUrl, setVideoUrl] = useState()
   const [videoError, setVideoError] = useState()
@@ -118,6 +132,8 @@ const CreatePosts = () => {
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = system === 'pray'
   const isAttractionsEventsPage = pathname === '/attractions-events/create'
   const isQRCodePage = pathname === '/qr-code/create'
   const isDailyReadingsPage = pathname === '/daily-readings/create'
@@ -163,11 +179,13 @@ const CreatePosts = () => {
       content: null,
       video: '',
       category: null,
-      images: null
+      images: null,
+      embeddedVideo: null
     }
   })
 
   register({ name: 'images' })
+  register({ name: 'videos' })
 
   useEffect(() => {
     resetAudienceSpecific()
@@ -277,14 +295,14 @@ const CreatePosts = () => {
               }
             ])
           })
-          setFileUploadError(null)
+          setImageUploadError(null)
         }
       })
       .catch(function (error) {
         const errMsg = 'Failed to upload image. Please try again.'
         console.log(error)
         showToast('danger', errMsg)
-        setFileUploadError(errMsg)
+        setImageUploadError(errMsg)
         setValue('images', null)
       })
       .then(() => {
@@ -302,7 +320,7 @@ const CreatePosts = () => {
         showToast('info', `Maximum of ${maxImages} files only`)
       } else {
         setLoading(true)
-        setFileUploadError(null)
+        setImageUploadError(null)
 
         if (errors?.images?.message) {
           errors.images.message = null
@@ -349,11 +367,108 @@ const CreatePosts = () => {
     setVideoUrl(null)
     setVideoLoading(false)
     setVideoError(null)
+    setSelectedFiles([])
+    setFileUrls([])
+    setFileUploadedData([])
+    setValue('embeddedVideo', null)
   }
 
   const onVideoReady = () => {
     setVideoLoading(false)
     setVideoError(null)
+  }
+
+  const onAddFile = e => {
+    const files = e.target.files ? e.target.files : e.dataTransfer.files
+    const formData = new FormData()
+    const fileList = []
+
+    if (files) {
+      let maxSize = 0
+      for (const file of files) {
+        if (file.size > fileMaxSize) {
+          maxSize++
+        }
+      }
+
+      if (files.length + fileUrls?.length > maxFiles) {
+        showToast('info', `Maximum of ${maxFiles} files only`)
+      } else if (maxSize > 0) {
+        showToast('info', `Maximum size of ${fileMaxSize / 1024 / 1024}mb only`)
+      } else {
+        setFileUploadError(null)
+
+        if (errors?.embeddedVideo?.message) {
+          errors.embeddedVideo.message = null
+        }
+
+        for (const file of files) {
+          const reader = new FileReader()
+          reader.readAsDataURL(file)
+
+          formData.append('videos', file)
+          fileList.push(file)
+        }
+        setValue('embeddedVideo', fileList)
+        setSelectedFiles(fileList)
+        setFileFormData(formData)
+      }
+    }
+  }
+
+  const onRemoveFile = e => {
+    setSelectedFiles([])
+    setFileUrls([])
+    setFileUploadedData([])
+    setValue('embeddedVideo', null)
+    setValue('video', null)
+    setVideoUrl(null)
+  }
+
+  const onUploadFile = () => {
+    setFileLoading(true)
+    setFileUploadError(null)
+
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: progressEvent => {
+        const { loaded, total } = progressEvent
+        const percent = Math.floor((loaded * 100) / total)
+        console.log(`${loaded}kb of ${total}kb | ${percent}%`)
+
+        if (percent < 100) {
+          setUploadPercentage(percent)
+        }
+      }
+    }
+
+    axios
+      .post(process.env.NEXT_PUBLIC_UPLOAD_VIDEO_API, fileFormData, config)
+      .then(function (response) {
+        if (response.data) {
+          response.data.map(item => {
+            setFileUrls([item.location])
+            return setFileUploadedData([
+              {
+                url: item.location
+              }
+            ])
+          })
+          setFileUploadError(null)
+        }
+      })
+      .catch(function (error) {
+        const errMsg = 'Failed to upload file. Please try again.'
+        console.log(error)
+        showToast('danger', errMsg)
+        setFileUploadError(errMsg)
+        setValue('videos', null)
+      })
+      .then(() => {
+        setFileLoading(false)
+      })
   }
 
   const onSubmit = (data, status) => {
@@ -386,6 +501,8 @@ const CreatePosts = () => {
                 url: videoUrl
               }
             ]
+          : fileUploadedData?.length > 0
+          ? fileUploadedData
           : null
       }
 
@@ -607,7 +724,7 @@ const CreatePosts = () => {
                   maxImages={maxImages}
                   images={imageUrls}
                   loading={loading}
-                  error={errors?.images?.message ?? fileUploadError ?? null}
+                  error={errors?.images?.message ?? imageUploadError ?? null}
                   onUploadImage={onUploadImage}
                   onRemoveImage={onRemoveImage}
                 />
@@ -729,61 +846,156 @@ const CreatePosts = () => {
             header={<span className={style.CardHeader}>Embed Video</span>}
             content={
               <div className={style.CreateContentContainer}>
-                <h2 className={style.CreatePostVideoHeader}>
-                  Include a video in your bulletin post by linking a YouTube or
-                  Facebook video.
-                </h2>
-                <div className={style.CreatePostCardContent}>
-                  <div className={style.CreatePostVideoInput}>Video Link</div>
-                  <div className={style.CreatePostVideoInputContent}>
-                    <div className="flex-grow">
-                      <Can
-                        perform="bulletin:embed"
-                        yes={
-                          <Controller
-                            name="video"
-                            control={control}
-                            render={({ name, value, onChange }) => (
-                              <FormInput
-                                name={name}
-                                placeholder="Add Youtube link here"
-                                value={videoUrl}
-                                error={errors?.video?.message ?? null}
-                                onBlur={onCountChar}
-                                onChange={e => {
-                                  onChange(e)
-                                  onVideoChange(e)
-                                }}
+                {fileUrls?.length === 0 && (
+                  <>
+                    <h2 className={style.CreatePostVideoHeader}>
+                      Include a video in your bulletin post by linking a YouTube
+                      video.
+                    </h2>
+                    <div className={style.CreatePostCardContent}>
+                      <div className="flex items-start">
+                        <FiVideo className={style.CreateVideoIcon} />
+                        <div>
+                          <div className={style.CreatePostVideoInput}>
+                            Video Link
+                          </div>
+                          <div className={style.CreatePostVideoInputContent}>
+                            <div className="flex-grow">
+                              <Can
+                                perform="bulletin:embed"
+                                yes={
+                                  <Controller
+                                    name="video"
+                                    control={control}
+                                    render={({ name, value, onChange }) => (
+                                      <FormInput
+                                        name={name}
+                                        placeholder="Add Youtube link here"
+                                        value={videoUrl || ''}
+                                        error={errors?.video?.message ?? null}
+                                        onChange={e => {
+                                          onChange(e)
+                                          onVideoChange(e)
+                                        }}
+                                      />
+                                    )}
+                                  />
+                                }
                               />
-                            )}
-                          />
-                        }
-                      />
-                      {videoError && (
-                        <p className={style.TextError}>{videoError}</p>
+                              {videoError && (
+                                <p className={style.TextError}>{videoError}</p>
+                              )}
+                            </div>
+                            <FaTimes
+                              className={`${style.CreatePostVideoButtonClose} ${
+                                videoUrl ? 'visible' : 'invisible'
+                              }  `}
+                              onClick={onVideoClear}
+                            />
+                            <FaSpinner
+                              className={`${
+                                style.CreatePostVideoLoading
+                              } icon-spin ${
+                                videoLoading ? 'visible' : 'invisible'
+                              }  `}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {isSystemPray && !videoUrl && (
+                        <div className="flex items-start">
+                          <FiFilm className={style.CreateVideoIcon} />
+                          <div>
+                            <div className={style.CreatePostVideoInput}>
+                              <div>or select a video from your computer:</div>
+                              <div className="text-neutral-600 font-normal">
+                                MP4, AVI, MPEG, MOV are accepted.
+                              </div>
+                              <div className="text-neutral-600 font-normal">
+                                Max file size:
+                                <strong> {fileMaxSize / 1024 / 1024}MB</strong>
+                              </div>
+                            </div>
+                            <Can
+                              perform="bulletin:embed"
+                              yes={
+                                <Controller
+                                  name="embeddedVideo"
+                                  control={control}
+                                  render={({ name, value, onChange }) => (
+                                    <FileUpload
+                                      label="Upload File"
+                                      accept=".mp4, .avi, .mpeg, .mov"
+                                      maxSize={fileMaxSize}
+                                      files={selectedFiles}
+                                      onUpload={onAddFile}
+                                      onRemove={onRemoveFile}
+                                    />
+                                  )}
+                                />
+                              }
+                            />
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <FaTimes
-                      className={`${style.CreatePostVideoButtonClose} ${
-                        videoUrl ? 'visible' : 'invisible'
-                      }  `}
-                      onClick={onVideoClear}
+                  </>
+                )}
+
+                {(fileUrls?.length > 0 || videoUrl) && !videoError && (
+                  <>
+                    <div className="flex items-start">
+                      <FiFilm className={style.CreateVideoIcon} />
+                      <div className={style.CreatePostVideoInput}>
+                        Preview Video
+                      </div>
+                    </div>
+
+                    <VideoPlayer
+                      url={videoUrl || fileUrls[0]}
+                      onError={onVideoError}
+                      onReady={onVideoReady}
                     />
-                    <FaSpinner
-                      className={`${style.CreatePostVideoLoading} icon-spin ${
-                        videoLoading ? 'visible' : 'invisible'
-                      }  `}
+
+                    <Button
+                      className="mt-4"
+                      default
+                      type="button"
+                      label="Replace Video"
+                      onClick={onRemoveFile}
                     />
-                  </div>
-                </div>
-                {videoUrl && !videoError && (
-                  <VideoPlayer
-                    url={videoUrl}
-                    onError={onVideoError}
-                    onReady={onVideoReady}
-                  />
+                  </>
                 )}
               </div>
+            }
+            footer={
+              selectedFiles?.length > 0 &&
+              fileUrls?.length === 0 && (
+                <div className="flex items-center">
+                  <Button
+                    className="mr-4 mb-0"
+                    primary
+                    type="button"
+                    label={fileLoading ? 'Uploading Video...' : 'Upload Video'}
+                    onClick={onUploadFile}
+                    disabled={fileLoading}
+                    style={{ marginBottom: 0 }}
+                  />
+                  {fileLoading && (
+                    <>
+                      <FaSpinner className="mx-2 icon-spin" />
+                      {/* hidden for future use */}
+                      {/* <ProgressBar value={uploadPercentage} />  */}
+                    </>
+                  )}
+                  {fileUploadError && (
+                    <div className="my-4 text-danger-500 text-md font-bold">
+                      {fileUploadError}
+                    </div>
+                  )}
+                </div>
+              )
             }
           />
 
@@ -936,6 +1148,7 @@ const CreatePosts = () => {
                   onClick={handleSubmit(e => {
                     onSubmit(e, 'draft')
                   })}
+                  disabled={loading || fileLoading}
                 />
               }
               no={
@@ -959,6 +1172,7 @@ const CreatePosts = () => {
                 onClick={handleSubmit(e => {
                   handleShowModal('preview')
                 })}
+                disabled={loading || fileLoading}
               />
 
               <Button
@@ -975,6 +1189,7 @@ const CreatePosts = () => {
                 onClick={handleSubmit(e => {
                   onSubmit(e, 'active')
                 })}
+                disabled={loading || fileLoading}
               />
             </span>
           </div>
