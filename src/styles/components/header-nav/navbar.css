@@ -68,7 +68,7 @@
 
 [data-navbar='light'] {
   .navbar {
-    @apply text-gray-900 shadow-lg z-10;
+    @apply text-gray-900 shadow-md z-10;
     @apply bg-white border-gray-100;
   }
 }
