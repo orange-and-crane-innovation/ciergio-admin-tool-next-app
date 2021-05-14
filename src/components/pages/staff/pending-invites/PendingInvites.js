@@ -68,6 +68,7 @@ function PendingInvites() {
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedAssignment, setSelectedAssignment] = useState(null)
   const [selectedData, setSelectedData] = useState([])
+  const [selectedModule, setSelectedModule] = useState(null)
   const [selectedInvite, setSelectedInvite] = useState(null)
   const [isBulkDisabled, setIsBulkDisabled] = useState(false)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(false)
@@ -114,7 +115,7 @@ function PendingInvites() {
           'success',
           `You have successfully removed ${
             selectedInvite?.email
-          } as ${parseAccountType(selectedInvite?.accountType)}`
+          } as ${getAccountTypeName(selectedInvite?.accountType)}`
         )
         handleClearModal('cancel')
         refetchInvites()
@@ -276,6 +277,7 @@ function PendingInvites() {
                     setSelectedInvite(invite)
                     setSelectedData([invite?._id])
                     setShowResendInviteModal(old => !old)
+                    setSelectedModule('staff')
                   }
                 },
                 {
@@ -343,7 +345,10 @@ function PendingInvites() {
           disabled={isBulkDisabled}
           isButtonDisabled={isBulkButtonDisabled}
           onBulkChange={onBulkChange}
-          onBulkSubmit={() => setShowResendInviteModal(old => !old)}
+          onBulkSubmit={() => {
+            setShowResendInviteModal(old => !old)
+            setSelectedModule(null)
+          }}
           onBulkClear={onClearBulk}
           selected={selectedBulk}
         />
@@ -413,7 +418,8 @@ function PendingInvites() {
         open={showResendInviteModal}
         data={selectedInvite}
         loading={resendingInvite}
-        module="staff"
+        module={selectedModule}
+        bulkInvitesLength={selectedData?.length}
       />
       <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}
