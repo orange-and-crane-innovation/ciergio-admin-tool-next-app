@@ -1,5 +1,18 @@
 import gql from 'graphql-tag'
 
+export const GET_COMPANIES = gql`
+  query getCompanies($where: GetCompaniesParams) {
+    getCompanies(where: $where, limit: 50, skip: 0) {
+      data {
+        _id
+        name
+        __typename
+      }
+      __typename
+    }
+  }
+`
+
 export const GET_COMPLEXES = gql`
   query getComplexes($where: GetComplexesParams) {
     getComplexes(where: $where, limit: 50, skip: 0) {

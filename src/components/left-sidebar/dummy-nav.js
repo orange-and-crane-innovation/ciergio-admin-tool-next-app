@@ -63,7 +63,7 @@ const navigation = [
         title: 'My Residents',
         items: [
           {
-            url: '/residents/all-residents/complexes',
+            url: '/residents/all-residents/company',
             title: 'All Residents',
             items: []
           },
