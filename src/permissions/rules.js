@@ -289,7 +289,6 @@ const rules = {
         '/maintenance/complexes',
         '/maintenance/buildings',
         '/staff',
-        '/messages',
         '/residents',
         '/posts',
         '/forms',
@@ -320,8 +319,6 @@ const rules = {
         '/guest-and-deliveries'
       ],
       actions: [
-        'messages:view',
-        'messages:create',
         'staff:view',
         'staff:invite',
         'staff:update',
