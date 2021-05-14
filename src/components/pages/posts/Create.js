@@ -132,8 +132,6 @@ const CreatePosts = () => {
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
-  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
-  const isSystemPray = system === 'pray'
   const isAttractionsEventsPage = pathname === '/attractions-events/create'
   const isQRCodePage = pathname === '/qr-code/create'
   const isDailyReadingsPage = pathname === '/daily-readings/create'
@@ -903,7 +901,7 @@ const CreatePosts = () => {
                         </div>
                       </div>
 
-                      {isSystemPray && !videoUrl && (
+                      {!videoUrl && (
                         <div className="flex items-start">
                           <FiFilm className={style.CreateVideoIcon} />
                           <div>
