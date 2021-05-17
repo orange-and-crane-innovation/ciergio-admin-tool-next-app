@@ -317,6 +317,10 @@ function Donations() {
     })
   }
 
+  const onDateClear = () => {
+    setAppliedDate(null)
+  }
+
   const errorHandler = data => {
     const errors = JSON.parse(JSON.stringify(data))
 
@@ -390,10 +394,13 @@ function Donations() {
                 </div>
 
                 <DateRange
+                  placeholder="Filter date"
                   isShown={selectedDate === 'selected'}
                   onDateChange={onDateRangeChange}
                   onDateApply={onDateApply}
+                  onDateClear={onDateClear}
                   hasApplyButton
+                  hasClear
                 />
               </div>
 
