@@ -6,6 +6,8 @@ import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import { GET_UNITS } from '../queries'
 
+import { sortBy } from 'lodash'
+
 const relationshipOptions = [
   {
     label: 'Immediate Family',
@@ -45,10 +47,14 @@ function AddResidentModalContent({ form, buildingId }) {
 
   const unitOptions = useMemo(() => {
     if (units?.getUnits?.count > 0) {
-      return units.getUnits.data.map(unit => ({
+      const unitsTemp = units.getUnits.data.map(unit => ({
         label: unit.name,
         value: unit._id
       }))
+
+      return sortBy(unitsTemp, function (val) {
+        return val.label
+      })
     }
     return []
   }, [units?.getUnits])
