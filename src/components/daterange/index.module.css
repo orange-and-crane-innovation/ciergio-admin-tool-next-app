@@ -1,48 +1,57 @@
-.DateRangeContainer {
-  @apply relative w-full mx-4 md:w-72;
+.DateRangeMainContainer {
+  @apply flex items-center;
 
-  .Icon {
-    @apply absolute top-3 right-4;
-    @apply text-lg;
-  }
+  .DateRangeContainer {
+    @apply relative w-full mx-4 md:w-72;
 
-  .Content {
-    @apply absolute top-14 left-0;
-    @apply bg-neutral-200 border border-neutral-300;
-    @apply shadow-md opacity-0;
-    @apply z-10;
-    -webkit-transition: all 0.2s ease-out;
-    transition: all 0.2s ease-out;
-    transform: rotateX(90deg);
-    transform-origin: top;
-
-    &:before {
-      @apply inline-block absolute right-auto left-3;
-      border-bottom: 11px solid rgba(0, 0, 0, 0.1);
-      border-left: 11px solid transparent;
-      border-right: 11px solid transparent;
-      content: '';
-      top: -11px;
+    .Icon {
+      @apply absolute top-3 right-4;
+      @apply text-lg;
     }
 
-    &:after {
-      @apply inline-block absolute right-auto left-3;
-      border-bottom: 11px solid #ffffff;
-      border-left: 11px solid transparent;
-      border-right: 11px solid transparent;
-      content: '';
-      top: -10px;
+    .CloseIcon {
+      @apply absolute top-3.5 right-11;
+      @apply cursor-pointer;
     }
 
-    &.Open {
-      @apply opacity-100;
-      transform: rotateX(0deg);
+    .Content {
+      @apply absolute top-14 left-0;
+      @apply bg-neutral-200 border border-neutral-300;
+      @apply shadow-md opacity-0;
+      @apply z-10;
+      -webkit-transition: all 0.2s ease-out;
+      transition: all 0.2s ease-out;
+      transform: rotateX(90deg);
       transform-origin: top;
-    }
 
-    > .Button {
-      @apply mt-2 -mb-2 px-4 w-full;
-      @apply flex items-center justify-end;
+      &:before {
+        @apply inline-block absolute right-auto left-3;
+        border-bottom: 11px solid rgba(0, 0, 0, 0.1);
+        border-left: 11px solid transparent;
+        border-right: 11px solid transparent;
+        content: '';
+        top: -12px;
+      }
+
+      &:after {
+        @apply inline-block absolute right-auto left-3;
+        border-bottom: 11px solid #ffffff;
+        border-left: 11px solid transparent;
+        border-right: 11px solid transparent;
+        content: '';
+        top: -11px;
+      }
+
+      &.Open {
+        @apply opacity-100;
+        transform: rotateX(0deg);
+        transform-origin: top;
+      }
+
+      > .Button {
+        @apply mt-2 -mb-2 px-4 w-full;
+        @apply flex items-center justify-end;
+      }
     }
   }
 }

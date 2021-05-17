@@ -239,6 +239,7 @@ const CreatePosts = () => {
   const [imageUploadError, setImageUploadError] = useState()
   const [fileUploadError, setFileUploadError] = useState()
   const [videoUrl, setVideoUrl] = useState()
+  const [videoLocalUrl, setVideoLocalUrl] = useState()
   const [videoError, setVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
   const [inputMaxLength] = useState(120)
@@ -268,6 +269,7 @@ const CreatePosts = () => {
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = pathname === '/attractions-events/edit/[id]'
   const isQRCodePage = pathname === '/qr-code/edit/[id]'
   const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
@@ -714,6 +716,9 @@ const CreatePosts = () => {
 
         for (const file of files) {
           const reader = new FileReader()
+          reader.onloadend = () => {
+            setVideoLocalUrl(reader.result)
+          }
           reader.readAsDataURL(file)
 
           formData.append('videos', file)
@@ -742,7 +747,9 @@ const CreatePosts = () => {
 
     const config = {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        'company-id':
+          accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyID
       },
       onUploadProgress: progressEvent => {
         const { loaded, total } = progressEvent
@@ -768,6 +775,7 @@ const CreatePosts = () => {
             ])
           })
           setFileUploadError(null)
+          setVideoLocalUrl(null)
         }
       })
       .catch(function (error) {
@@ -1402,6 +1410,14 @@ const CreatePosts = () => {
                       )}
                     </div>
                   </>
+                )}
+
+                {videoLocalUrl && (
+                  <VideoPlayer
+                    url={videoLocalUrl}
+                    onError={onVideoError}
+                    onReady={onVideoReady}
+                  />
                 )}
 
                 {(fileUrls?.length > 0 || videoUrl) && !videoError && (
