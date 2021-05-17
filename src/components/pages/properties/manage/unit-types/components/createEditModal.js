@@ -31,6 +31,7 @@ const Component = ({
   useEffect(() => {
     if (data) {
       register({ name: 'id' })
+      register({ name: 'name' })
       setValue('id', data._id)
       setValue('name', data.name)
       setUnitName(data.name)
