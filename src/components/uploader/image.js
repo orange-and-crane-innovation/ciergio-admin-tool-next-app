@@ -32,6 +32,11 @@ const UploaderImage = ({
     ? `${styles.imageUploaderContainer} ${styles.error}`
     : styles.imageUploaderContainer
 
+  const handleUpload = e => {
+    onUploadImage(e)
+    e.target.value = ''
+  }
+
   const handleImageChange = () => {
     document.getElementById('image').click()
   }
@@ -110,7 +115,7 @@ const UploaderImage = ({
                 name={name}
                 value={value}
                 multiple={multiple}
-                onChange={onUploadImage}
+                onChange={handleUpload}
                 accept="image/jpg, image/jpeg, image/png"
               />
               <div
@@ -143,7 +148,7 @@ const UploaderImage = ({
               value={value}
               defaultValue={defaultValue}
               multiple={multiple}
-              onChange={onUploadImage}
+              onChange={handleUpload}
               accept="image/jpg, image/jpeg, image/png"
             />
             <div

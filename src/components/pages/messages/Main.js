@@ -9,6 +9,7 @@ import FormSelect from '@app/components/forms/form-select'
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import ConversationBox from './components/ConversationBox'
 import MessageBox from './components/MessageBox'
@@ -43,6 +44,7 @@ const convoOptions = [
 export default function Main() {
   const endMessage = useRef()
   const profile = JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id
   const [showPendingMessages, setShowPendingMessages] = useState(false)
@@ -417,11 +419,15 @@ export default function Main() {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post('/', payload, {
+    const config = {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        'company-id':
+          accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyId
       }
-    })
+    }
+
+    const response = await axios.post('/', payload, config)
 
     if (response.data) {
       const data = response.data.map(item => {

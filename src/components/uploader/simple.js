@@ -22,20 +22,25 @@ const Uploader = ({
     ? `${styles.uploaderContainer} ${styles.error}`
     : styles.uploaderContainer
 
+  const handleUpload = e => {
+    onUpload(e)
+    e.target.value = ''
+  }
+
   const handleChange = () => {
     document.getElementById('file').click()
   }
 
   return (
     <>
-      <div className="flex items-center">
+      <div className={styles.uploaderMainContainer}>
         <div className={containerClass}>
           <input
             className={styles.uploaderControl}
             type="file"
             id="file"
             name="file"
-            onChange={onUpload}
+            onChange={handleUpload}
             accept={accept}
             multiple={multiple}
           />
@@ -43,7 +48,7 @@ const Uploader = ({
             <span className={styles.uploaderFileContent}>Choose File</span>
           </div>
         </div>
-        <div>
+        <div className="flex items-center">
           {loading ? (
             <FaSpinner className="icon-spin" />
           ) : (
@@ -51,13 +56,13 @@ const Uploader = ({
               return file.name
             })
           )}
+          <FaTimes
+            className={`${
+              files?.length > 0 ? 'ml-2 visible cursor-pointer' : 'invisible'
+            }  `}
+            onClick={onRemove}
+          />
         </div>
-        <FaTimes
-          className={`${
-            files?.length > 0 ? 'ml-2 visible cursor-pointer' : 'invisible'
-          }  `}
-          onClick={onRemove}
-        />
       </div>
       <div className={styles.uploaderError}>{error}</div>
     </>

@@ -377,9 +377,10 @@ function Donations() {
                 </span>
               </span>
             </div>
-            <div className="flex items-center justify-between flex-col md:flex-row">
-              <div className="flex items-center justify-start w-full flex-col md:w-2/5  md:flex-row">
-                <div className="w-full md:w-40">
+
+            <div className="flex items-center justify-between flex-col lg:flex-row">
+              <div className="flex items-center justify-start w-full flex-col md:flex-row">
+                <div className="w-full md:w-64 md:mr-2">
                   <FormSelect
                     id="date"
                     name="date"
@@ -393,18 +394,20 @@ function Donations() {
                   />
                 </div>
 
-                <DateRange
-                  placeholder="Filter date"
-                  isShown={selectedDate === 'selected'}
-                  onDateChange={onDateRangeChange}
-                  onDateApply={onDateApply}
-                  onDateClear={onDateClear}
-                  hasApplyButton
-                  hasClear
-                />
+                <div className="w-full">
+                  <DateRange
+                    placeholder="Filter date"
+                    isShown={selectedDate === 'selected'}
+                    onDateChange={onDateRangeChange}
+                    onDateApply={onDateApply}
+                    onDateClear={onDateClear}
+                    hasApplyButton
+                    hasClear
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center justify-end w-full flex-col md:w-1/2 md:flex-row">
+              <div className="flex items-center justify-end w-full flex-col md:flex-row">
                 {accountType === ACCOUNT_TYPES.SUP.value && (
                   <SelectCompany
                     name="companyId"
@@ -417,7 +420,7 @@ function Donations() {
                   />
                 )}
 
-                <span className="mx-4 w-full md:max-w-xs">
+                <span className="mx-2 w-full md:max-w-xs">
                   <FormSelect
                     id="paymentType"
                     name="paymentType"

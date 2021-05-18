@@ -11,6 +11,7 @@ import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
 
 import showToast from '@app/utils/toast'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 const validationSchema = yup.object().shape({
   logo: yup.array().label('Image').nullable(),
@@ -30,6 +31,9 @@ const Component = ({
   const [loadingUploader, setLoadingUploader] = useState(false)
   const [fileUploadError, setFileUploadError] = useState()
   const [imageUrls, setImageUrls] = useState([])
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
 
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
@@ -57,12 +61,16 @@ const Component = ({
   }, [])
 
   const uploadApi = async payload => {
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'company-id':
+          accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyID
+      }
+    }
+
     await axios
-      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, config)
       .then(function (response) {
         if (response.data) {
           const imageData = response.data.map(item => {

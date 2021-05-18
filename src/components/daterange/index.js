@@ -26,27 +26,41 @@ const DateRangeInput = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isEmpty, setIsEmpty] = useState(true)
-  const [selectedDateRange, setSelectedDateRange] = useState([
+  const [dateRange, setDateRange] = useState([
     {
       startDate: new Date(),
       endDate: new Date(),
       key: 'selection'
     }
   ])
+  const [selectedDateRange, setSelectedDateRange] = useState()
 
   const handleCalendar = () => {
     setIsOpen(!isOpen)
   }
 
   const handleChange = e => {
-    setSelectedDateRange([e.selection])
-    onDateChange([e.selection])
+    setDateRange([e.selection])
     setIsEmpty(false)
   }
 
   const handleClear = e => {
     onDateClear()
     setIsEmpty(true)
+    setSelectedDateRange(null)
+    setDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: 'selection'
+      }
+    ])
+  }
+
+  const handleApply = () => {
+    setSelectedDateRange(dateRange)
+    onDateChange(dateRange)
+    handleCalendar()
   }
 
   return (
@@ -65,7 +79,7 @@ const DateRangeInput = ({
             inputClassName="pointer-events-none"
             placeholder={placeholder}
             value={
-              !isEmpty
+              !isEmpty && selectedDateRange
                 ? `${DATE.toFriendlyShortDate(
                     selectedDateRange[0].startDate
                   )} - ${DATE.toFriendlyShortDate(
@@ -79,17 +93,26 @@ const DateRangeInput = ({
           <i className={`ciergio-calendar ${styles.Icon}`} />
         </div>
 
-        {hasClear && !isEmpty && selectedDateRange[0]?.startDate && (
+        {hasClear && !isEmpty && dateRange[0]?.startDate && (
           <FaTimes className={styles.CloseIcon} onClick={handleClear} />
         )}
 
+        <div
+          className={`${styles.Overlay} ${isOpen && styles.Open}`}
+          onClick={handleCalendar}
+        />
         <div className={`${styles.Content} ${isOpen && styles.Open}`}>
+          <div className={styles.InputText}>
+            <span>Start Date</span>
+            <span>End Date</span>
+          </div>
+
           {hasSideOptions ? (
             <DateRangePicker
               editableDateInputs={true}
               onChange={handleChange}
               moveRangeOnFirstSelection={false}
-              ranges={selectedDateRange}
+              ranges={dateRange}
               showSelectionPreview={true}
               color="#F56222"
               rangeColors={['#F56222']}
@@ -99,26 +122,32 @@ const DateRangeInput = ({
               editableDateInputs={true}
               onChange={handleChange}
               moveRangeOnFirstSelection={false}
-              ranges={selectedDateRange}
+              ranges={dateRange}
               showSelectionPreview={true}
               color="#F56222"
               rangeColors={['#F56222']}
             />
           )}
-
           <div className={styles.Button}>
             <Button
-              label="Close"
+              label="Cancel"
               type="button"
-              primary
+              default
               onClick={handleCalendar}
             />
+
+            <Button label="Apply" type="button" primary onClick={handleApply} />
           </div>
         </div>
       </div>
       {hasApplyButton && (
         <div className={`${isShown ? 'block' : 'hidden'}`}>
-          <Button label="Apply" type="button" onClick={onDateApply} />
+          <Button
+            label="Apply"
+            type="button"
+            onClick={onDateApply}
+            disabled={!selectedDateRange}
+          />
         </div>
       )}
     </div>

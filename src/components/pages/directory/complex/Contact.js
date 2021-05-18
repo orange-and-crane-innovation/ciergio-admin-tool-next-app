@@ -8,17 +8,20 @@ import * as yup from 'yup'
 import omit from 'lodash/omit'
 import isEmpty from 'lodash/isEmpty'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import axios from '@app/utils/axios'
+import { FaPlusCircle } from 'react-icons/fa'
+import { AiOutlineEllipsis } from 'react-icons/ai'
+
 import Button from '@app/components/button'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
+
 import showToast from '@app/utils/toast'
 import errorHandler from '@app/utils/errorHandler'
+import { ACCOUNT_TYPES } from '@app/constants'
 
-import axios from '@app/utils/axios'
-import { FaPlusCircle } from 'react-icons/fa'
-import { AiOutlineEllipsis } from 'react-icons/ai'
 import ContactModal from './ContactModal'
 import {
   GET_COMPLEX,
@@ -89,6 +92,7 @@ function Contact({ id }) {
   const router = useRouter()
   const profile = JSON.parse(window.localStorage.getItem('profile'))
   const profileData = profile?.accounts?.data[0]
+  const accountType = profile?.accounts?.data[0]?.accountType
   const companyId = router?.query?.companyId ?? profileData?.company?._id
   const complexId = id ?? profileData?.complex?._id
   const [showContactModal, setShowContactModal] = useState(false)
@@ -288,7 +292,15 @@ function Contact({ id }) {
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post('/', payload)
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'company-id':
+          accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyId
+      }
+    }
+
+    const response = await axios.post('/', payload, config)
     if (response?.data) {
       const files = response.data.map(item => {
         return {
