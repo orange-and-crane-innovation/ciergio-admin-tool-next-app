@@ -8,7 +8,6 @@ function CancelInviteModal({ open, onCancel, onOk, loading }) {
       visible={open}
       footer={null}
       onClose={onCancel}
-      c
       modalProps={{
         showCloseButton: false
       }}

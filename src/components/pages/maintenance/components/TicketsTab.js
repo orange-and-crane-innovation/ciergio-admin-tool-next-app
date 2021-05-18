@@ -28,7 +28,11 @@ function TicketsTab({
   const [offset, setOffset] = useState(0)
   const [showAddStaffModal, setShowAddStaffModal] = useState(false)
 
-  const { data: issues, loading, refetch } = useQuery(GET_ISSUES_BY_STATUS, {
+  const {
+    data: issues,
+    loading,
+    refetch
+  } = useQuery(GET_ISSUES_BY_STATUS, {
     variables: {
       where: {
         status: [type],
@@ -57,6 +61,7 @@ function TicketsTab({
       data:
         issues?.getIssues?.count > 0
           ? issues.getIssues.issue.map(issue => {
+              console.log({ issue })
               const reporter = issue?.reporter
               const dropdownData = [
                 {
@@ -68,7 +73,8 @@ function TicketsTab({
                 {
                   label: 'Message Resident',
                   icon: <span className="ciergio-mail" />,
-                  function: () => router.push(`/messages`)
+                  function: () =>
+                    router.push(`/messages/${issue.reporter.user._id}`)
                 },
                 {
                   label: 'Assign Ticket',
