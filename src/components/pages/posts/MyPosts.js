@@ -769,6 +769,7 @@ const PostComponent = () => {
   }
 
   const onDateApply = () => {
+    resetPages()
     setSelectedDate([
       DATE.toFriendlyISO(
         DATE.addTime(
@@ -789,32 +790,34 @@ const PostComponent = () => {
   return (
     <>
       <div className={styles.MainControl}>
-        <SelectBulk
-          placeholder="Bulk Action"
-          options={bulkOptions}
-          disabled={isBulkDisabled}
-          isButtonDisabled={isBulkButtonDisabled}
-          isButtonHidden={isBulkButtonHidden}
-          onBulkChange={onBulkChange}
-          onBulkSubmit={() => handleShowModal('bulk')}
-          onBulkClear={onClearBulk}
-          selected={selectedBulk}
-          custom={isDailyReadingsPage}
-        />
+        <div className={styles.BulkControl}>
+          <SelectBulk
+            placeholder="Bulk Action"
+            options={bulkOptions}
+            disabled={isBulkDisabled}
+            isButtonDisabled={isBulkButtonDisabled}
+            isButtonHidden={isBulkButtonHidden}
+            onBulkChange={onBulkChange}
+            onBulkSubmit={() => handleShowModal('bulk')}
+            onBulkClear={onClearBulk}
+            selected={selectedBulk}
+            custom={isDailyReadingsPage}
+          />
 
-        {isDailyReadingsPage && (
-          <div className="w-full md:ml-2">
-            <DateRange
-              placeholder="Filter date"
-              onDateChange={onDateRangeChange}
-              onDateApply={onDateApply}
-              onDateClear={onDateClear}
-              hasApplyButton
-              hasSideOptions={false}
-              hasClear
-            />
-          </div>
-        )}
+          {isDailyReadingsPage && (
+            <div className="w-full md:mx-2">
+              <DateRange
+                placeholder="Filter date"
+                onDateChange={onDateRangeChange}
+                onDateApply={onDateApply}
+                onDateClear={onDateClear}
+                hasApplyButton
+                hasSideOptions={false}
+                hasClear
+              />
+            </div>
+          )}
+        </div>
 
         <div className={styles.CategoryControl}>
           <SelectStatus

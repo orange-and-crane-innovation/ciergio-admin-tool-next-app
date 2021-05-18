@@ -105,6 +105,7 @@ const CreatePosts = () => {
   const [videoUrl, setVideoUrl] = useState()
   const [videoLocalUrl, setVideoLocalUrl] = useState()
   const [videoError, setVideoError] = useState()
+  const [localVideoError, setLocalVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
   const [inputMaxLength] = useState(120)
   const [textCount, setTextCount] = useState(0)
@@ -277,12 +278,16 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async payload => {
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'company-id':
+          accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyID
+      }
+    }
+
     await axios
-      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, config)
       .then(function (response) {
         if (response.data) {
           response.data.map(item => {
@@ -363,8 +368,14 @@ const CreatePosts = () => {
     setVideoError('Invalid video link')
   }
 
+  const onVideoReady = () => {
+    setVideoLoading(false)
+    setVideoError(null)
+  }
+
   const onVideoClear = () => {
     setVideoUrl(null)
+    setVideoLocalUrl(null)
     setVideoLoading(false)
     setVideoError(null)
     setSelectedFiles([])
@@ -373,9 +384,14 @@ const CreatePosts = () => {
     setValue('embeddedVideo', null)
   }
 
-  const onVideoReady = () => {
+  const onLocalVideoError = () => {
     setVideoLoading(false)
-    setVideoError(null)
+    setLocalVideoError('Invalid video / format not supported')
+  }
+
+  const onLocalVideoReady = () => {
+    setVideoLoading(false)
+    setLocalVideoError(null)
   }
 
   const onAddFile = e => {
@@ -426,6 +442,8 @@ const CreatePosts = () => {
     setValue('embeddedVideo', null)
     setValue('video', null)
     setVideoUrl(null)
+    setVideoLocalUrl(null)
+    setLocalVideoError(null)
   }
 
   const onUploadFile = () => {
@@ -859,7 +877,7 @@ const CreatePosts = () => {
                       Include a video in your bulletin post by linking a YouTube
                       video.
                     </h2>
-                    <div className={style.CreatePostCardContent}>
+                    <div className={style.CreatePostVideoContent}>
                       <div className="flex items-start">
                         <FiVideo className={style.CreateVideoIcon} />
                         <div>
@@ -917,7 +935,7 @@ const CreatePosts = () => {
                             <div className={style.CreatePostVideoInput}>
                               <div>or select a video from your computer:</div>
                               <div className="text-neutral-600 font-normal">
-                                MP4, AVI, MPEG, MOV are accepted.
+                                MP4 are accepted.
                               </div>
                               <div className="text-neutral-600 font-normal">
                                 Max file size:
@@ -933,9 +951,10 @@ const CreatePosts = () => {
                                   render={({ name, value, onChange }) => (
                                     <FileUpload
                                       label="Upload File"
-                                      accept=".mp4, .avi, .mpeg, .mov"
+                                      accept=".mp4"
                                       maxSize={fileMaxSize}
                                       files={selectedFiles}
+                                      error={localVideoError}
                                       onUpload={onAddFile}
                                       onRemove={onRemoveFile}
                                     />
@@ -950,43 +969,46 @@ const CreatePosts = () => {
                   </>
                 )}
 
-                {videoLocalUrl && (
-                  <VideoPlayer
-                    url={videoLocalUrl}
-                    onError={onVideoError}
-                    onReady={onVideoReady}
-                  />
-                )}
-
-                {(fileUrls?.length > 0 || videoUrl) && !videoError && (
-                  <>
-                    <div className="flex items-start">
-                      <FiFilm className={style.CreateVideoIcon} />
-                      <div className={style.CreatePostVideoInput}>
-                        Preview Video
-                      </div>
-                    </div>
-
+                <div className="w-full md:max-w-lg">
+                  {videoLocalUrl && !localVideoError && (
                     <VideoPlayer
-                      url={videoUrl || fileUrls[0]}
-                      onError={onVideoError}
-                      onReady={onVideoReady}
+                      url={videoLocalUrl}
+                      onError={onLocalVideoError}
+                      onReady={onLocalVideoReady}
                     />
+                  )}
 
-                    <Button
-                      className="mt-4"
-                      default
-                      type="button"
-                      label="Replace Video"
-                      onClick={onRemoveFile}
-                    />
-                  </>
-                )}
+                  {(fileUrls?.length > 0 || videoUrl) && !videoError && (
+                    <>
+                      <div className="flex items-start">
+                        <FiFilm className={style.CreateVideoIcon} />
+                        <div className={style.CreatePostVideoInput}>
+                          Preview Video
+                        </div>
+                      </div>
+
+                      <VideoPlayer
+                        url={videoUrl || fileUrls[0]}
+                        onError={onVideoError}
+                        onReady={onVideoReady}
+                      />
+
+                      <Button
+                        className="mt-4"
+                        default
+                        type="button"
+                        label="Replace Video"
+                        onClick={onRemoveFile}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
             }
             footer={
               selectedFiles?.length > 0 &&
-              fileUrls?.length === 0 && (
+              fileUrls?.length === 0 &&
+              !localVideoError && (
                 <div className="flex items-center">
                   <Button
                     className="mr-4 mb-0"
