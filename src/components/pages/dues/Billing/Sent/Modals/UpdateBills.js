@@ -7,6 +7,7 @@ import Button from '@app/components/button'
 import axios from 'axios'
 import { DateInput } from '@app/components/datetime'
 import Can from '@app/permissions/can'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 export default function UpdateBills({
   amount,
@@ -17,9 +18,11 @@ export default function UpdateBills({
   id
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date(dueDate))
-  const user = JSON.parse(localStorage.getItem('profile'))
-  const companyId = user?.accounts?.data[0]?.company?._id
-  console.log({ companyId })
+  const router = useRouter()
+  const profile = JSON.parse(window.localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyId = router?.query?.companyId ?? profileData?.company?._id
+
   const [data, setData] = useState({
     attachment: {
       fileUrl,
@@ -52,7 +55,9 @@ export default function UpdateBills({
       payload,
       {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'company-id':
+            accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyID
         }
       }
     )

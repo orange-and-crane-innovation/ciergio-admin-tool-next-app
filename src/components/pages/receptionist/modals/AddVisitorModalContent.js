@@ -11,8 +11,15 @@ import UploaderImage from '@app/components/uploader/image'
 import { GET_UNITS } from '../query'
 import { useQuery } from '@apollo/client'
 import axios from 'axios'
+import { ACCOUNT_TYPES } from '@app/constants'
+import { useRouter } from 'next/router'
 
 function AddVisitorModalContent({ form, buildingId, getImage, type }) {
+  const router = useRouter()
+  const profile = JSON.parse(window.localStorage.getItem('profile'))
+  const profileData = profile?.accounts?.data[0]
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyId = router?.query?.companyId ?? profileData?.company?._id
   const [loading, setLoading] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
   const [onSchedule, setOnSchedule] = useState(false)
@@ -22,7 +29,11 @@ function AddVisitorModalContent({ form, buildingId, getImage, type }) {
   const [host, setHost] = useState('')
   const [image, setImage] = useState(null)
 
-  const { data, error, loading: loadingUnits } = useQuery(GET_UNITS, {
+  const {
+    data,
+    error,
+    loading: loadingUnits
+  } = useQuery(GET_UNITS, {
     variables: {
       where: {
         buildingId
@@ -54,7 +65,9 @@ function AddVisitorModalContent({ form, buildingId, getImage, type }) {
       payload,
       {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'company-id':
+            accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyId
         }
       }
     )
