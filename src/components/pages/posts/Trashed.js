@@ -7,20 +7,18 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { debounce } from 'lodash'
-import { FaEllipsisH, FaTimes } from 'react-icons/fa'
+import { FaEllipsisH } from 'react-icons/fa'
 import { FiFileText, FiEye } from 'react-icons/fi'
-import Datetime from 'react-datetime'
 
 import PageLoader from '@app/components/page-loader'
 import Card from '@app/components/card'
-import FormInput from '@app/components/forms/form-input'
 import Checkbox from '@app/components/forms/form-checkbox'
-import Button from '@app/components/button'
 import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
 import Dropdown from '@app/components/dropdown'
 import Modal from '@app/components/modal'
 import Tooltip from '@app/components/tooltip'
+import DateRange from '@app/components/daterange'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -206,10 +204,8 @@ const PostComponent = () => {
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [isBulkButtonHidden, setIsBulkButtonHidden] = useState(false)
-  const [temporaryDate, setTemporaryDate] = useState('')
-  const [temporaryMonth, setTemporaryMonth] = useState('')
   const [selectedDate, setSelectedDate] = useState()
-  const [selectedMonth, setSelectedMonth] = useState()
+  const [selectedDateRange, setSelectedDateRange] = useState(null)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
@@ -286,11 +282,7 @@ const PostComponent = () => {
     fetchFilter.type = 'daily_reading'
 
     if (selectedDate && selectedDate !== '') {
-      fetchFilter.dailyReadingDate = selectedDate
-    }
-
-    if (selectedMonth && selectedMonth !== '') {
-      fetchFilter.dailyReadingDateRange = selectedMonth
+      fetchFilter.dailyReadingDateRange = selectedDate
     }
   }
 
@@ -790,43 +782,27 @@ const PostComponent = () => {
     }
   }
 
-  const handleDateChange = e => {
-    setTemporaryDate(e)
-    setTemporaryMonth('')
+  const onDateRangeChange = e => {
+    setSelectedDateRange(e)
   }
 
-  const handleMonthChange = e => {
-    setTemporaryDate('')
-    setTemporaryMonth(e)
-  }
-
-  const onApplyDate = () => {
-    if (temporaryDate && temporaryDate !== '') {
-      setSelectedDate(
-        DATE.toFriendlyISO(
-          DATE.addTime(DATE.setInitialTime(temporaryDate), 'hours', 8)
+  const onDateApply = () => {
+    resetPages()
+    setSelectedDate([
+      DATE.toFriendlyISO(
+        DATE.addTime(
+          DATE.setInitialTime(selectedDateRange[0].startDate),
+          'hours',
+          8
         )
-      )
-      setSelectedMonth('')
-    }
-
-    if (temporaryMonth !== '') {
-      setSelectedDate('')
-      setSelectedMonth([
-        DATE.toFriendlyISO(DATE.toBeginningOfMonth(temporaryMonth)),
-        DATE.toFriendlyISO(DATE.toEndOfMonth(temporaryMonth))
-      ])
-    }
+      ),
+      DATE.toFriendlyISO(DATE.setEndTime(selectedDateRange[0].endDate))
+    ])
   }
 
-  const handleClearDate = () => {
-    setSelectedDate('')
-    setTemporaryDate('')
-  }
-
-  const handleClearMonth = () => {
-    setSelectedMonth('')
-    setTemporaryMonth('')
+  const onDateClear = () => {
+    setSelectedDateRange(null)
+    setSelectedDate(null)
   }
 
   return (
@@ -836,103 +812,35 @@ const PostComponent = () => {
         <strong>30 days</strong>.
       </p>
       <div className={styles.MainControl}>
-        <SelectBulk
-          placeholder="Bulk Action"
-          options={bulkOptions}
-          disabled={isBulkDisabled}
-          isButtonDisabled={isBulkButtonDisabled}
-          isButtonHidden={isBulkButtonHidden}
-          onBulkChange={onBulkChange}
-          onBulkSubmit={() => handleShowModal('bulk')}
-          onBulkClear={onClearBulk}
-          selected={selectedBulk}
-          custom={isDailyReadingsPage}
-        />
-        {isDailyReadingsPage && (
-          <div className="mx-2 w-full md:w-72 hidden">
-            <Datetime
-              renderInput={(props, openCalendar) => (
-                <>
-                  <div className="relative">
-                    <FormInput
-                      {...props}
-                      inputProps={{ style: { backgroundColor: 'white' } }}
-                      name="date"
-                      placeholder="Filter Month"
-                      value={
-                        temporaryMonth &&
-                        DATE.toFriendlyYearMonth(temporaryMonth)
-                      }
-                      readOnly
-                    />
-                    {temporaryMonth !== '' && (
-                      <FaTimes
-                        className="cursor-pointer absolute top-3 right-10"
-                        onClick={handleClearMonth}
-                      />
-                    )}
-                    <i
-                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
-                      onClick={openCalendar}
-                    />
-                  </div>
-                </>
-              )}
-              dateFormat="YYYY-MMMM"
-              timeFormat={false}
-              value={temporaryMonth}
-              closeOnSelect
-              onChange={handleMonthChange}
-            />
-          </div>
-        )}
-        {isDailyReadingsPage && (
-          <div className="ml-2 w-full md:w-72">
-            <Datetime
-              renderInput={(props, openCalendar) => (
-                <>
-                  <div className="relative">
-                    <FormInput
-                      {...props}
-                      inputProps={{ style: { backgroundColor: 'white' } }}
-                      name="date"
-                      placeholder="Choose a date"
-                      value={
-                        temporaryDate && DATE.toFriendlyShortDate(temporaryDate)
-                      }
-                      readOnly
-                    />
-                    {temporaryDate !== '' && (
-                      <FaTimes
-                        className="cursor-pointer absolute top-3 right-10"
-                        onClick={handleClearDate}
-                      />
-                    )}
-                    <i
-                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
-                      onClick={openCalendar}
-                    />
-                  </div>
-                </>
-              )}
-              dateFormat="MMM DD, YYYY"
-              timeFormat={false}
-              value={temporaryDate}
-              closeOnSelect
-              onChange={handleDateChange}
-            />
-          </div>
-        )}
-        {isDailyReadingsPage && (
-          <div className="mx-2 w-full md:w-72">
-            <Button
-              type="button"
-              label="Apply"
-              onClick={onApplyDate}
-              disabled={!temporaryDate && !temporaryMonth}
-            />
-          </div>
-        )}
+        <div className={styles.BulkControl}>
+          <SelectBulk
+            placeholder="Bulk Action"
+            options={bulkOptions}
+            disabled={isBulkDisabled}
+            isButtonDisabled={isBulkButtonDisabled}
+            isButtonHidden={isBulkButtonHidden}
+            onBulkChange={onBulkChange}
+            onBulkSubmit={() => handleShowModal('bulk')}
+            onBulkClear={onClearBulk}
+            selected={selectedBulk}
+            custom={isDailyReadingsPage}
+          />
+
+          {isDailyReadingsPage && (
+            <div className="w-full md:mx-2">
+              <DateRange
+                placeholder="Filter date"
+                onDateChange={onDateRangeChange}
+                onDateApply={onDateApply}
+                onDateClear={onDateClear}
+                hasApplyButton
+                hasSideOptions={false}
+                hasClear
+              />
+            </div>
+          )}
+        </div>
+
         <div className={styles.CategoryControl}>
           {!isDailyReadingsPage && (
             <SelectCategory

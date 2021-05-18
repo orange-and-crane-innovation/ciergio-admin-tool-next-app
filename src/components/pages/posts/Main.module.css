@@ -27,7 +27,7 @@
   }
 
   .BulkControl {
-    @apply flex items-center justify-between w-full md:w-1/4;
+    @apply flex items-center justify-between w-full flex-col md:w-1/2 md:flex-row;
   }
 
   .CategoryControl {

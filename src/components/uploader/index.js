@@ -32,6 +32,11 @@ const Uploader = ({
     ? `${styles.uploaderContainer} ${styles.error}`
     : styles.uploaderContainer
 
+  const handleUpload = e => {
+    onUpload(e)
+    e.target.value = ''
+  }
+
   const handleChange = () => {
     document.getElementById('file').click()
   }
@@ -137,7 +142,7 @@ const Uploader = ({
                 id="file"
                 name="file"
                 multiple={multiple}
-                onChange={onUpload}
+                onChange={handleUpload}
                 accept={accept}
               />
               <div
@@ -171,7 +176,7 @@ const Uploader = ({
               id="file"
               name="file"
               multiple={multiple}
-              onChange={onUpload}
+              onChange={handleUpload}
               accept={accept}
             />
             <div

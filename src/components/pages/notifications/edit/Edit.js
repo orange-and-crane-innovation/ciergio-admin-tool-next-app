@@ -56,6 +56,7 @@ function CreateNotification() {
   const { push, query } = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
   const [post, setPost] = useState([])
   const [isEdit, setIsEdit] = useState(true)
   const [selectedStatus, setSelectedStatus] = useState('active')
@@ -299,12 +300,16 @@ function CreateNotification() {
   }
 
   const uploadApi = async payload => {
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'company-id':
+          accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyID
+      }
+    }
+
     await axios
-      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, config)
       .then(function (response) {
         if (response.data) {
           const imageData = response.data.map(item => {

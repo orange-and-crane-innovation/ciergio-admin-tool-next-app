@@ -17,6 +17,7 @@ import { FaPlusCircle } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
 import { GET_UNITS, CREATE_ISSUE } from '../queries'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 export const createTicketValidation = yup.object().shape({
   unitNumber: yup.string().required(),
@@ -55,6 +56,9 @@ function Component({
       content: ''
     }
   })
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
   const [showCreateTicketModal, setShowCreateTicketModal] = useState(false)
   const [imageUploadedData, setImageUploadedData] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -108,7 +112,13 @@ function Component({
   }
 
   const uploadApi = async payload => {
-    const response = await axios.post('/', payload)
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+
+    const response = await axios.post('/', payload, config)
     if (response.data) {
       const imageData = response.data.map(item => {
         return {
