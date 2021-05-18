@@ -2,7 +2,7 @@
   @apply flex items-center;
 
   .DateRangeContainer {
-    @apply relative w-full mx-4 md:w-72;
+    @apply relative w-full mr-2 md:w-72;
 
     .Icon {
       @apply absolute top-3 right-4;
@@ -14,11 +14,21 @@
       @apply cursor-pointer;
     }
 
+    .Overlay {
+      @apply fixed top-0 left-0 right-0 bottom-0;
+      @apply z-40 hidden;
+
+      &.Open {
+        @apply block;
+      }
+    }
+
     .Content {
       @apply absolute top-14 left-0;
-      @apply bg-neutral-200 border border-neutral-300;
+      @apply border border-neutral-300;
       @apply shadow-md opacity-0;
-      @apply z-10;
+      @apply z-50;
+      background-color: rgb(239, 242, 247);
       -webkit-transition: all 0.2s ease-out;
       transition: all 0.2s ease-out;
       transform: rotateX(90deg);
@@ -50,7 +60,21 @@
 
       > .Button {
         @apply mt-2 -mb-2 px-4 w-full;
-        @apply flex items-center justify-end;
+        @apply flex items-center justify-between;
+      }
+
+      .InputText {
+        @apply px-4 pt-4;
+        @apply flex justify-start;
+        @apply text-md font-semibold;
+
+        > :first-child {
+          @apply w-1/2;
+        }
+
+        > :last-child {
+          @apply w-1/2 pl-2;
+        }
       }
     }
   }
