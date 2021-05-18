@@ -8,18 +8,19 @@ function CancelInviteModal({ open, onCancel, onOk, loading }) {
       visible={open}
       footer={null}
       onClose={onCancel}
+      c
       modalProps={{
         showCloseButton: false
       }}
     >
-      <div className="pt-4">
+      <div className="pt-4 flex flex-col justify-between flex-wrap content-around">
         <div className="w-full text-center">
           <span className="ciergio-info text-8xl text-info-500" />
         </div>
-        <h1 className="text-5xl text-neutral-dark text-center">
+        <h1 className="text-5xl text-neutral-dark text-center mt-2">
           Cancel Invite?
         </h1>
-        <p className="text-center text-neutral-500 text-lg">
+        <p className="text-center text-neutral-500 text-lg pt-4">
           Are you sure you want to cancel the invite?
         </p>
         <div className="flex items-center justify-center w-full pt-2">

@@ -6,6 +6,8 @@ import FormSelect from '@app/components/forms/form-select'
 import FormInput from '@app/components/forms/form-input'
 import { GET_UNITS } from '../queries'
 
+import { sortBy } from 'lodash'
+
 const relationshipOptions = [
   {
     label: 'Immediate Family',
@@ -34,7 +36,7 @@ const relationshipOptions = [
 ]
 
 function AddResidentModalContent({ form, buildingId }) {
-  const { control } = form
+  const { control, errors } = form
 
   const { data: units } = useQuery(GET_UNITS, {
     where: {
@@ -45,10 +47,14 @@ function AddResidentModalContent({ form, buildingId }) {
 
   const unitOptions = useMemo(() => {
     if (units?.getUnits?.count > 0) {
-      return units.getUnits.data.map(unit => ({
+      const unitsTemp = units.getUnits.data.map(unit => ({
         label: unit.name,
         value: unit._id
       }))
+
+      return sortBy(unitsTemp, function (val) {
+        return val.label
+      })
     }
     return []
   }, [units?.getUnits])
@@ -58,10 +64,15 @@ function AddResidentModalContent({ form, buildingId }) {
       <form>
         <h3 className="font-bold text-sm mb-4">Unit #</h3>
         <Controller
-          name="unit"
+          name="unitId"
           control={control}
           render={({ name, onChange }) => (
-            <FormSelect name={name} onChange={onChange} options={unitOptions} />
+            <FormSelect
+              name={name}
+              onChange={onChange}
+              options={unitOptions}
+              error={errors?.unitId?.message || null}
+            />
           )}
           defaultValue=""
         />
@@ -78,7 +89,8 @@ function AddResidentModalContent({ form, buildingId }) {
                   onChange={onChange}
                   name={name}
                   value={value}
-                  inputClassName="w-full rounded border-gray-300"
+                  inputClassName="w-full rounded border-gray-300 "
+                  error={errors?.firstName?.message || null}
                 />
               )}
             />
@@ -93,6 +105,7 @@ function AddResidentModalContent({ form, buildingId }) {
                   name={name}
                   value={value}
                   inputClassName="w-full rounded border-gray-300"
+                  error={errors?.lastName?.message || null}
                 />
               )}
             />
@@ -107,6 +120,7 @@ function AddResidentModalContent({ form, buildingId }) {
                   name={name}
                   onChange={onChange}
                   options={relationshipOptions}
+                  error={errors?.relationship?.message || null}
                 />
               )}
               defaultValue=""
@@ -128,6 +142,7 @@ function AddResidentModalContent({ form, buildingId }) {
                   name={name}
                   value={value}
                   inputClassName="w-full rounded border-gray-300"
+                  error={errors?.email?.message || null}
                 />
               )}
             />

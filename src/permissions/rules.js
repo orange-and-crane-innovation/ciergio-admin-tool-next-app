@@ -305,6 +305,7 @@ const rules = {
         '/staff/pending-invites',
         '/residents/all-residents',
         '/residents/all-residents/complexes',
+        '/residents/all-residents/company',
         '/residents/invites-requests/complexes',
         '/residents/invites-requests',
         '/posts',

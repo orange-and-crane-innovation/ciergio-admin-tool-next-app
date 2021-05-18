@@ -176,7 +176,7 @@ function AllResidents() {
         {residentsData?.data?.map(unit => {
           return (
             <Fragment key={unit.id}>
-              <tr className="bg-neutral-100">
+              <tr className="bg-white">
                 <td
                   className="border px-8 py-4 text-left"
                   colSpan={columns?.length}

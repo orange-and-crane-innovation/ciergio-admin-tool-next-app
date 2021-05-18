@@ -10,13 +10,13 @@ import { INVITE_RESIDENT } from '../queries'
 import AddResidentModalContent from './AddResidentModalContent'
 
 function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
-  const { control, errors, getValues } = useForm({
+  const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       unitId: '',
       firstName: '',
       lastName: '',
-      type: '',
+      relationship: '',
       email: ''
     }
   })
@@ -27,28 +27,32 @@ function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
       refetch()
     }
   })
+
   const handleShowModal = () => onShowModal(old => !old)
 
   const handleClearModal = () => {
     handleShowModal()
   }
 
-  const handleOk = () => {
-    const values = getValues()
-    const { email, firstName, lastName, relationship, unit } = values
+  const handleOk = async data => {
+    try {
+      const { unitId, email, firstName, lastName, relationship } = data
 
-    inviteResident({
-      variables: {
-        data: {
-          email,
-          firstName,
-          lastName,
-          relationship: relationship?.label,
-          type: 'resident'
-        },
-        unitId: unit?.value
-      }
-    })
+      inviteResident({
+        variables: {
+          data: {
+            email,
+            firstName,
+            lastName,
+            relationship: relationship.label,
+            type: 'resident'
+          },
+          unitId: unitId.value
+        }
+      })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -58,7 +62,7 @@ function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
       visible={showModal}
       onClose={handleClearModal}
       onCancel={handleClearModal}
-      onOk={handleOk}
+      onOk={handleSubmit(handleOk)}
       okButtonProps={{
         loading
       }}

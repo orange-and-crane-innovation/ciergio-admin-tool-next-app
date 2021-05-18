@@ -21,7 +21,7 @@ import CancelInviteModal from '../components/CancelInviteModal'
 
 const bulkOptions = [
   {
-    label: 'Reinvite',
+    label: 'Resend Invite',
     value: 'reinvite'
   }
 ]
@@ -191,7 +191,7 @@ function InvitesRequests() {
                     resendInvite({
                       variables: {
                         data: {
-                          inviteIds: req?._id
+                          inviteIds: [req?._id]
                         }
                       }
                     })

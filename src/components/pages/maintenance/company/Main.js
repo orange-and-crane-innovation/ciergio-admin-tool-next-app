@@ -4,15 +4,15 @@ import Link from 'next/link'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
 import { useQuery } from '@apollo/client'
-import { GET_COMPLEXES } from '../queries'
+import { GET_COMPANIES } from '../queries'
 
 function Main() {
   const router = useRouter()
   const originPath = router?.pathname?.split('/')[1]
-  const complexId = router.query
-  const { data, loading } = useQuery(GET_COMPLEXES, {
+
+  const { data, loading } = useQuery(GET_COMPANIES, {
     variables: {
-      companyId: complexId
+      where: {}
     }
   })
   const getNextPath = id => {
@@ -25,16 +25,16 @@ function Main() {
         path = 'residents/invites-requests'
       }
     }
-    return `/${path}/buildings?complexId=${id}`
+    return `/${path}/complexes?complexId=${id}`
   }
 
   const complexesData = useMemo(() => {
     return {
-      count: data?.getComplexes?.data?.length || 0,
+      count: data?.getCompanies?.data?.length || 0,
       limit: 50,
       data:
-        data?.getComplexes?.data?.length > 0
-          ? data.getComplexes.data.map(({ _id, name }) => {
+        data?.getCompanies?.data?.length > 0
+          ? data.getCompanies.data.map(({ _id, name }) => {
               const nextPath = getNextPath(_id)
 
               return {
@@ -49,7 +49,7 @@ function Main() {
             })
           : []
     }
-  }, [data?.getComplexes])
+  }, [data?.getCompanies])
 
   return (
     <div className="content-wrap">
@@ -59,7 +59,7 @@ function Main() {
           <Table
             rowNames={[
               {
-                name: 'Complex Name',
+                name: 'Company Name',
                 width: ''
               }
             ]}
