@@ -17,7 +17,9 @@ export default function UpdateBills({
   id
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date(dueDate))
-
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const companyId = user?.accounts?.data[0]?.company?._id
+  console.log({ companyId })
   const [data, setData] = useState({
     attachment: {
       fileUrl,
@@ -46,7 +48,7 @@ export default function UpdateBills({
 
   const uploadApi = async (payload, name) => {
     const response = await axios.post(
-      process.env.NEXT_PUBLIC_UPLOAD_API,
+      process.env.NEXT_PUBLIC_UPLOAD_VIDEO_API,
       payload,
       {
         headers: {

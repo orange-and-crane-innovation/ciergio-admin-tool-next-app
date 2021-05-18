@@ -172,17 +172,18 @@ function Unsent({ month, year, buildingName }) {
     }
   })
 
-  const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
-    Query.GETDEUS_QUERY,
-    {
-      variables: {
-        where: {
-          buildingId: buildingID,
-          sent: false
-        }
+  const {
+    loading: duesLoading,
+    data: duesData,
+    error: duesError
+  } = useQuery(Query.GETDEUS_QUERY, {
+    variables: {
+      where: {
+        buildingId: buildingID,
+        sent: false
       }
     }
-  )
+  })
 
   useEffect(() => {
     if (!duesLoading && duesData) {
