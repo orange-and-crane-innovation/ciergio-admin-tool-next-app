@@ -63,6 +63,17 @@ const DateRangeInput = ({
     handleCalendar()
   }
 
+  const handleCancel = () => {
+    setDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: 'selection'
+      }
+    ])
+    handleCalendar()
+  }
+
   return (
     <div className={styles.DateRangeMainContainer}>
       <div
@@ -93,7 +104,7 @@ const DateRangeInput = ({
           <i className={`ciergio-calendar ${styles.Icon}`} />
         </div>
 
-        {hasClear && !isEmpty && dateRange[0]?.startDate && (
+        {hasClear && !isEmpty && selectedDateRange && (
           <FaTimes className={styles.CloseIcon} onClick={handleClear} />
         )}
 
@@ -102,7 +113,11 @@ const DateRangeInput = ({
           onClick={handleCalendar}
         />
         <div className={`${styles.Content} ${isOpen && styles.Open}`}>
-          <div className={styles.InputText}>
+          <div
+            className={`${styles.InputText} ${
+              hasSideOptions && styles.InputTextOption
+            }`}
+          >
             <span>Start Date</span>
             <span>End Date</span>
           </div>
@@ -133,7 +148,7 @@ const DateRangeInput = ({
               label="Cancel"
               type="button"
               default
-              onClick={handleCalendar}
+              onClick={handleCancel}
             />
 
             <Button label="Apply" type="button" primary onClick={handleApply} />
