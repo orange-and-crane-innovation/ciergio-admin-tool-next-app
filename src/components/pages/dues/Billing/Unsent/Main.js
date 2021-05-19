@@ -21,7 +21,7 @@ import * as Mutation from './Mutation'
 import { FaCheck, FaExclamation } from 'react-icons/fa'
 import { useRouter } from 'next/router'
 import { DateInput } from '@app/components/datetime'
-
+import { ACCOUNT_TYPES } from '@app/constants'
 import Can from '@app/permissions/can'
 
 const _ = require('lodash')
@@ -92,6 +92,10 @@ const DueDate = ({ fieldData }) => {
 
 function Unsent({ month, year, buildingName }) {
   const router = useRouter()
+  const profile = JSON.parse(window.localStorage.getItem('profile'))
+  const profileData = profile?.accounts?.data[0]
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyIDHeader = router?.query?.companyId ?? profileData?.company?._id
   const { buildingID, categoryID } = router.query
   // components state
   const [selectedFloor, setSelectedFloor] = useState('all')
@@ -172,17 +176,18 @@ function Unsent({ month, year, buildingName }) {
     }
   })
 
-  const { loading: duesLoading, data: duesData, error: duesError } = useQuery(
-    Query.GETDEUS_QUERY,
-    {
-      variables: {
-        where: {
-          buildingId: buildingID,
-          sent: false
-        }
+  const {
+    loading: duesLoading,
+    data: duesData,
+    error: duesError
+  } = useQuery(Query.GETDEUS_QUERY, {
+    variables: {
+      where: {
+        buildingId: buildingID,
+        sent: false
       }
     }
-  )
+  })
 
   useEffect(() => {
     if (!duesLoading && duesData) {
@@ -229,7 +234,9 @@ function Unsent({ month, year, buildingName }) {
       payload,
       {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'company-id':
+            accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyIDHeader
         }
       }
     )

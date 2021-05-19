@@ -13,18 +13,19 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import ManageCategories from '../ManageCategories'
 import styles from './Overview.module.css'
+import { DateInput } from '@app/components/datetime'
 
 function Overview({ complexID, complexName, accountType }) {
   const router = useRouter()
 
-  const [, setSelectedOption] = useState()
+  const [selectedOption, setSelectedOption] = useState()
   const [date, setDate] = useState(new Date())
 
   const [tableData, setTableData] = useState({
     data: []
   })
   const [period, setPeriod] = useState({})
-  const [buildingIds, setBuildingIds] = useState()
+
   const [optionsData, setOptionsData] = useState(null)
   const [chartData, setChartData] = useState({
     labels: ['Monthly Amortization'],
@@ -53,12 +54,13 @@ function Overview({ complexID, complexName, accountType }) {
   const {
     loading: loadingBreakdown,
     data: dataBreakdown,
-    error: errorBreakdown
+    error: errorBreakdown,
+    refetch: refetchBreakDown
   } = useQuery(Query.GET_BREAKDOWN, {
     variables: {
       where: {
         period: period,
-        buildingIds: buildingIds
+        buildingIds: selectedOption?.value
       }
     }
   })
@@ -90,7 +92,7 @@ function Overview({ complexID, complexName, accountType }) {
         }))
       }
     }
-  }, [loadingBreakdown, dataBreakdown, errorBreakdown])
+  }, [loadingBreakdown, dataBreakdown, errorBreakdown, refetchBreakDown])
 
   useEffect(() => {
     if (!loading && !error && data) {
@@ -101,12 +103,12 @@ function Overview({ complexID, complexName, accountType }) {
         tableArray.push({ [`${building._id}`]: building.name })
         optionsArray.push({
           label: building.name,
-          value: building._id
+          value: [building._id]
         })
         buildingIdsArray.push(building._id)
       })
+      optionsArray[0].value = buildingIdsArray
 
-      setBuildingIds(buildingIdsArray)
       setTableData({
         data: tableArray || []
       })
@@ -115,8 +117,9 @@ function Overview({ complexID, complexName, accountType }) {
     }
   }, [loading, data, error, refetch])
 
-  const onStatusSelect = val => {
+  const onBuildingSelect = val => {
     setSelectedOption(val)
+    refetchBreakDown()
   }
 
   const handlingMonthOrYear = (date, type = 'year') => {
@@ -131,11 +134,13 @@ function Overview({ complexID, complexName, accountType }) {
   }
 
   const handleDateChange = date => {
-    setDate(date)
+    const parseDate = new Date(date)
+    setDate(parseDate)
     setPeriod({
-      month: handlingMonthOrYear(date, 'month'),
-      year: handlingMonthOrYear(date)
+      month: handlingMonthOrYear(parseDate, 'month'),
+      year: handlingMonthOrYear(parseDate)
     })
+    refetchBreakDown()
   }
 
   const rowClicked = data => {
@@ -187,19 +192,18 @@ function Overview({ complexID, complexName, accountType }) {
               </div>
               <div className={styles.FormContainer}>
                 <div className={styles.DateController}>
-                  <DatePicker
-                    rightIcon
-                    peekNextMonth
-                    showMonthYearPicker
-                    selected={date}
-                    onChange={handleDateChange}
-                    label={'Billing Period'}
+                  <DateInput
+                    date={date}
+                    onDateChange={handleDateChange}
+                    dateFormat="MMMM YYYY"
+                    showMonth={true}
                   />
                 </div>
                 <div className={styles.SelectControl}>
                   {optionsData && (
                     <FormSelect
-                      onChange={onStatusSelect}
+                      value={selectedOption}
+                      onChange={onBuildingSelect}
                       options={optionsData}
                       classNames="mt-6"
                     />
@@ -234,7 +238,7 @@ function Overview({ complexID, complexName, accountType }) {
     router,
     complexID,
     accountType,
-    onStatusSelect,
+    onBuildingSelect,
     optionsData,
     handleDateChange,
     date,

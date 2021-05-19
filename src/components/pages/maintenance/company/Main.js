@@ -59,7 +59,7 @@ function Main() {
           <Table
             rowNames={[
               {
-                name: 'Company Name',
+                name: 'Companies Name',
                 width: ''
               }
             ]}

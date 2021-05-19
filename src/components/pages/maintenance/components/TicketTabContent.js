@@ -114,7 +114,9 @@ function Component({
   const uploadApi = async payload => {
     const config = {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        'company-id':
+          accountType === ACCOUNT_TYPES.SUP.value ? 'oci' : companyID
       }
     }
 

@@ -25,7 +25,8 @@ function DateInput({
   maxDate,
   minDate,
   error,
-  showMonth
+  showMonth,
+  rest
 }) {
   let dateValue = toFriendlyDateTime(date)
 
@@ -67,6 +68,7 @@ function DateInput({
 
   return (
     <Datetime
+      {...rest}
       renderInput={(props, openCalendar) => (
         <>
           <div className="font-semibold">{label}</div>
