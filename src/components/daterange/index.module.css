@@ -75,6 +75,10 @@
         > :last-child {
           @apply w-1/2 pl-2;
         }
+
+        &.InputTextOption {
+          @apply ml-64;
+        }
       }
     }
   }
