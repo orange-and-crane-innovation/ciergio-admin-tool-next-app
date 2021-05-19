@@ -1429,13 +1429,14 @@ const CreatePosts = () => {
                   </>
                 )}
 
-                {videoLocalUrl && (
-                  <VideoPlayer
-                    url={videoLocalUrl}
-                    onError={onLocalVideoError}
-                    onReady={onLocalVideoReady}
-                  />
-                )}
+                {videoLocalUrl &&
+                  !localVideoError(
+                    <VideoPlayer
+                      url={videoLocalUrl}
+                      onError={onLocalVideoError}
+                      onReady={onLocalVideoReady}
+                    />
+                  )}
 
                 {(fileUrls?.length > 0 || videoUrl) && !videoError && (
                   <>
@@ -1465,7 +1466,8 @@ const CreatePosts = () => {
             }
             footer={
               selectedFiles?.length > 0 &&
-              fileUrls?.length === 0 && (
+              fileUrls?.length === 0 &&
+              !localVideoError && (
                 <div className="flex items-center">
                   <Button
                     className="mr-4 mb-0"
