@@ -361,6 +361,7 @@ const CreatePosts = () => {
     setVideoLoading(e.target.value !== '')
     setVideoError(null)
     setVideoUrl(e.target.value)
+    setVideoLocalUrl(null)
   }
 
   const onVideoError = () => {

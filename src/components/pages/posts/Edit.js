@@ -42,7 +42,7 @@ import style from './Create.module.css'
 const saveSvgAsPng = require('save-svg-as-png')
 
 const UPDATE_POST_MUTATION = gql`
-  mutation($id: String, $data: PostInput) {
+  mutation ($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -673,6 +673,7 @@ const CreatePosts = () => {
     setVideoLoading(e.target.value !== '')
     setVideoError(null)
     setVideoUrl(e.target.value)
+    setVideoLocalUrl(null)
   }
 
   const onVideoError = () => {
@@ -746,15 +747,19 @@ const CreatePosts = () => {
     }
   }
 
-  const onRemoveFile = e => {
+  const onRemoveFile = () => {
     setSelectedFiles([])
     setFileUrls([])
     setFileUploadedData([])
     setValue('embeddedVideo', null)
     setValue('video', null)
     setVideoUrl(null)
+    setVideoLocalUrl(null)
     setLocalVideoError(null)
-    handleClearModal()
+
+    if (showModal) {
+      handleClearModal()
+    }
   }
 
   const onUploadFile = () => {
@@ -1337,7 +1342,7 @@ const CreatePosts = () => {
                       Include a video in your bulletin post by linking a YouTube
                       video.
                     </h2>
-                    <div className={style.CreatePostCardContent}>
+                    <div className={style.CreatePostVideoContent}>
                       <div className="flex items-start">
                         <FiVideo className={style.CreateVideoIcon} />
                         <div>
@@ -1429,8 +1434,8 @@ const CreatePosts = () => {
                   </>
                 )}
 
-                {videoLocalUrl &&
-                  !localVideoError(
+                <div className="w-full md:max-w-lg">
+                  {videoLocalUrl && !localVideoError && (
                     <VideoPlayer
                       url={videoLocalUrl}
                       onError={onLocalVideoError}
@@ -1438,30 +1443,31 @@ const CreatePosts = () => {
                     />
                   )}
 
-                {(fileUrls?.length > 0 || videoUrl) && !videoError && (
-                  <>
-                    <div className="flex items-start">
-                      <FiFilm className={style.CreateVideoIcon} />
-                      <div className={style.CreatePostVideoInput}>
-                        Preview Video
+                  {(fileUrls?.length > 0 || videoUrl) && !videoError && (
+                    <>
+                      <div className="flex items-start">
+                        <FiFilm className={style.CreateVideoIcon} />
+                        <div className={style.CreatePostVideoInput}>
+                          Preview Video
+                        </div>
                       </div>
-                    </div>
 
-                    <VideoPlayer
-                      url={videoUrl || fileUrls[0]}
-                      onError={onVideoError}
-                      onReady={onVideoReady}
-                    />
+                      <VideoPlayer
+                        url={videoUrl || fileUrls[0]}
+                        onError={onVideoError}
+                        onReady={onVideoReady}
+                      />
 
-                    <Button
-                      className="mt-4"
-                      default
-                      type="button"
-                      label="Replace Video"
-                      onClick={() => handleShowModal('remove-video')}
-                    />
-                  </>
-                )}
+                      <Button
+                        className="mt-4"
+                        default
+                        type="button"
+                        label="Replace Video"
+                        onClick={() => handleShowModal('remove-video')}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
             }
             footer={
