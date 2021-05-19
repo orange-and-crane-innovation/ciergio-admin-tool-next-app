@@ -42,7 +42,7 @@ import style from './Create.module.css'
 const saveSvgAsPng = require('save-svg-as-png')
 
 const UPDATE_POST_MUTATION = gql`
-  mutation($id: String, $data: PostInput) {
+  mutation ($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -673,6 +673,7 @@ const CreatePosts = () => {
     setVideoLoading(e.target.value !== '')
     setVideoError(null)
     setVideoUrl(e.target.value)
+    setVideoLocalUrl(null)
   }
 
   const onVideoError = () => {
@@ -746,15 +747,19 @@ const CreatePosts = () => {
     }
   }
 
-  const onRemoveFile = e => {
+  const onRemoveFile = () => {
     setSelectedFiles([])
     setFileUrls([])
     setFileUploadedData([])
     setValue('embeddedVideo', null)
     setValue('video', null)
     setVideoUrl(null)
+    setVideoLocalUrl(null)
     setLocalVideoError(null)
-    handleClearModal()
+
+    if (showModal) {
+      handleClearModal()
+    }
   }
 
   const onUploadFile = () => {
@@ -1429,14 +1434,13 @@ const CreatePosts = () => {
                   </>
                 )}
 
-                {videoLocalUrl &&
-                  !localVideoError(
-                    <VideoPlayer
-                      url={videoLocalUrl}
-                      onError={onLocalVideoError}
-                      onReady={onLocalVideoReady}
-                    />
-                  )}
+                {videoLocalUrl && !localVideoError && (
+                  <VideoPlayer
+                    url={videoLocalUrl}
+                    onError={onLocalVideoError}
+                    onReady={onLocalVideoReady}
+                  />
+                )}
 
                 {(fileUrls?.length > 0 || videoUrl) && !videoError && (
                   <>
