@@ -183,7 +183,7 @@ const BULK_UPDATE_MUTATION = gql`
 `
 
 const UPDATE_POST_MUTATION = gql`
-  mutation($id: String, $data: PostInput) {
+  mutation ($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -193,7 +193,7 @@ const UPDATE_POST_MUTATION = gql`
 `
 
 const SWITCH_POST_MUTATION = gql`
-  mutation($data: switchPostPositionInput) {
+  mutation ($data: switchPostPositionInput) {
     switchPostPosition(data: $data) {
       _id
       processId
@@ -310,7 +310,12 @@ const PostComponent = () => {
     }
   }
 
-  const { loading, data, error, refetch: refetchPosts } = useQuery(
+  const {
+    loading,
+    data,
+    error,
+    refetch: refetchPosts
+  } = useQuery(
     isDailyReadingsPage
       ? GET_ALL_POST_DAILY_READINGS_QUERY
       : GET_ALL_POST_QUERY,
@@ -932,19 +937,16 @@ const PostComponent = () => {
 
   const onDateRangeChange = e => {
     setSelectedDateRange(e)
+    onDateApply(e)
   }
 
-  const onDateApply = () => {
+  const onDateApply = date => {
     resetPages()
     setSelectedDate([
       DATE.toFriendlyISO(
-        DATE.addTime(
-          DATE.setInitialTime(selectedDateRange[0].startDate),
-          'hours',
-          8
-        )
+        DATE.addTime(DATE.setInitialTime(date[0].startDate), 'hours', 8)
       ),
-      DATE.toFriendlyISO(DATE.setEndTime(selectedDateRange[0].endDate))
+      DATE.toFriendlyISO(DATE.setEndTime(date[0].endDate))
     ])
   }
 
@@ -1193,9 +1195,7 @@ const PostComponent = () => {
               <DateRange
                 placeholder="Filter date"
                 onDateChange={onDateRangeChange}
-                onDateApply={onDateApply}
                 onDateClear={onDateClear}
-                hasApplyButton
                 hasSideOptions={false}
                 hasClear
               />
