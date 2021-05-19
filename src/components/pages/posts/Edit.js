@@ -1342,7 +1342,7 @@ const CreatePosts = () => {
                       Include a video in your bulletin post by linking a YouTube
                       video.
                     </h2>
-                    <div className={style.CreatePostCardContent}>
+                    <div className={style.CreatePostVideoContent}>
                       <div className="flex items-start">
                         <FiVideo className={style.CreateVideoIcon} />
                         <div>
@@ -1434,38 +1434,40 @@ const CreatePosts = () => {
                   </>
                 )}
 
-                {videoLocalUrl && !localVideoError && (
-                  <VideoPlayer
-                    url={videoLocalUrl}
-                    onError={onLocalVideoError}
-                    onReady={onLocalVideoReady}
-                  />
-                )}
-
-                {(fileUrls?.length > 0 || videoUrl) && !videoError && (
-                  <>
-                    <div className="flex items-start">
-                      <FiFilm className={style.CreateVideoIcon} />
-                      <div className={style.CreatePostVideoInput}>
-                        Preview Video
-                      </div>
-                    </div>
-
+                <div className="w-full md:max-w-lg">
+                  {videoLocalUrl && !localVideoError && (
                     <VideoPlayer
-                      url={videoUrl || fileUrls[0]}
-                      onError={onVideoError}
-                      onReady={onVideoReady}
+                      url={videoLocalUrl}
+                      onError={onLocalVideoError}
+                      onReady={onLocalVideoReady}
                     />
+                  )}
 
-                    <Button
-                      className="mt-4"
-                      default
-                      type="button"
-                      label="Replace Video"
-                      onClick={() => handleShowModal('remove-video')}
-                    />
-                  </>
-                )}
+                  {(fileUrls?.length > 0 || videoUrl) && !videoError && (
+                    <>
+                      <div className="flex items-start">
+                        <FiFilm className={style.CreateVideoIcon} />
+                        <div className={style.CreatePostVideoInput}>
+                          Preview Video
+                        </div>
+                      </div>
+
+                      <VideoPlayer
+                        url={videoUrl || fileUrls[0]}
+                        onError={onVideoError}
+                        onReady={onVideoReady}
+                      />
+
+                      <Button
+                        className="mt-4"
+                        default
+                        type="button"
+                        label="Replace Video"
+                        onClick={() => handleShowModal('remove-video')}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
             }
             footer={
