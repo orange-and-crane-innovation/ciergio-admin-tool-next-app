@@ -83,7 +83,8 @@ const validationSchemaDailyReadings = yup.object().shape({
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
-  images: yup.array().label('Image').nullable()
+  images: yup.array().label('Image').nullable(),
+  embeddedVideo: yup.string().nullable()
 })
 
 const CreatePosts = () => {
@@ -362,6 +363,8 @@ const CreatePosts = () => {
     setVideoError(null)
     setVideoUrl(e.target.value)
     setVideoLocalUrl(null)
+    setSelectedFiles([])
+    setFileUrls([])
   }
 
   const onVideoError = () => {
@@ -399,6 +402,8 @@ const CreatePosts = () => {
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
     const fileList = []
+
+    onRemoveFile()
 
     if (files) {
       let maxSize = 0
@@ -936,7 +941,7 @@ const CreatePosts = () => {
                             <div className={style.CreatePostVideoInput}>
                               <div>or select a video from your computer:</div>
                               <div className="text-neutral-600 font-normal">
-                                MP4 are accepted.
+                                MP4 is only accepted.
                               </div>
                               <div className="text-neutral-600 font-normal">
                                 Max file size:

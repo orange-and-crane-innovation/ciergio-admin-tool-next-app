@@ -196,7 +196,8 @@ const validationSchema = yup.object().shape({
     .required(),
   content: yup.string().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
-  category: yup.string().label('Category').nullable().required()
+  category: yup.string().label('Category').nullable().required(),
+  embeddedVideo: yup.array().label('File').nullable()
 })
 
 const validationSchemaDraft = yup.object().shape({
@@ -206,7 +207,8 @@ const validationSchemaDraft = yup.object().shape({
     .trim()
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
   content: yup.string().nullable(),
-  category: yup.string().nullable()
+  category: yup.string().nullable(),
+  embeddedVideo: yup.string().nullable()
 })
 
 const validationSchemaDailyReadings = yup.object().shape({
@@ -218,7 +220,8 @@ const validationSchemaDailyReadings = yup.object().shape({
     .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
     .required(),
   content: yup.string().label('Content').nullable().required(),
-  images: yup.array().label('Image').nullable()
+  images: yup.array().label('Image').nullable(),
+  embeddedVideo: yup.string().nullable()
 })
 
 const CreatePosts = () => {
@@ -331,7 +334,8 @@ const CreatePosts = () => {
       content: null,
       video: '',
       category: null,
-      images: null
+      images: null,
+      embeddedVideo: null
     }
   })
 
@@ -674,6 +678,8 @@ const CreatePosts = () => {
     setVideoError(null)
     setVideoUrl(e.target.value)
     setVideoLocalUrl(null)
+    setSelectedFiles([])
+    setFileUrls([])
   }
 
   const onVideoError = () => {
@@ -710,6 +716,8 @@ const CreatePosts = () => {
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
     const fileList = []
+
+    onRemoveFile()
 
     if (files) {
       let maxSize = 0
@@ -1400,7 +1408,7 @@ const CreatePosts = () => {
                             <div className={style.CreatePostVideoInput}>
                               <div>or select a video from your computer:</div>
                               <div className="text-neutral-600 font-normal">
-                                MP4 are accepted.
+                                MP4 is only accepted.
                               </div>
                               <div className="text-neutral-600 font-normal">
                                 Max file size:

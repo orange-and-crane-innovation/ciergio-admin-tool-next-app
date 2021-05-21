@@ -339,7 +339,7 @@ function Contact({ id }) {
         }}
         width={450}
       >
-        <div className="w-full p-4">
+        <div className="w-full p-4 leading-7">
           <div>
             <p className="mb-4">
               <span className="font-medium">Warning: </span>{' '}
