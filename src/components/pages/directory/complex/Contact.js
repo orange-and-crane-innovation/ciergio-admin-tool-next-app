@@ -379,9 +379,9 @@ function Contact({ id }) {
 
           return {
             image: (
-              <div className="flex justify-end">
+              <div className="w-11 h-11 rounded-full overflow-auto">
                 <img
-                  className="w-12 h-12 rounded-full border-4 border-white"
+                  className="h-full w-full object-contain object-center"
                   src={
                     contact?.logo ??
                     `https://ui-avatars.com/api/?name=${contact.name}`
@@ -501,7 +501,7 @@ function Contact({ id }) {
         }}
         width={450}
       >
-        <div className="w-full p-4">
+        <div className="w-full p-4 leading-7">
           <div>
             <p className="mb-4">
               <span className="font-medium">Warning: </span>{' '}
