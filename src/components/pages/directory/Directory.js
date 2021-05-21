@@ -102,9 +102,7 @@ function Directory() {
       handleClearModal('edit')
       refetchCategories()
     },
-    onError: e => {
-      errorHandler(e)
-    }
+    onError: handleOnError
   })
 
   const [deleteCategory] = useMutation(DELETE_CATEGORY, {
@@ -346,7 +344,7 @@ function Directory() {
               onOk={handleDeleteCategory}
               width={450}
             >
-              <div className="w-full p-4">
+              <div className="w-full p-4 leading-7">
                 <div>
                   <p className="mb-4">
                     <span className="font-medium">Warning: </span>{' '}
