@@ -67,11 +67,13 @@ export default function MessagePreviewItem({
       onClick={() => onClick(data)}
     >
       <div className="mr-4">
-        <img
-          src={user?.avatar ?? defaultAvatarUri}
-          alt={`${user?.firstName} ${user?.lastName}`}
-          className="rounded-full h-12 w-12"
-        />
+        <div className="w-12 h-12 rounded-full overflow-auto">
+          <img
+            className="h-full w-full object-contain object-center"
+            src={user?.avatar ?? defaultAvatarUri}
+            alt={`${user?.firstName} ${user?.lastName}`}
+          />
+        </div>
       </div>
       <div className=" pr-24 min-w-4xs truncate">
         <p className={`${previewTextState} capitalize truncate max-w-xs`}>
