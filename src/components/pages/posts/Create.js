@@ -24,6 +24,7 @@ import FileUpload from '@app/components/uploader/simple'
 import Modal from '@app/components/modal'
 import PageLoader from '@app/components/page-loader'
 import ProgressBar from '@app/components/progress-bar'
+import Toggle from '@app/components/toggle'
 
 import { DATE } from '@app/utils'
 import { ACCOUNT_TYPES } from '@app/constants'
@@ -36,6 +37,8 @@ import showToast from '@app/utils/toast'
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
+import OfferingsCard from './components/OfferingsCard'
+
 import Can from '@app/permissions/can'
 import style from './Create.module.css'
 
@@ -132,7 +135,9 @@ const CreatePosts = () => {
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [errorSelectedDate, setErrorSelectedDate] = useState()
+  const [toggleOfferings, setToggleOfferings] = useState()
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = systemType === 'pray'
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const companyID = user?.accounts?.data[0]?.company?._id
@@ -579,6 +584,10 @@ const CreatePosts = () => {
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
       }
+      if (isSystemPray) {
+        createData.offering = toggleOfferings
+      }
+
       createPost({ variables: { data: createData } })
     }
   }
@@ -731,6 +740,10 @@ const CreatePosts = () => {
 
   const handleDateChange = e => {
     setSelectedDate(e)
+  }
+
+  const onToggleOfferings = e => {
+    setToggleOfferings(e)
   }
 
   return (
@@ -1041,6 +1054,38 @@ const CreatePosts = () => {
               )
             }
           />
+
+          {isSystemPray && (
+            <Card
+              header={<span className={style.CardHeader}>Offerings</span>}
+              content={
+                <div className={style.CreateContentContainer}>
+                  <div className={style.CreatePostOfferingsContent}>
+                    <Toggle onChange={onToggleOfferings} />
+                    <div className={style.CreatePostOfferingsSubContent}>
+                      <div className={style.CreatePostOfferingSubContent2}>
+                        <i
+                          className={`ciergio-donate-2 ${style.CreatePostOfferingsIcon}`}
+                        />
+                        <span>
+                          <p>
+                            <strong>Ask for Offerings in this Article</strong>
+                          </p>
+                          <p className={style.CreatePostOfferingText}>
+                            A Call to Action button to make an offering will be
+                            visible in the article.
+                            <br />
+                            The button will redirect the user to Offerings.
+                          </p>
+                        </span>
+                      </div>
+                      {toggleOfferings && <OfferingsCard />}
+                    </div>
+                  </div>
+                </div>
+              }
+            />
+          )}
 
           {!isDailyReadingsPage && (
             <Card

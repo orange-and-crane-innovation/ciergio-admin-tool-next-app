@@ -25,6 +25,7 @@ import FileUpload from '@app/components/uploader/simple'
 import Modal from '@app/components/modal'
 import PageLoader from '@app/components/page-loader'
 import ProgressBar from '@app/components/progress-bar'
+import Toggle from '@app/components/toggle'
 
 import VideoPlayer from '@app/components/globals/VideoPlayer'
 import SelectCategory from '@app/components/globals/SelectCategory'
@@ -36,6 +37,8 @@ import { ACCOUNT_TYPES } from '@app/constants'
 import UpdateCard from './components/UpdateCard'
 import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
+import OfferingsCard from './components/OfferingsCard'
+
 import Can from '@app/permissions/can'
 import style from './Create.module.css'
 
@@ -118,7 +121,7 @@ const GET_POST_QUERY = gql`
   }
 `
 
-const GET_POST_DAILY_READINGS_QUERY = gql`
+const GET_POST_PRAY_QUERY = gql`
   query getAllPost($where: AllPostInput) {
     getAllPost(where: $where) {
       count
@@ -181,6 +184,7 @@ const GET_POST_DAILY_READINGS_QUERY = gql`
           }
         }
         dailyReadingDate
+        offering
       }
     }
   }
@@ -269,8 +273,10 @@ const CreatePosts = () => {
   const [selectedStatus, setSelectedStatus] = useState('active')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [errorSelectedDate, setErrorSelectedDate] = useState()
+  const [toggleOfferings, setToggleOfferings] = useState()
   const [isEdit, setIsEdit] = useState(true)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = systemType === 'pray'
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const companyID = user?.accounts?.data[0]?.company?._id
@@ -302,16 +308,13 @@ const CreatePosts = () => {
     data: dataPost,
     error: errorPost,
     refetch
-  } = useQuery(
-    isDailyReadingsPage ? GET_POST_DAILY_READINGS_QUERY : GET_POST_QUERY,
-    {
-      variables: {
-        where: {
-          _id: query.id
-        }
+  } = useQuery(isSystemPray ? GET_POST_PRAY_QUERY : GET_POST_QUERY, {
+    variables: {
+      where: {
+        _id: query.id
       }
     }
-  )
+  })
 
   const {
     handleSubmit,
@@ -466,6 +469,7 @@ const CreatePosts = () => {
         )
         setSelectedPublishDateTime(new Date(itemData?.publishedAt))
         setSelectedDate(itemData?.dailyReadingDate)
+        setToggleOfferings(itemData?.offering)
       }
     }
   }, [loadingPost, dataPost, errorPost, setValue])
@@ -490,7 +494,9 @@ const CreatePosts = () => {
             break
         }
 
-        handleShowModal()
+        if (showModal) {
+          handleShowModal()
+        }
         showToast('success', message)
 
         if (modalType === 'preview') {
@@ -929,12 +935,15 @@ const CreatePosts = () => {
           }
         }
       }
-
       if (isDailyReadingsPage) {
         updateData.data.dailyReadingDate = DATE.toFriendlyISO(
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
       }
+      if (isSystemPray) {
+        updateData.data.offering = toggleOfferings
+      }
+
       updatePost({ variables: updateData })
     }
   }
@@ -1169,6 +1178,10 @@ const CreatePosts = () => {
       setSelectedCompanySpecific(null)
       setSelectedComplexSpecific(null)
     }
+  }
+
+  const onToggleOfferings = e => {
+    setToggleOfferings(e)
   }
 
   return (
@@ -1508,6 +1521,42 @@ const CreatePosts = () => {
               )
             }
           />
+
+          {isSystemPray && (
+            <Card
+              header={<span className={style.CardHeader}>Offerings</span>}
+              content={
+                <div className={style.CreateContentContainer}>
+                  <div className={style.CreatePostOfferingsContent}>
+                    <Toggle
+                      onChange={onToggleOfferings}
+                      defaultChecked={toggleOfferings}
+                    />
+                    <div className={style.CreatePostOfferingsSubContent}>
+                      <div className={style.CreatePostOfferingSubContent2}>
+                        <i
+                          className={`ciergio-donate-2 ${style.CreatePostOfferingsIcon}`}
+                        />
+                        <span>
+                          <p>
+                            <strong>Ask for Offerings in this Article</strong>
+                          </p>
+                          <p className={style.CreatePostOfferingText}>
+                            A Call to Action button to make an offering will be
+                            visible in the article.
+                            <br />
+                            The button will redirect the user to Offerings.
+                          </p>
+                        </span>
+                      </div>
+                      {toggleOfferings && <OfferingsCard />}
+                    </div>
+                  </div>
+                </div>
+              }
+            />
+          )}
+
           {!isDailyReadingsPage && (
             <Card
               header={<span className={style.CardHeader}>Category</span>}
