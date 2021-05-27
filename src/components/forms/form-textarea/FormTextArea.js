@@ -33,7 +33,20 @@ const FormTextArea = ({
 }) => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
   const defaultOptions = {
-    defaultBlockTag: 'div'
+    defaultBlockTag: 'div',
+    inlineStyleFn: styles => {
+      const key = 'color-'
+      const color = styles.filter(value => value.startsWith(key)).first()
+
+      if (color) {
+        return {
+          element: 'span',
+          style: {
+            color: color.replace(key, '')
+          }
+        }
+      }
+    }
   }
 
   const containerClasses = useMemo(
@@ -141,16 +154,18 @@ const FormTextArea = ({
           }}
           onEditorStateChange={onEditorStateChange}
           handleBeforeInput={val => {
-            const textLength = editorState.getCurrentContent().getPlainText()
-              .length
+            const textLength = editorState
+              .getCurrentContent()
+              .getPlainText().length
             if (val && textLength >= maxLength) {
               return 'handled'
             }
             return 'not-handled'
           }}
           handlePastedText={val => {
-            const textLength = editorState.getCurrentContent().getPlainText()
-              .length
+            const textLength = editorState
+              .getCurrentContent()
+              .getPlainText().length
             return val.length + textLength >= maxLength
           }}
           onTab={onTab}
