@@ -29,10 +29,10 @@ const Dropdown = () => {
   const dropdownRef = useRef(null)
   const activeAccount = profile?.accounts?.data[0]
 
-  const [
-    switchAccount,
-    { loading, data, called, error }
-  ] = useMutation(SWITCH_ACCOUNT_MUTATION, { onError: _e => {} })
+  const [switchAccount, { loading, data, called, error }] = useMutation(
+    SWITCH_ACCOUNT_MUTATION,
+    { onError: _e => {} }
+  )
 
   useEffect(() => {
     if (loading) {
@@ -87,7 +87,7 @@ const Dropdown = () => {
     localStorage.removeItem('profile')
 
     const timer = setTimeout(() => {
-      router.reload()
+      router.push('/auth/login')
       clearInterval(timer)
     }, 500)
   }
