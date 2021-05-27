@@ -141,4 +141,24 @@
   .CreateVideoIcon {
     @apply text-info-900 mt-1 mr-4;
   }
+
+  .CreatePostOfferingsContent {
+    @apply flex items-start;
+
+    .CreatePostOfferingsSubContent {
+      @apply flex flex-col;
+
+      .CreatePostOfferingSubContent2 {
+        @apply flex items-start;
+
+        .CreatePostOfferingsIcon {
+          @apply mx-4 text-2xl;
+        }
+      }
+
+      .CreatePostOfferingText {
+        @apply text-md text-neutral-600;
+      }
+    }
+  }
 }
