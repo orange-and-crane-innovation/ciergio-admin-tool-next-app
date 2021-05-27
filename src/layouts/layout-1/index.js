@@ -11,8 +11,8 @@ const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 const Layout = ({ children }) => {
   const [collapsed, setCollapse] = useState(false)
   const [userRole, setUserRole] = useState('')
-
-  const profile = JSON.parse(localStorage.getItem('profile'))
+  const isBrowser = typeof window !== 'undefined'
+  const profile = isBrowser && JSON.parse(localStorage.getItem('profile'))
 
   useEffect(() => {
     setUserRole(profile?.accounts?.data[0]?.accountType)

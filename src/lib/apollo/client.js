@@ -4,12 +4,10 @@ import {
   HttpLink,
   InMemoryCache,
   concat,
-  ApolloLink,
-  split
+  ApolloLink
 } from '@apollo/client'
-import { getMainDefinition } from '@apollo/client/utilities'
-import { WebSocketLink } from '@apollo/link-ws'
 import merge from 'deepmerge'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 
 let apolloClient
 
@@ -17,51 +15,6 @@ function createApolloClient() {
   const isBrowser = typeof window !== 'undefined'
 
   const httpLink = new HttpLink({ uri: process.env.NEXT_PUBLIC_API })
-
-  const wsLink = process.browser
-    ? new WebSocketLink({
-        uri: process.env.NEXT_PUBLIC_SUBSCRIPTION_API,
-        options: {
-          reconnect: true,
-          reconnectionAttempts: 10,
-          timeout: 90000,
-          connectionParams: () => {
-            const token = (isBrowser && localStorage.getItem('keep')) || ''
-            const user =
-              (isBrowser && JSON.parse(localStorage.getItem('profile'))) || ''
-
-            return {
-              treat: isBrowser && navigator.userAgent,
-              slave: token,
-              userId: user?._id
-            }
-          },
-          connectionCallback: error => {
-            if (error) {
-              console.log(
-                '<===== AN ERROR ACCURED WHILE CONNECTING TO WEBSOCKET =====>'
-              )
-            } else {
-              console.log('<===== WEBSOCKET CONNECTION SUCCESS =====>')
-            }
-          }
-        }
-      })
-    : null
-
-  const splitLink = process.browser
-    ? split(
-        ({ query }) => {
-          const definition = getMainDefinition(query)
-          return (
-            definition.kind === 'OperationDefinition' &&
-            definition.operation === 'subscription'
-          )
-        },
-        wsLink,
-        httpLink
-      )
-    : httpLink
 
   const authMiddleware = new ApolloLink((operation, forward) => {
     const token = (isBrowser && localStorage.getItem('keep')) || ''
@@ -80,7 +33,7 @@ function createApolloClient() {
 
   return new ApolloClient({
     ssrMode: !isBrowser,
-    link: concat(authMiddleware, splitLink),
+    link: concat(authMiddleware, httpLink),
     credentials: 'same-origin',
     cache: new InMemoryCache()
   })
@@ -112,4 +65,71 @@ export function initializeApollo(initialState = null) {
 export function useApollo(initialState) {
   const store = useMemo(() => initializeApollo(initialState), [initialState])
   return store
+}
+
+export class Subscribe {
+  constructor() {
+    this.reconCount = 5
+  }
+
+  getClient() {
+    return this.client
+  }
+
+  connect() {
+    this.subscriptionLink = this.wsClient()
+    this.client = this.subscriptionsClient(this.subscriptionLink)
+  }
+
+  wsClient() {
+    const isBrowser = typeof window !== 'undefined'
+    const token = (isBrowser && localStorage.getItem('keep')) || ''
+    const user =
+      (isBrowser && JSON.parse(localStorage.getItem('profile'))) || ''
+
+    return new SubscriptionClient(process.env.NEXT_PUBLIC_SUBSCRIPTION_API, {
+      timeout: 90000,
+      reconnect: true,
+      connectionParams: {
+        treat: isBrowser && navigator.userAgent,
+        slave: token,
+        userId: user?._id
+      },
+      connectionCallback: error => {
+        if (error) {
+          console.log(
+            '<===== AN ERROR ACCURED WHILE CONNECTING TO WEBSOCKET =====>'
+          )
+          const { message } = error
+          if (message === 'Unauhorized') {
+            if (this.reconCount > 0) {
+              this.reconCount--
+              this.subscriptionLink.reconnect()
+            } else {
+              this.subscriptionLink.close()
+            }
+          } else if (message === 'Invalid session') {
+            if (this.reconCount > 0) {
+              this.reconCount--
+              this.subscriptionLink.reconnect()
+            } else {
+              this.subscriptionLink.close()
+            }
+          }
+        } else {
+          console.log('<===== WEBSOCKET CONNECTION SUCCESS =====>')
+        }
+      }
+    })
+  }
+
+  subscriptionsClient(client) {
+    const isBrowser = typeof window !== 'undefined'
+    return new ApolloClient({
+      ssrMode: !isBrowser,
+      link: client,
+      credentials: 'same-origin',
+      cache: new InMemoryCache()
+    })
+  }
 }

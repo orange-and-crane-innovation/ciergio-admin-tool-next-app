@@ -44,7 +44,7 @@ function LoginPage() {
   const [login, { loading, data, client, called, error }] = useMutation(
     LOGIN_MUTATION,
     {
-      onError: _e => {},
+      onError: () => {},
       onCompleted: ({ login }) => {
         localStorage.setItem('keep', login.slave)
         client.resetStore()
@@ -55,7 +55,9 @@ function LoginPage() {
   const [
     getProfile,
     { loading: loadingProfile, data: dataProfile, error: errorProfile }
-  ] = useLazyQuery(GET_PROFILE)
+  ] = useLazyQuery(GET_PROFILE, {
+    onError: () => {}
+  })
 
   useEffect(() => {
     if (!loading) {
@@ -78,11 +80,11 @@ function LoginPage() {
         const accountType = profile?.accounts?.data[0]?.accountType
 
         if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
-          router.replace('/messages')
+          router.push('/messages')
         } else if (isSystemCircle && accountType !== ACCOUNT_TYPES.SUP.value) {
           router.push('/attractions-events')
         } else {
-          router.replace('/properties')
+          router.push('/properties')
         }
       }
     }
