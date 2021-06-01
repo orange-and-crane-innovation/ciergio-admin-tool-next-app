@@ -29,13 +29,14 @@ function CancelTicketModal({ open, onOk, onCancel, loading, form }) {
           name="reason"
           render={({ name, value, onChange }) => (
             <FormTextArea
+              wrapperClassName="h-32"
               maxLength={500}
               placeholder="Enter reason here"
-              options={[]}
-              toolbarHidden
               value={value}
               onChange={onChange}
               error={errors?.reason?.message}
+              toolbarHidden
+              stripHtmls
             />
           )}
         />

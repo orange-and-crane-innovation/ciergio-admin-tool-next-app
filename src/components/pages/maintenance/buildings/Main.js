@@ -8,11 +8,16 @@ import { GET_BUILDINGS } from '../queries'
 
 function Main() {
   const router = useRouter()
-  const query = router?.query
+  const companyId = router?.query?.companyId
+  const complexId = router?.query?.complexId
   const originPath = router?.pathname?.split('/')[1]
   const { data, loading } = useQuery(GET_BUILDINGS, {
+    fetchPolicy: 'network-only',
     variables: {
-      complexId: query?.complexId
+      where: {
+        status: 'active',
+        complexId
+      }
     }
   })
 
@@ -29,7 +34,7 @@ function Main() {
       }
     }
 
-    return `/${path}?complexId=${query?.complexId}&buildingId=${id}`
+    return `/${path}?companyId=${companyId}&complexId=${complexId}&buildingId=${id}`
   }
 
   const buildingsData = useMemo(() => {

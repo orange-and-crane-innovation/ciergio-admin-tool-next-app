@@ -28,9 +28,13 @@ function AddStaffModal({
           label="Staff Name"
           name={name}
           placeholder="Choose staff name"
-          options={options}
+          valueholder="Staffs"
+          options={options || []}
           value={selectedStaff}
-          onChange={e => onSelectStaff(e)}
+          onChange={onSelectStaff}
+          onClear={() => onSelectStaff(null)}
+          isMulti
+          isClearable
         />
       </div>
     </Modal>
@@ -43,7 +47,7 @@ AddStaffModal.propTypes = {
   onCancel: P.func.isRequired,
   loading: P.bool,
   onSelectStaff: P.func,
-  selectedStaff: P.object,
+  selectedStaff: P.array,
   options: P.array.isRequired
 }
 

@@ -1,21 +1,22 @@
 .AssignedStaffsContainer {
-  width: 100px;
-  @apply relative flex;
+  @apply mr-2 relative flex;
 
   .avatarContainer {
-    width: 48px;
-    height: 48px;
-    @apply rounded-full flex justify-center items-center;
+    @apply w-14 h-14;
+    @apply border-2 bg-neutral-300;
+    @apply rounded-full overflow-auto;
   }
 
   .avatarImage {
-    width: 48px;
-    height: 48px;
-    @apply rounded-full border-2 bg-neutral-100;
+    @apply h-full w-full;
+    @apply object-contain object-center;
   }
 
   .countImageContainer {
-    width: 48px;
-    @apply flex rounded-full justify-center items-center bg-neutral-100 border-2 border-white -ml-14;
+    @apply w-14 h-14 -ml-4;
+    @apply flex justify-center items-center;
+    @apply bg-neutral-300 border-2 border-white;
+    @apply border-2 border-white;
+    @apply rounded-full;
   }
 }

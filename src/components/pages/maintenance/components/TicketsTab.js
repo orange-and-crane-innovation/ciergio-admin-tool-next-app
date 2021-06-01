@@ -1,14 +1,20 @@
 import { useState, useMemo, useEffect } from 'react'
 import P from 'prop-types'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
-import { useForm } from 'react-hook-form'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import Link from 'next/link'
+import { FiInbox } from 'react-icons/fi'
+
 import Dropdown from '@app/components/dropdown'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import NotifCard from '@app/components/globals/NotifCard'
+
 import { friendlyDateTimeFormat, displayDateCreated } from '@app/utils/date'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+
 import EmptyStaff from './EmptyStaff'
 import AssignedStaffs from './AssignedStaffs'
-import { GET_ISSUES_BY_STATUS } from '../queries'
+import { GET_ISSUES_BY_STATUS, UPDATE_ISSUE } from '../queries'
 import AddStaffModal from './AddStaffModal'
 
 function TicketsTab({
@@ -21,12 +27,13 @@ function TicketsTab({
   isMutationSuccess,
   staffOptions
 }) {
-  const { handleSubmit, control, errors } = useForm()
   const router = useRouter()
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
   const [showAddStaffModal, setShowAddStaffModal] = useState(false)
+  const [selectedStaff, setSelectedStaff] = useState([])
+  const [selectedTicket, setSelectedTicket] = useState()
 
   const {
     data: issues,
@@ -35,7 +42,7 @@ function TicketsTab({
   } = useQuery(GET_ISSUES_BY_STATUS, {
     variables: {
       where: {
-        status: [type],
+        status: type,
         assigneeAccountId: staffId,
         buildingId,
         categoryId
@@ -46,13 +53,40 @@ function TicketsTab({
     }
   })
 
+  const [updateIssue, { loading: isUpdatingIssue }] = useMutation(
+    UPDATE_ISSUE,
+    {
+      onCompleted: data => {
+        handleAddStaff()
+        refetch()
+      }
+    }
+  )
+
   useEffect(() => {
     if (isMutationSuccess) {
       refetch()
     }
   }, [isMutationSuccess])
 
-  const handleAddStaffSubmit = values => console.log({ values })
+  const handleAddStaffSubmit = () => {
+    updateIssue({
+      variables: {
+        id: selectedTicket,
+        data: {
+          assigneeAccountId: selectedStaff
+            ? selectedStaff?.map(item => item.value)
+            : null
+        }
+      }
+    })
+  }
+
+  const handleAddStaff = () => {
+    setSelectedStaff(null)
+    setSelectedTicket(null)
+    setShowAddStaffModal(old => !old)
+  }
 
   const ticketsData = useMemo(() => {
     return {
@@ -61,8 +95,22 @@ function TicketsTab({
       data:
         issues?.getIssues?.count > 0
           ? issues.getIssues.issue.map(issue => {
-              console.log({ issue })
               const reporter = issue?.reporter
+              const assignee = issue?.assignee?.map(staff => {
+                const user = staff.user
+                return {
+                  label: (
+                    <span>
+                      {`${user.firstName} ${user.lastName} `}
+                      <span className="capitalize text-sm">
+                        {getAccountTypeName(staff.accountType)}
+                      </span>
+                    </span>
+                  ),
+                  value: staff._id
+                }
+              })
+
               const dropdownData = [
                 {
                   label: 'View Ticket Details',
@@ -73,36 +121,41 @@ function TicketsTab({
                 {
                   label: 'Message Resident',
                   icon: <span className="ciergio-mail" />,
-                  function: () =>
-                    router.push(`/messages/${issue.reporter.user._id}`)
+                  function: () => router.push(`/messages/${reporter.user._id}`)
                 },
                 {
                   label: 'Assign Ticket',
                   icon: <span className="ciergio-user" />,
-                  function: () => setShowAddStaffModal(old => !old)
+                  function: () => {
+                    setSelectedTicket(issue?._id)
+                    setSelectedStaff(assignee)
+                    setShowAddStaffModal(old => !old)
+                  }
                 }
               ]
               const unassignedData = {
                 dateCreated: (
-                  <span className="text-sm text-neutral-dark">
+                  <span className="text-base text-neutral-dark">
                     {friendlyDateTimeFormat(issue?.createdAt, 'MMM DD')}
                   </span>
                 ),
                 ticket: (
                   <div>
-                    <p
-                      className={`text-neutral-dark text-sm max-w-xs ${
-                        issue?.readAt !== null ? 'font-semibold' : 'font-normal'
+                    <div
+                      className={`text-neutral-dark text-base max-w-xs ${
+                        issue?.readAt ? 'font-normal' : 'font-semibold'
                       }`}
                     >
-                      {issue?.title}
-                    </p>
+                      <Link href={`/maintenance/details/${issue._id}`}>
+                        <a className="mr-2 hover:underline">{issue?.title}</a>
+                      </Link>
+                    </div>
                     <div className="flex items-center justify-start">
-                      <span className="text-neutral-500 text-xs">
+                      <span className="text-neutral-500 text-md">
                         {issue?.category?.name}
                       </span>
                       <div className="h-1 w-1 rounded-full bg-neutral-500 mx-2"></div>
-                      <span className="text-neutral-500 text-xs">
+                      <span className="text-neutral-500 text-md">
                         {issue?.code}
                       </span>
                     </div>
@@ -110,21 +163,37 @@ function TicketsTab({
                 ),
                 reportedBy: (
                   <div>
-                    <p className="text-secondary-500 text-sm m-0">{`${reporter?.user?.firstName} ${reporter?.user?.lastName}`}</p>
-                    <p className="text-neutral-dark text-xs m-0">{`Unit ${reporter?.unit?.name}`}</p>
+                    <div className="text-secondary-500 text-base">
+                      <Link href={`/residents/view/${reporter?._id}`}>
+                        <a className="hover:underline">
+                          {`${reporter?.user?.firstName} ${reporter?.user?.lastName}`}
+                        </a>
+                      </Link>
+                    </div>
+                    <div className="text-neutral-dark text-md">{`Unit ${reporter?.unit?.name}`}</div>
                   </div>
                 ),
                 staff:
                   issue?.assignee?.length > 0 ? (
-                    <AssignedStaffs staffs={issue?.assignee} />
+                    <AssignedStaffs
+                      staffs={issue?.assignee}
+                      onClick={() => {
+                        setSelectedTicket(issue._id)
+                        setSelectedStaff(assignee)
+                        setShowAddStaffModal(old => !old)
+                      }}
+                    />
                   ) : (
                     <EmptyStaff
-                      onClick={() => setShowAddStaffModal(old => !old)}
+                      onClick={() => {
+                        setSelectedTicket(issue._id)
+                        setShowAddStaffModal(old => !old)
+                      }}
                     />
                   )
               }
 
-              if (type !== 'unassigned') {
+              if (type[0] !== 'unassigned') {
                 return {
                   ...unassignedData,
                   lastUpdate: (
@@ -164,17 +233,18 @@ function TicketsTab({
         setPageLimit={setLimit}
         setCurrentPage={setPage}
         setPageOffset={setOffset}
+        emptyText={
+          <NotifCard icon={<FiInbox />} header="You assigned all tickets!" />
+        }
       />
       <AddStaffModal
         open={showAddStaffModal}
-        onOk={handleSubmit(handleAddStaffSubmit)}
-        onCancel={() => setShowAddStaffModal(old => !old)}
-        loading={false}
-        form={{
-          control,
-          errors
-        }}
+        loading={isUpdatingIssue}
         options={staffOptions || []}
+        onOk={handleAddStaffSubmit}
+        onCancel={() => setShowAddStaffModal(old => !old)}
+        onSelectStaff={setSelectedStaff}
+        selectedStaff={selectedStaff}
       />
     </>
   )
