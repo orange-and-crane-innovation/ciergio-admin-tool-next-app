@@ -65,7 +65,11 @@ function AllResidents() {
     'resident'
   ])
   const debouncedText = useDebounce(searchText, 700)
-  const { data: residents, loading, refetch } = useQuery(GET_RESIDENTS, {
+  const {
+    data: residents,
+    loading,
+    refetch
+  } = useQuery(GET_RESIDENTS, {
     variables: {
       where: {
         accountTypes: selectedAccounts,
@@ -115,8 +119,13 @@ function AllResidents() {
         ...floors
       ]
     }
-    return []
-  })
+    return [
+      {
+        label: 'All Floors',
+        value: null
+      }
+    ]
+  }, [floorNumbers])
 
   const units = useMemo(() => {
     const newUnits = residents?.getAccounts?.data?.map(res => ({
@@ -237,13 +246,15 @@ function AllResidents() {
       <div className="flex items-center justify-end mt-12 mx-4 w-full">
         <div className="flex items-center justify-between w-8/12 flex-row">
           <FormSelect
-            options={floorOptions}
             className="mr-4"
+            options={floorOptions}
+            defaultValue={floorOptions[0]}
             onChange={floor => setSelectedFloor(floor.value)}
           />
           <FormSelect
-            options={accountTypes}
             className="mr-4"
+            options={accountTypes}
+            defaultValue={accountTypes[0]}
             onChange={account => setSelectedAccounts(account?.value)}
           />
           <SearchComponent
