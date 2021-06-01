@@ -12,6 +12,7 @@ const ConversationBox = ({
   selectedConvo,
   newMessage,
   currentUserId,
+  currentAccountId,
   onFetchMore,
   onConvoSelect
 }) => {
@@ -45,6 +46,7 @@ const ConversationBox = ({
                 }
                 convoId={convo._id}
                 currentUserid={currentUserId}
+                currentAccountId={currentAccountId}
                 newMessage={newMessage}
               />
             ))}
@@ -67,6 +69,7 @@ ConversationBox.propTypes = {
   selectedConvo: P.string,
   newMessage: P.array,
   currentUserId: P.string,
+  currentAccountId: P.string,
   onFetchMore: P.func,
   onConvoSelect: P.func
 }
