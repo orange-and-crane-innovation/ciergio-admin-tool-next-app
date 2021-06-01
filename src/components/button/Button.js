@@ -92,7 +92,7 @@ Button.defaultProps = {
 
 Button.propTypes = {
   type: P.oneOf(['button', 'submit']),
-  label: P.string,
+  label: P.oneOfType([P.string, P.node]),
   fluid: P.bool,
   primary: P.bool,
   success: P.bool,

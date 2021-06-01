@@ -132,7 +132,7 @@ p {
 }
 
 .rdw-editor-main {
-  @apply pt-2 pb-8 px-4 mb-8;
+  @apply pt-4 pb-8 px-4;
 }
 
 .rdw-link-modal {

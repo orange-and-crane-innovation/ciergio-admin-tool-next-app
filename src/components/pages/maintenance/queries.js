@@ -6,9 +6,7 @@ export const GET_COMPANIES = gql`
       data {
         _id
         name
-        __typename
       }
-      __typename
     }
   }
 `
@@ -19,9 +17,7 @@ export const GET_COMPLEXES = gql`
       data {
         _id
         name
-        __typename
       }
-      __typename
     }
   }
 `
@@ -32,9 +28,7 @@ export const GET_BUILDINGS = gql`
       data {
         _id
         name
-        __typename
       }
-      __typename
     }
   }
 `
@@ -62,33 +56,30 @@ export const GET_ISSUES_BY_STATUS = gql`
         category {
           _id
           name
-          __typename
         }
         assignee {
           _id
+          accountType
           user {
             _id
             firstName
             lastName
             avatar
           }
-          __typename
         }
         reporter {
+          _id
+          accountType
           user {
             _id
             firstName
             lastName
-            __typename
           }
           unit {
             _id
             name
-            __typename
           }
-          __typename
         }
-        __typename
       }
     }
   }
@@ -97,7 +88,17 @@ export const GET_ISSUES_BY_STATUS = gql`
 export const GET_ISSUES_COUNT = gql`
   query getIssuesCount($where: IssuesInput) {
     getIssues(where: $where) {
-      count
+      countStatus {
+        all
+        assigned
+        ongoing
+        onhold
+        read
+        reopen
+        resolved
+        unassigned
+        unread
+      }
     }
   }
 `
@@ -118,11 +119,8 @@ export const GET_CATEGORIES = gql`
           status
           defaultImage
           type
-          __typename
         }
-        __typename
       }
-      __typename
     }
   }
 `
@@ -135,9 +133,7 @@ export const GET_UNITS = gql`
         _id
         name
         floorNumber
-        __typename
       }
-      __typename
     }
   }
 `
@@ -152,19 +148,14 @@ export const GET_STAFFS = gql`
           _id
           firstName
           lastName
-          __typename
         }
         complex {
           _id
-          __typename
         }
         building {
           _id
-          __typename
         }
-        __typename
       }
-      __typename
     }
   }
 `
@@ -182,9 +173,7 @@ export const GET_RESIDENTS = gql`
           _id
           firstName
           lastName
-          __typename
         }
-        __typename
       }
     }
   }
@@ -196,7 +185,6 @@ export const CREATE_ISSUE = gql`
       _id
       message
       processId
-      __typename
     }
   }
 `
@@ -216,13 +204,11 @@ export const GET_ISSUE_DETAILS = gql`
         category {
           _id
           name
-          __typename
         }
         mediaAttachments {
           _id
           url
           type
-          __typename
         }
         author {
           _id
@@ -231,9 +217,7 @@ export const GET_ISSUE_DETAILS = gql`
             _id
             firstName
             lastName
-            __typename
           }
-          __typename
         }
         reporter {
           _id
@@ -242,9 +226,7 @@ export const GET_ISSUE_DETAILS = gql`
             _id
             firstName
             lastName
-            __typename
           }
-          __typename
         }
         assignee {
           _id
@@ -254,43 +236,35 @@ export const GET_ISSUE_DETAILS = gql`
             avatar
             firstName
             lastName
-            __typename
           }
-          __typename
         }
         company {
           _id
           name
-          __typename
         }
         complex {
           _id
           name
-          __typename
         }
         building {
           _id
           name
-          __typename
         }
         unit {
           _id
           name
-          __typename
         }
-        __typename
       }
-      __typename
     }
   }
 `
 
 export const GET_ISSUE_COMMENTS = gql`
-  query getIssueComments($id: String) {
+  query getIssueComments($id: String, $limit: Int, $offset: Int, $sort: Int) {
     getIssue(id: $id) {
       issue {
         _id
-        comments(limit: 100, offset: 0, sort: -1) {
+        comments(limit: $limit, offset: $offset, sort: $sort) {
           count
           limit
           offset
@@ -301,23 +275,17 @@ export const GET_ISSUE_COMMENTS = gql`
               _id
               url
               type
-              __typename
             }
             user {
               _id
               avatar
               firstName
               lastName
-              __typename
             }
             createdAt
-            __typename
           }
-          __typename
         }
-        __typename
       }
-      __typename
     }
   }
 `
@@ -328,17 +296,18 @@ export const POST_ISSUE_COMMENT = gql`
       _id
       message
       processId
-      __typename
     }
   }
 `
 
 export const GET_ISSUE_HISTORY = gql`
-  query getIssueHistory($id: String) {
+  query getIssueHistory($id: String, $limit: Int, $offset: Int) {
     getIssue(id: $id) {
       issue {
-        history(limit: 10, offset: 0, sort: -1) {
+        history(limit: $limit, offset: $offset) {
           count
+          limit
+          offset
           data {
             _id
             by {
@@ -348,20 +317,14 @@ export const GET_ISSUE_HISTORY = gql`
                 _id
                 firstName
                 lastName
-                __typename
               }
-              __typename
             }
             action
             activity
             createdAt
-            __typename
           }
-          __typename
         }
-        __typename
       }
-      __typename
     }
   }
 `
@@ -372,7 +335,6 @@ export const FOLLOW_ISSUE = gql`
       _id
       processId
       message
-      __typename
     }
   }
 `
@@ -383,7 +345,6 @@ export const UPDATE_ISSUE = gql`
       _id
       processId
       message
-      __typename
     }
   }
 `

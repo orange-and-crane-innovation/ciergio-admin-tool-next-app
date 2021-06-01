@@ -19,8 +19,8 @@ function HoldTicketModal({ open, onOk, onCancel, loading, form }) {
       }}
     >
       <div>
-        <h3 className="text-sm text-neutral-dark">State Reason</h3>
-        <p className="text-sm text-neutral-500">
+        <h3 className="text-base leading-10 font-bold">State Reason</h3>
+        <p className="text-md leading-5">
           Please let resident know why this ticket is put on hold. This message
           will be posted as a comment on this ticket.
         </p>
@@ -29,13 +29,14 @@ function HoldTicketModal({ open, onOk, onCancel, loading, form }) {
           name="reason"
           render={({ name, value, onChange }) => (
             <FormTextArea
+              wrapperClassName="h-32"
               maxLength={500}
               placeholder="Enter reason here"
-              options={[]}
-              toolbarHidden
               value={value}
               onChange={onChange}
               error={errors?.reason?.message}
+              toolbarHidden
+              stripHtmls
             />
           )}
         />

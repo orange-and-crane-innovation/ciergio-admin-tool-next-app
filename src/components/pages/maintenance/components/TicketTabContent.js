@@ -4,26 +4,30 @@ import { useLazyQuery, useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
+import { FaPlusCircle } from 'react-icons/fa'
+
 import Button from '@app/components/button'
 import FormSelect from '@app/components/forms/form-select'
+
 import Search from '@app/components/globals/SearchControl'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import { Card } from '@app/components/globals'
+
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
-import CreateTicketModal from './CreateTicketModal'
-import TicketsTable from './TicketsTab'
-import { FaPlusCircle } from 'react-icons/fa'
-import { HiOutlinePrinter } from 'react-icons/hi'
-import { FiDownload } from 'react-icons/fi'
-import { GET_UNITS, CREATE_ISSUE } from '../queries'
 import { ACCOUNT_TYPES } from '@app/constants'
 
+import CreateTicketModal from './CreateTicketModal'
+import TicketsTable from './TicketsTab'
+
+import { GET_UNITS, CREATE_ISSUE } from '../queries'
+
 export const createTicketValidation = yup.object().shape({
-  unitNumber: yup.string().required(),
-  requestor: yup.string().required(),
-  category: yup.string().required(),
-  title: yup.string().required()
+  unitNumber: yup.string().label('Unit No.').required(),
+  requestor: yup.string().label('Requestor').required(),
+  category: yup.string().label('Category').required(),
+  title: yup.string().label('Title').required(),
+  content: yup.string().label('Content').required()
 })
 
 function Component({
@@ -34,35 +38,39 @@ function Component({
   staff,
   searchText,
   staffOptions,
+  buildingId,
+  companyId,
+  complexId,
+  profileId,
   onCategoryChange,
   onClearCategory,
   onClearSearch,
   onSearchTextChange,
   onStaffChange,
-  onClearStaff,
-  buildingId,
-  companyId,
-  complexId,
-  profileId
+  onClearStaff
 }) {
-  const { handleSubmit, control, errors, register, setValue, watch } = useForm({
-    resolver: yupResolver(createTicketValidation),
-    defaultValues: {
-      unitNumber: '',
-      requestor: '',
-      category: '',
-      title: '',
-      staffId: '',
-      content: ''
-    }
-  })
+  const { handleSubmit, control, errors, register, setValue, watch, reset } =
+    useForm({
+      resolver: yupResolver(createTicketValidation),
+      defaultValues: {
+        unitNumber: '',
+        requestor: '',
+        category: '',
+        title: '',
+        staffId: '',
+        content: ''
+      }
+    })
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const companyID = user?.accounts?.data[0]?.company?._id
   const [showCreateTicketModal, setShowCreateTicketModal] = useState(false)
-  const [imageUploadedData, setImageUploadedData] = useState(null)
+  const [imageUploadedData, setImageUploadedData] = useState([])
   const [isUploading, setIsUploading] = useState(false)
   const [imageUrls, setImageUrls] = useState([])
+
+  register({ name: 'embeddedFiles' })
+
   const [fetchUnits, { data: units }] = useLazyQuery(GET_UNITS, {
     variables: {
       where: {
@@ -72,6 +80,7 @@ function Component({
       }
     }
   })
+
   const [createIssue, { data, loading, called, error }] = useMutation(
     CREATE_ISSUE,
     {
@@ -81,8 +90,12 @@ function Component({
       }
     }
   )
-  register({ name: 'embeddedFiles' })
-  const handleShowModal = () => setShowCreateTicketModal(old => !old)
+
+  const handleShowModal = () => {
+    reset()
+    setShowCreateTicketModal(old => !old)
+  }
+
   const handleOk = values => {
     const {
       unitNumber: unitId,
@@ -92,11 +105,12 @@ function Component({
       staff,
       content
     } = values
+
     createIssue({
       variables: {
         data: {
           buildingId,
-          content,
+          content: content === '' ? null : content,
           categoryId,
           reporterAccountId,
           unitId,
@@ -104,7 +118,7 @@ function Component({
           companyId,
           complexId,
           authorAccountId: profileId,
-          assigneeAccountId: [staff?.value],
+          assigneeAccountId: staff ? staff?.map(item => item.value) : null,
           mediaAttachments: imageUploadedData
         }
       }
@@ -122,13 +136,17 @@ function Component({
 
     const response = await axios.post('/', payload, config)
     if (response.data) {
-      const imageData = response.data.map(item => {
-        return {
-          url: item.location,
-          type: item.mimetype
-        }
+      response.data.map(item => {
+        setImageUrls(prevArr => [...prevArr, item.location])
+        return setImageUploadedData(prevArr => [
+          ...prevArr,
+          {
+            url: item.location,
+            type: item.mimetype
+          }
+        ])
       })
-      setImageUploadedData(imageData)
+      setIsUploading(false)
     }
   }
 
@@ -140,10 +158,6 @@ function Component({
       setIsUploading(true)
       for (const file of files) {
         const reader = new FileReader()
-        reader.onloadend = () => {
-          setImageUrls(imageUrls => [...imageUrls, reader.result])
-          setIsUploading(false)
-        }
         reader.readAsDataURL(file)
         formData.append('photos', file)
         fileList.push(file)
@@ -157,7 +171,11 @@ function Component({
     const images = imageUrls.filter(image => {
       return image !== e.currentTarget.dataset.id
     })
+    const uploadedImages = imageUploadedData.filter(image => {
+      return image.url !== e.currentTarget.dataset.id
+    })
     setImageUrls(images)
+    setImageUploadedData(uploadedImages)
     setValue('images', images.length !== 0 ? images : null)
   }
 
@@ -176,8 +194,12 @@ function Component({
       <div className="flex justify-end w-full">
         <div className="flex items-center w-7/12">
           <FormSelect
-            options={staffOptions}
-            value={staff?.value}
+            options={staffOptions || []}
+            value={
+              staffOptions
+                ? staffOptions.filter(item => item.value === staff?.value)
+                : null
+            }
             onChange={onStaffChange}
             onClear={onClearStaff}
             placeholder="Filter assignee"
@@ -205,20 +227,6 @@ function Component({
         title={title}
         actions={[
           <Button
-            key="print"
-            default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />,
-          <Button
-            key="export"
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />,
-          <Button
             key="create"
             primary
             leftIcon={<FaPlusCircle />}
@@ -227,7 +235,7 @@ function Component({
               fetchUnits()
               handleShowModal()
             }}
-            className="mr-4 mt-4"
+            className="mr-2"
           />
         ]}
         noPadding
@@ -235,11 +243,12 @@ function Component({
           <TicketsTable
             type={type}
             columns={columns}
+            staffOptions={staffOptions}
             staffId={staff?.value}
             buildingId={buildingId}
             categoryId={category}
             searchText={searchText}
-            isMutationSuccess={called && !loading & data & !error}
+            isMutationSuccess={called && !loading && data && !error}
           />
         }
         className="rounded-t-none"
@@ -271,20 +280,20 @@ Component.propTypes = {
   staffOptions: P.array,
   categoryOptions: P.array,
   category: P.string,
-  staff: P.object,
+  staff: P.array,
   searchText: P.string,
-  onCategoryChange: P.func,
-  onSearchTextChange: P.func,
-  onClearSearch: P.func,
-  onClearCategory: P.func,
-  onStaffChange: P.func,
-  onClearStaff: P.func,
   type: P.string,
   columns: P.array,
   buildingId: P.string,
   complexId: P.string,
   companyId: P.string,
-  profileId: P.string
+  profileId: P.string,
+  onCategoryChange: P.func,
+  onSearchTextChange: P.func,
+  onClearSearch: P.func,
+  onClearCategory: P.func,
+  onStaffChange: P.func,
+  onClearStaff: P.func
 }
 
 export default Component

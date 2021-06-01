@@ -244,10 +244,8 @@ export default function Main() {
     }
   }, [selectedConvo, convoID])
 
-  const [
-    fetchAccounts,
-    { data: accounts, loading: loadingAccounts }
-  ] = useLazyQuery(getAccounts)
+  const [fetchAccounts, { data: accounts, loading: loadingAccounts }] =
+    useLazyQuery(getAccounts)
 
   const [
     createNewConversation,
@@ -606,6 +604,7 @@ export default function Main() {
             loading={loadingConvo}
             selectedConvo={selectedConvo?._id}
             currentUserId={profile?._id}
+            currentAccountId={profile?.accounts?.data[0]._id}
             newMessage={newMsg || messageData}
             onFetchMore={onFetchMoreConversations}
             onConvoSelect={handleMessagePreviewClick}

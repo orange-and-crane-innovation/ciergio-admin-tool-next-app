@@ -9,10 +9,14 @@ import { GET_COMPLEXES } from '../queries'
 function Main() {
   const router = useRouter()
   const originPath = router?.pathname?.split('/')[1]
-  const complexId = router.query
+  const companyId = router?.query?.companyId
   const { data, loading } = useQuery(GET_COMPLEXES, {
+    fetchPolicy: 'network-only',
     variables: {
-      companyId: complexId
+      where: {
+        status: 'active',
+        companyId
+      }
     }
   })
   const getNextPath = id => {
@@ -25,7 +29,7 @@ function Main() {
         path = 'residents/invites-requests'
       }
     }
-    return `/${path}/buildings?complexId=${id}`
+    return `/${path}/buildings?companyId=${companyId}&complexId=${id}`
   }
 
   const complexesData = useMemo(() => {

@@ -29,6 +29,8 @@ const FormTextArea = ({
   isEdit,
   toolbarHidden,
   stripHtmls,
+  noBorder,
+  wrapperClassName,
   editorClassName
 }) => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty())
@@ -52,7 +54,8 @@ const FormTextArea = ({
   const containerClasses = useMemo(
     () =>
       clsx(styles.FormTextAreaSubContainer, {
-        [styles.hasError]: !!error
+        [styles.hasError]: !!error,
+        [styles.noBorder]: !!noBorder
       }),
     [error]
   )
@@ -78,6 +81,10 @@ const FormTextArea = ({
   }
 
   useEffect(() => {
+    if (value === '') {
+      onChange('')
+      setEditorState(EditorState.createEmpty())
+    }
     if (isEdit && value !== null) {
       setEditorState(
         EditorState.createWithContent(
@@ -124,6 +131,7 @@ const FormTextArea = ({
     <div className={styles.FormTextAreaContainer}>
       <div className={containerClasses}>
         <Editor
+          wrapperClassName={wrapperClassName}
           editorClassName={editorClassName}
           toolbarHidden={toolbarHidden}
           editorState={editorState}
@@ -172,19 +180,21 @@ const FormTextArea = ({
         />
       </div>
 
-      <div className={styles.FormTextContainer}>
-        <div className={styles.FormError}>{error}</div>
-        {withCounter && (
-          <div className={styles.FormCounter}>
-            {`${
-              maxLength -
-              ((editorState &&
-                editorState.getCurrentContent().getPlainText().length) ||
-                0)
-            } character(s) left`}
-          </div>
-        )}
-      </div>
+      {(error || withCounter) && (
+        <div className={styles.FormTextContainer}>
+          <div className={styles.FormError}>{error}</div>
+          {withCounter && (
+            <div className={styles.FormCounter}>
+              {`${
+                maxLength -
+                ((editorState &&
+                  editorState.getCurrentContent().getPlainText().length) ||
+                  0)
+              } character(s) left`}
+            </div>
+          )}
+        </div>
+      )}
 
       {hasPreview && (
         <textarea
@@ -215,6 +225,8 @@ FormTextArea.propTypes = {
   isEdit: P.bool,
   toolbarHidden: P.bool,
   stripHtmls: P.bool,
+  noBorder: P.bool,
+  wrapperClassName: P.string,
   editorClassName: P.string
 }
 

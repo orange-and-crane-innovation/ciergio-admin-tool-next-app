@@ -65,7 +65,7 @@ const Component = ({ type, title, data }) => {
       ) : type === 'download-qr' ? (
         <div className="qrCode flex flex-col items-center justify-center">
           <QRCode
-            value={`${window.location.origin}public-qr-posts/view/${data._id}`}
+            value={`${window.location.origin}/public-qr-posts/view/${data._id}`}
           />
           <Button
             default

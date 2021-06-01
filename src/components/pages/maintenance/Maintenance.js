@@ -2,6 +2,10 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
 import { useRouter } from 'next/router'
 import useDebounce from '@app/utils/useDebounce'
+
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import { ACCOUNT_TYPES } from '@app/constants'
+
 import Tickets from './components/Tickets'
 import Tabs from '@app/components/tabs'
 import TicketContent from './components/TicketTabContent'
@@ -11,27 +15,27 @@ import { GET_STAFFS, GET_BUILDING } from './queries'
 const tabs = [
   {
     title: 'Unassigned',
-    status: 'unassigned',
+    status: ['unassigned'],
     columns: unassignedColumns
   },
   {
     title: 'In Progress',
-    status: 'ongoing',
+    status: ['ongoing', 'assigned', 'reopen'],
     columns: defaultColumns
   },
   {
     title: 'On Hold',
-    status: 'onhold',
+    status: ['onhold'],
     columns: defaultColumns
   },
   {
     title: 'Resolved',
-    status: 'resolved',
+    status: ['resolved'],
     columns: defaultColumns
   },
   {
     title: 'Cancelled',
-    status: 'cancelled',
+    status: ['cancelled'],
     columns: defaultColumns
   }
 ]
@@ -39,29 +43,61 @@ const tabs = [
 function Maintenance() {
   const { query } = useRouter()
   const user = JSON.parse(localStorage.getItem('profile'))
-  const userCompany = user?.accounts?.data?.find(
-    account => account?.accountType === 'company_admin'
-  )
+  const accountType = user?.accounts?.data[0]?.accountType
   const [category, setCategory] = useState(null)
   const [searchText, setSearchText] = useState('')
-  const [staff, setStaff] = useState('')
+  const [staff, setStaff] = useState([])
   const debouncedSearchText = useDebounce(searchText, 700)
+
   const { data: buildings } = useQuery(GET_BUILDING, {
     variables: {
+      skip: query?.buildingId === undefined,
       where: {
         _id: query?.buildingId
       }
     }
   })
-  const { data: staffs } = useQuery(GET_STAFFS, {
-    variables: {
-      where: {
-        accountTypes: ['company_admin', 'complex_admin'],
-        companyId: userCompany?.company?._id,
+
+  const where = useMemo(() => {
+    if (
+      accountType === ACCOUNT_TYPES.SUP.value ||
+      accountType === ACCOUNT_TYPES.COMPYAD.value
+    ) {
+      return {
+        accountTypes: [
+          ACCOUNT_TYPES.COMPYAD.value,
+          ACCOUNT_TYPES.COMPXAD.value,
+          ACCOUNT_TYPES.BUIGAD.value,
+          ACCOUNT_TYPES.RECEP.value
+        ],
+        companyId: query?.companyId,
+        complexId: query?.complexId,
+        buildingId: query?.buildingId
+      }
+    } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
+      return {
+        accountTypes: [
+          ACCOUNT_TYPES.COMPXAD.value,
+          ACCOUNT_TYPES.BUIGAD.value,
+          ACCOUNT_TYPES.RECEP.value
+        ],
+        companyId: query?.companyId,
+        complexId: query?.complexId,
+        buildingId: query?.buildingId
+      }
+    } else if (accountType === ACCOUNT_TYPES.BUIGAD.value) {
+      return {
+        accountTypes: [ACCOUNT_TYPES.BUIGAD.value, ACCOUNT_TYPES.RECEP.value],
+        companyId: query?.companyId,
         complexId: query?.complexId,
         buildingId: query?.buildingId
       }
     }
+    return {}
+  }, [accountType])
+
+  const { data: staffs } = useQuery(GET_STAFFS, {
+    variables: { where }
   })
 
   const buildingName = buildings?.getBuildings?.data[0]?.name
@@ -78,7 +114,14 @@ function Maintenance() {
       return staffs?.getRepairsAndMaintenanceStaffs?.data.map(staff => {
         const user = staff.user
         return {
-          label: <span>{`${user.firstName} ${user.lastName} `}</span>,
+          label: (
+            <span>
+              {`${user.firstName} ${user.lastName} `}
+              <span className="capitalize text-sm">
+                {getAccountTypeName(staff.accountType)}
+              </span>
+            </span>
+          ),
           value: staff._id
         }
       })
@@ -92,7 +135,7 @@ function Maintenance() {
         {buildingName ? `${buildingName} Tickets` : null}
       </h1>
       <Tickets buildingId={query?.buildingId} />
-      <Tabs defaultTab="unassigned">
+      <Tabs defaultTab={tabs[0].status}>
         <Tabs.TabLabels>
           {tabs.map(tab => (
             <Tabs.TabLabel key={tab.status} id={tab.status}>
@@ -106,19 +149,21 @@ function Maintenance() {
               <TicketContent
                 title={tab.title}
                 type={tab.status}
-                onCategoryChange={handleCategoryChange}
-                onClearCategory={handleClearCategory}
-                onSearchTextChange={handleSearchTextChange}
-                onStaffChange={handleStaffChange}
-                onClearStaff={handleClearStaff}
                 staffOptions={staffOptions}
                 searchText={debouncedSearchText}
                 category={category}
                 staff={staff}
                 columns={tab.columns}
-                onClearSearch={handleClearSearch}
+                companyId={query?.companyId}
+                complexId={query?.complexId}
                 buildingId={query?.buildingId}
                 profileId={user?._id}
+                onCategoryChange={handleCategoryChange}
+                onClearCategory={handleClearCategory}
+                onSearchTextChange={handleSearchTextChange}
+                onStaffChange={handleStaffChange}
+                onClearStaff={handleClearStaff}
+                onClearSearch={handleClearSearch}
               />
             </Tabs.TabPanel>
           ))}

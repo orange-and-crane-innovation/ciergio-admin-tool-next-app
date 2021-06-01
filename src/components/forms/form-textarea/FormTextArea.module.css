@@ -2,7 +2,6 @@
   @apply flex flex-col;
 
   .FormTextAreaSubContainer {
-    @apply h-128;
     @apply border;
     @apply rounded-md;
 
@@ -13,6 +12,10 @@
 
   .hasError {
     @apply border-danger-500;
+  }
+
+  .noBorder {
+    @apply border-0;
   }
 
   .FormTextContainer {

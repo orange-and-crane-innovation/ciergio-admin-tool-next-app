@@ -9,7 +9,6 @@ import UploaderImage from '@app/components/uploader/image'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import { Controller } from 'react-hook-form'
 import { GET_RESIDENTS } from '../queries'
-// import { AiOutlineUserAdd } from 'react-icons/ai'
 
 function CreateTicketModal({
   open,
@@ -24,26 +23,34 @@ function CreateTicketModal({
   staffOptions
 }) {
   const { errors, control, watch } = form
-
   const selectedUnit = watch('unitNumber')
-  const [fetchResidents, { data, loading: loadingResidents }] = useLazyQuery(
-    GET_RESIDENTS
-  )
+  const [fetchResidents, { data, loading: loadingResidents }] =
+    useLazyQuery(GET_RESIDENTS)
 
   useEffect(() => {
     if (selectedUnit) {
-      fetchResidents()
+      fetchResidents({
+        variables: {
+          where: {
+            unitId: selectedUnit
+          }
+        }
+      })
     }
   }, [selectedUnit])
 
   const residentsOptions = useMemo(() => {
     if (data?.getAccounts?.data?.length > 0) {
-      return data.getAccounts.data.map(res => ({
-        label: res.name,
-        value: res._id
-      }))
+      return data.getAccounts.data.map(res => {
+        return {
+          label:
+            res?.user && [res?.user?.firstName, res?.user?.lastName].join(' '),
+          value: res._id
+        }
+      })
     }
   }, [data?.getAccounts])
+
   return (
     <Modal
       visible={open}
@@ -61,7 +68,7 @@ function CreateTicketModal({
           <h2 className="font-bold text-base mb-4 text-neutral-900">
             Requested By
           </h2>
-          <div className="flex w-full justify-between items-center">
+          <div className="flex w-full justify-between items-start">
             <div className="w-4/12">
               <p className="font-medium mb-1">Unit No.</p>
               <Controller
@@ -70,11 +77,15 @@ function CreateTicketModal({
                 render={({ name, value, onChange }) => (
                   <FormSelect
                     name={name}
-                    value={value}
-                    onChange={onChange}
-                    options={unitOptions}
+                    value={
+                      unitOptions
+                        ? unitOptions.filter(item => item.value === value)
+                        : null
+                    }
+                    onChange={e => onChange(e?.value)}
+                    options={unitOptions || []}
                     placeholder="Unit No."
-                    error={errors?.unitNumber?.messsage}
+                    error={errors?.unitNumber?.message}
                   />
                 )}
               />
@@ -87,12 +98,16 @@ function CreateTicketModal({
                 render={({ name, value, onChange }) => (
                   <FormSelect
                     name={name}
-                    value={value}
-                    onChange={onChange}
-                    options={residentsOptions}
+                    value={
+                      residentsOptions
+                        ? residentsOptions.filter(item => item.value === value)
+                        : null
+                    }
+                    onChange={e => onChange(e?.value)}
+                    options={residentsOptions || []}
                     placeholder="Resident's Name"
                     loading={loadingResidents}
-                    error={errors?.requestor?.messsage}
+                    error={errors?.requestor?.message}
                   />
                 )}
               />
@@ -113,8 +128,9 @@ function CreateTicketModal({
                   name={name}
                   type="issue"
                   selected={value}
+                  error={errors?.category?.message}
                   placeholder="Category"
-                  onChange={cat => onChange(cat?.value)}
+                  onChange={e => onChange(e?.value)}
                   onClear={() => onChange(null)}
                 />
               )}
@@ -131,6 +147,7 @@ function CreateTicketModal({
                   onChange={onChange}
                   name={name}
                   placeholder="Enter Title"
+                  error={errors?.title?.message}
                 />
               )}
             />
@@ -142,14 +159,16 @@ function CreateTicketModal({
               control={control}
               render={({ value, onChange, name }) => (
                 <FormTextArea
+                  wrapperClassName="h-32"
                   value={value}
                   onChange={onChange}
                   name={name}
                   placeholder="Give more details about the issue"
                   maxLength={200}
-                  withCounter
-                  options={[]}
                   error={errors?.content?.message ?? null}
+                  withCounter
+                  toolbarHidden
+                  stripHtmls
                 />
               )}
             />
@@ -158,7 +177,8 @@ function CreateTicketModal({
             <p className="font-medium mb-2">Attach Photo</p>
             <UploaderImage
               name="image"
-              maxImages={1}
+              multiple
+              maxImages={3}
               images={imageURLs}
               loading={loading}
               error={errors?.images?.message ?? null}
@@ -182,9 +202,12 @@ function CreateTicketModal({
                     name={name}
                     value={value}
                     onChange={onChange}
-                    options={staffOptions}
+                    options={staffOptions || []}
                     placeholder="Select Staff"
-                    error={errors?.staff?.messsage}
+                    valueholder="Staffs"
+                    error={errors?.staff?.message}
+                    isMulti
+                    isClearable
                   />
                 )}
               />

@@ -156,7 +156,7 @@ const navigation = [
         items: []
       },
       {
-        url: '/maintenance/company',
+        url: '/maintenance',
         icon: 'ciergio-wrench',
         title: 'Maintenance & Repairs',
         items: []

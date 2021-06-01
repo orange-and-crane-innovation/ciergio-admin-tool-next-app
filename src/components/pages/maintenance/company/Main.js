@@ -11,8 +11,11 @@ function Main() {
   const originPath = router?.pathname?.split('/')[1]
 
   const { data, loading } = useQuery(GET_COMPANIES, {
+    fetchPolicy: 'network-only',
     variables: {
-      where: {}
+      where: {
+        status: 'active'
+      }
     }
   })
   const getNextPath = id => {
@@ -25,7 +28,7 @@ function Main() {
         path = 'residents/invites-requests'
       }
     }
-    return `/${path}/complexes?complexId=${id}`
+    return `/${path}/complexes?companyId=${id}`
   }
 
   const complexesData = useMemo(() => {

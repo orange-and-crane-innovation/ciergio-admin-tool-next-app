@@ -35,13 +35,13 @@ function InvitesRequests() {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [selectedBulk, setSelectedBulk] = useState()
   const [selectedData, setSelectedData] = useState([])
+  const [selectedInvite, setSelectedInvite] = useState()
   const [selectedInviteId, setSelectedInviteId] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
   const [pageOffset, setPageOffset] = useState(0)
-  const [showResendBulkInviteModal, setShowResendBulkInviteModal] = useState(
-    false
-  )
+  const [showResendBulkInviteModal, setShowResendBulkInviteModal] =
+    useState(false)
   const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const debouncedText = useDebounce(searchText, 700)
   const { data, loading, refetch } = useQuery(GET_INVITES_AND_REQUESTS, {
@@ -202,6 +202,7 @@ function InvitesRequests() {
                   icon: <span className="ciergio-trash" />,
                   function: () => {
                     setSelectedInviteId(req._id)
+                    setSelectedInvite(req)
                     handleCancelInviteModal()
                   }
                 }
@@ -341,6 +342,7 @@ function InvitesRequests() {
         open={showCancelInviteModal}
         onOk={onCancelInviteSubmit}
         onCancel={handleCancelInviteModal}
+        data={selectedInvite}
         loading={cancellingInvite}
       />
     </section>
