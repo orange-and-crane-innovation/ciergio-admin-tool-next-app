@@ -44,9 +44,11 @@ export const GET_RESIDENTS = gql`
 `
 
 export const GET_RESIDENT_HISTORY = gql`
-  query getResidentHistory($where: GetHistoryParams) {
-    getAccountHistory(where: $where) {
+  query getResidentHistory($where: GetHistoryParams, $limit: Int, $skip: Int) {
+    getAccountHistory(where: $where, limit: $limit, skip: $skip) {
       count
+      limit
+      skip
       data {
         date
         action
@@ -65,7 +67,7 @@ export const GET_FLOOR_NUMBERS = gql`
 `
 
 export const GET_INVITES_AND_REQUESTS = gql`
-  query($where: GetExtensionAccountRequestsParams, $limit: Int, $skip: Int) {
+  query ($where: GetExtensionAccountRequestsParams, $limit: Int, $skip: Int) {
     getExtensionAccountRequests(where: $where, limit: $limit, skip: $skip) {
       count
       limit

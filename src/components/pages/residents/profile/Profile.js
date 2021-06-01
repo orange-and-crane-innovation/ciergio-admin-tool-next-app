@@ -1,9 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useQuery } from '@apollo/client'
+
 import { Card } from '@app/components/globals'
 import Table from '@app/components/table'
+import Pagination from '@app/components/pagination'
+
 import { friendlyDateTimeFormat } from '@app/utils/date'
+
 import { GET_RESIDENTS, GET_RESIDENT_HISTORY } from '../queries'
 import historyMessages from './historyMessages'
 
@@ -24,6 +28,9 @@ const columns = [
 
 function Profile() {
   const router = useRouter()
+  const [activePage, setActivePage] = useState(1)
+  const [limitPage, setLimitPage] = useState(10)
+  const [offsetPage, setOffsetPage] = useState(0)
   const { id } = router?.query
 
   const { data: profile } = useQuery(GET_RESIDENTS, {
@@ -37,7 +44,9 @@ function Profile() {
     variables: {
       where: {
         accountId: id
-      }
+      },
+      limit: limitPage,
+      skip: offsetPage
     }
   })
 
@@ -48,7 +57,8 @@ function Profile() {
   const historyData = useMemo(() => {
     return {
       count: history?.getAccountHistory?.count || 0,
-      limit: 10,
+      limit: history?.getAccountHistory?.limit,
+      skip: history?.getAccountHistory?.skip,
       data:
         history?.getAccountHistory?.count > 0
           ? history.getAccountHistory.data.map(history => {
@@ -69,6 +79,18 @@ function Profile() {
           : []
     }
   }, [history?.getAccountHistory])
+
+  const onPageClick = e => {
+    setActivePage(e)
+    setOffsetPage(limitPage * (e - 1))
+  }
+
+  const onLimitChange = e => {
+    setLimitPage(Number(e.value))
+    setActivePage(1)
+    setOffsetPage(0)
+  }
+
   return (
     <div className="content-wrap pb-4">
       <div className="w-full flex items-center py-4">
@@ -93,7 +115,19 @@ function Profile() {
         <div className="col-start-1 col-end-9">
           <Card
             title="Recent Activity"
-            content={<Table rowNames={columns} items={historyData} />}
+            content={
+              <>
+                <Table rowNames={columns} items={historyData} />
+                {historyData && historyData.count > 10 && (
+                  <Pagination
+                    items={historyData}
+                    activePage={activePage}
+                    onPageClick={onPageClick}
+                    onLimitChange={onLimitChange}
+                  />
+                )}
+              </>
+            }
           />
         </div>
         <div className="col-start-9 col-end-13">
