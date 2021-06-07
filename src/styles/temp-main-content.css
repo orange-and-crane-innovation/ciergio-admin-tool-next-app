@@ -148,7 +148,7 @@ select:active {
   @apply bg-white rounded-md border border-gray-200 mb-5;
 }
 .card .header {
-  @apply p-5 grid grid-cols-3 w-full;
+  @apply p-5 grid grid-cols-3 w-full border-b;
 }
 .card .header .title {
   @apply pt-3 inline-flex space-x-2 content-center text-xl font-semibold;
