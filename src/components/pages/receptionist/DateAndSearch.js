@@ -3,7 +3,7 @@ import Button from '@app/components/button'
 import 'react-datetime/css/react-datetime.css'
 import styles from './main.module.css'
 import FormInput from '@app/components/forms/form-input'
-import { friendlyDateTimeFormat } from '@app/utils/date'
+import { toFriendlyShortDate } from '@app/utils/date'
 import P from 'prop-types'
 import SearchControl from '@app/components/globals/SearchControl'
 import Can from '@app/permissions/can'
@@ -19,47 +19,51 @@ function SelectDate({
 }) {
   return (
     <>
-      <div className="flex flex-row w-full justify-between my-10">
+      <div className="flex flex-col w-full items-end justify-between mb-2 md:flex-row">
         {!noDate && (
-          <div className="flex flex-row w-full mx-4">
+          <div className="flex items-end justify-center w-full md:mr-4 md:justify-start">
             <div className={styles.DateTimeContainer}>
               <p className={styles.DateTimeHeader}>Date</p>
               <Datetime
                 renderInput={(props, openCalendar) => (
                   <>
-                    <div className="relative">
+                    <div
+                      className="relative cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={() => {}}
+                      onClick={openCalendar}
+                    >
                       <FormInput
                         inputClassName={styles.DataTime}
                         name="input-datetime"
-                        value={friendlyDateTimeFormat(date, 'MMMM DD, YYYY')}
+                        value={toFriendlyShortDate(date)}
+                        onChange={() => {}}
                         readOnly
                       />
                       <span
                         className="ciergio-calendar absolute top-3 right-4 cursor-pointer h-full"
-                        onClick={openCalendar}
                         role="button"
                         tabIndex={0}
                         onKeyDown={() => {}}
+                        onClick={openCalendar}
                       />
                     </div>
                   </>
                 )}
-                initialValue={friendlyDateTimeFormat(
-                  new Date(),
-                  'MMMM DD, YYYY'
-                )}
+                initialValue={toFriendlyShortDate(new Date())}
                 dateFormat="MMM DD, YYYY"
                 timeFormat={false}
                 value={date}
                 onChange={handleDateChange}
                 disabled="true"
+                closeOnSelect
               />
             </div>
             <div className="flex items-end">
               <Can
                 perform="guestanddeliveries:view"
                 yes={<Button default label="Show" onClick={showTableData} />}
-                no={<Button default label="Show" disabled />}
               />
             </div>
           </div>
