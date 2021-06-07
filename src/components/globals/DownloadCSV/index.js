@@ -17,7 +17,13 @@ function DownloadCSV({
     <>
       {!disabled ? (
         <CSVLink data={data} filename={`${fileName}.csv`} headers={headers}>
-          <Button icon={<FiDownload />} variant {...rest} label={label} />
+          <Button
+            icon={<FiDownload />}
+            variant
+            {...rest}
+            label={label}
+            noBottomMargin
+          />
         </CSVLink>
       ) : (
         <Button
@@ -26,6 +32,7 @@ function DownloadCSV({
           variant
           {...rest}
           label={label}
+          noBottomMargin
         />
       )}
     </>

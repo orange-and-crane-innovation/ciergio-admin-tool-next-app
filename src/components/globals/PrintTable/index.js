@@ -28,7 +28,14 @@ function PrintTable({
         />
       </div>
       <ReactToPrint
-        trigger={() => <Button icon={icon} label={label} disabled={disabled} />}
+        trigger={() => (
+          <Button
+            icon={icon}
+            label={label}
+            disabled={disabled}
+            noBottomMargin
+          />
+        )}
         content={() => printComponentRef.current}
       />
     </>

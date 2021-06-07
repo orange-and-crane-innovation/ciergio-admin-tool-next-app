@@ -15,7 +15,7 @@ const PrintContent = React.forwardRef(
             subHeaders.map((subheader, index) => (
               <div key={index} className={styles.subHeaderContainer}>
                 <bold className={styles.subHeadersTitle}>
-                  {subheader.title}:
+                  {subheader.title}:&nbsp;
                 </bold>
                 <p className={styles.subHeadersContent}>{subheader.content}</p>
               </div>
