@@ -3,14 +3,18 @@ import P from 'prop-types'
 import { useMutation } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
+
 import showToast from '@app/utils/toast'
 import Modal from '@app/components/modal'
+
+import errorHandler from '@app/utils/errorHandler'
+
 import validationSchema from '../schema'
 import { INVITE_RESIDENT } from '../queries'
 import AddResidentModalContent from './AddResidentModalContent'
 
 function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
-  const { handleSubmit, control, errors } = useForm({
+  const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       unitId: '',
@@ -25,10 +29,16 @@ function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
       showToast('success', `Resident invitation sent.`)
       handleShowModal()
       refetch()
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
 
-  const handleShowModal = () => onShowModal(old => !old)
+  const handleShowModal = () => {
+    reset()
+    onShowModal(old => !old)
+  }
 
   const handleClearModal = () => {
     handleShowModal()
@@ -41,13 +51,13 @@ function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
       inviteResident({
         variables: {
           data: {
-            email,
+            email: email === '' ? null : email,
             firstName,
             lastName,
-            relationship: relationship.label,
+            relationship,
             type: 'resident'
           },
-          unitId: unitId.value
+          unitId
         }
       })
     } catch (error) {
@@ -58,7 +68,7 @@ function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
   return (
     <Modal
       title="Add Resident"
-      okText="Confirm"
+      okText="Add Resident"
       visible={showModal}
       onClose={handleClearModal}
       onCancel={handleClearModal}
@@ -68,9 +78,9 @@ function AddResidentModal({ showModal, onShowModal, buildingId, refetch }) {
       }}
     >
       <AddResidentModalContent
-        form={{ control, errors }}
+        form={{ control, errors, reset }}
         loading={loading}
-        building={buildingId}
+        buildingId={buildingId}
       />
     </Modal>
   )

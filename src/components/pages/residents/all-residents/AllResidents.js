@@ -1,21 +1,31 @@
-import { useState, useMemo, Fragment } from 'react'
-import uniqWith from 'lodash/uniqWith'
-import isEqual from 'lodash/isEqual'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
-import FormSelect from '@app/components/forms/form-select'
-import Button from '@app/components/button'
-import { Card } from '@app/components/globals'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import { FaPlusCircle } from 'react-icons/fa'
-import { HiOutlinePrinter } from 'react-icons/hi'
-import { FiDownload } from 'react-icons/fi'
-import AddResidentModal from '../components/AddResidentModal'
-import Can from '@app/permissions/can'
-import useDebounce from '@app/utils/useDebounce'
+
+import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
-import { GET_RESIDENTS, GET_FLOOR_NUMBERS } from '../queries'
+import FormSelect from '@app/components/forms/form-select'
+import Card from '@app/components/card'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchComponent from '@app/components/globals/SearchControl'
+import NotifCard from '@app/components/globals/NotifCard'
+
+import useDebounce from '@app/utils/useDebounce'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+
+import {
+  GET_BUILDINGS_QUERY,
+  GET_RESIDENTS,
+  GET_FLOOR_NUMBERS
+} from '../queries'
+
+import AddResidentModal from '../components/AddResidentModal'
+
+import Can from '@app/permissions/can'
+
+const _ = require('lodash')
 
 const accountTypes = [
   {
@@ -54,6 +64,7 @@ const columns = [
 function AllResidents() {
   const router = useRouter()
   const { buildingId } = router?.query
+  const [buildingName, setBuildingName] = useState()
   const [searchText, setSearchText] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -64,7 +75,22 @@ function AllResidents() {
     'unit_owner',
     'resident'
   ])
+
   const debouncedText = useDebounce(searchText, 700)
+
+  const {
+    loading: loadingBuildings,
+    data: dataBuildings,
+    error: errorBuildings
+  } = useQuery(GET_BUILDINGS_QUERY, {
+    enabled: false,
+    variables: {
+      where: {
+        _id: buildingId
+      }
+    }
+  })
+
   const {
     data: residents,
     loading,
@@ -88,6 +114,12 @@ function AllResidents() {
       buildingId
     }
   })
+
+  useEffect(() => {
+    if (!loadingBuildings && dataBuildings) {
+      setBuildingName(dataBuildings?.getBuildings?.data[0]?.name)
+    }
+  }, [loadingBuildings, dataBuildings, errorBuildings])
 
   const handleRefetch = () => {
     refetch({
@@ -127,110 +159,90 @@ function AllResidents() {
     ]
   }, [floorNumbers])
 
-  const units = useMemo(() => {
-    const newUnits = residents?.getAccounts?.data?.map(res => ({
-      name: res.unit.name,
-      id: res.unit._id
-    }))
-    return uniqWith(newUnits, isEqual)
-  }, [residents?.getAccounts])
-
-  const residentsData = useMemo(
-    () => ({
+  const residentsData = useMemo(() => {
+    return {
       count: residents?.getAccounts?.count || 0,
-      limit: residents?.getAccounts?.limit || 10,
+      limit: residents?.getAccounts?.limit || 0,
       offset: residents?.getAccounts?.skip || 0,
       data:
-        units?.length > 0
-          ? units.map(unit => {
-              return {
-                name: unit.name,
-                id: unit.id,
-                residents: residents.getAccounts.data.map(res => {
-                  const dropdownData = [
-                    {
-                      label: 'View Profile',
-                      icon: <span className="ciergio-user" />,
-                      function: () => {
-                        router.push(`/residents/view/${res._id}`)
-                      }
-                    }
-                  ]
-
-                  if (res?.unit?._id === unit.id) {
-                    return {
-                      name: `${res.user.firstName} ${res.user.lastName}`,
-                      avatar: res.user.avatar,
-                      accountType: res.accountType,
-                      dropdown: (
-                        <Dropdown
-                          label={<span className="ciergio-more" />}
-                          items={dropdownData}
-                        />
-                      )
-                    }
-                  }
-                  return null
-                })
+        residents?.getAccounts?.data.map(item => {
+          const residentName = `${item?.user?.firstName} ${item?.user?.lastName}`
+          const dropdownData = [
+            {
+              label: 'View Profile',
+              icon: <span className="ciergio-user" />,
+              function: () => {
+                router.push(`/residents/view/${item?._id}`)
               }
-            })
-          : []
-    }),
-    [residents?.getAccounts, units]
-  )
+            }
+          ]
+
+          return {
+            unitId: item?.unit?._id,
+            unit: item?.unit?.name,
+            residentId: item?._id,
+            resident: residentName ?? '',
+            avatar:
+              item?.user?.avatar ??
+              `https://ui-avatars.com/api/?name=${residentName}`,
+            accountType: getAccountTypeName(item?.accountType),
+            button: (
+              <Dropdown
+                label={<span className="ciergio-more" />}
+                items={dropdownData}
+              />
+            )
+          }
+        }) ?? []
+    }
+  }, [residents?.getAccounts])
 
   const customResidentsTable = useMemo(() => {
-    return (
-      <>
-        {residentsData?.data?.map(unit => {
-          return (
-            <Fragment key={unit.id}>
-              <tr className="bg-white">
-                <td
-                  className="border px-8 py-4 text-left"
-                  colSpan={columns?.length}
-                >
-                  <span className="font-bold text-neutral-dark">
-                    {unit.name}
-                  </span>
-                </td>
-              </tr>
-              {unit?.residents?.length > 0
-                ? unit.residents.map((resident, index) => {
-                    if (!resident) return null
-                    return (
-                      <tr key={index} className="bg-white">
-                        <td></td>
-                        <td>
-                          <div className="flex items-center">
-                            <img
-                              src={
-                                resident?.avatar ??
-                                `https://ui-avatars.com/api/?name=${resident?.name}`
-                              }
-                              alt={resident?.name}
-                              className="w-10 h-10 rounded-full mr-4"
-                            />
-                            <span className="font-bold text-neutral-dark">
-                              {resident?.name}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="capitalize">
-                            {resident?.accountType?.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td>{resident?.dropdown}</td>
-                      </tr>
-                    )
-                  })
-                : null}
-            </Fragment>
-          )
-        })}
-      </>
+    const groupedData = _.groupBy(
+      residentsData?.data,
+      item => item.unit || null
     )
+
+    return Object.keys(groupedData).map(key => [
+      <tr key={key} className="bg-neutral-100">
+        <td colSpan={4}>
+          <strong>
+            <Link
+              href={`/properties/unit/${
+                residentsData?.data?.find(item => item.unit === key)?.unitId
+              }/overview`}
+            >
+              <a className="mr-2 hover:underline">{key}</a>
+            </Link>
+          </strong>
+        </td>
+      </tr>,
+      ...groupedData[key].map((item, index) => {
+        return (
+          <tr key={index} style={{ backgroundColor: 'white' }}>
+            <td></td>
+            <td>
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-full overflow-auto border border-neutral-300">
+                  <img
+                    src={item?.avatar}
+                    alt={item?.resident}
+                    className="h-full w-full object-cover object-center"
+                  />
+                </div>
+                <span className="ml-4 font-bold text-neutral-dark">
+                  <Link href={`/residents/view/${item?.residentId}`}>
+                    <a className="mr-2 hover:underline">{item?.resident}</a>
+                  </Link>
+                </span>
+              </div>
+            </td>
+            <td>{item?.accountType}</td>
+            <td>{item.button}</td>
+          </tr>
+        )
+      })
+    ])
   }, [residentsData?.data])
 
   const handleShowModal = () => setShowModal(old => !old)
@@ -238,21 +250,18 @@ function AllResidents() {
   return (
     <section className="content-wrap">
       <h1 className="content-title">
-        {residents?.getAccounts
-          ? `${residents?.getAccounts?.data[0]?.building?.name} Resident List`
-          : null}
+        {buildingName ? `${buildingName} Resident List` : null}
       </h1>
-
-      <div className="flex items-center justify-end mt-12 mx-4 w-full">
+      <div className="flex items-center justify-end mt-12 w-full">
         <div className="flex items-center justify-between w-8/12 flex-row">
           <FormSelect
-            className="mr-4"
+            className="mr-2"
             options={floorOptions}
             defaultValue={floorOptions[0]}
             onChange={floor => setSelectedFloor(floor.value)}
           />
           <FormSelect
-            className="mr-4"
+            className="mr-2"
             options={accountTypes}
             defaultValue={accountTypes[0]}
             onChange={account => setSelectedAccounts(account?.value)}
@@ -273,46 +282,26 @@ function AllResidents() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Residents`}</h1>
-        <div className="flex items-center">
-          <Can
-            perform="residents:print"
-            yes={
-              <Button
-                default
-                icon={<HiOutlinePrinter />}
-                onClick={() => {}}
-                className="mr-4 mt-4"
-              />
-            }
-          />
-          <Can
-            perform="residents:export"
-            yes={
-              <Button
-                default
-                icon={<FiDownload />}
-                onClick={() => {}}
-                className="mr-4 mt-4"
-              />
-            }
-          />
-          <Can
-            perform="residents:create"
-            yes={
-              <Button
-                default
-                leftIcon={<FaPlusCircle />}
-                label="Add Resident"
-                onClick={handleShowModal}
-                className="mr-4 mt-4"
-              />
-            }
-          />
-        </div>
-      </div>
       <Card
+        noPadding
+        header={
+          <div className="flex items-center justify-between">
+            <h1 className="font-bold text-lg">Residents</h1>
+            <div className="flex items-center">
+              <Can
+                perform="residents:create"
+                yes={
+                  <Button
+                    default
+                    leftIcon={<FaPlusCircle />}
+                    label="Add Resident"
+                    onClick={handleShowModal}
+                  />
+                }
+              />
+            </div>
+          </div>
+        }
         content={
           <PrimaryDataTable
             columns={columns}
@@ -325,6 +314,13 @@ function AllResidents() {
             setPageOffset={setPageOffset}
             customBody={customResidentsTable}
             customize
+            emptyText={
+              <NotifCard
+                icon={<i className="ciergio-user" />}
+                header="No residents yet"
+                content="Sorry, this building don't have any residents yet."
+              />
+            }
           />
         }
       />

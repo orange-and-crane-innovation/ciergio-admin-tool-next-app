@@ -15,29 +15,23 @@ export const GET_RESIDENTS = gql`
           lastName
           avatar
           email
-          __typename
         }
         company {
           _id
           name
-          __typename
         }
         complex {
           _id
           name
-          __typename
         }
         building {
           _id
           name
-          __typename
         }
         unit {
           _id
           name
-          __typename
         }
-        __typename
       }
     }
   }
@@ -53,9 +47,7 @@ export const GET_RESIDENT_HISTORY = gql`
         date
         action
         data
-        __typename
       }
-      __typename
     }
   }
 `
@@ -74,7 +66,7 @@ export const GET_INVITES_AND_REQUESTS = gql`
       skip
       data {
         _id
-        __typename
+
         firstName
         lastName
         email
@@ -83,10 +75,8 @@ export const GET_INVITES_AND_REQUESTS = gql`
         unit {
           _id
           name
-          __typename
         }
       }
-      __typename
     }
   }
 `
@@ -97,7 +87,6 @@ export const RESEND_INVITE = gql`
       _id
       message
       processId
-      __typename
     }
   }
 `
@@ -108,7 +97,6 @@ export const CANCEL_INVITE = gql`
       _id
       message
       processId
-      __typename
     }
   }
 `
@@ -121,9 +109,7 @@ export const GET_UNITS = gql`
         _id
         name
         floorNumber
-        __typename
       }
-      __typename
     }
   }
 `
@@ -137,7 +123,20 @@ export const INVITE_RESIDENT = gql`
       _id
       message
       processId
-      __typename
+    }
+  }
+`
+
+export const GET_BUILDINGS_QUERY = gql`
+  query getBuildings($where: GetBuildingsParams, $limit: Int, $skip: Int) {
+    getBuildings(where: $where, limit: $limit, skip: $skip) {
+      count
+      limit
+      skip
+      data {
+        _id
+        name
+      }
     }
   }
 `
