@@ -11,6 +11,7 @@ import NotifCard from '@app/components/globals/NotifCard'
 
 import { friendlyDateTimeFormat, displayDateCreated } from '@app/utils/date'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
+import errorHandler from '@app/utils/errorHandler'
 
 import EmptyStaff from './EmptyStaff'
 import AssignedStaffs from './AssignedStaffs'
@@ -59,6 +60,9 @@ function TicketsTab({
       onCompleted: data => {
         handleAddStaff()
         refetch()
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )

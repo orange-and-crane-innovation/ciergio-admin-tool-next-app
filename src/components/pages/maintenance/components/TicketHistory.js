@@ -79,7 +79,7 @@ function TicketHistory({ ticketId }) {
           <Table rowNames={columns} items={historyData} loading={loading} />
         }
       />
-      {!loading && historyData && (
+      {!loading && historyData?.count > 10 && (
         <div className="-mt-4">
           <Pagination
             items={historyData}

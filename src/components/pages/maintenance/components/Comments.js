@@ -57,10 +57,7 @@ function Comments({ data, loading, onEnterComment, onLoadMore }) {
             {data?.limit < data?.count && (
               <span className="flex justify-center">
                 <Button
-                  label={
-                    <span className="text-info-500">Load more comments</span>
-                  }
-                  type="button"
+                  label="Load more comments"
                   loading={loading}
                   onClick={onLoadMore}
                   noBorder
