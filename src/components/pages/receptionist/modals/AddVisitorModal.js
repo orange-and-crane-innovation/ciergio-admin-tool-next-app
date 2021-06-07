@@ -1,15 +1,18 @@
 import React, { useEffect } from 'react'
-import Modal from '@app/components/modal'
-import P from 'prop-types'
+import { useMutation } from '@apollo/client'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CREATE_REGISTRYRECORD } from '../mutation'
-import { useMutation } from '@apollo/client'
+import P from 'prop-types'
 import moment from 'moment'
+
+import Modal from '@app/components/modal'
+
 import showToast from '@app/utils/toast'
 import { toFriendlyTime, toFriendlyDate } from '@app/utils/date'
+import errorHandler from '@app/utils/errorHandler'
 
 import validationSchema from './schema'
+import { CREATE_REGISTRYRECORD } from '../mutation'
 
 import AddVisitorModalContent from './AddVisitorModalContent'
 
@@ -31,10 +34,12 @@ function AddVisitorModal({
   name
 }) {
   const [uploadImage, setUploadImage] = React.useState(null)
+  const [resetForm, setResetForm] = React.useState(false)
   const { handleSubmit, control, errors, reset } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       unit_number: '',
+      host: '',
       date_of_visit: '',
       time_of_visit: '',
       first_name: '',
@@ -43,63 +48,71 @@ function AddVisitorModal({
       note: ''
     }
   })
-  const handleShowModal = () => onShowModal(old => !old)
+  const handleShowModal = () => {
+    onResetForm()
+    onShowModal(old => !old)
+  }
 
   const [createRegistryRecord, { loading, called, data }] = useMutation(
-    CREATE_REGISTRYRECORD
+    CREATE_REGISTRYRECORD,
+    {
+      onError: e => {
+        errorHandler(e)
+      }
+    }
   )
 
   const handleClearModal = () => {
     handleShowModal()
   }
 
-  const handleOk = async data => {
-    try {
-      const time =
-        data?.time_of_visit && toFriendlyTime(new Date(data?.time_of_visit))
-      const dateOfVisit =
-        data?.date_of_visit && toFriendlyDate(new Date(data?.date_of_visit))
+  const handleOk = data => {
+    const time =
+      data?.time_of_visit && toFriendlyTime(new Date(data?.time_of_visit))
+    const dateOfVisit =
+      data?.date_of_visit && toFriendlyDate(new Date(data?.date_of_visit))
 
-      const checkInSchedule =
-        time && dateOfVisit
-          ? String(moment(dateOfVisit + ' ' + time).format())
-          : null
-
-      const checkedInAt = !data?.date_of_visit
-        ? String(moment.utc(new Date()).local().format())
+    const checkInSchedule =
+      time && dateOfVisit
+        ? String(moment(dateOfVisit + ' ' + time).format())
         : null
 
-      const company = data.company ? data.company : null
+    const checkedInAt = !data?.date_of_visit
+      ? String(moment.utc(new Date()).local().format())
+      : null
 
-      const createRegisterRecord = {
-        categoryId,
-        checkedInAt,
-        checkInSchedule,
-        forWhoId: data.unit_number.value,
-        visitor: {
-          firstName: data.first_name,
-          lastName: data.last_name,
-          company
-        },
-        mediaAttachments: uploadImage || []
-      }
+    const company = data.company ? data.company : null
 
-      await createRegistryRecord({
-        variables: {
-          data: createRegisterRecord,
-          note: (data.note && data.note.replace(/(<([^>]+)>)/gi, '')) || null
-        }
-      })
-    } catch (e) {
-      showToast('warning', 'error on creating record')
-      success(true)
+    const createRegisterRecord = {
+      categoryId,
+      checkedInAt,
+      checkInSchedule,
+      forWhoId: data.unit_number,
+      visitor: {
+        firstName: data.first_name,
+        lastName: data.last_name,
+        company
+      },
+      mediaAttachments: uploadImage || []
     }
+
+    createRegistryRecord({
+      variables: {
+        data: createRegisterRecord,
+        note: data.note !== '' ? data?.note : null
+      }
+    })
   }
 
   const getImage = image => {
     if (image) {
       setUploadImage(image)
     }
+  }
+
+  const onResetForm = () => {
+    reset()
+    setResetForm(prev => !prev)
   }
 
   useEffect(() => {
@@ -117,7 +130,8 @@ function AddVisitorModal({
           last_name: '',
           note: '',
           time_of_visit: '',
-          unit_number: ''
+          unit_number: '',
+          host: ''
         })
       }
     }
@@ -126,7 +140,7 @@ function AddVisitorModal({
   return (
     <Modal
       title={`Add ${singularName(name) || name}`}
-      okText="Add"
+      okText={`Add ${singularName(name)}`}
       visible={showModal}
       onClose={handleClearModal}
       onCancel={handleClearModal}
@@ -137,6 +151,7 @@ function AddVisitorModal({
         buildingId={buildingId}
         getImage={getImage}
         type={name}
+        reset={resetForm}
       />
     </Modal>
   )

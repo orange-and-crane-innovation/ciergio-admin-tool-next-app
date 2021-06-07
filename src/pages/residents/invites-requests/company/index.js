@@ -5,7 +5,7 @@ function CompaniesPage() {
   return (
     <Page
       route="/residents"
-      nestedRoute="/residents/all-residents/company"
+      nestedRoute="/residents/invites-requests/company"
       page={<Company />}
     />
   )

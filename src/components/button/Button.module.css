@@ -44,4 +44,8 @@
   &.noBorder {
     @apply border-0;
   }
+
+  &.noBottomMargin {
+    @apply mb-0;
+  }
 }

@@ -22,6 +22,7 @@ function Button({
   className,
   disabled,
   noBorder,
+  noBottomMargin,
   ...props
 }) {
   const buttonClasses = useMemo(
@@ -36,6 +37,7 @@ function Button({
         [styles.isFluid]: fluid,
         [styles.disabled]: disabled,
         [styles.noBorder]: noBorder,
+        [styles.noBottomMargin]: noBottomMargin,
         [className]: !!className
       }),
     [
@@ -106,7 +108,8 @@ Button.propTypes = {
   icon: P.node,
   className: P.string,
   disabled: P.bool,
-  noBorder: P.bool
+  noBorder: P.bool,
+  noBottomMargin: P.bool
 }
 
 export default Button

@@ -39,9 +39,11 @@ function AddResidentModalContent({ form, buildingId }) {
   const { control, errors } = form
 
   const { data: units } = useQuery(GET_UNITS, {
-    where: {
-      occupied: true,
-      buildingId
+    variables: {
+      where: {
+        occupied: true,
+        buildingId
+      }
     }
   })
 
@@ -62,25 +64,32 @@ function AddResidentModalContent({ form, buildingId }) {
   return (
     <div className="w-full">
       <form>
-        <h3 className="font-bold text-base mb-4">Unit #</h3>
+        <h3 className="mb-2 font-semibold text-base">Unit #</h3>
         <Controller
           name="unitId"
           control={control}
-          render={({ name, onChange }) => (
+          render={({ name, value, onChange }) => (
             <FormSelect
+              placeholder="Choose Unit"
               name={name}
-              onChange={onChange}
+              value={
+                unitOptions
+                  ? unitOptions.filter(item => item.value === value)
+                  : null
+              }
+              onChange={e => {
+                onChange(e.value)
+              }}
               options={unitOptions}
               error={errors?.unitId?.message || null}
             />
           )}
-          defaultValue=""
         />
-        <div className="w-full flex flex-col">
+        <div className="mt-8 w-full flex flex-col">
           <h3 className="text-base font-bold mb-4">About the Resident</h3>
           <div className="w-full flex justify-between align-center">
-            <span className="mr-2 w-full md:w-1/2">
-              <div className="mb-2">First Name</div>
+            <span className="mr-1 w-full md:w-1/2">
+              <div className="mb-2 font-semibold">First Name</div>
               <Controller
                 name="firstName"
                 control={control}
@@ -91,15 +100,14 @@ function AddResidentModalContent({ form, buildingId }) {
                     onChange={onChange}
                     name={name}
                     value={value}
-                    inputClassName="w-full rounded border-gray-300 "
                     error={errors?.firstName?.message || null}
                   />
                 )}
               />
             </span>
 
-            <span className="mr-2 w-full md:w-1/2">
-              <div className="mb-2">Last Name</div>
+            <span className="ml-1 w-full md:w-1/2">
+              <div className="mb-2 font-semibold">Last Name</div>
               <Controller
                 name="lastName"
                 control={control}
@@ -109,7 +117,6 @@ function AddResidentModalContent({ form, buildingId }) {
                     onChange={onChange}
                     name={name}
                     value={value}
-                    inputClassName="w-full rounded border-gray-300"
                     error={errors?.lastName?.message || null}
                   />
                 )}
@@ -117,24 +124,31 @@ function AddResidentModalContent({ form, buildingId }) {
             </span>
           </div>
           <div>
-            <h3 className="text-base font-bold mb-4">Relationship</h3>
+            <h3 className="mt-4 mb-2 text-base font-semibold">Relationship</h3>
             <Controller
               name="relationship"
               control={control}
-              render={({ name, onChange }) => (
+              render={({ name, value, onChange }) => (
                 <FormSelect
+                  placeholder="Select relationship"
                   name={name}
-                  onChange={onChange}
+                  value={
+                    relationshipOptions
+                      ? relationshipOptions.filter(item => item.label === value)
+                      : null
+                  }
+                  onChange={e => {
+                    onChange(e.label)
+                  }}
                   options={relationshipOptions}
                   error={errors?.relationship?.message || null}
                 />
               )}
-              defaultValue=""
             />
           </div>
           <div>
-            <h3 className="text-base leading-7 font-bold">
-              Resident Email (optional)
+            <h3 className="mt-4 text-base leading-7 font-semibold">
+              Resident Email
             </h3>
             <p className="text-md mb-4">
               An invite will be sent if an email is provided.

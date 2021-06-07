@@ -1,22 +1,38 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import P from 'prop-types'
 import { useQuery } from '@apollo/client'
-import { GET_REGISTRYRECORD } from '../query'
-import { DATE } from '@app/utils'
 import moment from 'moment'
+import { BsFillClockFill } from 'react-icons/bs'
+import { FiFile } from 'react-icons/fi'
+import { BiLoaderAlt } from 'react-icons/bi'
+
+import Table from '@app/components/table'
+import LightBox from '@app/components/lightbox'
+import NotifCard from '@app/components/globals/NotifCard'
+
+import { DATE } from '@app/utils'
+import errorHandler from '@app/utils/errorHandler'
+
+import { GET_REGISTRYRECORD } from '../query'
+
+const historyHeader = [
+  {
+    name: 'Date',
+    width: ''
+  },
+  {
+    name: 'Edited By',
+    width: ''
+  }
+]
 
 function RowStyle({ header, child, child2, avatarImg }) {
   return (
     <>
-      <div className="flex flex-col mb-4">
-        <div
-          className="p-0 mb-2 leading-5 text-neutral-dark font-body font-bold text-base"
-          style={{ margin: '0px !important; ' }}
-        >
-          {header}
-        </div>
-        <div className="p-0 m-0 text-neutral-dark flex flex-row">
+      <div className="flex flex-col mb-4 text-base leading-7">
+        <div className="font-semibold">{header}</div>
+        <div className="flex flex-row">
           {avatarImg && (
             <div className="image-wrap mr-2">
               <img src={avatarImg} alt="avatar" width="20" height="20"></img>
@@ -24,79 +40,130 @@ function RowStyle({ header, child, child2, avatarImg }) {
           )}
           {child}
         </div>
-        {child2 && <p className="p-0 m-0 bg-black">{child2}</p>}
+        {child2 && <p className="bg-black">{child2}</p>}
       </div>
     </>
   )
 }
 
-function ModalContent({ recordId }) {
+function ModalContent({ recordId, refetch }) {
   const [recordData, setRecordData] = useState(null)
+  const [imageIndex, setImageIndex] = useState(0)
+  const [imageOpen, setImageOpen] = useState(false)
 
-  const { loading, data, error, refetch } = useQuery(GET_REGISTRYRECORD, {
+  const {
+    loading,
+    data,
+    error,
+    refetch: refetchData
+  } = useQuery(GET_REGISTRYRECORD, {
+    fetchPolicy: 'network-only',
     variables: { recordId }
   })
 
   useEffect(() => {
-    if (recordId) {
-      refetch()
-    }
-  }, [recordId])
+    setRecordData(null)
+    refetchData()
+  }, [refetch])
+
+  const handleImageOpen = index => {
+    setImageOpen(true)
+    handleImageIndex(index)
+  }
+
+  const handleImageClose = () => {
+    setImageOpen(false)
+  }
+
+  const handleImageIndex = index => {
+    setImageIndex(index)
+  }
 
   useEffect(() => {
-    if (!loading && data && !error) {
-      const {
-        createdAt,
-        updatedAt,
-        checkedInAt,
-        checkInSchedule,
-        checkedOutAt,
-        visitor,
-        author,
-        forWho,
-        mediaAttachments,
-        notes
-      } = data?.getRegistryRecord
-      const sched = new Date(+checkInSchedule)
-      const checkedIn = new Date(+checkedInAt)
-      const checkedO = new Date(+checkedOutAt)
+    if (!loading) {
+      if (error) {
+        errorHandler(error)
+      } else if (data && !error) {
+        const {
+          createdAt,
+          updatedAt,
+          checkedInAt,
+          checkInSchedule,
+          checkedOutAt,
+          visitor,
+          author,
+          forWho,
+          mediaAttachments,
+          notes,
+          history
+        } = data?.getRegistryRecord
+        const sched = new Date(+checkInSchedule)
+        const checkedIn = new Date(+checkedInAt)
+        const checkedO = new Date(+checkedOutAt)
 
-      setRecordData({
-        unit: forWho ? forWho?.unit?.name : '',
-        host: forWho
-          ? `${forWho?.user?.firstName} ${forWho?.user?.lastName}`
-          : '',
-        schedule: checkInSchedule
-          ? DATE.toFriendlyDateTime(sched.toUTCString())
-          : DATE.toFriendlyDateTime(checkedIn.toUTCString()),
-        visitor: visitor ? `${visitor?.firstName} ${visitor?.lastName}` : '',
-        checkedIn: checkedInAt
-          ? DATE.toFriendlyDateTime(checkedIn.toUTCString())
-          : '----',
-        checkedOut: checkedOutAt
-          ? DATE.toFriendlyDateTime(checkedO.toUTCString())
-          : '----',
-        createAt: createdAt ? DATE.toFriendlyDateTime(createdAt) : '',
-        author: author
-          ? `${author?.user?.firstName} ${author?.user?.lastName}`
-          : '',
-        updated: updatedAt ? DATE.toFriendlyDateTime(updatedAt) : '',
-        avatar: author ? author?.user?.avatar : null,
-        image: mediaAttachments ? mediaAttachments[0] : {},
-        notes: notes ? notes?.data : ''
-      })
+        setRecordData({
+          unit: forWho ? forWho?.unit?.name : '----',
+          host:
+            forWho && forWho?.user?.firstName && forWho?.user?.lastName
+              ? `${forWho?.user?.firstName} ${forWho?.user?.lastName}`
+              : '----',
+          schedule: checkInSchedule
+            ? DATE.toFriendlyShortDateTime(sched.toUTCString())
+            : DATE.toFriendlyShortDateTime(checkedIn.toUTCString()),
+          visitor: visitor
+            ? `${visitor?.firstName} ${visitor?.lastName}`
+            : '----',
+          checkedIn: checkedInAt
+            ? DATE.toFriendlyShortDateTime(checkedIn.toUTCString())
+            : '----',
+          checkedOut: checkedOutAt
+            ? DATE.toFriendlyShortDateTime(checkedO.toUTCString())
+            : '----',
+          createAt: createdAt
+            ? DATE.toFriendlyShortDateTime(createdAt)
+            : '----',
+          author: author
+            ? `${author?.user?.firstName} ${author?.user?.lastName}`
+            : '----',
+          updated: updatedAt ? DATE.toFriendlyShortDateTime(updatedAt) : '----',
+          avatar: author ? author?.user?.avatar : null,
+          image: mediaAttachments
+            ? mediaAttachments?.map(item => item.url)
+            : [],
+          notes: notes ? notes?.data : '',
+          history: history
+        })
+      }
     }
   }, [loading, data, error])
 
+  const historyData = useMemo(() => {
+    const history = recordData?.history
+    return {
+      count: history?.count ?? 0,
+      limit: history?.limit ?? 0,
+      offset: history?.offset ?? 0,
+      data:
+        history?.data?.length > 0
+          ? history?.data?.map(item => {
+              return {
+                date: DATE.toFriendlyShortDateTime(item?.createdAt),
+                activity: item?.activity
+              }
+            })
+          : []
+    }
+  }, [recordData])
+
   return (
-    <>
-      <div
-        className="w-full flex flex-col p-0 m-0"
-        style={{ margin: '0 !important', padding: '0 !important' }}
-      >
-        {recordData && (
-          <>
-            {' '}
+    <div className="w-full flex flex-col text-base leading-7">
+      {loading ? (
+        <span className="p-16">
+          <BiLoaderAlt className="m-auto icon-spin text-neutral-500 text-3xl" />
+        </span>
+      ) : recordData ? (
+        <>
+          <div className="m-4">
             <div className="w-full grid grid-cols-2">
               <RowStyle header="Unit" child={recordData.unit} />
               <RowStyle header="Host" child={recordData.host} />
@@ -109,95 +176,110 @@ function ModalContent({ recordId }) {
               <RowStyle header="Check In" child={recordData.checkedIn} />
               <RowStyle header="Check Out" child={recordData.checkedOut} />
             </div>
-            <div className="w-full grid grid-cols-2">
-              {recordData.image ? (
+            <div className="w-full">
+              {recordData.image?.length > 0 ? (
                 <div>
                   <RowStyle header="Attached Photo" />
-
-                  <img
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '8px',
-                      marginRight: '8px',
-                      marginVottom: '8px',
-                      objectFit: 'cover',
-                      cursor: 'pointer',
-                      border: '1px solid rgb(221, 221, 221)'
-                    }}
-                    src={recordData.image.url}
-                    alt="attached image"
-                  />
+                  <div className="flex items-center">
+                    {recordData.image.map((media, index) => (
+                      <div
+                        className="mr-1 w-16 h-16 rounded-md overflow-auto border border-neutral-300"
+                        key={media._id}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={() => {}}
+                        onClick={() => handleImageOpen(index)}
+                      >
+                        <img
+                          src={media}
+                          alt={`image-${index}`}
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <RowStyle header="Attached Photo" child="None" />
+                <RowStyle
+                  header={
+                    <span className="text-neutral-500">Attached Photo</span>
+                  }
+                  child="None"
+                />
               )}
             </div>
-            <br />
-            <hr />
-            <div className="w-full pt-5">
-              <div className="p-0 mb-8 leading-5 text-neutral-dark font-body font-bold text-base">
-                Notes
-              </div>
-              {/* {recordData.notes.map((note, index) => {
-        return <RowStyle header="Note" key={index} child={note} />
-      })} */}
-              {recordData.notes.length > 0 &&
-                recordData.notes.map(note => {
+          </div>
+          <div className="border-t border-neutral-300 -mx-4 p-6">
+            <div className="font-semibold mb-2">Notes</div>
+            {recordData.notes.length > 0
+              ? recordData.notes.map(note => {
                   return (
                     <RowStyle
                       key={note._id}
                       header={`${note.content}`}
-                      child={`Added by ${note.author.user.firstName} ${
-                        note.author.user.lastName
-                      } ${moment(note.createdAt).fromNow()}`}
+                      child={
+                        <span className="text-neutral-600 text-md">{`Added by ${
+                          note.author.user.firstName
+                        } ${note.author.user.lastName} ${moment(
+                          note.createdAt
+                        ).fromNow()}`}</span>
+                      }
                     />
                   )
-                })}
+                })
+              : 'None'}
+          </div>
+
+          <div className="border-t border-neutral-300 -mx-4 p-6">
+            <div className="mb-2 font-bold">Edit History</div>
+            <div className="w-full grid grid-cols-2">
+              <RowStyle header="Date Created" child={recordData.createAt} />
+              <RowStyle
+                header="Created By"
+                child={recordData.author}
+                avatarImg={recordData.avatar}
+              />
             </div>
-            <hr />
-            <div className="w-full pt-5">
-              <div className="p-0 mb-8 leading-5 text-neutral-dark font-body font-bold text-base">
-                Edit History
-              </div>
-              <div className="w-full grid grid-cols-2">
-                <RowStyle header="Date Created" child={recordData.createAt} />
-                <RowStyle
-                  header="Created By"
-                  child={recordData.author}
-                  avatarImg={recordData.avatar}
+          </div>
+
+          <div className="-mx-8 mb-4 px-4 border-t border-neutral-300">
+            <Table
+              rowNames={historyHeader}
+              items={historyData}
+              emptyText={
+                <NotifCard
+                  icon={<BsFillClockFill />}
+                  header="No history yet."
                 />
-              </div>
-            </div>
-            <hr />
-            <div className="w-full m-0 pt-10">
-              <div className="grid grid-cols-2 ">
-                <p>Date</p>
-                <p>Edited By</p>
-              </div>
-              <div className="w-full bg-gray-300 pt-4 border-gray-200">
-                <div className="grid grid-cols-2 ">
-                  <p>{recordData.updated}</p>
-                  <p>{recordData.author}</p>
-                </div>
-              </div>
-            </div>{' '}
-          </>
-        )}
-      </div>
-    </>
+              }
+            />
+          </div>
+        </>
+      ) : (
+        <NotifCard icon={<FiFile />} header="No details" />
+      )}
+
+      <LightBox
+        isOpen={imageOpen}
+        images={recordData?.image ?? []}
+        imageIndex={imageIndex}
+        onClick={handleImageIndex}
+        onClose={handleImageClose}
+      />
+    </div>
   )
 }
 
 RowStyle.propTypes = {
-  header: P.string.isRequired,
-  child: P.string.isRequired,
-  child2: P.string,
+  header: P.any.isRequired,
+  child: P.any.isRequired,
+  child2: P.any,
   avatarImg: P.string
 }
 
 ModalContent.propTypes = {
-  recordId: P.string
+  recordId: P.string,
+  refetch: P.any
 }
 
 export default ModalContent

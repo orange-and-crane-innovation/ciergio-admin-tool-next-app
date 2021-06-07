@@ -1,6 +1,6 @@
 .ReceptionistContainer {
-  @apply mb-5;
-  @apply flex flex-col items-start justify-between mt-6;
+  @apply p-4 mt-6;
+  @apply flex flex-col items-start justify-between;
 
   .ReceptionistHeading {
     @apply mb-2;
@@ -10,41 +10,40 @@
 }
 
 .DateTimeContainer {
-  @apply flex flex-col w-1/4;
-  margin-right: 10px;
+  @apply mr-4 w-full md:w-64;
+  @apply flex flex-col;
 }
 
 .DateTimeHeader {
-  @apply font-bold text-gray-400 capitalize text-xl;
-  margin: 0 !important;
-  padding: 0 !important;
+  @apply m-0 p-0 !important;
+  @apply font-bold text-base;
 }
 
 .SearchControlTextContainer {
-  @apply flex justify-center items-center;
+  @apply w-full;
+  @apply flex justify-end items-center;
 }
 
 .DataTime {
-  background-color: rgb(250, 250, 250) !important;
-  border: 0;
-  border-bottom: 1px grey solid;
-  outline: none;
-  padding: 0 !important;
-  margin: 0 !important;
-  @apply font-bold text-3xl;
+  @apply pr-20 pl-0;
+  @apply font-heading;
+  @apply bg-transparent !important;
+  @apply border-0 border-b !important;
+  @apply text-xl font-black !important;
+  @apply rounded-none !important;
+  @apply cursor-pointer !important;
 
-  &:hover {
-    outline: none;
-    border: 0;
-    border-bottom: 1px grey solid;
+  &:focus,
+  &:active {
+    @apply border-b;
   }
 }
 
 .ReceptionistCardHeaderContainer {
-  @apply flex flex-row w-full justify-between;
+  @apply flex flex-row w-full items-center justify-between;
 
   .ReceptionistCardHeader {
-    @apply text-xl text-black;
+    @apply text-lg text-black;
   }
 
   .ReceptionistButtonCard {

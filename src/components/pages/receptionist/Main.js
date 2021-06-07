@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import Tabs from '@app/components/tabs'
 import { useRouter } from 'next/router'
-import styles from './main.module.css'
+import { useQuery } from '@apollo/client'
+
+import Tabs from '@app/components/tabs'
+
+import VisitorIcon from '@app/assets/svg/gnd-visitor.svg'
+import DeliveryIcon from '@app/assets/svg/gnd-delivery.svg'
+import PickUpIcon from '@app/assets/svg/gnd-pick-up.svg'
+import ServiceIcon from '@app/assets/svg/gnd-service.svg'
+
 import LogBook from './logbook'
 import Cancelled from './cancelled'
 import UpComing from './upcoming'
+
 import { GET_CATEGORIES } from './query'
-import { useQuery } from '@apollo/client'
+
+import styles from './main.module.css'
 
 const _ = require('lodash')
 
@@ -19,7 +28,8 @@ const SETTINGS = {
       cancelled: 'cancelled'
     },
     mark: '_VISITORS_',
-    name: 'Visitors'
+    name: 'Visitors',
+    icon: <VisitorIcon />
   },
   deliveries: {
     tabs: ['Logbook', 'Upcoming', 'Cancelled'],
@@ -29,7 +39,8 @@ const SETTINGS = {
       cancelled: 'cancelled'
     },
     mark: '_DELIVERIES_',
-    name: 'Deliveries'
+    name: 'Deliveries',
+    icon: <DeliveryIcon />
   },
   services: {
     tabs: ['Logbook', 'Cancelled'],
@@ -38,7 +49,8 @@ const SETTINGS = {
       cancelled: 'cancelled'
     },
     mark: '_SVC_WORKERS_',
-    name: 'Services'
+    name: 'Services',
+    icon: <ServiceIcon />
   },
   'pick-ups': {
     tabs: ['Logbook', 'Cancelled'],
@@ -47,7 +59,8 @@ const SETTINGS = {
       cancelled: 'cancelled'
     },
     mark: '_PICKUPS_',
-    name: 'Pick-ups'
+    name: 'Pick-ups',
+    icon: <PickUpIcon />
   }
 }
 
@@ -107,31 +120,39 @@ export default function Main() {
             <Tabs.TabPanel id="1">
               {routerName && categoryIds && buildingId && (
                 <LogBook
-                  buildingId={buildingId}
-                  categoryId={categoryIds[SETTINGS[routerName].mark]}
-                  status={SETTINGS[routerName].status.logbook}
-                  name={SETTINGS[routerName].name}
+                  buildingId={buildingId ?? ''}
+                  categoryId={categoryIds[SETTINGS[routerName]?.mark]}
+                  status={SETTINGS[routerName]?.status?.logbook ?? ''}
+                  name={SETTINGS[routerName]?.name ?? ''}
+                  buildingName={buildingName ?? ''}
+                  type={routerName ?? ''}
+                  icon={SETTINGS[routerName]?.icon ?? ''}
                 />
               )}
             </Tabs.TabPanel>
             <Tabs.TabPanel id="2">
               {routerName && categoryIds && buildingId && (
                 <UpComing
-                  buildingId={buildingId}
-                  categoryId={categoryIds[SETTINGS[routerName].mark]}
-                  status={SETTINGS[routerName].status.upcoming}
-                  name={SETTINGS[routerName].name}
+                  buildingId={buildingId ?? ''}
+                  categoryId={categoryIds[SETTINGS[routerName]?.mark]}
+                  status={SETTINGS[routerName]?.status?.upcoming ?? ''}
+                  name={SETTINGS[routerName]?.name ?? ''}
+                  buildingName={buildingName ?? ''}
+                  type={routerName ?? ''}
+                  icon={SETTINGS[routerName]?.icon ?? ''}
                 />
               )}
             </Tabs.TabPanel>
             <Tabs.TabPanel id="3">
               {routerName && categoryIds && buildingId && (
                 <Cancelled
-                  buildingId={buildingId}
-                  categoryId={categoryIds[SETTINGS[routerName].mark]}
-                  status={SETTINGS[routerName].status.cancelled}
-                  name={SETTINGS[routerName].name}
-                  buildingName={buildingName}
+                  buildingId={buildingId ?? ''}
+                  categoryId={categoryIds[SETTINGS[routerName]?.mark]}
+                  status={SETTINGS[routerName]?.status?.cancelled ?? ''}
+                  name={SETTINGS[routerName]?.name ?? ''}
+                  buildingName={buildingName ?? ''}
+                  type={routerName ?? ''}
+                  icon={SETTINGS[routerName]?.icon ?? ''}
                 />
               )}
             </Tabs.TabPanel>

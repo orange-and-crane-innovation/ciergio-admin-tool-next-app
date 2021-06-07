@@ -15,6 +15,7 @@ import { Card } from '@app/components/globals'
 import dayjs from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
+import errorHandler from '@app/utils/errorHandler'
 import { ACCOUNT_TYPES } from '@app/constants'
 
 import {
@@ -99,6 +100,9 @@ function Ticket() {
     onCompleted: () => {
       showToast('success', 'Comment added!')
       refetchComments()
+    },
+    onError: e => {
+      errorHandler(e)
     }
   })
 
@@ -111,6 +115,9 @@ function Ticket() {
             id: ticketId
           }
         })
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
@@ -145,6 +152,9 @@ function Ticket() {
           }
         })
         setUpdateType(null)
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
@@ -155,7 +165,7 @@ function Ticket() {
         data: {
           service: 'issue',
           srcId: ticketId,
-          comment: data?.comment,
+          comment: data?.comment !== '' ? data?.comment : null,
           mediaAttachments: data?.imageAttachments
         }
       }

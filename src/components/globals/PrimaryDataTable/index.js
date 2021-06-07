@@ -20,7 +20,11 @@ function PrimaryDataTable({
     setPageOffset(pageLimit * (e - 1))
   }
 
-  const onLimitChange = limit => setPageLimit(Number(limit.value))
+  const onLimitChange = limit => {
+    setCurrentPage(1)
+    setPageOffset(0)
+    setPageLimit(Number(limit.value))
+  }
 
   return (
     <>
@@ -41,7 +45,7 @@ function PrimaryDataTable({
         />
       )}
 
-      {!loading && data && (
+      {!loading && data?.length > 10 && (
         <div className="px-8">
           <Pagination
             items={data}

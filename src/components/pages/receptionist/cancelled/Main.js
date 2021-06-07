@@ -1,34 +1,44 @@
 import { useState, useEffect } from 'react'
-import DateAndSearch from '../DateAndSearch'
+import { useQuery, useMutation } from '@apollo/client'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { FaEllipsisH } from 'react-icons/fa'
+import { AiOutlineFileText } from 'react-icons/ai'
+import P from 'prop-types'
+import moment from 'moment'
+import { debounce } from 'lodash'
+
 import Table from '@app/components/table'
 import Card from '@app/components/card'
-import styles from '../main.module.css'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Pagination from '@app/components/pagination'
+
 import { BsPlusCircle } from 'react-icons/bs'
-import { useQuery, useMutation } from '@apollo/client'
-import { GET_REGISTRYRECORDS } from '../query'
-import P from 'prop-types'
-import { FaEllipsisH } from 'react-icons/fa'
-import { AiOutlineFileText } from 'react-icons/ai'
-import { ADD_NOTE } from '../mutation'
-import moment from 'moment'
-import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
+
 import Modal from '@app/components/modal'
-import AddVisitorModal from '../modals/AddVisitorModal'
+import PageLoader from '@app/components/page-loader'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
+import PrintTable from '@app/components/globals/PrintTable'
+import NotifCard from '@app/components/globals/NotifCard'
+
+import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
+
+import DateAndSearch from '../DateAndSearch'
+import ViewMoreDetailsModalContent from '../modals/ViewMoreDetailsModalContent'
+import AddVisitorModal from '../modals/AddVisitorModal'
 import AddNoteModal from '../modals/AddNoteModal'
 import ViewNotesModalContent from '../modals/ViewNotesModalContent'
-import { useForm } from 'react-hook-form'
-import * as yup from 'yup'
-import PageLoader from '@app/components/page-loader'
-import { yupResolver } from '@hookform/resolvers/yup'
-import useKeyPress from '@app/utils/useKeyPress'
-import DownloadCSV from '@app/components/globals/DownloadCSV'
-import { DATE } from '@app/utils'
-import PrintTable from '@app/components/globals/PrintTable'
+
+import { GET_REGISTRYRECORDS } from '../query'
+import { ADD_NOTE } from '../mutation'
+
 import Can from '@app/permissions/can'
+
+import styles from '../main.module.css'
 
 const rowName = [
   {
@@ -49,6 +59,15 @@ const rowName = [
   }
 ]
 
+const singularName = pluralName => {
+  const singularName =
+    (pluralName === 'Deliveries' && 'Delivery') ||
+    (pluralName === 'Pick-ups' && 'Package') ||
+    (pluralName === 'Services' && 'Service') ||
+    (pluralName === 'Visitors' && 'Visitor')
+  return singularName
+}
+
 const validationSchema = yup.object().shape({
   note: yup.string().required()
 })
@@ -60,42 +79,42 @@ const TableColStyle = ({ top, bottom }) => {
         top
       ) : (
         <div className="flex flex-col">
-          <p className="text-gray-900 font-bold">{top}</p>
-          <p className="text-gray-900">{bottom}</p>
+          <span className="font-bold">{top || ''}</span>
+          <span className="text-md text-neutral-900">{bottom || ''}</span>
         </div>
       )}
     </>
   )
 }
 
-function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
+function Cancelled({
+  buildingId,
+  categoryId,
+  status,
+  name,
+  buildingName,
+  type,
+  icon
+}) {
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
   const [activePage, setActivePage] = useState(1)
   const [tableData, setTableData] = useState()
   const [date, setDate] = useState(new Date())
-  const [search, setSearch] = useState('')
+  const [searchText, setSearchText] = useState(null)
   const [checkedInAtTime, setCheckedInAtTime] = useState([
     moment(new Date()).startOf('day').format(),
     moment(new Date()).endOf('day').format()
   ])
-  const [searchText, setSearchText] = useState('')
   const [showViewMoreDetails, setShowViewMoreDetails] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [ids, setIds] = useState([])
   const [modalContent, setModalContent] = useState(null)
   const [modalTitle, setModalTitle] = useState(null)
+  const [modalFooter, setModalFooter] = useState(true)
   const [recordId, setRecordId] = useState(null)
   const [modalType, setModalType] = useState(null)
-  const keyPressed = useKeyPress('Enter')
-  const { handleSubmit, control, errors } = useForm({
-    resolver: yupResolver(validationSchema),
-    defaultValues: {
-      note: ''
-    }
-  })
   const [csvData, setCsvData] = useState([
-    ['Cancelled Visitor'],
+    ['Cancelled Visitors'],
     ['Building', buildingName],
     ['Date', DATE.toFriendlyDate(new Date())],
     [''],
@@ -103,10 +122,21 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
   ])
   const [printableData, setPrintableData] = useState([])
 
+  const { handleSubmit, control, errors, reset } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      note: ''
+    }
+  })
+
   const [
     addNote,
     { loading: loadingAddNote, called: calledAddNote, data: dataAddNote }
-  ] = useMutation(ADD_NOTE)
+  ] = useMutation(ADD_NOTE, {
+    onError: e => {
+      errorHandler(e)
+    }
+  })
 
   const { loading, error, data, refetch } = useQuery(GET_REGISTRYRECORDS, {
     variables: {
@@ -118,8 +148,8 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
         buildingId,
         categoryId,
         status,
-        checkedInAt: checkedInAtTime,
-        keyword: search || search !== '' ? search : null
+        updatedAt: checkedInAtTime,
+        keyword: searchText || searchText !== '' ? searchText : null
       }
     }
   })
@@ -136,116 +166,115 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
   }, [loadingAddNote, calledAddNote, dataAddNote])
 
   useEffect(() => {
-    if (!loading && !error && data) {
-      const tableData = []
-      const tempIds = []
-      const tempCSV = []
-
-      data?.getRegistryRecords?.data.forEach((registry, index) => {
-        const num = index + 1
-        tempCSV.push([
-          num,
-          registry.forWhat.name,
-          `${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`,
-          `${registry.visitor.firstName} ${registry.visitor.lastName}`,
-          registry.visitor.company
+    if (!loading) {
+      if (error) {
+        errorHandler(error)
+      } else if (!error && data) {
+        const tableData = []
+        const tempIds = []
+        const tempCSV = []
+        setPrintableData([])
+        setCsvData([
+          ['Cancelled Visitors'],
+          ['Building', buildingName],
+          ['Date', DATE.toFriendlyDate(new Date())],
+          [''],
+          ['#', 'Unit No.', 'Unit Owner', "Visitor's Name", "Visitor's Company"]
         ])
-        const dropdownData = [
-          {
-            label: 'View More Details',
-            icon: <AiOutlineFileText />,
-            function: () => handleViewMoreModal('details', registry._id)
-          }
-        ]
 
-        tableData.push({
-          unitNumberAndOwner: (
-            <TableColStyle
-              key={index}
-              top={`${registry.forWhat.name}`}
-              bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
-            />
-          ),
-          personCompany: (
-            <TableColStyle
-              key={index}
-              top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
-              bottom={registry.visitor.company}
-            />
-          ),
-          addOrView: (
-            <div>
-              <Can
-                perform="guestanddeliveries:viewnote"
-                yes={
-                  <Button
-                    link
-                    label={`View ${
-                      registry.notesCount > 0 ? registry.notesCount : ''
-                    }`}
-                    onClick={e => handleModals('viewnotes', registry._id)}
-                  />
-                }
-                no={
-                  <Button
-                    link
-                    label={`View ${
-                      registry.notesCount > 0 ? registry.notesCount : ''
-                    }`}
-                    disabled
-                  />
-                }
-              />{' '}
-              |{' '}
-              <Can
-                perform="guestanddeliveries:addnote"
-                yes={
-                  <Button
-                    link
-                    label="Add Note"
-                    onClick={e => handleModals('addnotes', registry._id)}
-                  />
-                }
-                no={<Button link label="Add Note" disabled />}
+        data?.getRegistryRecords?.data.forEach((registry, index) => {
+          const num = index + 1
+          tempCSV.push([
+            num,
+            registry.forWhat.name,
+            `${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`,
+            `${registry.visitor.firstName} ${registry.visitor.lastName}`,
+            registry.visitor.company
+          ])
+          const dropdownData = [
+            {
+              label: 'View More Details',
+              icon: <AiOutlineFileText />,
+              function: () => handleModals('details', registry._id)
+            }
+          ]
+
+          tableData.push({
+            unitNumberAndOwner: (
+              <TableColStyle
+                key={index}
+                top={`${registry.forWhat.name}`}
+                bottom={`${registry.forWho.user.firstName} ${registry.forWho.user.lastName}`}
               />
-            </div>
-          ),
-          options: (
-            <div className="h-full w-full flex justify-center items-center">
+            ),
+            personCompany: (
+              <TableColStyle
+                key={index}
+                top={`${registry.visitor.firstName} ${registry.visitor.lastName}`}
+                bottom={registry.visitor.company}
+              />
+            ),
+            addOrView: (
+              <div>
+                <Can
+                  perform="guestanddeliveries:viewnote"
+                  yes={
+                    <>
+                      <Button
+                        link
+                        label={`View ${
+                          registry.notesCount > 0
+                            ? `(${registry.notesCount})`
+                            : ''
+                        }`}
+                        onClick={e => handleModals('viewnotes', registry._id)}
+                        noBottomMargin
+                      />
+                      |
+                    </>
+                  }
+                />
+
+                <Can
+                  perform="guestanddeliveries:addnote"
+                  yes={
+                    <Button
+                      link
+                      label="Add Note"
+                      onClick={e => handleModals('addnotes', registry._id)}
+                      noBottomMargin
+                    />
+                  }
+                />
+              </div>
+            ),
+            options: (
               <Can
                 perform="guestanddeliveries:view:cancel:message"
                 yes={<Dropdown label={<FaEllipsisH />} items={dropdownData} />}
               />
-            </div>
-          )
+            )
+          })
+          tempIds.push(registry._id)
         })
-        tempIds.push(registry._id)
-      })
-      setIds(tempIds)
-      setCsvData(prevState => [...prevState, ...tempCSV])
-      setPrintableData(tempCSV)
-      const table = {
-        count: data?.getRegistryRecords.count || 0,
-        limit: data?.getRegistryRecords.limit || 0,
-        offset: data?.getRegistryRecords.offset || 0,
-        data: tableData || []
-      }
 
-      setTableData(table)
+        const table = {
+          count: data?.getRegistryRecords.count || 0,
+          limit: data?.getRegistryRecords.limit || 0,
+          offset: data?.getRegistryRecords.offset || 0,
+          data: tableData || []
+        }
+
+        setTableData(table)
+        setCsvData(prevState => [...prevState, ...tempCSV])
+        setPrintableData(tempCSV)
+      }
     }
   }, [loading, error, data])
 
   useEffect(() => {
     refetch()
   }, [])
-
-  const handleViewMoreModal = (type, recordId) => {
-    const found = ids.length > 0 ? ids.find(id => recordId === id) : recordId
-
-    if (found) {
-      setShowViewMoreDetails(show => !show)
-    }
-  }
 
   const onPageClick = e => {
     setActivePage(e)
@@ -269,24 +298,15 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
     }
   }
 
-  useEffect(() => {
-    if (keyPressed) {
-      setSearch(searchText)
-      refetch()
-    }
-  }, [keyPressed, searchText])
-
-  const handleSearch = e => {
+  const handleSearch = debounce(e => {
     if (e.target.value === '') {
-      setSearch(null)
+      setSearchText(null)
     } else {
       setSearchText(e.target.value)
     }
-  }
+  }, 1000)
 
-  const onClearSearch = () => {
-    setSearch('')
-  }
+  const onClearSearch = () => setSearchText(null)
 
   const handleShowModal = () => setShowModal(show => !show)
 
@@ -304,15 +324,20 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
 
   const handleModals = (type, id) => {
     if (id) {
+      const random = Math.random()
+      reset()
       switch (type) {
         case 'details':
           setModalTitle('Details')
-          setModalContent(<ViewMoreDetailsModalContent recordId={id} />)
+          setModalContent(
+            <ViewMoreDetailsModalContent recordId={id} refetch={random} />
+          )
+          setModalFooter(null)
           break
         case 'viewnotes':
           setModalTitle('Notes')
-
-          setModalContent(<ViewNotesModalContent id={id} />)
+          setModalContent(<ViewNotesModalContent id={id} refetch={random} />)
+          setModalFooter(null)
           break
         case 'addnotes':
           setModalTitle('Add Note')
@@ -320,6 +345,7 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
           setModalTitle('Add Note')
           setModalType('addnotes')
           setRecordId(id)
+          setModalFooter(true)
           break
         default:
       }
@@ -327,22 +353,17 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
     setShowViewMoreDetails(show => !show)
   }
 
-  const handleAddNote = async data => {
-    try {
-      const content = data.note.replace(/(<([^>]+)>)/gi, '')
+  const handleAddNote = data => {
+    const content = data?.note !== '' ? data?.note : null
 
-      await addNote({
-        variables: {
-          data: {
-            content,
-            recordId
-          }
+    addNote({
+      variables: {
+        data: {
+          content,
+          recordId
         }
-      })
-    } catch (e) {
-      showToast('warning', 'Unecpected error occur. Please try again')
-      setShowViewMoreDetails(false)
-    }
+      }
+    })
   }
 
   const handleClearModal = () => setShowViewMoreDetails(false)
@@ -352,7 +373,7 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
       <DateAndSearch
         date={date}
         handleDateChange={handleDateChange}
-        search={search}
+        search={searchText}
         handleSearchChange={handleSearch}
         showTableData={clickShowButton}
         handleClear={onClearSearch}
@@ -362,8 +383,8 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
         header={
           <div className={styles.ReceptionistCardHeaderContainer}>
             <b className={styles.ReceptionistCardHeader}>
-              {search
-                ? `Search results from "${search}"`
+              {searchText
+                ? `Search results from "${searchText}"`
                 : `Cancelled ${name} (${data?.getRegistryRecords?.count || 0})`}
             </b>
             <div className={styles.ReceptionistButtonCard}>
@@ -371,7 +392,7 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
                 perform="guestanddeliveries:print"
                 yes={
                   <PrintTable
-                    header="Cancelled Visistor"
+                    header="Cancelled Visitors"
                     tableHeader={[
                       '#',
                       'Unit No.',
@@ -389,31 +410,14 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
                     ]}
                   />
                 }
-                no={
-                  <PrintTable
-                    header="Cancelled Visistor"
-                    tableHeader={[]}
-                    tableData={printableData}
-                    subHeaders={[]}
-                    disabled
-                  />
-                }
               />
               <Can
                 perform="guestanddeliveries:download"
                 yes={
                   <DownloadCSV
                     data={csvData}
-                    title="Cancelled Visitor"
-                    fileName="Cancelled"
-                  />
-                }
-                no={
-                  <DownloadCSV
-                    data={csvData}
-                    disabled
-                    title="Cancelled Visitor"
-                    fileName="Cancelled"
+                    title="Cancelled Visitors"
+                    fileName="cancelled_visitors"
                   />
                 }
               />
@@ -423,18 +427,10 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
                 yes={
                   <Button
                     primary
-                    label={`Add ${name}`}
+                    label={`Add ${singularName(name) || name}`}
                     leftIcon={<BsPlusCircle />}
                     onClick={handleShowModal}
-                  />
-                }
-                no={
-                  <Button
-                    primary
-                    disabled
-                    label={`Add ${name}`}
-                    leftIcon={<BsPlusCircle />}
-                    onClick={handleShowModal}
+                    noBottomMargin
                   />
                 }
               />
@@ -445,11 +441,21 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
           loading && !tableData ? (
             <PageLoader />
           ) : (
-            <Table rowNames={rowName} items={tableData} />
+            <Table
+              rowNames={rowName}
+              items={tableData}
+              emptyText={
+                <NotifCard
+                  icon={icon}
+                  header={`No ${type} yet`}
+                  content={`Sorry, you don't have any ${type} yet.`}
+                />
+              }
+            />
           )
         }
       />
-      {!loading && tableData && (
+      {!loading && tableData?.length > 10 && (
         <Pagination
           items={tableData}
           activePage={activePage}
@@ -470,9 +476,12 @@ function Cancelled({ buildingId, categoryId, status, name, buildingName }) {
       <Modal
         title={modalTitle}
         visible={showViewMoreDetails}
+        footer={modalFooter}
+        okText={modalType === 'addnotes' ? 'Submit' : 'Ok'}
         onClose={handleClearModal}
+        onCancel={handleClearModal}
         onShowModal={handleModals}
-        onOk={modalType === 'addnotes' && handleSubmit(handleAddNote)}
+        onOk={modalType === 'addnotes' ? handleSubmit(handleAddNote) : () => {}}
       >
         {modalContent}
       </Modal>
@@ -490,7 +499,9 @@ Cancelled.propTypes = {
   categoryId: P.string.isRequired,
   status: P.oneOfType[(P.string, P.array)],
   name: P.string.isRequired,
-  buildingName: P.string
+  buildingName: P.string,
+  type: P.string.isRequired,
+  icon: P.any.isRequired
 }
 
 export default Cancelled

@@ -1,20 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+
 import Checkbox from '@app/components/forms/form-checkbox'
 import Dropdown from '@app/components/dropdown'
+import Card from '@app/components/card'
 import SelectBulk from '@app/components/globals/SelectBulk'
-import { Card } from '@app/components/globals'
-import { friendlyDateTimeFormat } from '@app/utils/date'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import NotifCard from '@app/components/globals/NotifCard'
+
+import { toFriendlyShortDate } from '@app/utils/date'
 import useDebounce from '@app/utils/useDebounce'
 import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+
 import {
+  GET_BUILDINGS_QUERY,
   GET_INVITES_AND_REQUESTS,
   RESEND_INVITE,
   CANCEL_INVITE
 } from '../queries'
-import AddResidentModal from '../components/AddResidentModal'
 import ResendBulkInviteModal from '@app/components/globals/ResendBulkInvite'
 import SearchComponent from '@app/components/globals/SearchControl'
 import CancelInviteModal from '../components/CancelInviteModal'
@@ -29,8 +35,8 @@ const bulkOptions = [
 function InvitesRequests() {
   const router = useRouter()
   const { buildingId } = router?.query
+  const [buildingName, setBuildingName] = useState()
   const [searchText, setSearchText] = useState('')
-  const [showAddResidentModal, setShowAddResidentModal] = useState(false)
   const [isBulkDisabled, setIsBulkDisabled] = useState(true)
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [selectedBulk, setSelectedBulk] = useState()
@@ -44,6 +50,20 @@ function InvitesRequests() {
     useState(false)
   const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const debouncedText = useDebounce(searchText, 700)
+
+  const {
+    loading: loadingBuildings,
+    data: dataBuildings,
+    error: errorBuildings
+  } = useQuery(GET_BUILDINGS_QUERY, {
+    enabled: false,
+    variables: {
+      where: {
+        _id: buildingId
+      }
+    }
+  })
+
   const { data, loading, refetch } = useQuery(GET_INVITES_AND_REQUESTS, {
     variables: {
       limit: pageLimit,
@@ -55,6 +75,7 @@ function InvitesRequests() {
       }
     }
   })
+
   const [resendInvite, { loading: resendingInvite }] = useMutation(
     RESEND_INVITE,
     {
@@ -63,9 +84,13 @@ function InvitesRequests() {
         if (showResendBulkInviteModal) {
           handleResendBulk()
         }
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
+
   const [cancelInvite, { loading: cancellingInvite }] = useMutation(
     CANCEL_INVITE,
     {
@@ -83,9 +108,19 @@ function InvitesRequests() {
             }
           }
         })
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
+
+  useEffect(() => {
+    if (!loadingBuildings && dataBuildings) {
+      setBuildingName(dataBuildings?.getBuildings?.data[0]?.name)
+    }
+  }, [loadingBuildings, dataBuildings, errorBuildings])
+
   const columns = React.useMemo(
     () => [
       {
@@ -220,19 +255,12 @@ function InvitesRequests() {
                 unitNumber: req.unit.name,
                 invite: (
                   <>
-                    <p className="p-0 text-base">{`${req.firstName} ${req.lastName}`}</p>
-                    <p className="text-sm mx-1 text-neutral-500">{req.email}</p>
+                    <div className="text-base">{`${req.firstName} ${req.lastName}`}</div>
+                    <div className="text-sm text-neutral-500">{req.email}</div>
                   </>
                 ),
-                accountType: (
-                  <span className="capitalize">
-                    {req.accountType?.replace('_', ' ')}
-                  </span>
-                ),
-                dateSent: friendlyDateTimeFormat(
-                  req.createdAt,
-                  'MMMM DD, YYYY'
-                ),
+                accountType: getAccountTypeName(req.accountType),
+                dateSent: toFriendlyShortDate(req.createdAt),
                 dropdown: (
                   <Dropdown
                     label={<span className="ciergio-more" />}
@@ -246,7 +274,6 @@ function InvitesRequests() {
     [data?.getExtensionAccountRequests]
   )
 
-  const handleAddResidentModal = () => setShowAddResidentModal(old => !old)
   const handleCancelInviteModal = () => setShowCancelInviteModal(old => !old)
 
   const onBulkChange = e => {
@@ -289,9 +316,11 @@ function InvitesRequests() {
 
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Resident List</h1>
+      <h1 className="content-title">
+        {buildingName ? `${buildingName} Resident List` : null}
+      </h1>
 
-      <div className="flex items-center justify-between mt-12 mx-4 w-full">
+      <div className="flex items-center justify-between mt-12 w-full">
         <SelectBulk
           placeholder="Bulk Action"
           options={bulkOptions}
@@ -302,7 +331,7 @@ function InvitesRequests() {
           onBulkClear={onClearBulk}
           selected={selectedBulk}
         />
-        <div className="relative mr-4">
+        <div className="relative">
           <SearchComponent
             placeholder="Search All"
             onSearch={e => setSearchText(e.target.value)}
@@ -313,7 +342,12 @@ function InvitesRequests() {
       </div>
 
       <Card
-        title={'Pending Invites'}
+        noPadding
+        header={
+          <div className="flex items-center justify-between py-2">
+            <h1 className="font-bold text-lg">Pending Invites</h1>
+          </div>
+        }
         content={
           <PrimaryDataTable
             columns={columns}
@@ -324,12 +358,15 @@ function InvitesRequests() {
             setPageOffset={setPageOffset}
             pageLimit={pageLimit}
             setPageLimit={setPageLimit}
+            emptyText={
+              <NotifCard
+                icon={<i className="ciergio-user" />}
+                header="No pending invites"
+                content="Sorry, this building don't have any pending invites yet."
+              />
+            }
           />
         }
-      />
-      <AddResidentModal
-        showModal={showAddResidentModal}
-        onShowModal={handleAddResidentModal}
       />
       <ResendBulkInviteModal
         open={showResendBulkInviteModal}

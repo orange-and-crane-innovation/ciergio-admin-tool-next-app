@@ -212,6 +212,15 @@ export const GET_REGISTRYRECORD = gql`
           name
         }
       }
+      history {
+        count
+        limit
+        offset
+        data {
+          activity
+          createdAt
+        }
+      }
     }
   }
 `

@@ -15,6 +15,7 @@ import { Card } from '@app/components/globals'
 
 import axios from '@app/utils/axios'
 import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
 import { ACCOUNT_TYPES } from '@app/constants'
 
 import CreateTicketModal from './CreateTicketModal'
@@ -87,6 +88,9 @@ function Component({
       onCompleted: () => {
         handleShowModal()
         showToast('success', `Ticket created.`)
+      },
+      onError: e => {
+        errorHandler(e)
       }
     }
   )
