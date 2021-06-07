@@ -17,15 +17,6 @@
       th {
         @apply p-4;
         @apply text-left;
-        @apply border-t;
-      }
-
-      th:first-child {
-        @apply border-t border-l;
-      }
-
-      th:last-child {
-        @apply border-t border-r;
       }
     }
 
