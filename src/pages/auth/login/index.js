@@ -44,11 +44,11 @@ function LoginPage() {
   const [login, { loading, data, client, called, error }] = useMutation(
     LOGIN_MUTATION,
     {
-      onError: () => {},
       onCompleted: ({ login }) => {
         localStorage.setItem('keep', login.slave)
         client.resetStore()
-      }
+      },
+      onError: () => {}
     }
   )
 
@@ -56,6 +56,7 @@ function LoginPage() {
     getProfile,
     { loading: loadingProfile, data: dataProfile, error: errorProfile }
   ] = useLazyQuery(GET_PROFILE, {
+    fetchPolicy: 'network-only',
     onError: () => {}
   })
 

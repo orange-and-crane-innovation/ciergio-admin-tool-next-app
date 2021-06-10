@@ -1,7 +1,5 @@
 /* eslint-disable jsx-a11y/media-has-caption */
-import React from 'react'
-import { useQuery } from '@apollo/client'
-import gql from 'graphql-tag'
+import React, { useMemo } from 'react'
 import P from 'prop-types'
 import { FiMenu } from 'react-icons/fi'
 
@@ -9,35 +7,15 @@ import Dropdown from './dropdown'
 
 import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
 
-export const GET_PROFILE = gql`
-  query {
-    getProfile {
-      _id
-      email
-      avatar
-      firstName
-      lastName
-      accounts {
-        data {
-          _id
-          accountType
-          active
-        }
-      }
-    }
-  }
-`
-
 const Navbar = ({ onToggle, isCollapsed }) => {
-  const { data } = useQuery(GET_PROFILE, {
-    fetchPolicy: 'cache-only'
-  })
+  const isBrowser = typeof window !== 'undefined'
+  const profile = isBrowser && JSON.parse(localStorage.getItem('profile'))
 
-  const profile = data ? data.getProfile : {}
-  const account =
-    profile.accounts.data.length > 0
+  const account = useMemo(() => {
+    return profile?.accounts?.data?.length > 0
       ? profile.accounts.data.filter(account => account.active === true)
       : []
+  }, [profile])
 
   return (
     <div className="navbar navbar-1">

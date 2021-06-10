@@ -128,12 +128,15 @@ const withAuth = WrappedComponent => {
     const activeAccount = user?.accounts?.data[0]
 
     const { loading, error } = useQuery(GET_PROFILE_QUERY, {
-      onError: () => {},
+      fetchPolicy: 'network-only',
       onCompleted: ({ getProfile }) => {
         localStorage.setItem('profile', JSON.stringify(getProfile))
         SubscribeInstance.connect()
         newMessageSubscription()
         newExtensionRequestSubscription()
+      },
+      onError: () => {
+        alert('withAuth')
       }
     })
 
@@ -190,7 +193,7 @@ const withAuth = WrappedComponent => {
       error: errorConvo,
       refetch: refetchConvo
     } = useQuery(GET_UNREAD_MESSAGE_QUERY, {
-      skip: activeAccount?._id === null,
+      skip: activeAccount?._id === undefined,
       fetchPolicy: 'network-only',
       variables: {
         accountId: activeAccount?._id
@@ -200,6 +203,9 @@ const withAuth = WrappedComponent => {
     useEffect(() => {
       if (!loading) {
         if (error) {
+          localStorage.removeItem('keep')
+          localStorage.removeItem('profile')
+
           router.replace({
             pathname: '/auth/login',
             // TODO: We can create settings to set the redirect page
