@@ -170,7 +170,7 @@ const UnitTypeComponent = () => {
   useEffect(() => {
     if (!loadingUpdate) {
       if (errorUpdate) {
-        errorHandler(dataUpdate)
+        errorHandler(errorUpdate)
       } else if (calledUpdate && dataUpdate) {
         showToast('success', 'You have successfully updated a unit type.')
         onCancel()
