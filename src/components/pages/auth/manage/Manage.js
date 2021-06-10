@@ -113,14 +113,15 @@ function ManageAccount({ onSubmit, isSubmitting }) {
     error: errorProfile,
     refetch
   } = useQuery(GET_PROFILE, {
-    fetchPolicy: 'cache-only'
+    fetchPolicy: 'cache-only',
+    onError: () => {}
   })
 
   const [verifyCode, { loading, data, error }] = useLazyQuery(
     VERIFY_CODE_QUERY,
     {
-      onError: _e => {},
-      fetchPolicy: 'network-only'
+      fetchPolicy: 'network-only',
+      onError: () => {}
     }
   )
 
@@ -132,7 +133,7 @@ function ManageAccount({ onSubmit, isSubmitting }) {
       called: calledCreate,
       error: errorCreate
     }
-  ] = useMutation(CREATE_ACCOUNT_MUTATION, { onError: _e => {} })
+  ] = useMutation(CREATE_ACCOUNT_MUTATION, { onError: () => {} })
 
   useEffect(() => {
     if (!loadingProfile) {
@@ -275,7 +276,10 @@ function ManageAccount({ onSubmit, isSubmitting }) {
                       ACCOUNT_TYPES.BUIGAD.value
                     ].includes(item?.accountType) && (
                       <div className="relative">
-                        <div key={index} onClick={() => onSubmit(item?._id)}>
+                        <div
+                          key={index}
+                          onClick={() => onSubmit(item?._id, item?.accountType)}
+                        >
                           <Userinfo
                             imgSrc={
                               item?.accountType === ACCOUNT_TYPES.COMPYAD.value

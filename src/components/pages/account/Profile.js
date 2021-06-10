@@ -1,10 +1,11 @@
 /* eslint-disable react/jsx-key */
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 import { FiMail, FiLock, FiUser } from 'react-icons/fi'
 
 import Card from '@app/components/card'
 import PageHeader from '@app/components/page-header'
+import PageLoader from '@app/components/page-loader'
 
 import getAccountTypeName from '@app/utils/getAccountTypeName'
 import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
@@ -50,14 +51,21 @@ export const GET_PROFILE = gql`
 
 function Profile() {
   const { loading, data } = useQuery(GET_PROFILE, {
-    fetchPolicy: 'cache-only'
+    fetchPolicy: 'cache-only',
+    onError: () => {}
   })
-  if (loading) return <div>Loading...</div>
-  const profile = data ? data.getProfile : {}
 
-  const account = profile.accounts.data.filter(
-    account => account.active === true
-  )
+  const profile = useMemo(() => {
+    return data ? data?.getProfile : {}
+  }, [data])
+
+  const account = useMemo(() => {
+    return profile?.accounts?.data?.length > 0
+      ? profile.accounts.data.filter(account => account.active === true)
+      : []
+  }, [profile])
+
+  if (loading) return <PageLoader />
 
   return (
     <div className={styles.PageContainer}>

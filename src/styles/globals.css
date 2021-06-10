@@ -127,12 +127,17 @@ p {
 /* WSIWYG EDITOR */
 .rdw-editor-wrapper {
   @apply bg-white;
-  @apply rounded-md;
+  @apply rounded-md overflow-hidden;
   height: 28rem;
 }
 
 .rdw-editor-main {
   @apply pt-4 pb-8 px-4;
+  height: 85% !important;
+
+  &::-webkit-scrollbar {
+    @apply block;
+  }
 }
 
 .rdw-link-modal {
