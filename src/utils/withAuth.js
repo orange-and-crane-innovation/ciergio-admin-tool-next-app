@@ -135,9 +135,7 @@ const withAuth = WrappedComponent => {
         newMessageSubscription()
         newExtensionRequestSubscription()
       },
-      onError: () => {
-        alert('withAuth')
-      }
+      onError: () => {}
     })
 
     const newMessageSubscription = () => {
