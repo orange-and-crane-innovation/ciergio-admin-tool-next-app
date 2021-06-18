@@ -20,8 +20,7 @@ export default function MessagePreviewItem({
   const user = useMemo(() => {
     if (data?.participants?.data?.length === 2) {
       return data.participants.data.filter(
-        item =>
-          item?.user?._id !== currentUserid || item?._id !== currentAccountId
+        item => item?.user?._id !== currentUserid
       )[0]?.user
     } else if (data?.participants?.data?.length > 1) {
       return data.participants.data.filter(item =>
@@ -33,8 +32,7 @@ export default function MessagePreviewItem({
   const accountType = useMemo(() => {
     if (data?.participants?.data?.length === 2) {
       return data.participants.data.filter(
-        item =>
-          item?.user?._id !== currentUserid || item?._id !== currentAccountId
+        item => item?.user?._id !== currentUserid
       )[0]?.accountType
     } else if (data?.participants?.data?.length > 1) {
       return data.participants.data.filter(item =>
