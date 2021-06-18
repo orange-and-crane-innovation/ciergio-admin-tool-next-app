@@ -67,7 +67,7 @@ ConversationBox.propTypes = {
   conversations: P.object,
   loading: P.bool,
   selectedConvo: P.string,
-  newMessage: P.array,
+  newMessage: P.object,
   currentUserId: P.string,
   currentAccountId: P.string,
   onFetchMore: P.func,
