@@ -1,5 +1,5 @@
 .messagesContainer {
-  @apply grid grid-cols-3 gap-0 -m-4 text-base overflow-auto;
+  @apply grid grid-cols-3 gap-0 -m-4 text-base overflow-hidden;
   height: calc(100vh - 57.9px);
 
   .messagesListContainer {
