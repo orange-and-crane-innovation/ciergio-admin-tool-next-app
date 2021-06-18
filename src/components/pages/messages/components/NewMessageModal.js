@@ -34,35 +34,42 @@ export default function NewMessageModal({
 
   const mappedMembers = useMemo(() => {
     if (users?.length > 0) {
-      return users.map(user => {
-        if (
-          user?._id !== accountId &&
-          (user?.accountType === ACCOUNT_TYPES.MEM.value ||
-            user?.accountType === ACCOUNT_TYPES.UNIT.value ||
-            user?.accountType === ACCOUNT_TYPES.RES.value)
-        ) {
-          return user
-        }
-        return undefined
-      })
+      return users
+        .map(user => {
+          if (
+            user?._id !== accountId &&
+            (user?.accountType === ACCOUNT_TYPES.MEM.value ||
+              user?.accountType === ACCOUNT_TYPES.UNIT.value ||
+              user?.accountType === ACCOUNT_TYPES.RES.value)
+          ) {
+            return user
+          }
+          return undefined
+        })
+        .filter(item => {
+          return item !== undefined
+        })
     }
   }, [users])
 
   const mappedAdmins = useMemo(() => {
     if (users?.length > 0) {
-      return users.map(user => {
-        if (
-          user?._id !== accountId &&
-          (user?.accountType === ACCOUNT_TYPES.SUP.value ||
-            user?.accountType === ACCOUNT_TYPES.COMPYAD.value ||
-            user?.accountType === ACCOUNT_TYPES.COMPXAD.value ||
-            user?.accountType === ACCOUNT_TYPES.BUIGAD.value ||
-            user?.accountType === ACCOUNT_TYPES.RECEP.value)
-        ) {
-          return user
-        }
-        return undefined
-      })
+      return users
+        .map(user => {
+          if (
+            user?._id !== accountId &&
+            (user?.accountType === ACCOUNT_TYPES.COMPYAD.value ||
+              user?.accountType === ACCOUNT_TYPES.COMPXAD.value ||
+              user?.accountType === ACCOUNT_TYPES.BUIGAD.value ||
+              user?.accountType === ACCOUNT_TYPES.RECEP.value)
+          ) {
+            return user
+          }
+          return undefined
+        })
+        .filter(item => {
+          return item !== undefined
+        })
     }
   }, [users])
 
@@ -108,6 +115,7 @@ export default function NewMessageModal({
                 <User
                   key={admin?._id}
                   data={admin}
+                  admins={mappedAdmins}
                   handleClick={onSelectUser}
                 />
               )
@@ -124,6 +132,7 @@ export default function NewMessageModal({
                 <User
                   key={member?._id}
                   data={member}
+                  admins={mappedAdmins}
                   handleClick={onSelectUser}
                 />
               )
@@ -144,7 +153,7 @@ export default function NewMessageModal({
   )
 }
 
-const User = ({ data, handleClick }) => {
+const User = ({ data, admins, handleClick }) => {
   const accountId = data?._id
   const user = data?.user
   const firstName = user?.firstName
@@ -154,7 +163,7 @@ const User = ({ data, handleClick }) => {
   return (
     <div
       className={styles.newMessageUserItem}
-      onClick={() => handleClick(accountId)}
+      onClick={() => handleClick(accountId, admins)}
       role="button"
       tabIndex={0}
       onKeyDown={() => {}}
@@ -183,6 +192,7 @@ const User = ({ data, handleClick }) => {
 
 User.propTypes = {
   data: P.object,
+  admins: P.object,
   handleClick: P.func
 }
 

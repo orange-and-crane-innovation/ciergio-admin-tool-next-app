@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useQuery, gql } from '@apollo/client'
 import { useRouter } from 'next/router'
 import { useEffect, useState, useContext } from 'react'
@@ -118,11 +119,12 @@ export const GET_UNREAD_MESSAGE_QUERY = gql`
 const withAuth = WrappedComponent => {
   const AuthComponent = props => {
     const router = useRouter()
-    // eslint-disable-next-line no-unused-vars
     const [state, dispatch] = useContext(Context)
     const [loaded, setLoaded] = useState(false)
-    const [notificationTitle, setNotificationTitle] = useState('')
-    const [notificationMessage, setNotificationMessage] = useState()
+    const [notification, setNotification] = useState({
+      title: '',
+      message: ''
+    })
     const isBrowser = typeof window !== 'undefined'
     const user = isBrowser && JSON.parse(localStorage.getItem('profile'))
     const activeAccount = user?.accounts?.data[0]
@@ -150,14 +152,15 @@ const withAuth = WrappedComponent => {
         .subscribe({
           next({ data }) {
             const { newMessageAdded: newData } = data
-            const name = `New message - ${newData?.author?.user?.firstName} ${newData?.author?.user?.lastName}`
-            const message = newData?.message
             const isMine = newData?.author?._id === activeAccount?._id
 
             if (!isMine && newData !== null) {
+              const name = `New message - ${newData?.author?.user?.firstName} ${newData?.author?.user?.lastName}`
+              const message = newData?.message
+
               dispatch({ type: 'UPDATE_NEW_MSG', payload: newData })
-              refetchConvo()
               showNotification(name, message)
+              refetchConvo()
             }
           }
         })
@@ -227,14 +230,18 @@ const withAuth = WrappedComponent => {
       }
     }, [errorConvo, loadingConvo, dataConvo])
 
-    const showNotification = (title, msg) => {
-      setNotificationTitle(title)
-      setNotificationMessage(msg)
+    const showNotification = (title, message) => {
+      setNotification({
+        title,
+        message
+      })
     }
 
-    const closeNotification = (title, msg) => {
-      setNotificationTitle('')
-      setNotificationMessage(null)
+    const closeNotification = () => {
+      setNotification({
+        title: '',
+        message: ''
+      })
     }
 
     if (loading || !loaded) {
@@ -245,8 +252,8 @@ const withAuth = WrappedComponent => {
       <>
         <WrappedComponent {...props} />
         <Notification
-          title={notificationTitle}
-          message={notificationMessage}
+          title={notification?.title}
+          message={notification?.message}
           onCloseNotification={closeNotification}
         />
       </>

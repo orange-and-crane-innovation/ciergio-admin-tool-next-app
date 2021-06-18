@@ -290,40 +290,9 @@ export default function Main() {
           ...old.data
         ]
       }))
-      // handleMessagePreviewClick({
-      //   _id: createdConvo?.createConversation?._id,
-      //   unit: null,
-      //   participants: {
-      //     data: [
-      //       {
-      //         ...recipient,
-      //         user: { ...recipient?.user }
-      //       }
-      //     ]
-      //   }
-      // })
       setSelectedAccountId(null)
     }
   }, [createdConvo, calledCreateConvo])
-
-  // const dropdownData = [
-  //   {
-  //     label: 'Group',
-  //     icon: null,
-  //     function: () => {
-  //       setConvoType('group')
-  //       localStorage.setItem('convoType', 'group')
-  //     }
-  //   },
-  //   {
-  //     label: 'Personal',
-  //     icon: null,
-  //     function: () => {
-  //       setConvoType('private')
-  //       localStorage.setItem('convoType', 'private')
-  //     }
-  //   }
-  // ]
 
   useEffect(() => {
     if (!loadingUnreadMessage) {
@@ -354,7 +323,7 @@ export default function Main() {
 
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
 
-  const handleAccountClick = userid => {
+  const handleAccountClick = (userid, admins) => {
     setSelectedAccountId(userid)
     if (conversations?.data?.length > 0) {
       const index = conversations?.data.findIndex(convo => {
@@ -611,10 +580,11 @@ export default function Main() {
           />
         </div>
       </div>
+
       <MessageBox
         endMessageRef={endMessage}
         participant={selectedConvo}
-        conversation={convoMessages}
+        conversation={selectedConvo ? convoMessages : []}
         loading={loadingMessages}
         onSubmitMessage={handleSubmitMessage}
         currentUserid={profile?._id}
