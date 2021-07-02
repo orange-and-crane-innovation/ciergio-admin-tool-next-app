@@ -48,6 +48,7 @@ function Join({ onSubmit, isLoading, isSubmitting, data }) {
   const [accountType, setAccountType] = useState()
   const [password, setPassword] = useState()
   const [isCheck, setIsCheck] = useState()
+  const [complexID, setComplexID] = useState('')
 
   const { handleSubmit, control, errors, setValue } = useForm({
     resolver: yupResolver(
@@ -72,6 +73,7 @@ function Join({ onSubmit, isLoading, isSubmitting, data }) {
           ? data?.building?.name
           : data?.company?.name
       )
+      setComplexID(data?.complex?._id ?? '')
     }
   }, [data])
 
@@ -202,7 +204,7 @@ function Join({ onSubmit, isLoading, isSubmitting, data }) {
                   label={
                     <span className="font-body leading-7">
                       <span>I have read and accepted the </span>
-                      <Link href="/terms-and-conditions">
+                      <Link href={`/terms-and-conditions/${complexID}`}>
                         <a
                           className="text-info-900 hover:underline"
                           target="_blank"
