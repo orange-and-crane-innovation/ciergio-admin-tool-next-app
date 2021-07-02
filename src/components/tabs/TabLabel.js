@@ -8,7 +8,7 @@ const TabLabel = ({ id, activeid, children, handleclick, isHidden, route }) => {
   const selectTab = () => {
     handleclick(id)
 
-    if (route || route !== '') {
+    if (route && route !== '') {
       router.push(route)
     }
   }
