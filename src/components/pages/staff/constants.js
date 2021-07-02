@@ -5,6 +5,9 @@ import dayjs from '@app/utils/date'
 import { ACCOUNT_TYPES } from '@app/constants'
 
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+const isBrowser = typeof window !== 'undefined'
+const profile = isBrowser && JSON.parse(localStorage.getItem('profile'))
+const accountType = profile?.accounts?.data[0]?.accountType
 
 export const SUPER_ADMIN = ACCOUNT_TYPES.SUP.value
 export const COMPANY_ADMIN = ACCOUNT_TYPES.COMPYAD.value
@@ -37,6 +40,74 @@ export const columns = [
   }
 ]
 
+const roles = [
+  {
+    label: ACCOUNT_TYPES.SUP.name,
+    value: SUPER_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.COMPYAD.name,
+    value: COMPANY_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.COMPXAD.name,
+    value: COMPLEX_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.BUIGAD.name,
+    value: BUILDING_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
+  }
+]
+
+const companyRoles = [
+  {
+    label: ACCOUNT_TYPES.COMPYAD.name,
+    value: COMPANY_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.COMPXAD.name,
+    value: COMPLEX_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.BUIGAD.name,
+    value: BUILDING_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
+  }
+]
+
+const complexRoles = [
+  {
+    label: ACCOUNT_TYPES.COMPXAD.name,
+    value: COMPLEX_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.BUIGAD.name,
+    value: BUILDING_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
+  }
+]
+
+const buildingRoles = [
+  {
+    label: ACCOUNT_TYPES.BUIGAD.name,
+    value: BUILDING_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
+  }
+]
+
 const prayStaffRoles = [
   {
     label: ACCOUNT_TYPES.SUP.name,
@@ -52,7 +123,7 @@ const prayStaffRoles = [
   }
 ]
 
-const roles = [
+const circleStaffRoles = [
   {
     label: ACCOUNT_TYPES.SUP.name,
     value: SUPER_ADMIN
@@ -76,8 +147,60 @@ export let CREATE_STAFF_ROLES = [
   {
     label: ACCOUNT_TYPES.COMPXAD.name,
     value: COMPLEX_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.BUIGAD.name,
+    value: BUILDING_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
   }
 ]
+
+export const COMPANY_STAFF_ROLES = [
+  {
+    label: ACCOUNT_TYPES.COMPXAD.name,
+    value: COMPLEX_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.BUIGAD.name,
+    value: BUILDING_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
+  }
+]
+
+export const COMPLEX_STAFF_ROLES = [
+  {
+    label: ACCOUNT_TYPES.BUIGAD.name,
+    value: BUILDING_ADMIN
+  },
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
+  }
+]
+
+export const BUILDING_STAFF_ROLES = [
+  {
+    label: ACCOUNT_TYPES.RECEP.name,
+    value: RECEPTIONIST
+  }
+]
+
+if (accountType === COMPANY_ADMIN) {
+  STAFF_ROLES = companyRoles
+  CREATE_STAFF_ROLES = COMPANY_STAFF_ROLES
+} else if (accountType === COMPLEX_ADMIN) {
+  STAFF_ROLES = complexRoles
+  CREATE_STAFF_ROLES = COMPLEX_STAFF_ROLES
+} else if (accountType === BUILDING_ADMIN) {
+  STAFF_ROLES = buildingRoles
+  CREATE_STAFF_ROLES = BUILDING_STAFF_ROLES
+}
 
 if (systemType === 'pray') {
   STAFF_ROLES = prayStaffRoles
@@ -93,13 +216,38 @@ if (systemType === 'pray') {
   ]
 }
 
+if (systemType === 'circle') {
+  STAFF_ROLES = circleStaffRoles
+  CREATE_STAFF_ROLES = [
+    {
+      label: ACCOUNT_TYPES.COMPYAD.name,
+      value: COMPANY_ADMIN
+    },
+    {
+      label: ACCOUNT_TYPES.COMPXAD.name,
+      value: COMPLEX_ADMIN
+    }
+  ]
+}
+
 export const ALL_ROLES = [
   SUPER_ADMIN,
-  COMPLEX_ADMIN,
   COMPANY_ADMIN,
+  COMPLEX_ADMIN,
   BUILDING_ADMIN,
   RECEPTIONIST
 ]
+
+export const COMPANY_ROLES = [
+  COMPANY_ADMIN,
+  COMPLEX_ADMIN,
+  BUILDING_ADMIN,
+  RECEPTIONIST
+]
+
+export const COMPLEX_ROLES = [COMPLEX_ADMIN, BUILDING_ADMIN, RECEPTIONIST]
+
+export const BUILDING_ROLES = [BUILDING_ADMIN, RECEPTIONIST]
 
 const historyMessages = {
   CreateUnitType: data =>

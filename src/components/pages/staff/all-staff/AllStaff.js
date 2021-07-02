@@ -1,15 +1,14 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { initializeApollo } from '@app/lib/apollo/client'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMutation, useQuery } from '@apollo/client'
+import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
 import useDebounce from '@app/utils/useDebounce'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
-import { FaPlusCircle } from 'react-icons/fa'
+import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { FiDownload } from 'react-icons/fi'
-import { AiOutlineEllipsis } from 'react-icons/ai'
 
 import { Card } from '@app/components/globals'
 import Button from '@app/components/button'
@@ -22,6 +21,7 @@ import SearchComponent from '@app/components/globals/SearchControl'
 import showToast from '@app/utils/toast'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
 import errorHandler from '@app/utils/errorHandler'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import InviteStaffModal from './InviteStaffModal'
 import EditStaffModal from './EditStaffModal'
@@ -37,6 +37,9 @@ import {
   ADD_UNIT_OWNER,
   GET_ACCOUNTS,
   GET_COMPANIES,
+  GET_COMPLEXES,
+  GET_BUILDINGS,
+  GET_BUILDING,
   UPDATE_USER,
   DELETE_USER
 } from '../queries'
@@ -46,9 +49,11 @@ import {
   COMPANY_ADMIN,
   COMPLEX_ADMIN,
   RECEPTIONIST,
-  UNIT_OWNER,
   columns,
   ALL_ROLES,
+  COMPANY_ROLES,
+  COMPLEX_ROLES,
+  BUILDING_ROLES,
   STAFF_ROLES
 } from '../constants'
 import {
@@ -72,9 +77,9 @@ function AllStaff() {
       staffType: null,
       email: '',
       jobTitle: '',
-      company: null,
-      complex: null,
-      building: null
+      company: '',
+      complex: '',
+      building: ''
     }
   })
   const {
@@ -99,23 +104,98 @@ function AllStaff() {
   const [limitPage, setLimitPage] = useState(10)
   const [skipCount, setSkipCount] = useState(0)
   const debouncedSearchText = useDebounce(searchText, 700)
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyID = profile?.accounts?.data[0]?.company?._id
+  const complexID = profile?.accounts?.data[0]?.complex?._id
+  const buildingID = profile?.accounts?.data[0]?.building?._id
+  let where
+
+  switch (accountType) {
+    case ACCOUNT_TYPES.SUP.value: {
+      where = {
+        accountTypes: selectedRoles?.value ?? ALL_ROLES,
+        buildingId: selectedAssignment?.value,
+        search: debouncedSearchText
+      }
+      break
+    }
+    case ACCOUNT_TYPES.COMPYAD.value: {
+      where = {
+        accountTypes: selectedRoles?.value ?? COMPANY_ROLES,
+        companyId: selectedAssignment?.value ?? companyID,
+        search: debouncedSearchText
+      }
+      break
+    }
+    case ACCOUNT_TYPES.COMPXAD.value: {
+      where = {
+        accountTypes: selectedRoles?.value ?? COMPLEX_ROLES,
+        complexId: selectedAssignment?.value ?? complexID,
+        search: debouncedSearchText
+      }
+      break
+    }
+    case ACCOUNT_TYPES.BUIGAD.value: {
+      where = {
+        accountTypes: selectedRoles?.value ?? BUILDING_ROLES,
+        buildingId: selectedAssignment?.value ?? buildingID,
+        search: debouncedSearchText
+      }
+      break
+    }
+  }
 
   const {
     data: accounts,
     refetch: refetchAccounts,
     loading: loadingAccounts
   } = useQuery(GET_ACCOUNTS, {
+    skip: where === undefined,
     variables: {
-      where: {
-        accountTypes: selectedRoles?.value ?? ALL_ROLES,
-        companyId: selectedAssignment?.value,
-        search: debouncedSearchText
-      },
+      where,
       limit: limitPage,
       skip: skipCount === 0 ? null : skipCount
     }
   })
-  const { data: companies } = useQuery(GET_COMPANIES)
+
+  const [getCompanies, { data: companies }] = useLazyQuery(GET_COMPANIES)
+  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES)
+  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS)
+  const [getBuilding, { data: building }] = useLazyQuery(GET_BUILDING)
+
+  useEffect(() => {
+    switch (accountType) {
+      case ACCOUNT_TYPES.SUP.value: {
+        getCompanies()
+        break
+      }
+      case ACCOUNT_TYPES.COMPYAD.value: {
+        getComplexes({
+          variables: {
+            id: companyID
+          }
+        })
+        break
+      }
+      case ACCOUNT_TYPES.COMPXAD.value: {
+        getBuildings({
+          variables: {
+            id: complexID
+          }
+        })
+        break
+      }
+      case ACCOUNT_TYPES.BUIGAD.value: {
+        getBuilding({
+          variables: {
+            id: buildingID
+          }
+        })
+        break
+      }
+    }
+  }, [])
 
   const handleOnCompleted = () => {
     handleClearModal('create')
@@ -123,18 +203,7 @@ function AllStaff() {
       'success',
       `You have successfully sent a new invite. Registration code was sent to the email.`
     )
-    refetchAccounts({
-      variables: {
-        where: {
-          accountTypes:
-            selectedRoles?.value === 'all' ? ALL_ROLES : selectedRoles?.value,
-          companyId: selectedAssignment?.value,
-          search: debouncedSearchText
-        },
-        limit: limitPage,
-        skip: skipCount === 0 ? null : skipCount
-      }
-    })
+    refetchAccounts()
   }
   const handleOnError = err => {
     const statusCode = err.networkError.statusCode
@@ -288,19 +357,11 @@ function AllStaff() {
         jobTitle
       }
       switch (staff.value) {
-        case BUILDING_ADMIN:
-          addBuildingAdmin({
-            variables: {
-              data,
-              id: building.value
-            }
-          })
-          break
         case COMPANY_ADMIN:
           addCompanyAdmin({
             variables: {
               data,
-              id: company.value
+              id: company
             }
           })
           break
@@ -308,23 +369,31 @@ function AllStaff() {
           addComplexAdmin({
             variables: {
               data,
-              id: complex.value
+              id: complex
             }
           })
+          break
+        case BUILDING_ADMIN:
+          if (building) {
+            addBuildingAdmin({
+              variables: {
+                data,
+                id: building
+              }
+            })
+          } else {
+            showToast('danger', 'Building is required')
+          }
+
           break
         case RECEPTIONIST:
           addReceptionist({
             variables: {
               data,
-              id: building.value
-            }
-          })
-          break
-        case UNIT_OWNER:
-          addUnitOwner({
-            variables: {
-              data,
-              id: building.value
+              id:
+                accountType === ACCOUNT_TYPES.BUIGAD.value
+                  ? buildingID
+                  : building
             }
           })
           break
@@ -360,17 +429,60 @@ function AllStaff() {
   }
 
   const assignments = useMemo(() => {
-    if (companies?.getCompanies?.data?.length > 0) {
-      const options = companies.getCompanies.data.map(company => ({
-        label: company.name,
-        value: company._id
-      }))
+    switch (accountType) {
+      case ACCOUNT_TYPES.SUP.value: {
+        if (companies?.getCompanies?.data?.length > 0) {
+          const options = companies.getCompanies.data.map(company => ({
+            label: company.name,
+            value: company._id
+          }))
 
-      return options
+          return options
+        }
+        break
+      }
+      case ACCOUNT_TYPES.COMPYAD.value: {
+        if (complexes?.getComplexes?.data?.length > 0) {
+          const options = complexes.getComplexes.data.map(complex => ({
+            label: complex.name,
+            value: complex._id
+          }))
+
+          return options
+        }
+        break
+      }
+      case ACCOUNT_TYPES.COMPXAD.value: {
+        if (buildings?.getBuildings?.data?.length > 0) {
+          const options = buildings.getBuildings.data.map(building => ({
+            label: building.name,
+            value: building._id
+          }))
+
+          return options
+        }
+        break
+      }
+      default: {
+        if (building?.getBuildings?.data?.length > 0) {
+          const options = building.getBuildings.data.map(building => ({
+            label: building.name,
+            value: building._id
+          }))
+
+          return options
+        }
+        break
+      }
     }
 
     return []
-  }, [companies?.getCompanies])
+  }, [
+    companies?.getCompanies,
+    complexes?.getComplexes,
+    buildings?.getBuildings,
+    building?.getBuildings
+  ])
 
   const staffData = useMemo(
     () => ({
@@ -380,7 +492,7 @@ function AllStaff() {
       data:
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
-              const { user, company, accountType } = staff
+              const { user, company, complex, building, accountType } = staff
               const roleType = getAccountTypeName(accountType)
 
               let dropdownData = [
@@ -439,16 +551,15 @@ function AllStaff() {
                 ),
                 role: <span className="capitalize">{roleType}</span>,
                 assignment: (
-                  <span className="capitalize">{company?.name || ''}</span>
+                  <span className="capitalize">
+                    {building?.name || complex?.name || company?.name || ''}
+                  </span>
                 ),
                 dropdown: (
                   <Can
                     perform="staff:view::update::delete"
                     yes={
-                      <Dropdown
-                        label={<AiOutlineEllipsis />}
-                        items={dropdownData}
-                      />
+                      <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                     }
                   />
                 )
