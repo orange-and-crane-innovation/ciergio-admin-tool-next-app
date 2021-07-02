@@ -19,8 +19,7 @@ import Can from '@app/permissions/can'
 import dayjs, { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 
-import { AiOutlineEllipsis } from 'react-icons/ai'
-import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
+import { FaTimes, FaSearch, FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import useDebounce from '@app/utils/useDebounce'
@@ -90,19 +89,20 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
     status === 'new' ? 'Prayer Request - New' : 'Prayer Request - Received'
 
   const printRef = useRef()
-  const { data, loading, refetch: refetchPrayerRequests } = useQuery(
-    queryTemplate,
-    {
-      variables: {
-        complexId,
-        offset,
-        limit: pageLimit,
-        search: debouncedSearchText,
-        categoryId: category?.value || null
-      },
-      fetchPolicy: 'network-only'
-    }
-  )
+  const {
+    data,
+    loading,
+    refetch: refetchPrayerRequests
+  } = useQuery(queryTemplate, {
+    variables: {
+      complexId,
+      offset,
+      limit: pageLimit,
+      search: debouncedSearchText,
+      categoryId: category?.value || null
+    },
+    fetchPolicy: 'network-only'
+  })
 
   const { data: categories } = useQuery(GET_POST_CATEGORY)
 
@@ -290,10 +290,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   ),
                   lastUpdate: friendlyDateTimeFormat(dayjs(updatedAt), 'LL'),
                   button: (
-                    <Dropdown
-                      label={<AiOutlineEllipsis />}
-                      items={dropdownData}
-                    />
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                   )
                 }
               }

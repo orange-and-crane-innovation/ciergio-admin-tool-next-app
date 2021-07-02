@@ -19,6 +19,12 @@ export const GET_ACCOUNTS = gql`
         company {
           name
         }
+        complex {
+          name
+        }
+        building {
+          name
+        }
       }
     }
   }
@@ -96,23 +102,25 @@ export const GET_BUILDINGS = gql`
   }
 `
 
+export const GET_BUILDING = gql`
+  query getBuilding($id: String!) {
+    getBuildings(where: { _id: $id, status: "active" }) {
+      count
+      data {
+        _id
+        name
+      }
+    }
+  }
+`
+
 export const GET_PENDING_INVITES = gql`
   query getInvites(
-    $search: String
-    $companyId: String
-    $accountTypes: [String]
+    $where: GetPendingRegistrationParams
     $limit: Int
     $offset: Int
   ) {
-    getPendingRegistration(
-      where: {
-        accountTypes: $accountTypes
-        companyId: $companyId
-        search: $search
-      }
-      limit: $limit
-      skip: $offset
-    ) {
+    getPendingRegistration(where: $where, limit: $limit, skip: $offset) {
       limit
       count
       data {

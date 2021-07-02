@@ -7,6 +7,8 @@ import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+
 import { GET_BUILDINGS, GET_COMPLEXES } from '../queries'
 import { CREATE_STAFF_ROLES } from '../constants'
 import styles from '../staff.module.css'
@@ -22,38 +24,60 @@ function InviteStaffModal({
   const { watch, errors, control } = form
 
   const staffType = watch('staffType')?.value
-  const companyId = watch('company')?.value
-  const complexId = watch('complex')?.value
-  const isComplex = staffType === 'complex_admin'
-  const isUnit =
-    staffType === 'building_admin' ||
-    staffType === 'resident' ||
-    staffType === 'receptionist' ||
-    staffType === 'member'
+  const companyId = watch('company')
+  const complexId = watch('complex')
+  const isComplex = staffType === ACCOUNT_TYPES.COMPXAD.value
+  const isBuilding = staffType === ACCOUNT_TYPES.BUIGAD.value
+  const isReceptionist = staffType === ACCOUNT_TYPES.RECEP.value
+  const isBrowser = typeof window !== 'undefined'
+  const profile = isBrowser && JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyID = profile?.accounts?.data[0]?.company?._id
+  const complexID = profile?.accounts?.data[0]?.complex?._id
+
+  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES)
+  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS)
 
   useEffect(() => {
-    if (companyId && isComplex) {
+    switch (accountType) {
+      case ACCOUNT_TYPES.COMPYAD.value: {
+        getComplexes({
+          variables: {
+            id: companyID
+          }
+        })
+        break
+      }
+      case ACCOUNT_TYPES.COMPXAD.value: {
+        getBuildings({
+          variables: {
+            id: complexID
+          }
+        })
+        break
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (companyId && (isComplex || isBuilding)) {
       getComplexes({
         variables: {
           id: companyId
         }
       })
     }
-  }, [companyId, isComplex])
+  }, [companyId, isComplex, isBuilding])
 
   useEffect(() => {
-    if (complexId && isUnit) {
+    if (complexId && isBuilding) {
       getBuildings({
         variables: {
           id: complexId
         }
       })
     }
-  }, [isUnit, complexId])
-
-  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES)
-
-  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS)
+  }, [isBuilding, complexId])
 
   const complexOptions = useMemo(() => {
     if (complexes?.getComplexes?.count > 0) {
@@ -137,48 +161,68 @@ function InviteStaffModal({
         {staffType ? (
           <>
             <div>
-              <p className="font-bold text-base text-gray-500 mb-2">
-                Job Title of Point of Contact
-              </p>
-              <Controller
-                name="jobTitle"
-                control={control}
-                render={({ name, value, onChange }) => (
-                  <FormInput
-                    placeholder="Enter Job Title"
-                    name={name}
-                    onChange={onChange}
-                    value={value}
-                    error={errors?.jobTitle?.message}
-                    inputClassName="w-full rounded border-gray-300"
+              {staffType !== ACCOUNT_TYPES.RECEP.value && (
+                <>
+                  <p className="font-bold text-base text-gray-500 mb-2">
+                    Job Title of Point of Contact
+                  </p>
+                  <Controller
+                    name="jobTitle"
+                    control={control}
+                    render={({ name, value, onChange }) => (
+                      <FormInput
+                        placeholder="Enter Job Title"
+                        name={name}
+                        onChange={onChange}
+                        value={value}
+                        error={errors?.jobTitle?.message}
+                        inputClassName="w-full rounded border-gray-300"
+                      />
+                    )}
+                  />
+                </>
+              )}
+
+              <div>
+                {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
+                  <p className="font-bold text-base text-gray-500 mb-2">
+                    Assign To
+                  </p>
+                )}
+
+                {accountType === ACCOUNT_TYPES.SUP.value && (
+                  <Controller
+                    name="company"
+                    control={control}
+                    render={({ value, onChange, name }) => (
+                      <FormSelect
+                        name={name}
+                        value={
+                          companyOptions
+                            ? companyOptions.filter(
+                                item => item.value === value
+                              )
+                            : null
+                        }
+                        onChange={e => onChange(e.value)}
+                        options={companyOptions}
+                        placeholder="Select a company"
+                        error={
+                          errors?.company?.message ??
+                          errors?.company?.value?.message
+                        }
+                        subLabel={<p className="mb-2">Company</p>}
+                        containerClasses="mb-4"
+                      />
+                    )}
                   />
                 )}
-              />
-              <div>
-                <p className="font-bold text-base text-gray-500 mb-2">
-                  Assign To
-                </p>
-                <Controller
-                  name="company"
-                  control={control}
-                  render={({ value, onChange, name }) => (
-                    <FormSelect
-                      name={name}
-                      value={value}
-                      onChange={onChange}
-                      options={companyOptions}
-                      placeholder="Select a company"
-                      error={
-                        errors?.company?.message ??
-                        errors?.company?.value?.message
-                      }
-                      subLabel={<p className="mb-2">Company</p>}
-                      containerClasses="mb-4"
-                    />
-                  )}
-                />
               </div>
-              {(isComplex || isUnit) && complexOptions?.length > 0 ? (
+              {[ACCOUNT_TYPES.SUP.value, ACCOUNT_TYPES.COMPYAD.value].includes(
+                accountType
+              ) &&
+              (isComplex || isBuilding || isReceptionist) &&
+              complexOptions?.length > 0 ? (
                 <div>
                   <Controller
                     name="complex"
@@ -186,8 +230,14 @@ function InviteStaffModal({
                     render={({ value, onChange, name }) => (
                       <FormSelect
                         name={name}
-                        value={value}
-                        onChange={onChange}
+                        value={
+                          complexOptions
+                            ? complexOptions.filter(
+                                item => item.value === value
+                              )
+                            : null
+                        }
+                        onChange={e => onChange(e.value)}
                         options={complexOptions}
                         error={
                           errors?.complex?.message ??
@@ -201,15 +251,26 @@ function InviteStaffModal({
                   />
                 </div>
               ) : null}
-              {isUnit && buildingOptions?.length > 0 ? (
+              {[
+                ACCOUNT_TYPES.SUP.value,
+                ACCOUNT_TYPES.COMPYAD.value,
+                ACCOUNT_TYPES.COMPXAD.value,
+                ACCOUNT_TYPES.BUIGAD.value
+              ].includes(accountType) &&
+              (isBuilding || isReceptionist) &&
+              buildingOptions?.length > 0 ? (
                 <Controller
                   name="building"
                   control={control}
                   render={({ value, onChange, name }) => (
                     <FormSelect
                       name={name}
-                      value={value}
-                      onChange={onChange}
+                      value={
+                        buildingOptions
+                          ? buildingOptions.filter(item => item.value === value)
+                          : null
+                      }
+                      onChange={e => onChange(e.value)}
                       options={buildingOptions}
                       error={errors?.building?.message || undefined}
                       subLabel={<p className="mb-2">Building</p>}

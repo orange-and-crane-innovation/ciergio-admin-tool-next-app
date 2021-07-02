@@ -1,5 +1,5 @@
 .PageContainer {
-  @apply mt-12 pt-4 pb-8 px-8 max-w-5xl;
+  @apply mt-12 pt-4 pb-8 px-8 w-full md:max-w-5xl md:min-w-5xl;
 
   .PageContent {
     @apply mb-12 pt-4 pb-16 px-8;

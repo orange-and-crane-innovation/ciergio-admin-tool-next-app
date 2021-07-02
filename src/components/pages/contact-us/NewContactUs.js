@@ -17,8 +17,7 @@ import Dropdown from '@app/components/dropdown'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import { Card, Draggable } from '@app/components/globals'
 
-import { FaPlusCircle } from 'react-icons/fa'
-import { AiOutlineEllipsis } from 'react-icons/ai'
+import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
 
 import { GET_CONTACTS, BULK_UPDATE_MUTATION } from '../queries'
 
@@ -63,9 +62,8 @@ const validationSchema = yup.object().shape({
 
 function ContactUs() {
   const { data: contacts, refetch: refetchContacts } = useQuery(GET_CONTACTS)
-  const [bulkUpdate, { called: calledBulk, data: dataBulk }] = useMutation(
-    BULK_UPDATE_MUTATION
-  )
+  const [bulkUpdate, { called: calledBulk, data: dataBulk }] =
+    useMutation(BULK_UPDATE_MUTATION)
   const [reorder, setReorder] = useState(false)
   const [searchInput, setSearchInput] = useState('')
 
@@ -259,12 +257,7 @@ function ContactUs() {
             button: (
               <Can
                 perform="contactus:update::delete"
-                yes={
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
-                  />
-                }
+                yes={<Dropdown label={<FaEllipsisH />} items={dropdownData} />}
               />
             )
           }

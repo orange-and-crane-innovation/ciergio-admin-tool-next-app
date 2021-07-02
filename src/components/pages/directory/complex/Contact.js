@@ -9,8 +9,7 @@ import omit from 'lodash/omit'
 import isEmpty from 'lodash/isEmpty'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import axios from '@app/utils/axios'
-import { FaPlusCircle } from 'react-icons/fa'
-import { AiOutlineEllipsis } from 'react-icons/ai'
+import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
 
 import Button from '@app/components/button'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -405,12 +404,7 @@ function Contact({ id }) {
             button: (
               <Can
                 perform="directory:contact:update::delete"
-                yes={
-                  <Dropdown
-                    label={<AiOutlineEllipsis />}
-                    items={dropdownData}
-                  />
-                }
+                yes={<Dropdown label={<FaEllipsisH />} items={dropdownData} />}
                 no={null}
               />
             )

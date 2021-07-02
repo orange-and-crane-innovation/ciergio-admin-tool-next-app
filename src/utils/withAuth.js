@@ -142,6 +142,8 @@ const withAuth = WrappedComponent => {
 
     const newMessageSubscription = () => {
       const user = isBrowser && JSON.parse(localStorage.getItem('profile'))
+      const activeAccount = user?.accounts?.data[0]
+
       SubscribeInstance.getClient()
         .subscribe({
           query: NEW_MESSAGE_ADDED_SUBSCRIPTION,

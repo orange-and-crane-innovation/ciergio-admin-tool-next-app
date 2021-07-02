@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useCallback } from 'react'
-import { useQuery, useMutation } from '@apollo/client'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import { useQuery, useMutation, useLazyQuery } from '@apollo/client'
 import useDebounce from '@app/utils/useDebounce'
 import isEmpty from 'lodash/isEmpty'
-import { AiOutlineEllipsis } from 'react-icons/ai'
+import { FaEllipsisH } from 'react-icons/fa'
 
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
@@ -18,6 +18,8 @@ import { friendlyDateTimeFormat } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+
 import Empty from '../Empty'
 import CancelInviteModal from './CancelInviteModal'
 
@@ -26,6 +28,9 @@ import Can from '@app/permissions/can'
 import {
   GET_PENDING_INVITES,
   GET_COMPANIES,
+  GET_COMPLEXES,
+  GET_BUILDINGS,
+  GET_BUILDING,
   CANCEL_INVITE,
   RESEND_INVITE
 } from '../queries'
@@ -37,7 +42,10 @@ import {
   RECEPTIONIST,
   UNIT_OWNER,
   STAFF_ROLES,
-  ALL_ROLES
+  ALL_ROLES,
+  COMPANY_ROLES,
+  COMPLEX_ROLES,
+  BUILDING_ROLES
 } from '../constants'
 
 const bulkOptions = [
@@ -78,8 +86,48 @@ function PendingInvites() {
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
   const [offsetPage, setOffsetPage] = useState(0)
-
   const debouncedSearchText = useDebounce(searchText, 700)
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyID = profile?.accounts?.data[0]?.company?._id
+  const complexID = profile?.accounts?.data[0]?.complex?._id
+  const buildingID = profile?.accounts?.data[0]?.building?._id
+  let where
+
+  switch (accountType) {
+    case ACCOUNT_TYPES.SUP.value: {
+      where = {
+        accountTypes: selectedRole?.value ?? ALL_ROLES,
+        buildingId: selectedAssignment?.value,
+        search: debouncedSearchText
+      }
+      break
+    }
+    case ACCOUNT_TYPES.COMPYAD.value: {
+      where = {
+        accountTypes: selectedRole?.value ?? COMPANY_ROLES,
+        companyId: selectedAssignment?.value ?? companyID,
+        search: debouncedSearchText
+      }
+      break
+    }
+    case ACCOUNT_TYPES.COMPXAD.value: {
+      where = {
+        accountTypes: selectedRole?.value ?? COMPLEX_ROLES,
+        complexId: selectedAssignment?.value ?? complexID,
+        search: debouncedSearchText
+      }
+      break
+    }
+    case ACCOUNT_TYPES.BUIGAD.value: {
+      where = {
+        accountTypes: selectedRole?.value ?? BUILDING_ROLES,
+        buildingId: selectedAssignment?.value ?? buildingID,
+        search: debouncedSearchText
+      }
+      break
+    }
+  }
 
   const {
     data: invites,
@@ -87,15 +135,16 @@ function PendingInvites() {
     refetch: refetchInvites
   } = useQuery(GET_PENDING_INVITES, {
     variables: {
-      accountTypes:
-        selectedRole?.value === 'all' ? ALL_ROLES : selectedRole?.value,
-      companyId: selectedAssignment?.value,
-      search: debouncedSearchText,
+      where,
       limit: limitPage,
       offset: offsetPage
     }
   })
-  const { data: companies } = useQuery(GET_COMPANIES)
+
+  const [getCompanies, { data: companies }] = useLazyQuery(GET_COMPANIES)
+  const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES)
+  const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS)
+  const [getBuilding, { data: building }] = useLazyQuery(GET_BUILDING)
 
   const [resendInvite, { loading: resendingInvite }] = useMutation(
     RESEND_INVITE,
@@ -122,6 +171,39 @@ function PendingInvites() {
       }
     }
   )
+
+  useEffect(() => {
+    switch (accountType) {
+      case ACCOUNT_TYPES.SUP.value: {
+        getCompanies()
+        break
+      }
+      case ACCOUNT_TYPES.COMPYAD.value: {
+        getComplexes({
+          variables: {
+            id: companyID
+          }
+        })
+        break
+      }
+      case ACCOUNT_TYPES.COMPXAD.value: {
+        getBuildings({
+          variables: {
+            id: complexID
+          }
+        })
+        break
+      }
+      case ACCOUNT_TYPES.BUIGAD.value: {
+        getBuilding({
+          variables: {
+            id: buildingID
+          }
+        })
+        break
+      }
+    }
+  }, [])
 
   const onCheck = e => {
     const data = e.target.getAttribute('data-id')
@@ -309,10 +391,7 @@ function PendingInvites() {
                   <Can
                     perform="staff:resend::cancel"
                     yes={
-                      <Dropdown
-                        label={<AiOutlineEllipsis />}
-                        items={dropdownData}
-                      />
+                      <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                     }
                   />
                 )
@@ -323,17 +402,60 @@ function PendingInvites() {
   }, [invites?.getPendingRegistration, onCheck])
 
   const filterOptions = useMemo(() => {
-    if (companies?.getCompanies?.data?.length > 0) {
-      const options = companies.getCompanies.data.map(company => ({
-        label: company.name,
-        value: company._id
-      }))
+    switch (accountType) {
+      case ACCOUNT_TYPES.SUP.value: {
+        if (companies?.getCompanies?.data?.length > 0) {
+          const options = companies.getCompanies.data.map(company => ({
+            label: company.name,
+            value: company._id
+          }))
 
-      return options
+          return options
+        }
+        break
+      }
+      case ACCOUNT_TYPES.COMPYAD.value: {
+        if (complexes?.getComplexes?.data?.length > 0) {
+          const options = complexes.getComplexes.data.map(complex => ({
+            label: complex.name,
+            value: complex._id
+          }))
+
+          return options
+        }
+        break
+      }
+      case ACCOUNT_TYPES.COMPXAD.value: {
+        if (buildings?.getBuildings?.data?.length > 0) {
+          const options = buildings.getBuildings.data.map(building => ({
+            label: building.name,
+            value: building._id
+          }))
+
+          return options
+        }
+        break
+      }
+      default: {
+        if (building?.getBuildings?.data?.length > 0) {
+          const options = building.getBuildings.data.map(building => ({
+            label: building.name,
+            value: building._id
+          }))
+
+          return options
+        }
+        break
+      }
     }
 
     return []
-  }, [companies?.getCompanies])
+  }, [
+    companies?.getCompanies,
+    complexes?.getComplexes,
+    buildings?.getBuildings,
+    building?.getBuildings
+  ])
 
   return (
     <section className="content-wrap">

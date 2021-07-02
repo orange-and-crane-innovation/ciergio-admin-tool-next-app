@@ -3,7 +3,8 @@ import { useRouter } from 'next/router'
 import { useQuery, useMutation } from '@apollo/client'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
-import { FaRegEnvelopeOpen } from 'react-icons/fa'
+import { FaRegEnvelopeOpen, FaEllipsisH } from 'react-icons/fa'
+
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
@@ -392,10 +393,7 @@ function Ticket() {
               />
             ) : null}
             <div className="border border-neutral-100 w-10 h-10 bg-white flex items-center ml-2 -mt-4 shadow">
-              <Dropdown
-                label={<span className="ciergio-more" />}
-                items={dropdownData}
-              />
+              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
             </div>
           </div>
 
