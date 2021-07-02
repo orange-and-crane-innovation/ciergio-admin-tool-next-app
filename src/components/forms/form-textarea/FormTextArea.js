@@ -69,20 +69,20 @@ const FormTextArea = ({
 
     setEditorState(e)
 
-    if (!isContainOnlySpaces) {
+    if (!isContainOnlySpaces && !isEditorEmpty) {
       if (stripHtmls) {
         onChange(currentPlainText)
       } else {
         onChange(stateToHTML(content, defaultOptions))
       }
     } else {
-      onChange('')
+      onChange(null)
     }
   }
 
   useEffect(() => {
     if (value === '') {
-      onChange('')
+      onChange(null)
       setEditorState(EditorState.createEmpty())
     }
     if (isEdit && value !== null) {
