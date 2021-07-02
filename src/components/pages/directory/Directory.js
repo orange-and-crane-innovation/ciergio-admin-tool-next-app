@@ -20,8 +20,7 @@ import ManageDirectory from './ManageDirectory'
 
 import { initializeApollo } from '@app/lib/apollo/client'
 
-import { FaPlusCircle } from 'react-icons/fa'
-import { AiOutlineEllipsis } from 'react-icons/ai'
+import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
 
 import {
   GET_COMPANIES,
@@ -216,10 +215,7 @@ function Directory() {
                   <Can
                     perform="directory:categories:update::delete"
                     yes={
-                      <Dropdown
-                        label={<AiOutlineEllipsis />}
-                        items={dropdownData}
-                      />
+                      <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                     }
                   />
                 )

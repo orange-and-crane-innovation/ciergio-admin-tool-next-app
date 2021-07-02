@@ -11,8 +11,7 @@ import Modal from '@app/components/modal'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 import Can from '@app/permissions/can'
-import { FaPlusCircle } from 'react-icons/fa'
-import { AiOutlineEllipsis } from 'react-icons/ai'
+import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
 import { initializeApollo } from '@app/lib/apollo/client'
 import {
   GET_COMPLEXES,
@@ -260,10 +259,7 @@ function Contact({ id }) {
                 <Can
                   perform="contactus:update::delete"
                   yes={
-                    <Dropdown
-                      label={<AiOutlineEllipsis />}
-                      items={dropdownData}
-                    />
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                   }
                 />
               )

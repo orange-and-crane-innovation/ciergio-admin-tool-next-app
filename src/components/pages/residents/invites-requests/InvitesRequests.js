@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
+import { FaEllipsisH } from 'react-icons/fa'
 
 import Checkbox from '@app/components/forms/form-checkbox'
 import Dropdown from '@app/components/dropdown'
@@ -262,10 +263,7 @@ function InvitesRequests() {
                 accountType: getAccountTypeName(req.accountType),
                 dateSent: toFriendlyShortDate(req.createdAt),
                 dropdown: (
-                  <Dropdown
-                    label={<span className="ciergio-more" />}
-                    items={dropdownData}
-                  />
+                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                 )
               }
             })

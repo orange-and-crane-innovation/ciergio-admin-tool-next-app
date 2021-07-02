@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client'
-import { FaPlusCircle } from 'react-icons/fa'
+import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
 
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
@@ -186,12 +186,7 @@ function AllResidents() {
               item?.user?.avatar ??
               `https://ui-avatars.com/api/?name=${residentName}`,
             accountType: getAccountTypeName(item?.accountType),
-            button: (
-              <Dropdown
-                label={<span className="ciergio-more" />}
-                items={dropdownData}
-              />
-            )
+            button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
           }
         }) ?? []
     }

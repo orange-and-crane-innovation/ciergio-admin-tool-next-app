@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { FiInbox } from 'react-icons/fi'
+import { FaEllipsisH } from 'react-icons/fa'
 
 import Dropdown from '@app/components/dropdown'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -204,10 +205,7 @@ function TicketsTab({
                     <span>{displayDateCreated(issue?.updatedAt)}</span>
                   ),
                   dropdown: (
-                    <Dropdown
-                      label={<span className="ciergio-more" />}
-                      items={dropdownData}
-                    />
+                    <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                   )
                 }
               }
@@ -215,10 +213,7 @@ function TicketsTab({
               return {
                 ...unassignedData,
                 dropdown: (
-                  <Dropdown
-                    label={<span className="ciergio-more" />}
-                    items={dropdownData}
-                  />
+                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                 )
               }
             })
