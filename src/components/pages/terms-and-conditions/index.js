@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import { gql, useQuery } from '@apollo/client'
 import ReactHtmlParser from 'react-html-parser'
+import { FiFileText } from 'react-icons/fi'
 
+import PageLoader from '@app/components/page-loader'
 import showToast from '@app/utils/toast'
+
+import NotifCard from '@app/components/globals/NotifCard'
 
 import styles from './index.module.css'
 
-const GET_PAGE_QUERY = gql`
-  query getPage($where: PageInput, $limit: Int, $offset: Int) {
-    getPage(where: $where, limit: $limit, offset: $offset) {
-      count
-      limit
-      offset
-      post {
-        _id
-        title
-        content
-      }
+const GET_TERMS_AND_CONDITIONS_QUERY = gql`
+  query getTermsAndCondition($complexId: String) {
+    getTermsAndCondition(complexId: $complexId) {
+      termsAndConditions
+      createdAt
+      updatedAt
     }
   }
 `
 
 const TermsConditionsComponent = () => {
+  const router = useRouter()
   const [pageContent, setPageContent] = useState()
 
-  const { loading, data, error } = useQuery(GET_PAGE_QUERY, {
+  const { loading, data, error } = useQuery(GET_TERMS_AND_CONDITIONS_QUERY, {
+    skip: router.query.id === undefined,
     variables: {
-      where: {
-        title: 'Terms and Conditions'
-      }
+      complexId: router.query.id
     }
   })
 
@@ -37,7 +37,7 @@ const TermsConditionsComponent = () => {
       errorHandler(error)
     }
     if (!loading && data) {
-      setPageContent(data?.getPage?.post[0]?.content)
+      setPageContent(data?.getTermsAndCondition?.termsAndConditions)
     }
   }, [loading, data, error])
 
@@ -68,7 +68,18 @@ const TermsConditionsComponent = () => {
   return (
     <>
       <div className={styles.PageContainer}>
-        <div className={styles.PageContent}>{ReactHtmlParser(pageContent)}</div>
+        <div className={styles.PageContent}>
+          {loading ? (
+            <PageLoader />
+          ) : pageContent ? (
+            ReactHtmlParser(pageContent)
+          ) : error ? (
+            <NotifCard
+              icon={<FiFileText />}
+              header="Terms and Conditions Not Found"
+            />
+          ) : null}
+        </div>
       </div>
     </>
   )

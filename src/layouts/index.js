@@ -28,7 +28,9 @@ const Layouts = ({ children }) => {
       '/auth/join/[code]',
       '/auth/verify-email/[code]',
       '/terms-and-conditions',
+      '/terms-and-conditions/[id]',
       '/privacy-policy',
+      '/privacy-policy/[id]',
       '/unsubscribe/[id]',
       '/public-posts/view/[id]/[aid]',
       '/public-qr-posts/view/[id]'

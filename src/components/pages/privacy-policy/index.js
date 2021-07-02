@@ -1,34 +1,32 @@
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import { gql, useQuery } from '@apollo/client'
 import ReactHtmlParser from 'react-html-parser'
+import { FiFileText } from 'react-icons/fi'
 
+import PageLoader from '@app/components/page-loader'
 import showToast from '@app/utils/toast'
+
+import NotifCard from '@app/components/globals/NotifCard'
 
 import styles from './index.module.css'
 
-const GET_PAGE_QUERY = gql`
-  query getPage($where: PageInput, $limit: Int, $offset: Int) {
-    getPage(where: $where, limit: $limit, offset: $offset) {
-      count
-      limit
-      offset
-      post {
-        _id
-        title
-        content
-      }
+const GET_PRIVACY_POLICY_QUERY = gql`
+  query getPrivacyPolicy($complexId: String) {
+    getPrivacyPolicy(complexId: $complexId) {
+      privacyPolicy
     }
   }
 `
 
 const PrivacyPolicyComponent = () => {
+  const router = useRouter()
   const [pageContent, setPageContent] = useState()
 
-  const { loading, data, error } = useQuery(GET_PAGE_QUERY, {
+  const { loading, data, error } = useQuery(GET_PRIVACY_POLICY_QUERY, {
+    skip: router.query.id === undefined,
     variables: {
-      where: {
-        title: 'Privacy Policy'
-      }
+      complexId: router.query.id
     }
   })
 
@@ -37,7 +35,7 @@ const PrivacyPolicyComponent = () => {
       errorHandler(error)
     }
     if (!loading && data) {
-      setPageContent(data?.getPage?.post[0]?.content)
+      setPageContent(data?.getPrivacyPolicy?.privacyPolicy)
     }
   }, [loading, data, error])
 
@@ -68,7 +66,18 @@ const PrivacyPolicyComponent = () => {
   return (
     <>
       <div className={styles.PageContainer}>
-        <div className={styles.PageContent}>{ReactHtmlParser(pageContent)}</div>
+        <div className={styles.PageContent}>
+          {loading ? (
+            <PageLoader />
+          ) : pageContent ? (
+            ReactHtmlParser(pageContent)
+          ) : error ? (
+            <NotifCard
+              icon={<FiFileText />}
+              header="Privacy Policy Not Found"
+            />
+          ) : null}
+        </div>
       </div>
     </>
   )
