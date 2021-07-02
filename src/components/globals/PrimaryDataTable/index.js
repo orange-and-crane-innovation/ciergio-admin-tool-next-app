@@ -45,7 +45,7 @@ function PrimaryDataTable({
         />
       )}
 
-      {!loading && data?.length > 10 && (
+      {!loading && data?.count > 10 && (
         <div className="px-8">
           <Pagination
             items={data}
