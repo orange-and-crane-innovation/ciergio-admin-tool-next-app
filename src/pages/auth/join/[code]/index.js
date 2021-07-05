@@ -23,6 +23,7 @@ const VERIFY_CODE_QUERY = gql`
           name
         }
         complex {
+          _id
           name
         }
         building {
