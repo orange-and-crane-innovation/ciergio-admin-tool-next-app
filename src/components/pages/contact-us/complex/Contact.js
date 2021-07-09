@@ -57,7 +57,11 @@ const columns = [
 
 function Contact({ id }) {
   const router = useRouter()
-  const companyId = router?.query?.companyId
+  const profile = JSON.parse(window.localStorage.getItem('profile'))
+  const profileData = profile?.accounts?.data[0]
+  const companyId = router?.query?.companyId ?? profileData?.company?._id
+  const complexId = id ?? profileData?.complex?._id
+
   const { control, errors, reset, getValues, trigger } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -72,7 +76,7 @@ function Contact({ id }) {
 
   const { data: complexes } = useQuery(GET_COMPLEX, {
     variables: {
-      id: id
+      id: complexId
     }
   })
   const {
@@ -87,7 +91,7 @@ function Contact({ id }) {
         type: 'contactus'
       },
       contactWhere: {
-        complexId: id,
+        complexId: complexId,
         companyId: companyId ?? null
       },
       contactsLimit: pageLimit,
@@ -96,7 +100,7 @@ function Contact({ id }) {
   })
 
   const { data: contactCategories } = useQuery(GET_CONTACT_CATEGORY, {
-    complexId: id,
+    complexId: complexId,
     companyId: companyId ?? null
   })
 
@@ -109,7 +113,7 @@ function Contact({ id }) {
           type: 'contactus'
         },
         contactWhere: {
-          complexId: id,
+          complexId: complexId,
           companyId: companyId ?? null
         },
         contactsLimit: pageLimit,
@@ -211,7 +215,7 @@ function Contact({ id }) {
         variables: {
           data: contactData,
           companyId,
-          complexId: id
+          complexId
         }
       })
     }
