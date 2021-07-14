@@ -24,7 +24,6 @@
 
       .ManageAccountUserWrapper {
         @apply -mx-6;
-        @apply cursor-pointer;
 
         > :first-child {
           @apply border-t;
@@ -32,6 +31,7 @@
 
         > div {
           @apply border-b;
+          @apply cursor-pointer;
         }
       }
     }

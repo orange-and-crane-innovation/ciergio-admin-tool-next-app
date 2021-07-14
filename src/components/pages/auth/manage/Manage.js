@@ -252,7 +252,7 @@ function ManageAccount({ onSubmit, isSubmitting }) {
           {profile && (
             <>
               <div className={style.ManageAccountUserWrapper}>
-                <span onClick={() => onSubmit()}>
+                <span>
                   <Userinfo
                     imgSrc={profile?.avatar ?? IMAGES.DEFAULT_AVATAR}
                     imgAlt={'Logo'}
@@ -313,12 +313,12 @@ function ManageAccount({ onSubmit, isSubmitting }) {
                           />
                         </div>
                         <div className="absolute top-4 right-2">
-                          <Dropdown
+                          {/* <Dropdown
                             label={
                               <FiMoreHorizontal className="text-neutral-500" />
                             }
                             items={dropdownData}
-                          />
+                          /> */}
                         </div>
                       </div>
                     )
