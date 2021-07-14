@@ -26,6 +26,10 @@
     @apply bg-info-500 text-white border-info-500 hover:bg-info-700 active:bg-info-900;
   }
 
+  &.isNeutral {
+    @apply bg-neutral-500 text-white border-neutral-500 hover:bg-neutral-700 active:bg-neutral-900;
+  }
+
   &.isFluid {
     @apply w-full;
   }
