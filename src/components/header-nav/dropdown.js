@@ -132,11 +132,11 @@ const Dropdown = () => {
                   imgSrc={
                     profile?.avatar
                       ? profile?.avatar
-                      : activeAccount.accountType === ACCOUNT_TYPES.SUP
+                      : activeAccount?.accountType === ACCOUNT_TYPES.SUP
                       ? IMAGES.ADMIN_AVATAR
-                      : activeAccount.accountType === ACCOUNT_TYPES.COMPYAD
+                      : activeAccount?.accountType === ACCOUNT_TYPES.COMPYAD
                       ? IMAGES.COMPANY_AVATAR
-                      : activeAccount.accountType === ACCOUNT_TYPES.COMPXAD
+                      : activeAccount?.accountType === ACCOUNT_TYPES.COMPXAD
                       ? IMAGES.COMPLEX_AVATAR
                       : IMAGES.DEFAULT_AVATAR
                   }
@@ -158,11 +158,11 @@ const Dropdown = () => {
                 icon={'ciergio-user'}
                 title={'My Profile'}
               />
-              <MenuItem
+              {/* <MenuItem
                 url={'/dashboard'}
                 icon={'ciergio-gear'}
                 title={'Preferences'}
-              />
+              /> */}
             </div>
 
             <div className="dropdown-section">
