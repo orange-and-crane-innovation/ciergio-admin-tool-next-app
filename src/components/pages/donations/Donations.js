@@ -49,11 +49,10 @@ function Donations() {
   const companyID = profile?.accounts?.data[0]?.company?._id
   const complexID = profile?.accounts?.data[0]?.complex?._id
   const pathname = router.pathname
+  const isAdmin = accountType === ACCOUNT_TYPES.SUP.value
 
-  const [
-    getDonations,
-    { data: donations, loading: loadingDonations, error }
-  ] = useLazyQuery(GET_DONATIONS)
+  const [getDonations, { data: donations, loading: loadingDonations, error }] =
+    useLazyQuery(GET_DONATIONS)
 
   const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS)
 
@@ -148,12 +147,19 @@ function Donations() {
         width: '10%'
       },
       {
+        name: 'Transaction Fees',
+        width: '10%',
+        hidden: isAdmin
+      },
+      {
         name: 'Bank Charges',
-        width: '10%'
+        width: '10%',
+        hidden: !isAdmin
       },
       {
         name: 'OCI Fee',
-        width: '10%'
+        width: '10%',
+        hidden: !isAdmin
       },
       {
         name: 'Net Amount',
@@ -187,6 +193,7 @@ function Donations() {
           index2 % 2 === 0
             ? { backgroundColor: 'white' }
             : { backgroundColor: '#F5F6FA' }
+        const transFee = item?.bankCharges + item?.ociFee
 
         return (
           <tr key={index2} style={rowColor}>
@@ -197,17 +204,17 @@ function Donations() {
                 {item?.email && (
                   <span className="text-neutral-500">{item?.email}</span>
                 )}
-                {accountType === ACCOUNT_TYPES.SUP.value &&
-                  item?.srcReference?.company?.name && (
-                    <span data-tip="Company">
-                      {item?.srcReference?.company?.name}
-                    </span>
-                  )}
+                {isAdmin && item?.srcReference?.company?.name && (
+                  <span data-tip="Company">
+                    {item?.srcReference?.company?.name}
+                  </span>
+                )}
               </div>
             </td>
             <td>{ATTR.toCurrency(item?.amount)}</td>
-            <td>{ATTR.toCurrency(item?.bankCharges)}</td>
-            <td>{ATTR.toCurrency(item?.ociFee)}</td>
+            {!isAdmin && <td>{ATTR.toCurrency(transFee)}</td>}
+            {isAdmin && <td>{ATTR.toCurrency(item?.bankCharges)}</td>}
+            {isAdmin && <td>{ATTR.toCurrency(item?.ociFee)}</td>}
             <td>{ATTR.toCurrency(item?.netAmount)}</td>
             <td>
               <div className="flex flex-col text-sm">
