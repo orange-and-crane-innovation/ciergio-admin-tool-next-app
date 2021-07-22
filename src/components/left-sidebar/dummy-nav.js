@@ -75,13 +75,6 @@ const navigation = [
         ]
       },
       {
-        url: '/messages',
-        icon: 'ciergio-mail',
-        title: 'Messages',
-        items: [],
-        badge: 'unreadMsg'
-      },
-      {
         url: '/posts',
         icon: 'ciergio-list',
         title: 'Bulletin Board',
@@ -94,6 +87,23 @@ const navigation = [
           {
             url: '/posts/create',
             title: 'Create Bulletin',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/daily-readings',
+        icon: 'ciergio-list',
+        title: 'Daily Readings',
+        items: [
+          {
+            url: '/daily-readings',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/daily-readings/create',
+            title: 'Create Daily Reading',
             items: []
           }
         ]
@@ -133,29 +143,6 @@ const navigation = [
         ]
       },
       {
-        url: '/daily-readings',
-        icon: 'ciergio-list',
-        title: 'Daily Readings',
-        items: [
-          {
-            url: '/daily-readings',
-            title: 'View All Posts',
-            items: []
-          },
-          {
-            url: '/daily-readings/create',
-            title: 'Create Daily Reading',
-            items: []
-          }
-        ]
-      },
-      {
-        url: '/guest-delivery',
-        icon: 'ciergio-door',
-        title: 'Guest & Delivery',
-        items: []
-      },
-      {
         url: '/maintenance',
         icon: 'ciergio-wrench',
         title: 'Maintenance & Repairs',
@@ -166,23 +153,6 @@ const navigation = [
         icon: 'ciergio-prayer',
         title: 'Prayer Requests',
         items: []
-      },
-      {
-        url: '/forms',
-        icon: 'ciergio-file',
-        title: 'Downloadable Forms',
-        items: [
-          {
-            url: '/forms/create',
-            title: 'Upload Form',
-            items: []
-          },
-          {
-            url: '/forms',
-            title: 'View Forms',
-            items: []
-          }
-        ]
       },
       {
         url: '/dues',
@@ -202,6 +172,36 @@ const navigation = [
           {
             url: '/dues/manage-categories',
             title: 'Manage Categories',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/offerings',
+        icon: 'ciergio-donate-2',
+        title: 'Offerings',
+        items: []
+      },
+      {
+        url: '/messages',
+        icon: 'ciergio-mail',
+        title: 'Messages',
+        items: [],
+        badge: 'unreadMsg'
+      },
+      {
+        url: '/forms',
+        icon: 'ciergio-file',
+        title: 'Downloadable Forms',
+        items: [
+          {
+            url: '/forms/create',
+            title: 'Upload Form',
+            items: []
+          },
+          {
+            url: '/forms',
+            title: 'View Forms',
             items: []
           }
         ]
@@ -266,12 +266,6 @@ const navigation = [
         url: '/my-members',
         icon: 'ciergio-user',
         title: 'My Members',
-        items: []
-      },
-      {
-        url: '/offerings',
-        icon: 'ciergio-donate-2',
-        title: 'Offerings',
         items: []
       }
     ]
