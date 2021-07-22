@@ -32,6 +32,7 @@ import SelectCategory from '@app/components/globals/SelectCategory'
 import SearchControl from '@app/components/globals/SearchControl'
 import NotifCard from '@app/components/globals/NotifCard'
 
+import Can from '@app/permissions/can'
 import styles from './Main.module.css'
 
 const bulkOptions = [
@@ -64,6 +65,7 @@ const GET_ALL_POST_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        offering
         author {
           _id
           user {
@@ -124,6 +126,7 @@ const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        offering
         author {
           _id
           user {
@@ -207,6 +210,8 @@ const PostComponent = () => {
   const [selectedDate, setSelectedDate] = useState()
   const [selectedDateRange, setSelectedDateRange] = useState(null)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  const isSystemPray = systemType === 'pray'
+  const isSystemCircle = systemType === 'circle'
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const companyID = user?.accounts?.data[0]?.company?._id
@@ -220,6 +225,7 @@ const PostComponent = () => {
     : isDailyReadingsPage
     ? 'daily-readings'
     : 'posts'
+  const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
 
   const tableRowData = [
     {
@@ -270,7 +276,7 @@ const PostComponent = () => {
     }
   }
 
-  if (systemType === 'circle') {
+  if (isSystemCircle) {
     fetchFilter.qr = false
 
     if (isQRCodePage) {
@@ -462,6 +468,29 @@ const PostComponent = () => {
                       >
                         Permanently Delete
                       </span>
+
+                      {!isDailyReadingsPage && item?.offering && (
+                        <Can
+                          perform={
+                            isAttractionsEventsPage
+                              ? 'attractions:view::donations'
+                              : 'bulletin:view::donations'
+                          }
+                          yes={
+                            <>
+                              {` | `}
+                              <Link href={`/${donationsRouteName}/${item._id}`}>
+                                <a
+                                  className="mx-2 hover:underline"
+                                  target="_blank"
+                                >
+                                  View Donations
+                                </a>
+                              </Link>
+                            </>
+                          }
+                        />
+                      )}
                     </div>
                   ) : (
                     <div className="flex text-info-500 text-sm">
@@ -475,7 +504,28 @@ const PostComponent = () => {
                 </div>
               ),
               title2: isDailyReadingsPage && (
-                <span className={styles.TextWrapper}>{item?.title}</span>
+                <>
+                  <span className={styles.TextWrapper}>{item?.title}</span>
+                  {isDailyReadingsPage && item?.offering && (
+                    <Can
+                      perform={
+                        isAttractionsEventsPage
+                          ? 'attractions:view::donations'
+                          : 'bulletin:view::donations'
+                      }
+                      yes={
+                        <Link href={`/${donationsRouteName}/${item._id}`}>
+                          <a
+                            className="text-info-500 text-sm hover:underline"
+                            target="_blank"
+                          >
+                            View Donations
+                          </a>
+                        </Link>
+                      }
+                    />
+                  )}
+                </>
               ),
               author: (
                 <div className="flex flex-col">

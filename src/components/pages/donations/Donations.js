@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { debounce } from 'lodash'
-import { FaCaretDown, FaCaretUp } from 'react-icons/fa'
+import { FaCaretDown, FaCaretUp, FaTimes } from 'react-icons/fa'
 
 import Tabs from '@app/components/tabs'
 import Card from '@app/components/card'
@@ -13,6 +13,7 @@ import Table from '@app/components/table'
 import PageLoader from '@app/components/page-loader'
 import Pagination from '@app/components/pagination'
 import Tooltip from '@app/components/tooltip'
+import Button from '@app/components/button'
 
 import { DATE, ATTR, TOOLTIP } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -50,6 +51,7 @@ function Donations() {
   const complexID = profile?.accounts?.data[0]?.complex?._id
   const pathname = router.pathname
   const isAdmin = accountType === ACCOUNT_TYPES.SUP.value
+  const postID = router?.query?.id
 
   const [getDonations, { data: donations, loading: loadingDonations, error }] =
     useLazyQuery(GET_DONATIONS)
@@ -105,6 +107,10 @@ function Donations() {
 
       if (appliedDate) {
         where.variables.date = appliedDate
+      }
+
+      if (postID) {
+        where.variables.campaignId = postID
       }
 
       getDonations(where)
@@ -328,6 +334,10 @@ function Donations() {
     setAppliedDate(null)
   }
 
+  const onClearFilterPost = () => {
+    router.push(`/${pathname.split('/')[1]}`)
+  }
+
   const errorHandler = data => {
     const errors = JSON.parse(JSON.stringify(data))
 
@@ -355,7 +365,9 @@ function Donations() {
   return (
     <div className="content-wrap">
       <h3 className="content-title">
-        {pathname === '/offerings' ? 'Offerings Monitor' : 'Donations Monitor'}
+        {pathname === '/offerings' || pathname === '/offerings/[id]'
+          ? 'Offerings Monitor'
+          : 'Donations Monitor'}
       </h3>
       <p className="text-base mb-6">via Credit/Debit Card</p>
       <Tabs defaultTab="1">
@@ -364,27 +376,6 @@ function Donations() {
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
-            <div className="p-4 mb-4 bg-white flex items-start justify-start text-base rounded-sm flex-col md:flex-row">
-              <span className="mr-4">
-                No of donations:{' '}
-                <span className="text-info-900 font-semibold">
-                  {DONATIONS?.overallCount ?? 0}
-                </span>
-              </span>
-              <span className="mr-4">
-                Total Amount:{' '}
-                <span className="text-info-900 font-semibold">
-                  PHP {ATTR.toCurrency(DONATIONS?.overallTotal ?? 0, true)}
-                </span>
-              </span>
-              <span className="mr-4">
-                Receivable Amount:{' '}
-                <span className="text-info-900 font-semibold">
-                  PHP {ATTR.toCurrency(DONATIONS?.overallTotalNet ?? 0, true)}
-                </span>
-              </span>
-            </div>
-
             <div className="flex items-center justify-between flex-col lg:flex-row">
               <div className="flex items-center justify-start w-full flex-col md:flex-row">
                 <div className="w-full md:w-64 md:mr-2">
@@ -450,12 +441,49 @@ function Donations() {
                 />
               </div>
             </div>
+
+            {postID && DONATIONS?.campaign?.title && (
+              <h3 className="pt-4 pb-6 font-semibold text-lg flex items-center">
+                <span>{`Filtered to "${DONATIONS?.campaign?.title}" donations`}</span>
+                <Button
+                  label="Clear Filter"
+                  leftIcon={<FaTimes />}
+                  link
+                  noBottomMargin
+                  onClick={onClearFilterPost}
+                />
+              </h3>
+            )}
+
+            <div className="p-4 mb-4 bg-secondary-50 border border-secondary-200 flex items-start justify-start text-base rounded-md flex-col md:flex-row">
+              <span className="mr-4">
+                No of donations:{' '}
+                <span className="text-info-900 font-semibold">
+                  {DONATIONS?.overallCount ?? 0}
+                </span>
+              </span>
+              <span className="mr-4">
+                Total Amount:{' '}
+                <span className="text-info-900 font-semibold">
+                  PHP {ATTR.toCurrency(DONATIONS?.overallTotal ?? 0, true)}
+                </span>
+              </span>
+              <span className="mr-4">
+                Receivable Amount:{' '}
+                <span className="text-info-900 font-semibold">
+                  PHP {ATTR.toCurrency(DONATIONS?.overallTotalNet ?? 0, true)}
+                </span>
+              </span>
+            </div>
+
             <Card
               noPadding
               header={
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-lg">
-                    {pathname === '/offerings'
+                    {postID && DONATIONS?.campaign?.title
+                      ? `"${DONATIONS?.campaign?.title}" Donations`
+                      : pathname === '/offerings'
                       ? 'Recent Offerings '
                       : 'Recent Donations '}
                   </h3>

@@ -7,6 +7,7 @@ export const GET_DONATIONS = gql`
     $complexId: String
     $paymentMethod: PaymentMethod
     $search: String
+    $campaignId: String
     $limit: Int
     $sort: Int
     $offset: Int
@@ -16,6 +17,7 @@ export const GET_DONATIONS = gql`
         srcRef: { companyId: $companyId, complexId: $complexId }
         date: $date
         method: $paymentMethod
+        campaignId: $campaignId
       }
       search: $search
       limit: $limit
@@ -27,6 +29,10 @@ export const GET_DONATIONS = gql`
       overallTotal
       overallTotalNet
       overallCount
+      campaign {
+        _id
+        title
+      }
       data {
         count
         total

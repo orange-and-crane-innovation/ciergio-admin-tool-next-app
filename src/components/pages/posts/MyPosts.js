@@ -58,6 +58,7 @@ const GET_ALL_POST_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        offering
         author {
           _id
           user {
@@ -118,6 +119,7 @@ const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        offering
         author {
           _id
           user {
@@ -205,6 +207,8 @@ const PostComponent = () => {
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
   const companyID = user?.accounts?.data[0]?.company?._id
+  const isSystemPray = systemType === 'pray'
+  const isSystemCircle = systemType === 'circle'
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
@@ -215,6 +219,7 @@ const PostComponent = () => {
     : isDailyReadingsPage
     ? 'daily-readings'
     : 'posts'
+  const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
 
   const tableRowData = [
     {
@@ -271,7 +276,7 @@ const PostComponent = () => {
     }
   }
 
-  if (systemType === 'circle') {
+  if (isSystemCircle) {
     fetchFilter.qr = false
 
     if (isQRCodePage) {
@@ -449,13 +454,50 @@ const PostComponent = () => {
                           View
                         </a>
                       </Link>
-                      {` | `}
-                      <span
-                        className="mx-2 text-danger-500 cursor-pointer hover:underline"
-                        onClick={() => handleShowModal('delete', item._id)}
-                      >
-                        Move to Trash
-                      </span>
+
+                      <Can
+                        perform={
+                          isAttractionsEventsPage
+                            ? 'attractions:delete'
+                            : 'bulletin:delete'
+                        }
+                        yes={
+                          <>
+                            {` | `}
+                            <span
+                              className="mx-2 text-danger-500 cursor-pointer hover:underline"
+                              onClick={() =>
+                                handleShowModal('delete', item._id)
+                              }
+                            >
+                              Move to Trash
+                            </span>
+                          </>
+                        }
+                      />
+
+                      {!isDailyReadingsPage && item?.offering && (
+                        <Can
+                          perform={
+                            isAttractionsEventsPage
+                              ? 'attractions:view::donations'
+                              : 'bulletin:view::donations'
+                          }
+                          yes={
+                            <>
+                              {` | `}
+                              <Link href={`/${donationsRouteName}/${item._id}`}>
+                                <a
+                                  className="mx-2 hover:underline"
+                                  target="_blank"
+                                >
+                                  View Donations
+                                </a>
+                              </Link>
+                            </>
+                          }
+                        />
+                      )}
                     </div>
                   ) : (
                     <div className="flex text-info-500 text-sm">
@@ -469,7 +511,28 @@ const PostComponent = () => {
                 </div>
               ),
               title2: isDailyReadingsPage && (
-                <span className={styles.TextWrapper}>{item?.title}</span>
+                <>
+                  <span className={styles.TextWrapper}>{item?.title}</span>
+                  {isDailyReadingsPage && item?.offering && (
+                    <Can
+                      perform={
+                        isAttractionsEventsPage
+                          ? 'attractions:view::donations'
+                          : 'bulletin:view::donations'
+                      }
+                      yes={
+                        <Link href={`/${donationsRouteName}/${item._id}`}>
+                          <a
+                            className="text-info-500 text-sm hover:underline"
+                            target="_blank"
+                          >
+                            View Donations
+                          </a>
+                        </Link>
+                      }
+                    />
+                  )}
+                </>
               ),
               author: (
                 <div className="flex flex-col">
