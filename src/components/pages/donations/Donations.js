@@ -483,7 +483,8 @@ function Donations() {
                   <h3 className="font-bold text-lg">
                     {postID && DONATIONS?.campaign?.title
                       ? `"${DONATIONS?.campaign?.title}" Donations`
-                      : pathname === '/offerings'
+                      : pathname === '/offerings' ||
+                        pathname === '/offerings/[id]'
                       ? 'Recent Offerings '
                       : 'Recent Donations '}
                   </h3>
