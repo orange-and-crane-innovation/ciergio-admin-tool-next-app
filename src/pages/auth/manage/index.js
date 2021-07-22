@@ -40,7 +40,7 @@ function ManageAccountPage() {
         localStorage.setItem('keep', data?.switchAccount?.slave)
         const timer = setTimeout(() => {
           if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
-            router.push('/messages')
+            router.push('/posts')
           } else if (
             isSystemCircle &&
             accountType !== ACCOUNT_TYPES.SUP.value
