@@ -155,9 +155,12 @@ export default function NewMessageModal({
 
 const User = ({ data, admins, handleClick }) => {
   const accountId = data?._id
+  const accountType = data?.accountType
+  const unitName = data?.unit?.name
   const user = data?.user
   const firstName = user?.firstName
   const lastName = user?.lastName
+  const name = `${firstName} ${lastName}`
   const avatar = user?.avatar
 
   return (
@@ -168,18 +171,30 @@ const User = ({ data, admins, handleClick }) => {
       tabIndex={0}
       onKeyDown={() => {}}
     >
-      <div className="mr-4">
+      <div>
         <img
           src={
-            avatar ??
-            `https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-default.png`
+            avatar && avatar !== ''
+              ? avatar
+              : `https://s3-ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/ava-default.png`
           }
           alt="avatar"
           className="h-8 w-8 rounded-full"
         />
       </div>
-      <div className="mr-4">
-        <p>{`${firstName} ${lastName} `}</p>
+      <div>
+        <div className="flex flex-col">
+          {[ACCOUNT_TYPES.UNIT.value, ACCOUNT_TYPES.RES.value].includes(
+            accountType
+          ) ? (
+            <>
+              <span>{name}</span>
+              <span className="font-semibold">{`Unit ${unitName}`}</span>
+            </>
+          ) : (
+            <p>{name}</p>
+          )}
+        </div>
       </div>
       <div>
         <p className="text-neutral-600 capitalize">
@@ -192,7 +207,7 @@ const User = ({ data, admins, handleClick }) => {
 
 User.propTypes = {
   data: P.object,
-  admins: P.object,
+  admins: P.array,
   handleClick: P.func
 }
 

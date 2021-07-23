@@ -21,7 +21,7 @@
   }
 
   .messagesListItems {
-    @apply overflow-y-scroll;
+    @apply overflow-hidden;
     height: calc(100vh - 180px);
   }
 
@@ -53,7 +53,7 @@
   }
 
   .messageBoxList {
-    @apply h-full overflow-y-scroll overflow-x-hidden px-4 pt-4 pb-5 flex flex-col;
+    @apply h-full overflow-hidden px-4 pt-4 pb-5 flex flex-col;
   }
 
   .messageAttachmentsContainer {
@@ -121,7 +121,7 @@
 }
 
 .newMessageUserItem {
-  @apply flex items-center p-4 box-border border-b border-neutral-300 cursor-pointer;
+  @apply flex items-center gap-4 p-4 box-border border-b border-neutral-300 cursor-pointer;
 }
 
 .newMessageUserItem:hover {

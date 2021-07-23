@@ -226,7 +226,7 @@ const Component = ({
                   <p className="font-bold">{`Don't share with`}</p>
                   <p>
                     Anyone tagged to the list of Audience will be restricted to
-                    recieve/view the post
+                    receive/view the post
                   </p>
                 </div>
 
@@ -279,10 +279,9 @@ const Component = ({
             {selectedAudience === 'specific' && (
               <>
                 <div className="mb-4">
-                  <p className="font-bold">{`Don't share with`}</p>
+                  <p className="font-bold">{`Share with`}</p>
                   <p>
-                    Anyone tagged to the list of Audience will be restricted to
-                    recieve/view the post
+                    Anyone tagged in this list will be able to see the post.
                   </p>
                 </div>
 

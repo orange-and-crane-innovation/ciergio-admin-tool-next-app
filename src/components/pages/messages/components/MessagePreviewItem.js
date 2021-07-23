@@ -5,6 +5,7 @@ import Tooltip from '@app/components/tooltip'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 import { displayDays, toFriendlyDateTime } from '@app/utils/date'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import styles from '../messages.module.css'
 
@@ -17,29 +18,33 @@ export default function MessagePreviewItem({
   convoId,
   newMessage
 }) {
-  const user = useMemo(() => {
+  const account = useMemo(() => {
     if (data?.participants?.data?.length === 2) {
       return data.participants.data.filter(
         item => item?.user?._id !== currentUserid
-      )[0]?.user
+      )
     } else if (data?.participants?.data?.length > 1) {
       return data.participants.data.filter(item =>
-        ['member', 'unit_owner', 'resident'].includes(item.accountType)
-      )[0]?.user
+        [
+          ACCOUNT_TYPES.MEM.value,
+          ACCOUNT_TYPES.UNIT.value,
+          ACCOUNT_TYPES.RES.value
+        ].includes(item.accountType)
+      )
     }
   }, [data?.participants])
 
+  const user = useMemo(() => {
+    return account[0]?.user
+  }, [account])
+
   const accountType = useMemo(() => {
-    if (data?.participants?.data?.length === 2) {
-      return data.participants.data.filter(
-        item => item?.user?._id !== currentUserid
-      )[0]?.accountType
-    } else if (data?.participants?.data?.length > 1) {
-      return data.participants.data.filter(item =>
-        ['member', 'unit_owner', 'resident'].includes(item.accountType)
-      )[0]?.accountType
-    }
-  }, [data?.participants])
+    return account[0]?.accountType
+  }, [account])
+
+  const unitName = useMemo(() => {
+    return account[0]?.unit?.name
+  }, [account])
 
   const name = `${user?.firstName} ${user?.lastName}`
   const messages =
@@ -71,14 +76,24 @@ export default function MessagePreviewItem({
         <div className="w-12 h-12 rounded-full overflow-auto">
           <img
             className="h-full w-full object-contain object-center"
-            src={user?.avatar ?? defaultAvatarUri}
+            src={
+              user?.avatar && user?.avatar !== ''
+                ? user?.avatar
+                : defaultAvatarUri
+            }
             alt={`${user?.firstName} ${user?.lastName}`}
           />
         </div>
       </div>
       <div className=" pr-24 min-w-4xs truncate">
         <p className={`${previewTextState} capitalize truncate max-w-xs`}>
-          {`${getAccountTypeName(accountType)} -  ${name}`}
+          {`${
+            [ACCOUNT_TYPES.UNIT.value, ACCOUNT_TYPES.RES.value].includes(
+              accountType
+            )
+              ? `Unit ${unitName}`
+              : getAccountTypeName(accountType)
+          } -  ${name}`}
         </p>
         <p className={`${previewTextState} truncate max-w-2xs`}>
           {newestMessage ?? 'Start writing a message'}

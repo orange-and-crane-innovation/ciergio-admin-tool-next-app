@@ -1,11 +1,11 @@
 /* eslint-disable no-useless-escape */
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
-import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
-import { draftjsToMd } from 'draftjs-md-converter'
+import { getDefaultKeyBinding } from 'draft-js'
 import ReactHtmlParser from 'react-html-parser'
 import { FiMoreHorizontal, FiUsers } from 'react-icons/fi'
 import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
+import { FaSpinner } from 'react-icons/fa'
 import InfiniteScroll from 'react-infinite-scroll-component'
 
 import Spinner from '@app/components/spinner'
@@ -28,6 +28,7 @@ export default function MessageBox({
   participant,
   conversation,
   loading,
+  loadingSend,
   currentUserid,
   onSubmitMessage,
   // attachments,
@@ -37,8 +38,7 @@ export default function MessageBox({
   // onUpload,
   // onRemove
 }) {
-  const [editorState, setEditorState] = useState(EditorState.createEmpty())
-  const [message, setMessage] = useState(undefined)
+  const [message, setMessage] = useState()
   const [disabledSendBtn, setDisabledSendBtn] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [modalTitle, setModalTitle] = useState()
@@ -112,39 +112,30 @@ export default function MessageBox({
   // }
 
   const handleEditorChange = messageData => {
-    const message = messageData.getCurrentContent()
-    const rawMessage = convertToRaw(message)
-    const clearText = rawMessage?.blocks[0]?.text
-    const cleanData = draftjsToMd(rawMessage)
-      .replace(/(&nbsp;)+/g, '')
-      .replace(/\ \ +/g, ' ')
-      .replace(/\\s+/g, ' ')
-      .trim()
-
-    if (clearText) {
+    if (messageData) {
       setDisabledSendBtn(false)
     } else {
       setDisabledSendBtn(true)
     }
-    setEditorState(messageData)
-    setMessage(cleanData)
+    setMessage(messageData)
   }
 
   const handlePressEnter = e => {
     if (e.keyCode === 13) {
-      if (!disabledSendBtn) {
-        onSubmitMessage(message)
-        setEditorState(EditorState.createEmpty())
-      }
       e.preventDefault()
+      sendMessage()
+      e.target.click()
     } else {
       return getDefaultKeyBinding(e)
     }
   }
 
   const sendMessage = () => {
-    onSubmitMessage(message)
-    setEditorState(EditorState.createEmpty())
+    if (!disabledSendBtn && message) {
+      onSubmitMessage(message)
+      setMessage(null)
+      setDisabledSendBtn(true)
+    }
   }
 
   const handleShowModal = type => {
@@ -235,7 +226,11 @@ export default function MessageBox({
                       >
                         <span className="block">{`${accountType} - ${authorName}`}</span>
                         <img
-                          src={author?.avatar || defaultAvatarUri}
+                          src={
+                            author?.avatar && author?.avatar !== ''
+                              ? author?.avatar
+                              : defaultAvatarUri
+                          }
                           alt={authorName}
                           className={`${
                             isCurrentUserMessage ? 'ml-4 ' : 'mr-4 '
@@ -251,11 +246,7 @@ export default function MessageBox({
                       }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
                     >
                       <p className="font-sm break-all">
-                        {ReactHtmlParser(
-                          item.message
-                            .replace(/\n/gi, '\n <br />')
-                            .replace(/\t/gi, '\n &emsp;')
-                        )}
+                        {item?.message ? ReactHtmlParser(item.message) : ''}
                       </p>
                       <div className="flex items-center justify-end w-full text-right">
                         <span
@@ -309,7 +300,12 @@ export default function MessageBox({
                                       effect="solid"
                                     >
                                       <img
-                                        src={v?.user?.avatar ?? img}
+                                        src={
+                                          v?.user?.avatar &&
+                                          v?.user?.avatar !== ''
+                                            ? v?.user?.avatar
+                                            : img
+                                        }
                                         alt="viewer-avatar"
                                         className={styles.viewerAvatar}
                                       />
@@ -413,15 +409,18 @@ export default function MessageBox({
               placeholder="Write a message"
               onChange={handleEditorChange}
               onPressEnter={handlePressEnter}
-              editorState={editorState}
+              message={message}
             />
             <button
               className={`absolute right-4 bottom-9 px-4 flex items-center text-lg font-bold cursor-pointer ${
                 disabledSendBtn ? 'text-neutral-400' : 'text-primary-500'
               }`}
               onClick={sendMessage}
+              disabled={disabledSendBtn || loadingSend}
             >
-              <span>Send</span>
+              <span className="flex items-center">
+                {loadingSend && <FaSpinner className="icon-spin mr-2" />} Send
+              </span>
             </button>
           </div>
 
@@ -475,6 +474,7 @@ MessageBox.propTypes = {
   participant: P.object,
   conversation: P.object,
   loading: P.bool,
+  loadingSend: P.bool,
   currentUserid: P.string,
   onSubmitMessage: P.func,
   attachmentURLs: P.array,
