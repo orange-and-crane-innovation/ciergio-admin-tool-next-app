@@ -124,6 +124,7 @@ export default function MessageBox({
     if (e.keyCode === 13) {
       e.preventDefault()
       sendMessage()
+      e.target.click()
     } else {
       return getDefaultKeyBinding(e)
     }
