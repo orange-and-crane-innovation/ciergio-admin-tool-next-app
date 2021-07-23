@@ -695,6 +695,8 @@ function CreateNotification() {
                         onSubmit(e, 'draft')
                       })}
                       className="mr-4"
+                      loading={loading}
+                      disabled={loading}
                     />
                   }
                   no={
@@ -720,6 +722,8 @@ function CreateNotification() {
                         onSubmit(e, 'preview')
                       })}
                       className="mr-4"
+                      loading={loading}
+                      disabled={loading}
                     />
                   }
                   no={
@@ -737,6 +741,8 @@ function CreateNotification() {
                       onClick={handleSubmit(e => {
                         onSubmit(e, 'active')
                       })}
+                      loading={loading}
+                      disabled={loading}
                     />
                   }
                   no={<Button primary disabled label="Publish" />}

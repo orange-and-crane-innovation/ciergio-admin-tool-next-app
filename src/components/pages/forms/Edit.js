@@ -29,7 +29,7 @@ import PublishTimeModal from './components/PublishTimeModal'
 import style from './Create.module.css'
 
 const UPDATE_POST_MUTATION = gql`
-  mutation($id: String, $data: PostInput) {
+  mutation ($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -984,6 +984,8 @@ const CreatePosts = () => {
                 onClick={handleSubmit(e => {
                   handleShowModal('delete')
                 })}
+                loading={loading}
+                disabled={loading}
               />
               {post?.status === 'draft' && (
                 <Button
@@ -995,6 +997,8 @@ const CreatePosts = () => {
                   onClick={handleSubmit(e => {
                     onSubmit(e, 'draft')
                   })}
+                  loading={loading}
+                  disabled={loading}
                 />
               )}
               {post?.status === 'published' && (
@@ -1007,6 +1011,8 @@ const CreatePosts = () => {
                   onClick={handleSubmit(e => {
                     handleShowModal('unpublished')
                   })}
+                  loading={loading}
+                  disabled={loading}
                 />
               )}
             </span>
@@ -1019,6 +1025,8 @@ const CreatePosts = () => {
               onClick={handleSubmit(e => {
                 onSubmit(e, 'active')
               })}
+              loading={loading}
+              disabled={loading}
             />
           </div>
         </form>
