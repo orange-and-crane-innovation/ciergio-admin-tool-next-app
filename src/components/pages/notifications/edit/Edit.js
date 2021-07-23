@@ -109,15 +109,16 @@ function CreateNotification() {
 
   register({ name: 'embeddedFiles' })
 
-  const { loading: loadingPost, data: dataPost, error: errorPost } = useQuery(
-    GET_FLASH_NOTIFICATION,
-    {
-      fetchPolicy: 'network-only',
-      variables: {
-        id: query.id
-      }
+  const {
+    loading: loadingPost,
+    data: dataPost,
+    error: errorPost
+  } = useQuery(GET_FLASH_NOTIFICATION, {
+    fetchPolicy: 'network-only',
+    variables: {
+      id: query.id
     }
-  )
+  })
 
   const [
     updatePost,
@@ -362,7 +363,8 @@ function CreateNotification() {
           audienceType: selectedAudienceType,
           status:
             !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
-            status !== 'draft'
+            status !== 'draft' &&
+            selectedPublishTimeType === 'later'
               ? 'scheduled'
               : status,
           primaryMedia: fileUploadedData?.length > 0 ? fileUploadedData : null
@@ -824,6 +826,8 @@ function CreateNotification() {
                         onSubmit(e, 'draft')
                       })}
                       className="mr-4"
+                      loading={loading}
+                      disabled={loading}
                     />
                   }
                   no={
@@ -849,6 +853,8 @@ function CreateNotification() {
                         onSubmit(e, 'preview')
                       })}
                       className="mr-4"
+                      loading={loading}
+                      disabled={loading}
                     />
                   }
                   no={
@@ -866,6 +872,8 @@ function CreateNotification() {
                       onClick={handleSubmit(e => {
                         onSubmit(e, 'active')
                       })}
+                      loading={loading}
+                      disabled={loading}
                     />
                   }
                   no={<Button primary disabled label="Publish" />}
