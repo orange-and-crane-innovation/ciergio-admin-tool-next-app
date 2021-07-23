@@ -30,21 +30,16 @@ const Component = ({
   valueBuildingSpecific
 }) => {
   const [selectedAudience, setSelectedAudience] = useState(valueAudienceType)
-  const [selectedCompanyExcept, setSelectedCompanyExcept] = useState(
-    valueCompanyExcept
-  )
-  const [selectedCompanySpecific, setSelectedCompanySpecific] = useState(
-    valueCompanySpecific
-  )
-  const [selectedComplexExcept, setSelectedComplexExcept] = useState(
-    valueComplexExcept
-  )
-  const [selectedComplexSpecific, setSelectedComplexSpecific] = useState(
-    valueComplexSpecific
-  )
-  const [selectedBuildingExcept, setSelectedBuildingExcept] = useState(
-    valueBuildingExcept
-  )
+  const [selectedCompanyExcept, setSelectedCompanyExcept] =
+    useState(valueCompanyExcept)
+  const [selectedCompanySpecific, setSelectedCompanySpecific] =
+    useState(valueCompanySpecific)
+  const [selectedComplexExcept, setSelectedComplexExcept] =
+    useState(valueComplexExcept)
+  const [selectedComplexSpecific, setSelectedComplexSpecific] =
+    useState(valueComplexSpecific)
+  const [selectedBuildingExcept, setSelectedBuildingExcept] =
+    useState(valueBuildingExcept)
   const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState(
     valueBuildingSpecific
   )

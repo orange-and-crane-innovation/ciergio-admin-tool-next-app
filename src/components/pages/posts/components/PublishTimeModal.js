@@ -11,8 +11,6 @@ import FormInput from '@app/components/forms/form-input'
 import RadioBox from '@app/components/forms/form-radio'
 import Modal from '@app/components/modal'
 
-import { DATE } from '@app/utils'
-
 import 'react-datetime/css/react-datetime.css'
 
 const Component = ({
@@ -26,9 +24,8 @@ const Component = ({
   errorSelectedDate
 }) => {
   const [selectedDate, setSelectedDate] = useState(valueDateTime)
-  const [selectedPublishType, setSelectedPublishType] = useState(
-    valuePublishType
-  )
+  const [selectedPublishType, setSelectedPublishType] =
+    useState(valuePublishType)
 
   useEffect(() => {
     setSelectedPublishType(valuePublishType)
@@ -67,7 +64,7 @@ const Component = ({
             <div className="p-4">
               <RadioBox
                 primary
-                id="all"
+                id="now"
                 name="publish_time"
                 label="Now"
                 value="now"
@@ -81,7 +78,7 @@ const Component = ({
             <div className="p-4">
               <RadioBox
                 primary
-                id="except"
+                id="later"
                 name="publish_time"
                 label="Later"
                 value="later"
