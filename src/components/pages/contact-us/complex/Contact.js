@@ -275,7 +275,7 @@ function Contact({ id }) {
 
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
-      <h1 className="content-title capitalize">{`${name} Page`}</h1>
+      <h1 className="content-title capitalize">{`Contact Page`}</h1>
       <p className="text-base mb-8">
         Allow users to email specific in people in your building.
       </p>

@@ -56,7 +56,7 @@ function Company({ id }) {
   const name = companies?.getCompanies?.data[0]?.name
   return (
     <section className={`content-wrap pt-4 pb-8 px-8`}>
-      <h1 className="content-title capitalize">{`${name} Contact Page`}</h1>
+      <h1 className="content-title capitalize">{`Contact Page`}</h1>
       <div className="flex items-center justify-between bg-white border rounded-t">
         <h1 className="font-bold text-base px-8 py-4">Complexes</h1>
       </div>
