@@ -1236,6 +1236,7 @@ const CreatePosts = () => {
                   onClick={handleSubmit(e => {
                     onSubmit(e, 'draft')
                   })}
+                  loading={loading || fileLoading}
                   disabled={loading || fileLoading}
                 />
               }
@@ -1260,6 +1261,7 @@ const CreatePosts = () => {
                 onClick={handleSubmit(e => {
                   handleShowModal('preview')
                 })}
+                loading={loading || fileLoading}
                 disabled={loading || fileLoading}
               />
 
@@ -1277,6 +1279,7 @@ const CreatePosts = () => {
                 onClick={handleSubmit(e => {
                   onSubmit(e, 'active')
                 })}
+                loading={loading || fileLoading}
                 disabled={loading || fileLoading}
               />
             </span>

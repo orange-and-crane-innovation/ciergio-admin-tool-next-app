@@ -48,7 +48,7 @@ function FormRadio({
         {...rest}
       />
       {label && (
-        <label htmlFor={id} className="ml-2 cursor-pointer" onClick={onChange}>
+        <label htmlFor={id} className="ml-2 cursor-pointer">
           {label}
         </label>
       )}

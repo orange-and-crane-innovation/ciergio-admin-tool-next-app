@@ -861,13 +861,17 @@ const CreatePosts = () => {
       if (status) {
         updateData.data.status =
           !dayjs().isAfter(dayjs(new Date(selectedPublishDateTime))) &&
-          status !== 'draft'
+          status !== 'draft' &&
+          selectedPublishTimeType === 'later'
             ? 'scheduled'
             : status
       }
 
       if (selectedPublishDateTime) {
-        updateData.data.publishedAt = selectedPublishDateTime
+        updateData.data.publishedAt =
+          selectedPublishTimeType === 'now'
+            ? new Date()
+            : selectedPublishDateTime
       }
       if (selectedCompanySpecific) {
         if (selectedCompanySpecific[0]?.value) {
@@ -1708,6 +1712,7 @@ const CreatePosts = () => {
                     onClick={handleSubmit(e => {
                       handleShowModal('delete')
                     })}
+                    loading={loading || fileLoading}
                     disabled={loading || fileLoading}
                   />
                 }
@@ -1735,6 +1740,7 @@ const CreatePosts = () => {
                       onClick={handleSubmit(e => {
                         onSubmit(e, 'draft')
                       })}
+                      loading={loading || fileLoading}
                       disabled={loading || fileLoading}
                     />
                   }
@@ -1762,6 +1768,7 @@ const CreatePosts = () => {
                       onClick={handleSubmit(e => {
                         handleShowModal('unpublished')
                       })}
+                      loading={loading || fileLoading}
                       disabled={loading || fileLoading}
                     />
                   }
@@ -1788,6 +1795,7 @@ const CreatePosts = () => {
                 onClick={handleSubmit(e => {
                   handleShowModal('preview')
                 })}
+                loading={loading || fileLoading}
                 disabled={loading || fileLoading}
               />
 
@@ -1799,6 +1807,7 @@ const CreatePosts = () => {
                 onClick={handleSubmit(e => {
                   onSubmit(e, 'active')
                 })}
+                loading={loading || fileLoading}
                 disabled={loading || fileLoading}
               />
             </span>
