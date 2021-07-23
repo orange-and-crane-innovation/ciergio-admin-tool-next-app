@@ -9,8 +9,9 @@ const ParticipantsBox = ({ data }) => {
         <img
           className="h-full w-full object-contain object-center"
           src={
-            data?.user?.avatar ??
-            `https://ui-avatars.com/api/?name=${`${data?.user?.firstName} ${data?.user?.lastName}`}&size=32`
+            data?.user?.avatar && data?.user?.avatar !== ''
+              ? data?.user?.avatar
+              : `https://ui-avatars.com/api/?name=${`${data?.user?.firstName} ${data?.user?.lastName}`}&size=32`
           }
           alt="avatar"
         />

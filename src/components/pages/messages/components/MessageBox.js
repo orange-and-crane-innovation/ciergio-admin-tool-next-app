@@ -112,39 +112,36 @@ export default function MessageBox({
   // }
 
   const handleEditorChange = messageData => {
-    const message = messageData.getCurrentContent()
-    const rawMessage = convertToRaw(message)
-    const clearText = rawMessage?.blocks[0]?.text
-    const cleanData = draftjsToMd(rawMessage)
-      .replace(/(&nbsp;)+/g, '')
-      .replace(/\ \ +/g, ' ')
-      .replace(/\\s+/g, ' ')
-      .trim()
+    const content = messageData.getCurrentContent()
+    const isEditorEmpty = !content.hasText()
+    const currentPlainText = content.getPlainText()
+    const lengthOfTrimmedContent = currentPlainText.trim().length
+    const isContainOnlySpaces = !isEditorEmpty && !lengthOfTrimmedContent
 
-    if (clearText) {
+    if (!isContainOnlySpaces && !isEditorEmpty) {
       setDisabledSendBtn(false)
     } else {
       setDisabledSendBtn(true)
     }
     setEditorState(messageData)
-    setMessage(cleanData)
+    setMessage(currentPlainText)
   }
 
   const handlePressEnter = e => {
     if (e.keyCode === 13) {
-      if (!disabledSendBtn) {
-        onSubmitMessage(message)
-        setEditorState(EditorState.createEmpty())
-      }
       e.preventDefault()
+      sendMessage()
     } else {
       return getDefaultKeyBinding(e)
     }
   }
 
   const sendMessage = () => {
-    onSubmitMessage(message)
-    setEditorState(EditorState.createEmpty())
+    if (!disabledSendBtn && message) {
+      onSubmitMessage(message)
+      setEditorState(EditorState.createEmpty())
+      setMessage(null)
+    }
   }
 
   const handleShowModal = type => {
@@ -235,7 +232,11 @@ export default function MessageBox({
                       >
                         <span className="block">{`${accountType} - ${authorName}`}</span>
                         <img
-                          src={author?.avatar || defaultAvatarUri}
+                          src={
+                            author?.avatar && author?.avatar !== ''
+                              ? author?.avatar
+                              : defaultAvatarUri
+                          }
                           alt={authorName}
                           className={`${
                             isCurrentUserMessage ? 'ml-4 ' : 'mr-4 '
@@ -251,11 +252,7 @@ export default function MessageBox({
                       }py-3 px-4 border-none w-11/12 rounded shadow-none h-auto relative`}
                     >
                       <p className="font-sm break-all">
-                        {ReactHtmlParser(
-                          item.message
-                            .replace(/\n/gi, '\n <br />')
-                            .replace(/\t/gi, '\n &emsp;')
-                        )}
+                        {item?.message ? ReactHtmlParser(item.message) : ''}
                       </p>
                       <div className="flex items-center justify-end w-full text-right">
                         <span
@@ -309,7 +306,12 @@ export default function MessageBox({
                                       effect="solid"
                                     >
                                       <img
-                                        src={v?.user?.avatar ?? img}
+                                        src={
+                                          v?.user?.avatar &&
+                                          v?.user?.avatar !== ''
+                                            ? v?.user?.avatar
+                                            : img
+                                        }
                                         alt="viewer-avatar"
                                         className={styles.viewerAvatar}
                                       />
@@ -420,6 +422,7 @@ export default function MessageBox({
                 disabledSendBtn ? 'text-neutral-400' : 'text-primary-500'
               }`}
               onClick={sendMessage}
+              disabled={disabledSendBtn}
             >
               <span>Send</span>
             </button>

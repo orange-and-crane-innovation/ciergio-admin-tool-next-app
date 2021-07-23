@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, useRef } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
+import { uniqBy } from 'lodash'
 import { FiEdit } from 'react-icons/fi'
 
 import Toggle from '@app/components/toggle'
@@ -64,6 +65,7 @@ export default function Main() {
   const [messageData, setMessageData] = useState()
   const [firstConvo, setFirstConvo] = useState()
   const [isFirst, setIsFirst] = useState(true)
+  const [isSelected, setIsSelected] = useState(false)
   const maxAttachments = 5
   const debouncedSearch = useDebounce(search, 500)
 
@@ -110,6 +112,12 @@ export default function Main() {
     }
   })
   const [
+    getConvoSelected,
+    { data: dataSelectedConvo, loading: loadingSelectedConvo }
+  ] = useLazyQuery(getConversations, {
+    fetchPolicy: 'network-only'
+  })
+  const [
     fetchMessages,
     { data: messages, loading: loadingMessages, refetch: refetchMessages }
   ] = useLazyQuery(getMessages, {
@@ -144,6 +152,42 @@ export default function Main() {
   })
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!loadingSelectedConvo && dataSelectedConvo && !isSelected) {
+        const index = conversations?.data.findIndex(convo => {
+          return convo._id === dataSelectedConvo?.getConversations?.data[0]?._id
+        })
+        const isExist = index !== -1
+
+        if (isExist) {
+          console.log('Exist')
+          handleMessagePreviewClick(conversations?.data[index])
+        } else {
+          console.log('Not Exist')
+
+          if (dataSelectedConvo?.getConversations?.data?.length > 0) {
+            console.log('Old Convo')
+            onCreateConvo(dataSelectedConvo?.getConversations?.data[0])
+          } else {
+            console.log('New Convo')
+            createNewConversation({
+              variables: {
+                data: {
+                  type: convoType,
+                  participants: [accountId, selectedAccountId]
+                }
+              }
+            })
+          }
+        }
+        setIsSelected(true)
+        handleCloseNewMessageModal()
+      }
+      clearInterval(timer)
+    }, 500)
+  }, [dataSelectedConvo, loadingSelectedConvo, isSelected])
+
+  useEffect(() => {
     if (convos?.getConversations?.count > 0 && isFirst) {
       const convoFilter = convos?.getConversations?.data.find(
         item => item.selected === true
@@ -165,17 +209,16 @@ export default function Main() {
       ) {
         setConversations(prev => ({
           ...prev,
-          data: [
-            ...new Set(
-              conversations?.data.concat(convos?.getConversations?.data)
-            )
-          ]
+          data: uniqBy(
+            conversations?.data.concat(convos?.getConversations?.data),
+            '_id'
+          )
         }))
       } else {
         setConversations(convos.getConversations)
       }
     }
-  }, [convos?.getConversations])
+  }, [convos?.getConversations, hasFetched])
 
   useEffect(() => {
     if (messages) {
@@ -260,37 +303,7 @@ export default function Main() {
 
   useEffect(() => {
     if (createdConvo && calledCreateConvo) {
-      const recipient = accounts?.getAccounts?.data?.find(
-        account => account._id === selectedAccountId
-      )
-
-      setConversations(old => ({
-        ...old,
-        count: old.count + 1,
-        data: [
-          {
-            _id: createdConvo?.createConversation?._id,
-            unit: null,
-            author: {
-              accountType: profile?.accountType,
-              user: { ...profile?.accounts?.data[0].user }
-            },
-            participants: {
-              data: [
-                {
-                  accountType: profile?.accountType,
-                  user: { ...profile?.accounts?.data[0].user }
-                },
-                {
-                  ...recipient
-                }
-              ]
-            }
-          },
-          ...old.data
-        ]
-      }))
-      setSelectedAccountId(null)
+      onCreateConvo(createdConvo?.createConversation, 'new')
     }
   }, [createdConvo, calledCreateConvo])
 
@@ -322,30 +335,26 @@ export default function Main() {
   }
 
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
+  const handleCloseNewMessageModal = () => setShowNewMessageModal(false)
 
   const handleAccountClick = (userid, admins) => {
     setSelectedAccountId(userid)
-    if (conversations?.data?.length > 0) {
-      const index = conversations?.data.findIndex(convo => {
-        return convo.participants.data[1]._id === userid
-      })
-      const isExist = index !== -1
-      if (isExist) {
-        handleMessagePreviewClick(conversations?.data[index])
-        handleNewMessageModal()
-        return
-      }
-    }
+    setIsSelected(false)
 
-    createNewConversation({
+    const isAdmin =
+      (admins?.filter(item => item?._id === userid) ?? [])?.length > 0
+
+    getConvoSelected({
       variables: {
-        data: {
+        where: {
+          participants: [accountId, userid],
           type: convoType,
-          participants: [accountId, userid]
-        }
+          exactParticipants: isAdmin
+        },
+        limit: 1,
+        skip: 0
       }
     })
-    handleNewMessageModal()
   }
 
   const handleSubmitMessage = message => {
@@ -493,6 +502,42 @@ export default function Main() {
     setConvoType(e.value)
   }
 
+  const onCreateConvo = (data, type) => {
+    const recipient = accounts?.getAccounts?.data?.find(
+      account => account._id === selectedAccountId
+    )
+
+    setConversations(old => ({
+      ...old,
+      count: old.count + 1,
+      data: [
+        type === 'new'
+          ? {
+              _id: data?._id,
+              unit: null,
+              author: {
+                accountType: profile?.accounts?.data[0].accountType,
+                user: { ...profile?.accounts?.data[0].user }
+              },
+              participants: {
+                data: [
+                  {
+                    accountType: profile?.accounts?.data[0].accountType,
+                    user: { ...profile?.accounts?.data[0].user }
+                  },
+                  {
+                    ...recipient
+                  }
+                ]
+              }
+            }
+          : data,
+        ...old.data
+      ]
+    }))
+    setSelectedAccountId(null)
+  }
+
   const errorHandler = data => {
     const errors = JSON.parse(JSON.stringify(data))
 
@@ -584,7 +629,7 @@ export default function Main() {
       <MessageBox
         endMessageRef={endMessage}
         participant={selectedConvo}
-        conversation={selectedConvo ? convoMessages : []}
+        conversation={selectedConvo ? convoMessages : {}}
         loading={loadingMessages}
         onSubmitMessage={handleSubmitMessage}
         currentUserid={profile?._id}
@@ -599,7 +644,7 @@ export default function Main() {
       />
       <NewMessageModal
         visible={showNewMessageModal}
-        onCancel={handleNewMessageModal}
+        onCancel={handleCloseNewMessageModal}
         onSelectUser={handleAccountClick}
         loadingUsers={loadingAccounts}
         users={accounts?.getAccounts?.data || []}
