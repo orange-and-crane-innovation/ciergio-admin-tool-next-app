@@ -1,11 +1,11 @@
 /* eslint-disable no-useless-escape */
 import { useState, useMemo } from 'react'
 import P from 'prop-types'
-import { getDefaultKeyBinding, EditorState, convertToRaw } from 'draft-js'
-import { draftjsToMd } from 'draftjs-md-converter'
+import { getDefaultKeyBinding } from 'draft-js'
 import ReactHtmlParser from 'react-html-parser'
 import { FiMoreHorizontal, FiUsers } from 'react-icons/fi'
 import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
+import { FaSpinner } from 'react-icons/fa'
 import InfiniteScroll from 'react-infinite-scroll-component'
 
 import Spinner from '@app/components/spinner'
@@ -28,6 +28,7 @@ export default function MessageBox({
   participant,
   conversation,
   loading,
+  loadingSend,
   currentUserid,
   onSubmitMessage,
   // attachments,
@@ -37,8 +38,7 @@ export default function MessageBox({
   // onUpload,
   // onRemove
 }) {
-  const [editorState, setEditorState] = useState(EditorState.createEmpty())
-  const [message, setMessage] = useState(undefined)
+  const [message, setMessage] = useState()
   const [disabledSendBtn, setDisabledSendBtn] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [modalTitle, setModalTitle] = useState()
@@ -112,19 +112,12 @@ export default function MessageBox({
   // }
 
   const handleEditorChange = messageData => {
-    const content = messageData.getCurrentContent()
-    const isEditorEmpty = !content.hasText()
-    const currentPlainText = content.getPlainText()
-    const lengthOfTrimmedContent = currentPlainText.trim().length
-    const isContainOnlySpaces = !isEditorEmpty && !lengthOfTrimmedContent
-
-    if (!isContainOnlySpaces && !isEditorEmpty) {
+    if (messageData) {
       setDisabledSendBtn(false)
     } else {
       setDisabledSendBtn(true)
     }
-    setEditorState(messageData)
-    setMessage(currentPlainText)
+    setMessage(messageData)
   }
 
   const handlePressEnter = e => {
@@ -139,8 +132,8 @@ export default function MessageBox({
   const sendMessage = () => {
     if (!disabledSendBtn && message) {
       onSubmitMessage(message)
-      setEditorState(EditorState.createEmpty())
       setMessage(null)
+      setDisabledSendBtn(true)
     }
   }
 
@@ -415,16 +408,18 @@ export default function MessageBox({
               placeholder="Write a message"
               onChange={handleEditorChange}
               onPressEnter={handlePressEnter}
-              editorState={editorState}
+              message={message}
             />
             <button
               className={`absolute right-4 bottom-9 px-4 flex items-center text-lg font-bold cursor-pointer ${
                 disabledSendBtn ? 'text-neutral-400' : 'text-primary-500'
               }`}
               onClick={sendMessage}
-              disabled={disabledSendBtn}
+              disabled={disabledSendBtn || loadingSend}
             >
-              <span>Send</span>
+              <span className="flex items-center">
+                {loadingSend && <FaSpinner className="icon-spin mr-2" />} Send
+              </span>
             </button>
           </div>
 
@@ -478,6 +473,7 @@ MessageBox.propTypes = {
   participant: P.object,
   conversation: P.object,
   loading: P.bool,
+  loadingSend: P.bool,
   currentUserid: P.string,
   onSubmitMessage: P.func,
   attachmentURLs: P.array,

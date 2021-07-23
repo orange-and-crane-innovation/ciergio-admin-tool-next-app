@@ -124,20 +124,23 @@ export default function Main() {
     fetchPolicy: 'network-only'
   })
   const [updateConvo] = useMutation(updateConversation)
-  const [sendNewMessage] = useMutation(sendMessage, {
-    onCompleted: ({ createMessage }) => {
-      seenNewMessage({
-        variables: {
-          messageId: createMessage?._id
-        }
-      })
-      refetchMessages()
-      setHasFetched(true)
-    },
-    onError: e => {
-      errorHandler(e)
+  const [sendNewMessage, { loading: loadingSendMessage }] = useMutation(
+    sendMessage,
+    {
+      onCompleted: ({ createMessage }) => {
+        seenNewMessage({
+          variables: {
+            messageId: createMessage?._id
+          }
+        })
+        refetchMessages()
+        setHasFetched(true)
+      },
+      onError: e => {
+        errorHandler(e)
+      }
     }
-  })
+  )
   const [seenNewMessage, { data: dataSeenMessage }] = useMutation(seenMessage)
 
   const [
@@ -631,6 +634,7 @@ export default function Main() {
         participant={selectedConvo}
         conversation={selectedConvo ? convoMessages : {}}
         loading={loadingMessages}
+        loadingSend={loadingSendMessage}
         onSubmitMessage={handleSubmitMessage}
         currentUserid={profile?._id}
         onUpload={onUploadAttachment}
