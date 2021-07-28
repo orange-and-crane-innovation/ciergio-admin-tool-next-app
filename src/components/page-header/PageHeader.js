@@ -2,19 +2,10 @@ import P from 'prop-types'
 import styles from './PageHeader.module.css'
 import Dropdown from '@app/components/dropdown'
 import { FaEllipsisH } from 'react-icons/fa'
-import { FiEdit2 } from 'react-icons/fi'
 
 import { IMAGES } from '@app/constants'
 
-const DropdownData = [
-  {
-    label: 'Edit Profile',
-    icon: <FiEdit2 />,
-    function: () => alert('clicked')
-  }
-]
-
-function PageHeader({ image, title, subtitle }) {
+function PageHeader({ image, title, subtitle, dropdown }) {
   return (
     <div className={styles.PageHeaderContainer}>
       <div className="flex items-center">
@@ -29,7 +20,7 @@ function PageHeader({ image, title, subtitle }) {
       </div>
 
       <div className={styles.PageButton}>
-        <Dropdown label={<FaEllipsisH />} items={DropdownData} />
+        <Dropdown label={<FaEllipsisH />} items={dropdown} />
       </div>
     </div>
   )
@@ -37,6 +28,7 @@ function PageHeader({ image, title, subtitle }) {
 PageHeader.propTypes = {
   image: P.string,
   title: P.string,
-  subtitle: P.string
+  subtitle: P.string,
+  dropdown: P.array
 }
 export default PageHeader
