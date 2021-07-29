@@ -1,17 +1,21 @@
 /* eslint-disable react/jsx-key */
-import React, { useMemo } from 'react'
-import { useQuery } from '@apollo/client'
-import { FiMail, FiLock, FiUser } from 'react-icons/fi'
+import React, { useMemo, useState } from 'react'
+import { useQuery, useMutation } from '@apollo/client'
+import { FiMail, FiLock, FiUser, FiEdit2 } from 'react-icons/fi'
 
 import Card from '@app/components/card'
 import PageHeader from '@app/components/page-header'
 import PageLoader from '@app/components/page-loader'
 
 import getAccountTypeName from '@app/utils/getAccountTypeName'
+import errorHandler from '@app/utils/errorHandler'
 import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
+
+import EditModal from './components/EditModal'
 
 import styles from './Profile.module.css'
 import gql from 'graphql-tag'
+import showToast from '@app/utils/toast'
 
 export const GET_PROFILE = gql`
   query {
@@ -49,11 +53,37 @@ export const GET_PROFILE = gql`
   }
 `
 
+const UPDATE_USER_MUTATION = gql`
+  mutation updateUser($userId: String, $data: InputUpdateUser) {
+    updateUser(userId: $userId, data: $data) {
+      processId
+      message
+      slave
+    }
+  }
+`
+
 function Profile() {
-  const { loading, data } = useQuery(GET_PROFILE, {
+  const [showModal, setShowModal] = useState(false)
+
+  const { loading, data, refetch } = useQuery(GET_PROFILE, {
     fetchPolicy: 'cache-only',
     onError: () => {}
   })
+
+  const [updateUser, { loading: loadingUpdate }] = useMutation(
+    UPDATE_USER_MUTATION,
+    {
+      onCompleted: () => {
+        showToast('success', 'Profile updated successfully!')
+        handleShowModal()
+        refetch()
+      },
+      onError: e => {
+        errorHandler(e)
+      }
+    }
+  )
 
   const profile = useMemo(() => {
     return data ? data?.getProfile : {}
@@ -64,6 +94,30 @@ function Profile() {
       ? profile.accounts.data.filter(account => account.active === true)
       : []
   }, [profile])
+
+  const handleShowModal = () => {
+    setShowModal(old => !old)
+  }
+
+  const onSubmit = data => {
+    const updateData = {
+      userId: data?.id,
+      data: {
+        avatar: data?.logo[0],
+        firstName: data?.firstName,
+        lastName: data?.lastName
+      }
+    }
+    updateUser({ variables: updateData })
+  }
+
+  const DropdownData = [
+    {
+      label: 'Edit Profile',
+      icon: <FiEdit2 />,
+      function: () => handleShowModal()
+    }
+  ]
 
   if (loading) return <PageLoader />
 
@@ -83,6 +137,7 @@ function Profile() {
         }
         title={`${profile.firstName} ${profile.lastName}`}
         subtitle={profile.email}
+        dropdown={DropdownData}
       />
       <Card
         noPadding
@@ -124,6 +179,14 @@ function Profile() {
             </div>
           </div>
         }
+      />
+
+      <EditModal
+        data={profile}
+        isShown={showModal}
+        loading={loadingUpdate}
+        onSave={e => onSubmit(e)}
+        onCancel={handleShowModal}
       />
     </div>
   )

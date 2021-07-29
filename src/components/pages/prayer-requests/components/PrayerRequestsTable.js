@@ -29,13 +29,15 @@ import Button from '@app/components/button'
 import CreatePrayerRequestModal from './CreatePrayerRequestModal'
 import PrayerRequestPrintView from './PrayerRequestPrintView'
 
+import styles from './PrayerRequestsTable.module.css'
+
 const columns = [
   {
     name: 'Date Created',
     width: ''
   },
   {
-    name: 'Title',
+    name: 'Category',
     width: ''
   },
   {
@@ -43,7 +45,19 @@ const columns = [
     width: ''
   },
   {
-    name: 'Last Update',
+    name: 'Prayer For',
+    width: ''
+  },
+  {
+    name: 'Prayer From',
+    width: ''
+  },
+  {
+    name: 'Date of Mass',
+    width: ''
+  },
+  {
+    name: 'Message',
     width: ''
   },
   {
@@ -199,7 +213,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
     prayerRequests?.issue?.map(
       ({ createdAt, category, reporter, prayer, content }, index) => {
         const dateCreated = createdAt
-          ? friendlyDateTimeFormat(Number(createdAt), 'MMM DD, YYYY')
+          ? friendlyDateTimeFormat(createdAt, 'MMM DD, YYYY')
           : ''
         const title = category?.name || ''
         const requestor = reporter?.user
@@ -208,7 +222,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
         const prayerFor = prayer.for || ''
         const prayerFrom = prayer.from || ''
         const dateRequested = prayer?.date
-          ? friendlyDateTimeFormat(Number(prayer.date), 'MMM DD, YYYY')
+          ? friendlyDateTimeFormat(prayer.date, 'MMM DD, YYYY')
           : ''
         const message = content || ''
 
@@ -258,7 +272,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
       data:
         prayerRequests?.issue?.length > 0
           ? prayerRequests.issue.map(
-              ({ _id, category, prayer, reporter, createdAt, updatedAt }) => {
+              ({ _id, category, prayer, reporter, createdAt, content }) => {
                 const req = reporter?.user
                 let path = `/prayer-requests/details/${_id}`
                 if (complexId) {
@@ -275,20 +289,29 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                 ]
                 return {
                   dateCreated: friendlyDateTimeFormat(dayjs(createdAt), 'LL'),
-                  title: (
-                    <Link href={path}>
-                      <p className="cursor-pointer font-bold hover:underline">
-                        <span>{category?.name}</span> -{' '}
-                        <span>{prayer.for}</span>
-                      </p>
-                    </Link>
+                  category: (
+                    <>
+                      <span>{category?.name}</span>
+                      <Link href={path}>
+                        <p className="text-sm text-info-500 cursor-pointer hover:underline">
+                          <span>View</span>
+                        </p>
+                      </Link>
+                    </>
                   ),
                   requestor: (
                     <Link href={`/residents/view/${reporter?._id}`}>
-                      <span className="text-blue-500 cursor-pointer">{`${req?.firstName} ${req?.lastName}`}</span>
+                      <span className="text-info-500 cursor-pointer hover:underline">{`${req?.firstName} ${req?.lastName}`}</span>
                     </Link>
                   ),
-                  lastUpdate: friendlyDateTimeFormat(dayjs(updatedAt), 'LL'),
+                  pareyerFor: prayer.for,
+                  prayerFrom: prayer.from,
+                  prayerDate: friendlyDateTimeFormat(dayjs(prayer?.date), 'LL'),
+                  message: (
+                    <span className={styles.messageContainer}>
+                      {content || '--'}
+                    </span>
+                  ),
                   button: (
                     <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                   )

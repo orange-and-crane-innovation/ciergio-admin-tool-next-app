@@ -26,7 +26,7 @@ export default function PrintData({ data }) {
                 ? friendlyDateTimeFormat(prayer.date, 'MMM DD, YYYY')
                 : '--'}
             </td>
-            <td className="min-w-200">{content || '--'}</td>
+            <td className="min-w-200 max-w-2xs">{content || '--'}</td>
           </tr>
         )
       }
