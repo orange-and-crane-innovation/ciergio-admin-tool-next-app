@@ -1,0 +1,8 @@
+.messageContainer {
+  @apply overflow-hidden;
+  @apply overflow-ellipsis;
+  @apply max-w-2xs;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
