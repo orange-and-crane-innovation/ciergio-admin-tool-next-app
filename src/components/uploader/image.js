@@ -1,12 +1,13 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-
+import Resizer from 'react-image-file-resizer'
 import { FaSpinner, FaRegTrashAlt } from 'react-icons/fa'
 
 import ImageAdd from '@app/assets/svg/image-add.svg'
 import Tooltip from '@app/components/tooltip'
+import LightBox from '@app/components/lightbox'
 
 import styles from './image.module.css'
 
@@ -24,7 +25,28 @@ const UploaderImage = ({
   defaultValue
 }) => {
   const [isOver, setIsOver] = useState(false)
+  const [imageLists, setImageLists] = useState([])
+  const [imageIndex, setImageIndex] = useState(0)
+  const [imageOpen, setImageOpen] = useState(false)
   let uploadedImages
+
+  const resizeFile = file =>
+    new Promise(resolve => {
+      const fileType = file?.type === 'image/png' ? 'PNG' : 'JPEG'
+
+      Resizer.imageFileResizer(
+        file,
+        1440,
+        1440,
+        fileType,
+        100,
+        0,
+        uri => {
+          resolve(uri)
+        },
+        'blob'
+      )
+    })
 
   const containerClass = isOver
     ? `${styles.imageUploaderContainer} ${styles.over}`
@@ -32,8 +54,38 @@ const UploaderImage = ({
     ? `${styles.imageUploaderContainer} ${styles.error}`
     : styles.imageUploaderContainer
 
-  const handleUpload = e => {
-    onUploadImage(e)
+  useEffect(() => {
+    if (images) {
+      setImageLists(images)
+    }
+  }, [images])
+
+  const handleImageOpen = index => {
+    setImageOpen(true)
+    handleImageIndex(index)
+  }
+
+  const handleImageClose = () => {
+    setImageOpen(false)
+  }
+
+  const handleImageIndex = index => {
+    setImageIndex(index)
+  }
+
+  const handleUpload = async e => {
+    const fileList = []
+    try {
+      const files = e.target.files
+      for (const file of files) {
+        const image = await resizeFile(file)
+        fileList.push(image)
+      }
+      onUploadImage({ target: { files: fileList } })
+    } catch (err) {
+      console.log(err)
+    }
+
     e.target.value = ''
   }
 
@@ -79,6 +131,7 @@ const UploaderImage = ({
                   circle ? styles.imageUploaderImageCircle : ''
                 }`}
                 style={{ backgroundImage: `url(${!loading && image})` }}
+                onClick={() => handleImageOpen(index)}
               />
               <Tooltip text="Remove">
                 <button
@@ -173,6 +226,13 @@ const UploaderImage = ({
         )}
       </div>
       <div className={styles.imageUploaderError}>{error}</div>
+      <LightBox
+        isOpen={imageOpen}
+        images={imageLists}
+        imageIndex={imageIndex}
+        onClick={handleImageIndex}
+        onClose={handleImageClose}
+      />
     </>
   )
 }
