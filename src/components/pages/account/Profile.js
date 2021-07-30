@@ -103,7 +103,7 @@ function Profile() {
     const updateData = {
       userId: data?.id,
       data: {
-        avatar: data?.logo[0],
+        avatar: data?.logo ? data?.logo[0] : null,
         firstName: data?.firstName,
         lastName: data?.lastName
       }
