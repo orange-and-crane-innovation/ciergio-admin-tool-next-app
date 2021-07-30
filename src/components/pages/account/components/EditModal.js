@@ -46,7 +46,7 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
       setValue('lastName', data?.lastName)
       setImageUrls(data?.avatar ? [data?.avatar] : [])
     }
-  }, [])
+  }, [isShown])
 
   const uploadApi = async payload => {
     const config = {
