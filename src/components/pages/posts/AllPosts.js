@@ -1064,75 +1064,76 @@ const PostComponent = () => {
               ) : (
                 <span className={styles.TextWrapper}>{item?.title}</span>
               )}
-              {isMine ? (
-                <div className="flex text-info-500 text-sm">
-                  <Link href={`/${routeName}/edit/${item._id}`}>
-                    <a className="mr-2 hover:underline">Edit</a>
-                  </Link>
-                  {` | `}
-                  <Link href={`/${routeName}/view/${item._id}`}>
-                    <a className="mx-2 hover:underline" target="_blank">
-                      View
-                    </a>
-                  </Link>
 
-                  <Can
-                    perform={
-                      isAttractionsEventsPage
-                        ? 'attractions:delete'
-                        : 'bulletin:delete'
-                    }
-                    yes={
-                      <>
-                        {` | `}
-                        <span
-                          className="mx-2 text-danger-500 cursor-pointer hover:underline"
-                          onClick={() => handleShowModal('delete', item._id)}
-                        >
-                          Move to Trash
-                        </span>
-                      </>
-                    }
-                  />
+              <div className="flex text-info-500 text-sm">
+                {isMine ? (
+                  <>
+                    <Link href={`/${routeName}/edit/${item._id}`}>
+                      <a className="mr-2 hover:underline">Edit</a>
+                    </Link>
+                    {` | `}
+                    <Link href={`/${routeName}/view/${item._id}`}>
+                      <a className="mx-2 hover:underline" target="_blank">
+                        View
+                      </a>
+                    </Link>
 
-                  {!isDailyReadingsPage && item?.offering && (
                     <Can
                       perform={
                         isAttractionsEventsPage
-                          ? 'attractions:view::donations'
-                          : 'bulletin:view::donations'
+                          ? 'attractions:delete'
+                          : 'bulletin:delete'
                       }
                       yes={
                         <>
                           {` | `}
-                          <Link href={`/${donationsRouteName}/${item._id}`}>
-                            <a className="mx-2 hover:underline" target="_blank">
-                              View Donations
-                            </a>
-                          </Link>
+                          <span
+                            className="mx-2 text-danger-500 cursor-pointer hover:underline"
+                            onClick={() => handleShowModal('delete', item._id)}
+                          >
+                            Move to Trash
+                          </span>
                         </>
                       }
                     />
-                  )}
-                </div>
-              ) : (
-                <Can
-                  perform={
-                    isAttractionsEventsPage
-                      ? 'attractions:view'
-                      : 'bulletin:view'
-                  }
-                  yes={
-                    <div className="flex text-info-500 text-sm">
+                  </>
+                ) : (
+                  <Can
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:view'
+                        : 'bulletin:view'
+                    }
+                    yes={
                       <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mr-2 hover:underline" target="_blank">
                           View
                         </a>
                       </Link>
-                    </div>
-                  }
-                />
-              )}
+                    }
+                  />
+                )}
+
+                {!isDailyReadingsPage && item?.offering && (
+                  <Can
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:view::donations'
+                        : 'bulletin:view::donations'
+                    }
+                    yes={
+                      <>
+                        {` | `}
+                        <Link href={`/${donationsRouteName}/${item._id}`}>
+                          <a className="mx-2 hover:underline" target="_blank">
+                            View Donations
+                          </a>
+                        </Link>
+                      </>
+                    }
+                  />
+                )}
+              </div>
             </div>
           </td>
           {isDailyReadingsPage && (

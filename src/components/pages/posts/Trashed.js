@@ -447,60 +447,61 @@ const PostComponent = () => {
                   ) : (
                     <span className={styles.TextWrapper}>{item?.title}</span>
                   )}
-                  {isMine ? (
-                    <div className="flex text-info-500 text-sm">
-                      <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline" target="_blank">
-                          View
-                        </a>
-                      </Link>
-                      {` | `}
-                      <span
-                        className="mx-2 cursor-pointer hover:underline"
-                        onClick={() => handleShowModal('draft', item._id)}
-                      >
-                        Restore
-                      </span>
-                      {` | `}
-                      <span
-                        className="mx-2 text-danger-500 cursor-pointer hover:underline"
-                        onClick={() => handleShowModal('delete', item._id)}
-                      >
-                        Permanently Delete
-                      </span>
 
-                      {!isDailyReadingsPage && item?.offering && (
-                        <Can
-                          perform={
-                            isAttractionsEventsPage
-                              ? 'attractions:view::donations'
-                              : 'bulletin:view::donations'
-                          }
-                          yes={
-                            <>
-                              {` | `}
-                              <Link href={`/${donationsRouteName}/${item._id}`}>
-                                <a
-                                  className="mx-2 hover:underline"
-                                  target="_blank"
-                                >
-                                  View Donations
-                                </a>
-                              </Link>
-                            </>
-                          }
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex text-info-500 text-sm">
+                  <div className="flex text-info-500 text-sm">
+                    {isMine ? (
+                      <>
+                        <Link href={`/${routeName}/view/${item._id}`}>
+                          <a className="mr-2 hover:underline" target="_blank">
+                            View
+                          </a>
+                        </Link>
+                        {` | `}
+                        <span
+                          className="mx-2 cursor-pointer hover:underline"
+                          onClick={() => handleShowModal('draft', item._id)}
+                        >
+                          Restore
+                        </span>
+                        {` | `}
+                        <span
+                          className="mx-2 text-danger-500 cursor-pointer hover:underline"
+                          onClick={() => handleShowModal('delete', item._id)}
+                        >
+                          Permanently Delete
+                        </span>
+                      </>
+                    ) : (
                       <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mr-2 hover:underline" target="_blank">
                           View
                         </a>
                       </Link>
-                    </div>
-                  )}
+                    )}
+
+                    {!isDailyReadingsPage && item?.offering && (
+                      <Can
+                        perform={
+                          isAttractionsEventsPage
+                            ? 'attractions:view::donations'
+                            : 'bulletin:view::donations'
+                        }
+                        yes={
+                          <>
+                            {` | `}
+                            <Link href={`/${donationsRouteName}/${item._id}`}>
+                              <a
+                                className="mx-2 hover:underline"
+                                target="_blank"
+                              >
+                                View Donations
+                              </a>
+                            </Link>
+                          </>
+                        }
+                      />
+                    )}
+                  </div>
                 </div>
               ),
               title2: isDailyReadingsPage && (
