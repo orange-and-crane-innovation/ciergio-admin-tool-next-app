@@ -226,13 +226,13 @@ function Donations() {
               <div className="flex flex-col text-sm">
                 {item?.senderReferenceCode && (
                   <span>
-                    <strong>OrderID: </strong>
+                    <strong>Reference ID: </strong>
                     {item?.senderReferenceCode}
                   </span>
                 )}
                 {item?.transactionId && (
                   <span>
-                    <strong>TransID: </strong>
+                    <strong>Trans ID: </strong>
                     {item?.transactionId}
                   </span>
                 )}
