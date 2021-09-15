@@ -443,6 +443,10 @@ const PostComponent = () => {
               }
             }
 
+            const activeAccount = user.accounts.data.filter(item => item.active)
+            const userCompanyId = activeAccount[0].company._id
+            const authorCompanyId = item.author.company._id
+
             if (
               !reorder &&
               (user._id === item.author._id ||
@@ -452,7 +456,8 @@ const PostComponent = () => {
                 (item.author.accountType !== ACCOUNT_TYPES.SUP.value &&
                   item.author.accountType !== ACCOUNT_TYPES.COMPYAD.value &&
                   accountType === ACCOUNT_TYPES.COMPXAD.value &&
-                  item.author.company._id === companyID))
+                  item.author.company._id === companyID) ||
+                userCompanyId === authorCompanyId)
             ) {
               isMine = true
               checkbox = (
