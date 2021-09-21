@@ -37,7 +37,7 @@ const validationSchema = yup.object().shape({
     .test('len', 'Must be up to 65 characters only', val => val.length <= 65)
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
-  embeddedFiles: yup.array().label('Image').nullable().required(),
+  embeddedFiles: yup.array().label('Image').nullable(),
   category: yup.string().label('Category').nullable().required()
 })
 
