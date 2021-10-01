@@ -1,35 +1,35 @@
 # serverless.yml
 
 # PRODUCTION MODE -----------------------------------
-name: CiergioAdmintool
-
-ociNextApp:
-  component: "@sls-next/serverless-component@1.19.0-alpha.35"
-  inputs:
-    runtime: "nodejs12.x"
-    domain: ["admin","ciergiopray.com"]
-    domainType: "both"
-    memory: 1024
-    cloudfront:
-      api/*:
-        forward:
-          headers: [Host]
-
-# TEST MODE -----------------------------------
-
-# name: CiergioTestAdmintool
+# name: CiergioAdmintool
 
 # ociNextApp:
 #   component: "@sls-next/serverless-component@1.19.0-alpha.35"
 #   inputs:
 #     runtime: "nodejs12.x"
-#     domain: ["test","ciergiopray.com"]
+#     domain: ["admin","ciergiopray.com"]
 #     domainType: "both"
 #     memory: 1024
 #     cloudfront:
 #       api/*:
 #         forward:
 #           headers: [Host]
+
+# TEST MODE -----------------------------------
+
+name: CiergioTestAdmintool
+
+ociNextApp:
+  component: "@sls-next/serverless-component@1.19.0-alpha.35"
+  inputs:
+    runtime: "nodejs12.x"
+    domain: ["test","ciergiopray.com"]
+    domainType: "both"
+    memory: 1024
+    cloudfront:
+      api/*:
+        forward:
+          headers: [Host]
 
 
 

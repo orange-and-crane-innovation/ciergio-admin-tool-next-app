@@ -52,6 +52,13 @@ export const GET_DONATIONS = gql`
           senderReferenceCode
           reconciliationId
           transactionId
+          campaign {
+            _id
+            title
+            primaryMedia {
+              url
+            }
+          }
           srcReference {
             company {
               name

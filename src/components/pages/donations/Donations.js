@@ -2,6 +2,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { debounce } from 'lodash'
 import { FaCaretDown, FaCaretUp, FaTimes } from 'react-icons/fa'
@@ -150,21 +151,25 @@ function Donations() {
       },
       {
         name: 'Amount',
-        width: '10%'
+        width: '5%'
+      },
+      {
+        name: 'Campaign',
+        width: '15%'
       },
       {
         name: 'Transaction Fees',
-        width: '10%',
+        width: '7%',
         hidden: isAdmin
       },
       {
         name: 'Bank Charges',
-        width: '10%',
+        width: '7%',
         hidden: !isAdmin
       },
       {
         name: 'OCI Fee',
-        width: '10%',
+        width: '6%',
         hidden: !isAdmin
       },
       {
@@ -182,7 +187,7 @@ function Donations() {
   const tableData = useMemo(() => {
     return DONATIONS?.data?.map((donation, index) => [
       <tr key={index}>
-        <td colSpan={7} className="text-info-900 font-black bg-white">
+        <td colSpan={8} className="text-info-900 font-black bg-white">
           <Tooltip text={donation.date?.year} effect="solid">
             {DATE.friendlyDateTimeFormat(
               `${donation.date?.month} ${donation.date?.day}, ${donation.date?.year}`,
@@ -218,6 +223,17 @@ function Donations() {
               </div>
             </td>
             <td>{ATTR.toCurrency(item?.amount)}</td>
+            <td>
+              {item?.campaign?.title ? (
+                <Link href={`/posts/view/${item?.campaign?._id}`}>
+                  <a className="mr-2 hover:underline" target="_blank">
+                    {item?.campaign?.title}
+                  </a>
+                </Link>
+              ) : (
+                '-'
+              )}
+            </td>
             {!isAdmin && <td>{ATTR.toCurrency(transFee)}</td>}
             {isAdmin && <td>{ATTR.toCurrency(item?.bankCharges)}</td>}
             {isAdmin && <td>{ATTR.toCurrency(item?.ociFee)}</td>}
