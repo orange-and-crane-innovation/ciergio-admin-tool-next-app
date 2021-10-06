@@ -6,30 +6,41 @@ import Button from '@app/components/button'
 
 import { IMAGES } from '@app/constants'
 
-function PreviewModal({ showPreview, onClose, loading, previewData }) {
+import style from './Component.module.css'
+
+function PreviewModal({
+  showPreview,
+  onOk,
+  onClose,
+  onOkMouseDown,
+  loading,
+  previewData,
+  isCreate
+}) {
   return (
     <Modal
       title="Preview Notification"
-      cancelText="Close Preview"
+      cancelText={isCreate ? 'Continue Editing' : 'Cancel'}
+      okText={isCreate ? 'Publish Now' : 'Okay'}
       visible={showPreview}
+      onOk={isCreate ? onOk : onClose}
       onClose={onClose}
       onCancel={onClose}
       okButtonProps={{
-        style: { display: 'none' }
+        onMouseDown: onOkMouseDown
       }}
       width={500}
       loading={loading}
     >
-      <div className="text-base leading-7">
-        <div className="p-2">
-          <p>
-            <span className="font-bold">Note:</span>{' '}
-            {`The actual appearance may
+      <div className={style.PreviewPageContainer}>
+        <div className={style.PreviewPageText}>
+          <span>Note: </span>
+          {`The actual appearance may
         vary based on a viewer's mobile device.`}
-          </p>
         </div>
-        <div className="-mx-4 -mb-4 px-16 py-8 bg-neutral-500">
-          <div className="rounded bg-white">
+
+        <div className={style.PreviewPageContentContainer}>
+          <div className={style.PreviewPageSubContentContainer}>
             <img
               src={
                 previewData?.primaryMedia?.length > 0
@@ -37,16 +48,15 @@ function PreviewModal({ showPreview, onClose, loading, previewData }) {
                   : IMAGES.DEFAULT_NOTIF_IMAGE
               }
               alt="preview"
-              className="rounded-t w-full"
             />
-            <div className="bg-white p-4">
+            <div className={style.PreviewPageContent}>
               <div>
-                <h4 className="font-bold text-base mb-2">
+                <h4 className={style.PreviewPageContentTitle}>
                   {previewData?.title !== ''
                     ? previewData?.title
                     : 'Preview Notification'}
                 </h4>
-                <p className="mb-1">
+                <p className={style.PreviewPageContentMain}>
                   {previewData?.content
                     ? ReactHtmlParser(previewData?.content)
                     : 'Your content will show here.'}
@@ -66,9 +76,12 @@ function PreviewModal({ showPreview, onClose, loading, previewData }) {
 
 PreviewModal.propTypes = {
   showPreview: P.bool.isRequired,
+  onOk: P.func,
   onClose: P.func.isRequired,
+  onOkMouseDown: P.func,
   loading: P.bool,
-  previewData: P.object
+  previewData: P.object,
+  isCreate: P.bool
 }
 
 export default PreviewModal

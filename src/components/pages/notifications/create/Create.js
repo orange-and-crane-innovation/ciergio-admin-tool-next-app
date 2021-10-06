@@ -78,7 +78,7 @@ function CreateNotification() {
   const [showPublishTimeModal, setShowPublishTimeModal] = useState(false)
   const [previewNotification, setPreviewNotification] = useState(false)
   const [inputMaxLength] = useState(65)
-  const [maxFiles] = useState(1)
+  const [maxFiles] = useState(10)
   const [textCount, setTextCount] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState()
   const [previewData, setPreviewData] = useState({
@@ -148,6 +148,12 @@ function CreateNotification() {
       }
     }
   }, [loadingCreate, calledCreate, dataCreate, errorCreate, reset])
+
+  useEffect(() => {
+    if (errors && previewNotification) {
+      setPreviewNotification(false)
+    }
+  }, [errors])
 
   const goToPageLists = () => {
     let pageType
@@ -537,6 +543,34 @@ function CreateNotification() {
       <form>
         <div className="flex justify-between text-base">
           <div className="w-full md:w-9/12">
+            <div className="w-full mt-8">
+              <Card
+                title={<h1 className="font-bold text-base">Featured Media</h1>}
+                content={
+                  <>
+                    <div className="p-4">
+                      <div className="my-4">
+                        <UploaderImage
+                          name="image"
+                          multiple
+                          maxImages={maxFiles}
+                          images={imageUrls}
+                          loading={loading}
+                          error={
+                            errors?.embeddedFiles?.message ??
+                            fileUploadError ??
+                            null
+                          }
+                          onUploadImage={onUploadImage}
+                          onRemoveImage={onRemoveImage}
+                        />
+                      </div>
+                    </div>
+                  </>
+                }
+              />
+            </div>
+
             <Card
               content={
                 <div className="p-4">
@@ -580,10 +614,15 @@ function CreateNotification() {
                           name={name}
                           value={value}
                           onChange={onChange}
-                          options={['history']}
+                          options={[
+                            'inline',
+                            'list',
+                            'link',
+                            'colorPicker',
+                            'history'
+                          ]}
                           placeholder="Write your text here"
                           error={errors?.content?.message ?? null}
-                          stripHtmls
                         />
                       )}
                     />
@@ -591,37 +630,6 @@ function CreateNotification() {
                 </div>
               }
             />
-            <div className="w-full mt-8">
-              <Card
-                title={<h1 className="font-bold text-base">Featured Image</h1>}
-                content={
-                  <>
-                    <div className="p-4">
-                      <p>
-                        You may feature a single image. This image will appear
-                        when viewing the notification within the app.
-                      </p>
-                      <div className="my-4">
-                        <UploaderImage
-                          name="image"
-                          multiple
-                          maxImages={maxFiles}
-                          images={imageUrls}
-                          loading={loading}
-                          error={
-                            errors?.embeddedFiles?.message ??
-                            fileUploadError ??
-                            null
-                          }
-                          onUploadImage={onUploadImage}
-                          onRemoveImage={onRemoveImage}
-                        />
-                      </div>
-                    </div>
-                  </>
-                }
-              />
-            </div>
 
             <Card
               title={<h1 className="text-base font-bold">Category</h1>}
@@ -786,12 +794,19 @@ function CreateNotification() {
       />
       <PreviewModal
         showPreview={previewNotification}
+        onOk={handleSubmit(e => {
+          onSubmit(e, 'active')
+        })}
         onClose={() => {
           setPreviewNotification(old => !old)
           setPreviewData(null)
         }}
+        onOkMouseDown={() => {
+          onUpdateStatus('active')
+        }}
         loading={false}
         previewData={previewData || {}}
+        isCreate
       />
     </section>
   )
