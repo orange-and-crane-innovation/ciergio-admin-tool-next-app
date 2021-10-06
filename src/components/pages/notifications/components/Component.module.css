@@ -1,0 +1,54 @@
+.PreviewPageContainer {
+  @apply text-base leading-7;
+
+  .PreviewPageText {
+    @apply p-2 mb-4;
+
+    span {
+      @apply font-bold;
+    }
+  }
+
+  .PreviewPageContentContainer {
+    @apply -mx-4 -mb-4 px-16 py-8;
+    @apply border-t border-neutral-300;
+    @apply bg-neutral-300;
+    background: url('/dotgrid_light.jpg'), #dee1e9;
+    background-blend-mode: soft-light, normal;
+    background-size: 100%;
+
+    .PreviewPageSubContentContainer {
+      @apply bg-white;
+      @apply border border-neutral-300;
+      @apply rounded-md overflow-hidden;
+
+      img {
+        @apply w-full;
+      }
+
+      .PreviewPageContent {
+        @apply p-4;
+        @apply bg-white;
+
+        .PreviewPageContentTitle {
+          @apply mb-2;
+          @apply font-bold text-base;
+          @apply break-all;
+        }
+
+        .PreviewPageContentMain {
+          @apply mb-8 !important;
+          @apply break-all;
+        }
+      }
+    }
+  }
+
+  a {
+    @apply text-info-500 no-underline;
+
+    &:hover {
+      @apply underline;
+    }
+  }
+}
