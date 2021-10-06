@@ -235,7 +235,7 @@ const CreatePosts = () => {
   const [fileLoading, setFileLoading] = useState(false)
   const [fileFormData, setFileFormData] = useState(false)
   const [uploadPercentage, setUploadPercentage] = useState(0)
-  const [maxImages] = useState(3)
+  const [maxImages] = useState(10)
   const [maxFiles] = useState(1)
   const [fileMaxSize] = useState(104857600) // 100MB
   const [imageUrls, setImageUrls] = useState([])
