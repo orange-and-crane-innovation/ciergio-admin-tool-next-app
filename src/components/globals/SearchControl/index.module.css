@@ -9,5 +9,9 @@
 @screen lg {
   .SearchControlContainer {
     max-width: 260px;
+
+    &.fluid {
+      max-width: 100% !important;
+    }
   }
 }
