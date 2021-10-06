@@ -52,4 +52,13 @@
   &.noBottomMargin {
     @apply mb-0;
   }
+
+  &.iconOnly {
+    @apply w-12 h-10 p-0;
+    @apply flex items-center;
+
+    & > span {
+      @apply m-0;
+    }
+  }
 }
