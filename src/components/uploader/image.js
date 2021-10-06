@@ -76,7 +76,7 @@ const UploaderImage = ({
   const handleUpload = async e => {
     const fileList = []
     try {
-      const files = e.target.files
+      const files = e.target.files ?? e.dataTransfer.files
       for (const file of files) {
         const image = await resizeFile(file)
         fileList.push(image)
@@ -105,7 +105,7 @@ const UploaderImage = ({
   const handleOnDrop = e => {
     e.preventDefault()
     setIsOver(false)
-    onUploadImage(e)
+    handleUpload(e)
   }
 
   const handleRemoveImage = () => {
@@ -155,7 +155,7 @@ const UploaderImage = ({
 
   return (
     <>
-      <div className="flex">
+      <div className={styles.PageContainer}>
         {uploadedImages}
         {!error && maxImages ? (
           images &&
