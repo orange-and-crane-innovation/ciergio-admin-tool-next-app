@@ -8,7 +8,6 @@ select,
 button {
   appearance: none !important;
   -webkit-appearance: none !important;
-  /* -webkit-appearance: none; */
   -moz-appearance: none;
   text-indent: 1px;
   text-overflow: '';
@@ -133,7 +132,6 @@ select:active {
   @apply inline-block;
 }
 .form-select .main {
-  /* width: calc(100% - 40px); */
   width: 100%;
 }
 .form-select .add-on {
@@ -163,23 +161,7 @@ select:active {
   @apply ml-2;
 }
 
-.card .content ul {
-  @apply p-0 m-0;
-}
-.card .content ul li {
-  @apply p-5 bg-neutral-100 border-b border-gray-200;
-}
-.card .content ul li:nth-child(even) {
-  @apply bg-white;
-}
-
 /* MODAL */
-/* .modal-overlay {
-  @apply flex justify-center items-center;
-  @apply fixed z-50 overflow-auto;
-  @apply bg-opacity-50 bg-gray-400 w-screen h-full top-0 left-0;
-} */
-
 .modal {
   @apply bg-white w-full flex-col flex rounded transition ease-in-out duration-700;
 }

@@ -187,6 +187,10 @@ p {
   display: none !important;
 }
 
+.rdw-colorpicker-modal-options {
+  @apply overflow-hidden !important;
+}
+
 #openLinkInNewWindow {
   @apply rounded;
 
