@@ -14,6 +14,7 @@ import {
   FaAngleDown
 } from 'react-icons/fa'
 import { FiFileText, FiEye } from 'react-icons/fi'
+import { RiPushpinLine } from 'react-icons/ri'
 
 import PageLoader from '@app/components/page-loader'
 import Card from '@app/components/card'
@@ -65,6 +66,7 @@ const GET_ALL_POST_QUERY = gql`
       offset
       post {
         _id
+        pinned
         title
         content
         status
@@ -127,6 +129,7 @@ const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
       post {
         _id
         title
+        pinned
         content
         status
         createdAt
@@ -965,12 +968,32 @@ const PostComponent = () => {
     setSelectedDate(null)
   }
 
+  const pinPost = async (id, isPinned) => {
+    try {
+      await updatePost({
+        variables: {
+          id: id,
+          data: {
+            pinned: !isPinned
+          }
+        }
+      })
+    } catch (error) {
+      errorHandler(error)
+    }
+  }
+
   const tableData = useMemo(() => {
     let isMine, checkbox
     return data?.getAllPost?.post?.map((item, index) => {
       let buildingName, status
 
       const dropdownData = [
+        {
+          label: item?.pinned ? 'Unpin this post' : 'Pin this post',
+          icon: <RiPushpinLine size={18} />,
+          function: () => pinPost(item._id, item.pinned)
+        },
         {
           label: isDailyReadingsPage
             ? 'Daily Reading Details'
@@ -1059,7 +1082,12 @@ const PostComponent = () => {
 
       return (
         <tr key={index} data-id={item._id}>
-          {!reorder && <td>{checkbox}</td>}
+          {!reorder && !item.pinned && <td>{checkbox}</td>}
+          {item.pinned && (
+            <td>
+              <RiPushpinLine size={20} />
+            </td>
+          )}
           <td>
             <div className="flex flex-col">
               {isDailyReadingsPage ? (
