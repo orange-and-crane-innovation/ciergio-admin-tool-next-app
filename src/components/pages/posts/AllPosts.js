@@ -1255,7 +1255,7 @@ const PostComponent = () => {
         </tr>
       )
     })
-  }, [posts, reorder])
+  }, [posts, reorder, refetchPosts])
 
   return (
     <>
