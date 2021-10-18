@@ -970,7 +970,7 @@ const PostComponent = () => {
 
   const pinPost = async (id, isPinned) => {
     try {
-      await updatePost({
+      const isUpdated = await updatePost({
         variables: {
           id: id,
           data: {
@@ -978,7 +978,7 @@ const PostComponent = () => {
           }
         }
       })
-      if (updatePost) {
+      if (isUpdated) {
         refetchPosts()
       }
     } catch (error) {
