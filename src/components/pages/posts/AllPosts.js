@@ -978,6 +978,9 @@ const PostComponent = () => {
           }
         }
       })
+      if (updatePost) {
+        refetchPosts()
+      }
     } catch (error) {
       errorHandler(error)
     }
