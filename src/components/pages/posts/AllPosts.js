@@ -252,8 +252,6 @@ const PostComponent = () => {
     : 'Bulletin Board'
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
 
-  console.log({ user })
-
   const tableRowData = [
     {
       name: (
@@ -914,6 +912,12 @@ const PostComponent = () => {
       const currentRowID = table.rows[index].getAttribute('data-id')
       let updateData
 
+      const acntType = user?.accounts?.data[0]?.accountType
+      const id =
+        acntType === 'company_admin'
+          ? user?.accounts?.data[0]?.company?._id
+          : user?.accounts?.data[0]?.complex?._id
+
       if (direction === 'up') {
         if (index > 1) {
           const upRowID = table.rows[index - 1].getAttribute('data-id')
@@ -925,7 +929,7 @@ const PostComponent = () => {
             data: {
               post1: currentRowID,
               post2: upRowID,
-              complexId: user?.accounts?.data[0]?.complex?._id
+              complexId: id
             }
           }
           switchPost({ variables: updateData })
@@ -943,7 +947,7 @@ const PostComponent = () => {
             data: {
               post1: currentRowID,
               post2: downRowID,
-              complexId: user?.accounts?.data[0]?.complex?._id
+              complexId: id
             }
           }
           switchPost({ variables: updateData })
