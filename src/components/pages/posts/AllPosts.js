@@ -252,6 +252,8 @@ const PostComponent = () => {
     : 'Bulletin Board'
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
 
+  console.log({ user })
+
   const tableRowData = [
     {
       name: (
@@ -903,48 +905,52 @@ const PostComponent = () => {
     setReorder(prevState => !prevState)
   }
 
-  const reorderRow = (e, direction) => {
-    let index = e.target.closest('tr').rowIndex
-    const table = document.getElementById('table')
-    const rows = table.rows
-    const parent = rows[index].parentNode
-    const currentRowID = table.rows[index].getAttribute('data-id')
-    let updateData
+  const reorderRow = async (e, direction) => {
+    try {
+      let index = e.target.closest('tr').rowIndex
+      const table = document.getElementById('table')
+      const rows = table.rows
+      const parent = rows[index].parentNode
+      const currentRowID = table.rows[index].getAttribute('data-id')
+      let updateData
 
-    if (direction === 'up') {
-      if (index > 1) {
-        const upRowID = table.rows[index - 1].getAttribute('data-id')
+      if (direction === 'up') {
+        if (index > 1) {
+          const upRowID = table.rows[index - 1].getAttribute('data-id')
 
-        parent.insertBefore(rows[index], rows[index - 1])
-        index--
+          parent.insertBefore(rows[index], rows[index - 1])
+          index--
 
-        updateData = {
-          data: {
-            post1: currentRowID,
-            post2: upRowID,
-            complexId: user?.accounts?.data[0]?.complex?._id
+          updateData = {
+            data: {
+              post1: currentRowID,
+              post2: upRowID,
+              complexId: user?.accounts?.data[0]?.complex?._id
+            }
           }
+          switchPost({ variables: updateData })
         }
-        switchPost({ variables: updateData })
       }
-    }
 
-    if (direction === 'down') {
-      if (index < rows.length - 1) {
-        const downRowID = table.rows[index + 1].getAttribute('data-id')
+      if (direction === 'down') {
+        if (index < rows.length - 1) {
+          const downRowID = table.rows[index + 1].getAttribute('data-id')
 
-        parent.insertBefore(rows[index + 1], rows[index])
-        index++
+          parent.insertBefore(rows[index + 1], rows[index])
+          index++
 
-        updateData = {
-          data: {
-            post1: currentRowID,
-            post2: downRowID,
-            complexId: user?.accounts?.data[0]?.complex?._id
+          updateData = {
+            data: {
+              post1: currentRowID,
+              post2: downRowID,
+              complexId: user?.accounts?.data[0]?.complex?._id
+            }
           }
+          switchPost({ variables: updateData })
         }
-        switchPost({ variables: updateData })
       }
+    } catch (error) {
+      errorHandler(error)
     }
   }
 

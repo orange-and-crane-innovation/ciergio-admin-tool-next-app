@@ -126,6 +126,7 @@ const rules = {
         'bulletin:movetotrash',
         'bulletin:delete',
         'bulletin:restore',
+        'bulletin:reorder',
         'bulletin:unpublish',
         'bulletin:view::donations',
         'forms:view',
