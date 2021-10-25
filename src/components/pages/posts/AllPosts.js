@@ -616,7 +616,7 @@ const PostComponent = () => {
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
         setIsBulkButtonHidden(isDailyReadingsPage)
-        setShowModal(old => !old)
+        setShowModal(false)
 
         switch (selectedBulk) {
           case 'unpublished':
@@ -654,7 +654,7 @@ const PostComponent = () => {
             break
         }
 
-        setShowModal(old => !old)
+        setShowModal(false)
         showToast('success', message)
         refetchPosts()
       } else {
@@ -980,7 +980,7 @@ const PostComponent = () => {
 
   const pinPost = async (id, isPinned) => {
     try {
-      const isUpdated = await updatePost({
+      await updatePost({
         variables: {
           id: id,
           data: {
@@ -988,9 +988,6 @@ const PostComponent = () => {
           }
         }
       })
-      if (isUpdated) {
-        refetchPosts()
-      }
     } catch (error) {
       errorHandler(error)
     }
