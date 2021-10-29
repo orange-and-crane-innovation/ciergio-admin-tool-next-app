@@ -6,7 +6,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { gql, useQuery, useMutation } from '@apollo/client'
-import { debounce } from 'lodash'
+import { debounce, isEmpty } from 'lodash'
 import {
   FaPlusCircle,
   FaEllipsisH,
@@ -66,7 +66,7 @@ const GET_ALL_POST_QUERY = gql`
       offset
       post {
         _id
-        pinned
+        pinnedForComplex
         title
         content
         status
@@ -129,7 +129,7 @@ const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
       post {
         _id
         title
-        pinned
+        pinnedForComplex
         content
         status
         createdAt
@@ -616,7 +616,7 @@ const PostComponent = () => {
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
         setIsBulkButtonHidden(isDailyReadingsPage)
-        setShowModal(old => !old)
+        setShowModal(false)
 
         switch (selectedBulk) {
           case 'unpublished':
@@ -654,7 +654,7 @@ const PostComponent = () => {
             break
         }
 
-        setShowModal(old => !old)
+        setShowModal(false)
         showToast('success', message)
         refetchPosts()
       } else {
@@ -978,13 +978,17 @@ const PostComponent = () => {
     setSelectedDate(null)
   }
 
-  const pinPost = async (id, isPinned) => {
+  const pinPost = async (id, complexId, pin) => {
     try {
+      const isPinned = !!pin
       const isUpdated = await updatePost({
         variables: {
           id: id,
           data: {
-            pinned: !isPinned
+            pinOption: {
+              complexId: complexId,
+              pin: !isPinned
+            }
           }
         }
       })
@@ -1001,11 +1005,21 @@ const PostComponent = () => {
     return data?.getAllPost?.post?.map((item, index) => {
       let buildingName, status
 
+      const complexID =
+        item?.author?.accountType === 'complex_admin'
+          ? item?.author?.complex?._id
+          : item?.author?.company?._id
+
+      const isPinned =
+        !isEmpty(item.pinnedForComplex) &&
+        item.pinnedForComplex !== null &&
+        item.pinnedForComplex.find(id => id === complexID)
+
       const dropdownData = [
         {
-          label: item?.pinned ? 'Unpin this post' : 'Pin this post',
+          label: isPinned ? 'Unpin this post' : 'Pin this post',
           icon: <RiPushpinLine size={18} />,
-          function: () => pinPost(item._id, item.pinned)
+          function: () => pinPost(item?._id, complexID, isPinned)
         },
         {
           label: isDailyReadingsPage
@@ -1095,8 +1109,8 @@ const PostComponent = () => {
 
       return (
         <tr key={index} data-id={item._id}>
-          {!reorder && !item.pinned && <td>{checkbox}</td>}
-          {item.pinned && (
+          {!reorder && !isPinned && <td>{checkbox}</td>}
+          {isPinned && (
             <td>
               <RiPushpinLine size={20} />
             </td>

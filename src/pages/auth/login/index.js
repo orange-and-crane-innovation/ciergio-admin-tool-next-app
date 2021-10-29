@@ -57,7 +57,9 @@ function LoginPage() {
     { loading: loadingProfile, data: dataProfile, error: errorProfile }
   ] = useLazyQuery(GET_PROFILE, {
     fetchPolicy: 'network-only',
-    onError: () => {}
+    onError: error => {
+      errorHandler(error)
+    }
   })
 
   useEffect(() => {
