@@ -482,6 +482,7 @@ export const MutationResponse = `
       from
       for
       date
+      time
       __typename
     }
     reporter {

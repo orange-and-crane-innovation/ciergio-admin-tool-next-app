@@ -5,13 +5,20 @@ import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
-import { toFriendlyDate, friendlyDateTimeFormat } from '@app/utils/date'
+import {
+  toFriendlyDate,
+  friendlyDateTimeFormat,
+  toFriendlyTime
+} from '@app/utils/date'
 import isEmpty from 'lodash/isEmpty'
 import {
   GET_PRAYER_REQUEST_DETAILS,
   GET_PRAYER_REQUEST_HISTORY,
   UPDATE_PRAYER_REQUEST
 } from '../../queries'
+import errorHandler from '@app/utils/errorHandler'
+
+import PageLoader from '@app/components/page-loader'
 
 const columns = [
   {
@@ -34,9 +41,12 @@ export default function PrayerRequestDetails() {
   const complexId = router?.query?.complexId
   const [updatePrayerRequest] = useMutation(UPDATE_PRAYER_REQUEST)
 
-  const { data: details } = useQuery(GET_PRAYER_REQUEST_DETAILS, {
+  const { data: details, loading } = useQuery(GET_PRAYER_REQUEST_DETAILS, {
     variables: {
       id
+    },
+    onError: error => {
+      errorHandler(error)
     }
   })
   const pr = details?.getIssue?.issue
@@ -92,6 +102,10 @@ export default function PrayerRequestDetails() {
     path += `&complexId=${complexId}`
   }
 
+  if (loading) {
+    return <PageLoader />
+  }
+
   return (
     <section className="content-wrap">
       <div className="w-8/12">
@@ -120,6 +134,18 @@ export default function PrayerRequestDetails() {
                   {toFriendlyDate(pr?.prayer?.date)}
                 </p>
               </div>
+              {pr?.prayer?.date &&
+                toFriendlyTime(new Date(pr?.prayer?.date)) !==
+                  '12:00:00 AM' && (
+                  <div className="p-4">
+                    <p className="text-base text-gray-500 font-bold">
+                      Time of Mass
+                    </p>
+                    <p className="text-base text-neutral-dark">
+                      {toFriendlyTime(new Date(pr?.prayer?.date))}
+                    </p>
+                  </div>
+                )}
 
               <div className="p-4">
                 <p className="text-base text-gray-500 font-bold">Prayer For</p>
