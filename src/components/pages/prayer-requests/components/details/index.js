@@ -134,16 +134,18 @@ export default function PrayerRequestDetails() {
                   {toFriendlyDate(pr?.prayer?.date)}
                 </p>
               </div>
-              {toFriendlyTime(new Date(pr?.prayer?.date)) !== '12:00:00 AM' && (
-                <div className="p-4">
-                  <p className="text-base text-gray-500 font-bold">
-                    Time of Mass
-                  </p>
-                  <p className="text-base text-neutral-dark">
-                    {toFriendlyTime(new Date(pr?.prayer?.date))}
-                  </p>
-                </div>
-              )}
+              {pr?.prayer?.date &&
+                toFriendlyTime(new Date(pr?.prayer?.date)) !==
+                  '12:00:00 AM' && (
+                  <div className="p-4">
+                    <p className="text-base text-gray-500 font-bold">
+                      Time of Mass
+                    </p>
+                    <p className="text-base text-neutral-dark">
+                      {toFriendlyTime(new Date(pr?.prayer?.date))}
+                    </p>
+                  </div>
+                )}
 
               <div className="p-4">
                 <p className="text-base text-gray-500 font-bold">Prayer For</p>
