@@ -16,7 +16,7 @@ import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Can from '@app/permissions/can'
 
-import dayjs, { friendlyDateTimeFormat } from '@app/utils/date'
+import dayjs, { friendlyDateTimeFormat, toFriendlyISO } from '@app/utils/date'
 import showToast from '@app/utils/toast'
 
 import { FaTimes, FaSearch, FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
@@ -175,6 +175,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
     if (validated) {
       const values = getValues()
       const { date, category, message, prayerFor, prayerFrom } = values
+
       createRequest({
         variables: {
           data: {
@@ -186,7 +187,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
             prayer: {
               for: prayerFor,
               from: prayerFrom,
-              date: date
+              date: toFriendlyISO(date)
             }
           }
         }

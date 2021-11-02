@@ -66,6 +66,7 @@ export const GET_PRAYER_REQUEST_DETAILS = gql`
           for
           from
           date
+          time
           __typename
         }
         __typename

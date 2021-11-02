@@ -3,8 +3,7 @@ import { Controller } from 'react-hook-form'
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
-import FormDate from '@app/components/forms/form-datepicker'
-
+import { TimeInput, DateInput } from '@app/components/datetime'
 import styles from './CreatePrayerRequest.module.css'
 
 const CreatePrayerRequestModal = ({
@@ -109,19 +108,15 @@ const CreatePrayerRequestModal = ({
             control={control}
             render={({ name, value, onChange }) => (
               <div className={styles.dateInput}>
-                <FormDate
-                  label="Date (optional)"
-                  labelClassname={styles.label}
+                <DateInput
+                  label="Date and Time (optional)"
                   placeholder="Date"
-                  onChange={onChange}
+                  withTime={true}
+                  onDateChange={onChange}
                   error={errors?.date?.message}
                   date={value}
-                  datepickerprops={{
-                    name,
-                    isClearable: true
-                  }}
                   placeHolder="Date"
-                  disabledPreviousDate={new Date()}
+                  minDate={new Date()}
                 />
               </div>
             )}

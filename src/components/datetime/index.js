@@ -26,7 +26,8 @@ function DateInput({
   minDate,
   error,
   showMonth,
-  rest
+  withTime,
+  ...rest
 }) {
   let dateValue = toFriendlyDateTime(date)
 
@@ -99,7 +100,7 @@ function DateInput({
       )}
       isValidDate={(constraints && valid) || validation}
       dateFormat={dateFormat}
-      timeFormat={false}
+      timeFormat={withTime}
       value={date}
       onChange={onDateChange}
       disabled={disabled}
@@ -176,7 +177,8 @@ function TimeInput({
 
 DateInput.defaultProps = {
   name: 'date',
-  label: 'Date:'
+  label: 'Date:',
+  withTime: false
 }
 
 DateInput.propTypes = {
@@ -190,6 +192,7 @@ DateInput.propTypes = {
   minDate: P.oneOfType([P.instanceOf(Date), P.instanceOf(moment)]),
   constraints: P.any,
   error: P.string,
+  withTime: P.bool,
   showMonth: P.bool
 }
 
