@@ -1107,7 +1107,7 @@ const PostComponent = () => {
       return (
         <tr key={index} data-id={item._id}>
           {!reorder && !isPinned && <td>{checkbox}</td>}
-          {isPinned && (
+          {!reorder && isPinned && (
             <td>
               <RiPushpinLine size={20} />
             </td>
