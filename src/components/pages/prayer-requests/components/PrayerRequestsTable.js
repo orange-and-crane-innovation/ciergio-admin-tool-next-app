@@ -16,7 +16,11 @@ import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import Can from '@app/permissions/can'
 
-import dayjs, { friendlyDateTimeFormat, toFriendlyISO } from '@app/utils/date'
+import dayjs, {
+  friendlyDateTimeFormat,
+  toFriendlyISO,
+  toFriendlyTime
+} from '@app/utils/date'
 import showToast from '@app/utils/toast'
 
 import { FaTimes, FaSearch, FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
@@ -54,6 +58,10 @@ const columns = [
   },
   {
     name: 'Date of Mass',
+    width: ''
+  },
+  {
+    name: 'Time of Mass',
     width: ''
   },
   {
@@ -308,6 +316,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   pareyerFor: prayer.for,
                   prayerFrom: prayer.from,
                   prayerDate: friendlyDateTimeFormat(dayjs(prayer?.date), 'LL'),
+                  prayerTime: toFriendlyTime(prayer?.date),
                   message: (
                     <span className={styles.messageContainer}>
                       {content || '--'}
