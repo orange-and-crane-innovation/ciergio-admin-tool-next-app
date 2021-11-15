@@ -29,7 +29,7 @@ import { HiOutlinePrinter } from 'react-icons/hi'
 import useDebounce from '@app/utils/useDebounce'
 import { GET_POST_CATEGORY, CREATE_PRAYER_REQUEST } from '../queries'
 import Button from '@app/components/button'
-
+import moment from 'moment'
 import CreatePrayerRequestModal from './CreatePrayerRequestModal'
 import PrayerRequestPrintView from './PrayerRequestPrintView'
 
@@ -195,7 +195,8 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
             prayer: {
               for: prayerFor,
               from: prayerFrom,
-              date: toFriendlyISO(date)
+              date: toFriendlyISO(date),
+              time: toFriendlyTime(date)
             }
           }
         }
@@ -316,7 +317,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   pareyerFor: prayer.for,
                   prayerFrom: prayer.from,
                   prayerDate: friendlyDateTimeFormat(dayjs(prayer?.date), 'LL'),
-                  prayerTime: toFriendlyTime(prayer?.date),
+                  prayerTime: toFriendlyTime(prayer?.time),
                   message: (
                     <span className={styles.messageContainer}>
                       {content || '--'}
