@@ -106,20 +106,22 @@ const CreatePrayerRequestModal = ({
           <Controller
             name="date"
             control={control}
-            render={({ name, value, onChange }) => (
-              <div className={styles.dateInput}>
-                <DateInput
-                  label="Date and Time (optional)"
-                  placeholder="Date"
-                  withTime={true}
-                  onDateChange={onChange}
-                  error={errors?.date?.message}
-                  date={value}
-                  placeHolder="Date"
-                  minDate={new Date()}
-                />
-              </div>
-            )}
+            render={({ name, value, onChange }) => {
+              return (
+                <div className={styles.dateInput}>
+                  <DateInput
+                    label="Date and Time (optional)"
+                    placeholder="Date"
+                    withTime={true}
+                    onDateChange={onChange}
+                    error={errors?.date?.message}
+                    date={value}
+                    placeHolder="Date"
+                    minDate={new Date()}
+                  />
+                </div>
+              )
+            }}
           />
           <Controller
             name="message"
