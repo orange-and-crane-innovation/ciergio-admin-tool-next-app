@@ -20,9 +20,9 @@
 name: CiergioTestAdmintool
 
 ociNextApp:
-  component: "@sls-next/serverless-component@1.19.0-alpha.35"
+  component: "@sls-next/serverless-component@3.6.0"
   inputs:
-    runtime: "nodejs12.x"
+    runtime: "nodejs14.x"
     domain: ["test","ciergiopray.com"]
     domainType: "both"
     memory: 1024

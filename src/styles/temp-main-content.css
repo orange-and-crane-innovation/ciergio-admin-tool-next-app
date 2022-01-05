@@ -291,3 +291,17 @@ select:active {
     margin: 10mm 15mm 10mm 15mm;
   }
 }
+
+.share-social-item button {
+  text-align: center;
+}
+.share-social-item button > * {
+  display: inline-block;
+  margin: 10px 5px;
+  vertical-align: middle;
+}
+.share-social-item button .link-icon {
+  padding: 9px;
+  border: 1px solid #999;
+  border-radius: 50px;
+}

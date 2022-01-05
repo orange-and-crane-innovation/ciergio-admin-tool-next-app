@@ -13,8 +13,10 @@ import {
   FaAngleUp,
   FaAngleDown
 } from 'react-icons/fa'
-import { FiFileText, FiEye } from 'react-icons/fi'
+import { FiFileText, FiEye, FiShare2, FiLink } from 'react-icons/fi'
 import { RiPushpinLine } from 'react-icons/ri'
+import { FacebookShareButton, TwitterShareButton } from 'react-share'
+import { FacebookIcon, TwitterIcon } from 'react-share'
 
 import PageLoader from '@app/components/page-loader'
 import Card from '@app/components/card'
@@ -74,6 +76,7 @@ const GET_ALL_POST_QUERY = gql`
         updatedAt
         publishedAt
         offering
+        shareLink
         author {
           _id
           user {
@@ -136,6 +139,7 @@ const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
         updatedAt
         publishedAt
         offering
+        shareLink
         author {
           _id
           user {
@@ -188,7 +192,7 @@ const BULK_UPDATE_MUTATION = gql`
 `
 
 const UPDATE_POST_MUTATION = gql`
-  mutation ($id: String, $data: PostInput) {
+  mutation($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -198,7 +202,7 @@ const UPDATE_POST_MUTATION = gql`
 `
 
 const SWITCH_POST_MUTATION = gql`
-  mutation ($data: switchPostPositionInput) {
+  mutation($data: switchPostPositionInput) {
     switchPostPosition(data: $data) {
       _id
       processId
@@ -318,12 +322,7 @@ const PostComponent = () => {
     }
   }
 
-  const {
-    loading,
-    data,
-    error,
-    refetch: refetchPosts
-  } = useQuery(
+  const { loading, data, error, refetch: refetchPosts } = useQuery(
     isDailyReadingsPage
       ? GET_ALL_POST_DAILY_READINGS_QUERY
       : GET_ALL_POST_QUERY,
@@ -816,6 +815,50 @@ const PostComponent = () => {
           setModalFooter(null)
           break
         }
+        case 'share': {
+          setModalTitle('Share To Social Media')
+          setModalContent(
+            <div className="grid grid-cols-3 gap-4 justify-items-center">
+              <div className="share-social-item">
+                <FacebookShareButton
+                  url={selected[0].shareLink}
+                  quote={null}
+                  hashtag={null}
+                  description={null}
+                >
+                  <FacebookIcon size={32} round />
+                  <div>Facebook</div>
+                </FacebookShareButton>
+              </div>
+              <div className="share-social-item">
+                <TwitterShareButton
+                  title={null}
+                  url={selected[0].shareLink}
+                  hashtags={[]}
+                >
+                  <TwitterIcon size={32} round />
+                  <div>Twitter</div>
+                </TwitterShareButton>
+              </div>
+              <div className="share-social-item">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(selected[0].shareLink)
+                    showToast('info', 'Link is copied!')
+                    handleClearModal()
+                  }}
+                >
+                  <div className="link-icon">
+                    <FiLink />
+                  </div>
+                  <div>Copy Link</div>
+                </button>
+              </div>
+            </div>
+          )
+          setModalFooter(null)
+          break
+        }
       }
       setShowModal(old => !old)
     }
@@ -1029,6 +1072,11 @@ const PostComponent = () => {
           label: 'Who View this Article',
           icon: <FiEye />,
           function: () => handleShowModal('views', item._id)
+        },
+        {
+          label: 'Share to Social Media',
+          icon: <FiShare2 />,
+          function: () => handleShowModal('share', item._id)
         }
       ]
 
