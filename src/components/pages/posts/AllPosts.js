@@ -15,9 +15,12 @@ import {
 } from 'react-icons/fa'
 import { FiFileText, FiEye, FiShare2, FiLink } from 'react-icons/fi'
 import { RiPushpinLine } from 'react-icons/ri'
-import { FacebookShareButton, TwitterShareButton } from 'react-share'
-import { FacebookIcon, TwitterIcon } from 'react-share'
-
+import {
+  FacebookShareButton,
+  TwitterShareButton,
+  FacebookIcon,
+  TwitterIcon
+} from 'react-share'
 import PageLoader from '@app/components/page-loader'
 import Card from '@app/components/card'
 import Checkbox from '@app/components/forms/form-checkbox'
@@ -192,7 +195,7 @@ const BULK_UPDATE_MUTATION = gql`
 `
 
 const UPDATE_POST_MUTATION = gql`
-  mutation($id: String, $data: PostInput) {
+  mutation ($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -202,7 +205,7 @@ const UPDATE_POST_MUTATION = gql`
 `
 
 const SWITCH_POST_MUTATION = gql`
-  mutation($data: switchPostPositionInput) {
+  mutation ($data: switchPostPositionInput) {
     switchPostPosition(data: $data) {
       _id
       processId
@@ -232,7 +235,6 @@ const PostComponent = () => {
   const [isBulkButtonDisabled, setIsBulkButtonDisabled] = useState(true)
   const [isBulkButtonHidden, setIsBulkButtonHidden] = useState(false)
   const [selectedDate, setSelectedDate] = useState()
-  const [selectedDateRange, setSelectedDateRange] = useState(null)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
@@ -322,7 +324,12 @@ const PostComponent = () => {
     }
   }
 
-  const { loading, data, error, refetch: refetchPosts } = useQuery(
+  const {
+    loading,
+    data,
+    error,
+    refetch: refetchPosts
+  } = useQuery(
     isDailyReadingsPage
       ? GET_ALL_POST_DAILY_READINGS_QUERY
       : GET_ALL_POST_QUERY,
@@ -1002,7 +1009,6 @@ const PostComponent = () => {
   }
 
   const onDateRangeChange = e => {
-    setSelectedDateRange(e)
     onDateApply(e)
   }
 
@@ -1017,7 +1023,6 @@ const PostComponent = () => {
   }
 
   const onDateClear = () => {
-    setSelectedDateRange(null)
     setSelectedDate(null)
   }
 
@@ -1152,6 +1157,17 @@ const PostComponent = () => {
         checkbox = false
       }
 
+      if (accountType === 'complex_admin') {
+        const admins =
+          user?.accounts?.data[0]?.company?.companyAdministrators?.data
+        if (admins) {
+          const isAdmin = admins.find(admin => admin._id === item.author._id)
+          if (isAdmin) {
+            isMine = true
+          }
+        }
+      }
+
       return (
         <tr key={index} data-id={item._id}>
           {!reorder && !isPinned && <td>{checkbox}</td>}
@@ -1182,7 +1198,6 @@ const PostComponent = () => {
                         View
                       </a>
                     </Link>
-
                     <Can
                       perform={
                         isAttractionsEventsPage
@@ -1203,20 +1218,22 @@ const PostComponent = () => {
                     />
                   </>
                 ) : (
-                  <Can
-                    perform={
-                      isAttractionsEventsPage
-                        ? 'attractions:view'
-                        : 'bulletin:view'
-                    }
-                    yes={
-                      <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline" target="_blank">
-                          View
-                        </a>
-                      </Link>
-                    }
-                  />
+                  <>
+                    <Can
+                      perform={
+                        isAttractionsEventsPage
+                          ? 'attractions:view'
+                          : 'bulletin:view'
+                      }
+                      yes={
+                        <Link href={`/${routeName}/view/${item._id}`}>
+                          <a className="mr-2 hover:underline" target="_blank">
+                            View
+                          </a>
+                        </Link>
+                      }
+                    />
+                  </>
                 )}
 
                 {!isDailyReadingsPage && item?.offering && (
