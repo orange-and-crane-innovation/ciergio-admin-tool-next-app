@@ -134,14 +134,14 @@ export default function PrayerRequestDetails() {
                   {toFriendlyDate(pr?.prayer?.date)}
                 </p>
               </div>
-              <div className="p-4">
+              {/* <div className="p-4">
                 <p className="text-base text-gray-500 font-bold">
                   Time of Mass
                 </p>
                 <p className="text-base text-neutral-dark">
                   {toFriendlyTime(new Date(pr?.prayer?.time))}
                 </p>
-              </div>
+              </div> */}
 
               <div className="p-4">
                 <p className="text-base text-gray-500 font-bold">Prayer For</p>
