@@ -87,17 +87,22 @@ const rules = {
       allowedRoutes: [
         '/messages',
         '/posts',
+        '/property',
         '/daily-readings',
         '/prayer-requests',
         '/forms',
         '/directory',
         '/contact-us',
         '/notifications',
-        '/offerings'
+        '/offerings',
+        '/property'
       ],
       allowedNestedRoutes: [
         '/staff/all-staff',
         '/staff/pending-invites',
+        '/property/company',
+        '/property/complex',
+        '/property/building',
         '/posts',
         '/posts/create',
         '/posts/edit',
@@ -179,12 +184,16 @@ const rules = {
         '/daily-readings',
         '/prayer-requests',
         '/forms',
+        '/property',
         '/directory',
         '/contact-us',
         '/notifications',
         '/offerings'
       ],
       allowedNestedRoutes: [
+        '/property/company',
+        '/property/complex',
+        '/property/building',
         '/posts',
         '/posts/create',
         '/posts/edit',
