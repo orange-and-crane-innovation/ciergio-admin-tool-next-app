@@ -1,0 +1,5 @@
+.overviewCard {
+    @apply h-72 text-white ; 
+    background-color: #2C68D8 !important;
+    width: 20% !important;
+ }

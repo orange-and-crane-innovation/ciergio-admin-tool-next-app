@@ -1,10 +1,10 @@
 import React from 'react'
-import { useRouter } from 'next/router'
-import { FaPlusCircle } from 'react-icons/fa'
-import { FiEdit2, FiTrash2 } from 'react-icons/fi'
 
 import Tabs from '@app/components/tabs'
 import { SettingsTab } from './settings/Settings'
+import { OverviewTab } from './overview/Overview'
+import { AccountTab } from './about/About'
+import { HistoryTab } from './history/History'
 
 import { IMAGES } from '@app/constants'
 
@@ -50,16 +50,16 @@ const PropertyComponent = () => {
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
-            <h1>Overview</h1>
+            <OverviewTab />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <h1>About</h1>
+            <AccountTab />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
-            <h1>History</h1>
+            <HistoryTab />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="4">
-            <SettingsTab />
+            <SettingsTab user={user} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

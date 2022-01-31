@@ -1,4 +1,4 @@
 .withToggle {
-    @apply my-5 flex flex-row justify-between pb-5 border-neutral-400 border-b;
+    @apply flex flex-row justify-between pb-5 ;
 }
 

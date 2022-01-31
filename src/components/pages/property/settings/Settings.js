@@ -1,8 +1,13 @@
+import React, { useState, useEffect } from 'react'
 import Toggle from '@app/components/toggle'
 import styles from './settings.module.css'
 import Select from '@app/components/forms/form-select'
 import Button from '@app/components/button'
+import Input from '@app/components/forms/form-input'
 import Props from 'prop-types'
+import { MyDuesExtraComponent, DonationsContent } from './components'
+import { useQuery, useMutation } from '@apollo/client'
+import { getCompanySettings, updateCompanySettings } from '../_query'
 
 const activityHistoryOptions = [
   {
@@ -23,54 +28,84 @@ const activityHistoryOptions = [
   }
 ]
 
-const SettingsModules = [
-  {
-    label: 'Bulletin Board'
-  },
-  {
-    label: 'QR Code'
-  },
-  {
-    label: 'Messages'
-  },
-  {
-    label: 'Guest and Delivery'
-  },
-  {
-    label: 'Maintenance & Repairs'
-  },
-  {
-    label: 'My Dues'
-  },
-  {
-    label: 'Notifications'
-  },
-  {
-    label: 'Directory'
-  },
-  {
-    label: 'Forms'
-  },
-  {
-    label: 'Contact Page'
-  },
-  {
-    label: 'Donations'
-  },
-  {
-    label: 'Community Board'
+const RenderExtraComponent = ({ type, isToggle }) => {
+  // eslint-disable-next-line react/prop-types
+  const Card = ({ children }) => {
+    return (
+      <div className="py-7 px-6 mb-5 bg-white border-black">{children}</div>
+    )
   }
-]
+  // eslint-disable-next-line react/prop-types
+  const InputContent = ({ label, ...props }) => {
+    return (
+      <div className="w-1/4">
+        <Input label={label} labelClassName="font-bold" {...props} />
+      </div>
+    )
+  }
 
-const ToggleSettings = ({ settings }) => {
+  if (isToggle) {
+    switch (type) {
+      case 'myDues':
+        return (
+          <Card>
+            <MyDuesExtraComponent />
+          </Card>
+        )
+      case 'directory':
+        return (
+          <Card>
+            <InputContent label="Directory Limit" />
+          </Card>
+        )
+      case 'forms':
+        return (
+          <Card>
+            <InputContent label="Forms Limit" />
+          </Card>
+        )
+      case 'contactPage':
+        return (
+          <Card>
+            <InputContent label="Contact Entry Limit" />
+          </Card>
+        )
+      case 'donations':
+        return (
+          <Card>
+            <DonationsContent />
+          </Card>
+        )
+      default:
+        return null
+    }
+  }
+  return null
+}
+
+const ToggleSettings = ({ settings, setToggleData }) => {
   return (
     <div className="flex flex-col">
       {settings &&
         settings.map((setting, index) => {
           return (
-            <div key={index} className={styles.withToggle}>
-              <p className="font-bold text-lg">{setting.label}</p>
-              <Toggle />
+            <div
+              key={index}
+              className="flex my-5 flex-col border-neutral-400 border-b"
+            >
+              <div className={styles.withToggle}>
+                <p className="font-bold text-lg">{setting.label}</p>
+                <Toggle
+                  onChange={() => {
+                    setToggleData(setting)
+                  }}
+                  defaultChecked={setting.enable}
+                />
+              </div>
+              <RenderExtraComponent
+                type={setting.id}
+                isToggle={setting.toggle}
+              />
             </div>
           )
         })}
@@ -78,7 +113,111 @@ const ToggleSettings = ({ settings }) => {
   )
 }
 
-const SettingsTab = () => {
+const SettingsTab = ({ user }) => {
+  const companyID = user?.accounts?.data[0]?.company?._id
+  const [toggleData, setToggleData] = useState([
+    {
+      label: 'Bulletin Board',
+      id: 'bulletinBoard',
+      enable: false
+    },
+    {
+      label: 'QR Code',
+      id: 'qrCode',
+      enable: false
+    },
+    {
+      label: 'Messages',
+      id: 'messages',
+      enable: false
+    },
+    {
+      label: 'Guest and Delivery',
+      id: 'guestAndDelivery',
+      enable: false
+    },
+    {
+      label: 'Maintenance & Repairs',
+      id: 'maintenance',
+      enable: false
+    },
+    {
+      label: 'My Dues',
+      id: 'myDues',
+      enable: false
+    },
+    {
+      label: 'Notifications',
+      id: 'notifications',
+      enable: false
+    },
+    {
+      label: 'Directory',
+      id: 'directory',
+      enable: false
+    },
+    {
+      label: 'Forms',
+      id: 'forms',
+      enable: false
+    },
+    {
+      label: 'Contact Page',
+      id: 'contactPage',
+      enable: false
+    },
+    {
+      label: 'Donations',
+      id: 'donations',
+      enable: false
+    },
+    {
+      label: 'Community Board',
+      id: 'communityBoard',
+      enable: false
+    }
+  ])
+
+  const { loading, data, error } = useQuery(getCompanySettings, {
+    variables: {
+      where: {
+        companyId: companyID
+      }
+    }
+  })
+
+  // still cant integrate this since im still coordinating with chris
+  const [updateSettings, { loading: loadingUpdate }] = useMutation(
+    updateCompanySettings
+  )
+
+  useEffect(() => {
+    if (!loading && !error) {
+      const { subscriptionModules } = data?.getCompanySettings
+      const temp = toggleData.map(toggleSetting => {
+        if (subscriptionModules[toggleSetting.id]) {
+          return {
+            ...toggleSetting,
+            toggle: subscriptionModules[toggleSetting.id]?.enable
+          }
+        }
+        return toggleSetting
+      })
+      setToggleData(temp)
+    }
+  }, [loading, data, error])
+
+  const handleToggleChange = data => {
+    const newData = toggleData.map(toggle => {
+      if (toggle.id === data.id) {
+        return { ...data, toggle: !data.toggle }
+      }
+      return { enable: !data.toggle }
+    })
+
+    setToggleData(newData)
+  }
+
   return (
     <div className="my-10">
       <div className="w-5/6">
@@ -128,7 +267,10 @@ const SettingsTab = () => {
             </p>
           </div>
         </div>
-        <ToggleSettings settings={SettingsModules} />
+        <ToggleSettings
+          settings={toggleData}
+          setToggleData={handleToggleChange}
+        />
         <div className="w-100 flex justify-end">
           <Button label="Save" danger />
         </div>
@@ -137,8 +279,18 @@ const SettingsTab = () => {
   )
 }
 
+RenderExtraComponent.propTypes = {
+  type: Props.string.isRequired,
+  isToggle: Props.bool.isRequired
+}
+
 ToggleSettings.propTypes = {
-  settings: Props.array
+  settings: Props.array.isRequired,
+  setToggleData: Props.func.isRequired
+}
+
+SettingsTab.propTypes = {
+  user: Props.object
 }
 
 export { SettingsTab }
