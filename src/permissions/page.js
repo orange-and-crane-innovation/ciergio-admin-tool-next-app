@@ -17,8 +17,6 @@ const check = (type, role, route, nestedRoute) => {
     return false
   }
 
-  console.log({ type, role, route, nestedRoute })
-
   if (!_.isEmpty(allowedNestedPageRoutes)) {
     if (
       _.includes(allowedPageRoutes, route) &&

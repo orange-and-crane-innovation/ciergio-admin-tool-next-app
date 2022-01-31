@@ -99,7 +99,7 @@ const ToggleSettings = ({ settings, setToggleData }) => {
                   onChange={() => {
                     setToggleData(setting)
                   }}
-                  defaultChecked={setting.enable}
+                  defaultChecked={setting.toggle}
                 />
               </div>
               <RenderExtraComponent
@@ -119,62 +119,62 @@ const SettingsTab = ({ user }) => {
     {
       label: 'Bulletin Board',
       id: 'bulletinBoard',
-      enable: false
+      toggle: false
     },
     {
       label: 'QR Code',
       id: 'qrCode',
-      enable: false
+      toggle: false
     },
     {
       label: 'Messages',
       id: 'messages',
-      enable: false
+      toggle: false
     },
     {
       label: 'Guest and Delivery',
       id: 'guestAndDelivery',
-      enable: false
+      toggle: false
     },
     {
       label: 'Maintenance & Repairs',
       id: 'maintenance',
-      enable: false
+      toggle: false
     },
     {
       label: 'My Dues',
       id: 'myDues',
-      enable: false
+      toggle: false
     },
     {
       label: 'Notifications',
       id: 'notifications',
-      enable: false
+      toggle: false
     },
     {
       label: 'Directory',
       id: 'directory',
-      enable: false
+      toggle: false
     },
     {
       label: 'Forms',
       id: 'forms',
-      enable: false
+      toggle: false
     },
     {
       label: 'Contact Page',
       id: 'contactPage',
-      enable: false
+      toggle: false
     },
     {
       label: 'Donations',
       id: 'donations',
-      enable: false
+      toggle: false
     },
     {
       label: 'Community Board',
       id: 'communityBoard',
-      enable: false
+      toggle: false
     }
   ])
 
@@ -212,7 +212,7 @@ const SettingsTab = ({ user }) => {
       if (toggle.id === data.id) {
         return { ...data, toggle: !data.toggle }
       }
-      return { enable: !data.toggle }
+      return toggle
     })
 
     setToggleData(newData)
