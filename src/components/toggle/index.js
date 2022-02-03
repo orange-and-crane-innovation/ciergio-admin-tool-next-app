@@ -1,25 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import P from 'prop-types'
 import { GoCheck } from 'react-icons/go'
 
 import styles from './toggle.module.css'
 
 export default function Toggle(props) {
-  const [toggle, setToggle] = useState(false)
-  const { defaultChecked, onChange, disabled } = props
-
-  useEffect(() => {
-    if (defaultChecked) {
-      setToggle(defaultChecked)
-    }
-  }, [defaultChecked])
+  const { onChange, disabled, toggle } = props
 
   const triggerToggle = () => {
     if (disabled) {
       return
     }
-
-    setToggle(!toggle)
 
     if (typeof onChange === 'function') {
       onChange(!toggle)
@@ -58,5 +49,6 @@ export default function Toggle(props) {
 Toggle.propTypes = {
   disabled: P.bool,
   defaultChecked: P.bool,
-  onChange: P.func
+  onChange: P.func,
+  toggle: P.bool
 }

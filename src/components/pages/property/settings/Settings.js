@@ -8,23 +8,115 @@ import Props from 'prop-types'
 import { MyDuesExtraComponent, DonationsContent } from './components'
 import { useQuery, useMutation } from '@apollo/client'
 import { getCompanySettings, updateCompanySettings } from '../_query'
+import showToast from '@app/utils/toast'
+import { filter } from 'lodash'
+import { dequal } from 'dequal'
 
-const activityHistoryOptions = [
+const KEEPACTIVITYLOGS = [
   {
-    label: '1 Day',
-    value: '1day'
+    label: 'Never',
+    value: 'Never'
   },
   {
-    label: '1 Week',
-    value: '1week'
-  },
-  {
-    label: '1 Month',
-    value: '1month'
+    label: '30 Days',
+    value: 'Thirty_Days'
   },
   {
     label: 'Forever',
-    value: 'forever'
+    value: 'Forever'
+  }
+]
+
+const TOGGLESETTINGS = [
+  {
+    label: 'Allow public Posts and View',
+    id: 'allowPublicPosts',
+    toggle: false,
+    canToggle: true
+  },
+  {
+    label: 'Bulletin Board',
+    id: 'bulletinBoard',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'QR Code',
+    id: 'qrCode',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Messages',
+    id: 'messages',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Guest and Delivery',
+    id: 'guestAndDelivery',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Maintenance & Repairs',
+    id: 'maintenance',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'My Dues',
+    id: 'myDues',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Notifications',
+    id: 'notifications',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Directory',
+    id: 'directory',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Forms',
+    id: 'forms',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Contact Page',
+    id: 'contactPage',
+    toggle: false,
+    canToggle: false
+  },
+  {
+    label: 'Donations',
+    id: 'donations',
+    toggle: false,
+    canToggle: true
+  },
+  {
+    label: 'Daily Reading',
+    id: 'dailyReading',
+    toggle: false,
+    canToggle: true
+  },
+  {
+    label: 'Prayer Request',
+    id: 'prayerRequests',
+    toggle: false,
+    canToggle: true
+  },
+  {
+    label: 'Community Board',
+    id: 'communityBoard',
+    toggle: false,
+    canToggle: false
   }
 ]
 
@@ -99,7 +191,7 @@ const ToggleSettings = ({ settings, setToggleData }) => {
                   onChange={() => {
                     setToggleData(setting)
                   }}
-                  defaultChecked={setting.toggle}
+                  toggle={setting.toggle}
                 />
               </div>
               <RenderExtraComponent
@@ -115,68 +207,10 @@ const ToggleSettings = ({ settings, setToggleData }) => {
 
 const SettingsTab = ({ user }) => {
   const companyID = user?.accounts?.data[0]?.company?._id
-  const [toggleData, setToggleData] = useState([
-    {
-      label: 'Bulletin Board',
-      id: 'bulletinBoard',
-      toggle: false
-    },
-    {
-      label: 'QR Code',
-      id: 'qrCode',
-      toggle: false
-    },
-    {
-      label: 'Messages',
-      id: 'messages',
-      toggle: false
-    },
-    {
-      label: 'Guest and Delivery',
-      id: 'guestAndDelivery',
-      toggle: false
-    },
-    {
-      label: 'Maintenance & Repairs',
-      id: 'maintenance',
-      toggle: false
-    },
-    {
-      label: 'My Dues',
-      id: 'myDues',
-      toggle: false
-    },
-    {
-      label: 'Notifications',
-      id: 'notifications',
-      toggle: false
-    },
-    {
-      label: 'Directory',
-      id: 'directory',
-      toggle: false
-    },
-    {
-      label: 'Forms',
-      id: 'forms',
-      toggle: false
-    },
-    {
-      label: 'Contact Page',
-      id: 'contactPage',
-      toggle: false
-    },
-    {
-      label: 'Donations',
-      id: 'donations',
-      toggle: false
-    },
-    {
-      label: 'Community Board',
-      id: 'communityBoard',
-      toggle: false
-    }
-  ])
+  const [originalToggle, setOriginalToggle] = useState([])
+  const [toggleData, setToggleData] = useState(TOGGLESETTINGS)
+  const [keepLog, setKeepLog] = useState(null)
+  const [deleteLog, setDeleteLog] = useState(null)
 
   const { loading, data, error } = useQuery(getCompanySettings, {
     variables: {
@@ -186,14 +220,39 @@ const SettingsTab = ({ user }) => {
     }
   })
 
-  // still cant integrate this since im still coordinating with chris
-  const [updateSettings, { loading: loadingUpdate }] = useMutation(
-    updateCompanySettings
-  )
+  const [
+    updateSettings,
+    { loading: loadingUpdate, error: updateError, data: dataUpdate }
+  ] = useMutation(updateCompanySettings)
+
+  useEffect(() => {
+    if (updateError) {
+      showToast(
+        'error',
+        'Cant save settings, please try again',
+        null,
+        null,
+        1000
+      )
+    }
+
+    if (loadingUpdate && !data) {
+      showToast('info', 'Saving Settings...', null, null, 1000)
+    }
+
+    if (!loading && !error && dataUpdate) {
+      showToast('success', 'Settings Saved', null, null, 1000)
+    }
+  }, [loadingUpdate, updateError])
 
   useEffect(() => {
     if (!loading && !error) {
-      const { subscriptionModules } = data?.getCompanySettings
+      const {
+        keepActivityLogs,
+        keepDeletedPosts,
+        subscriptionModules,
+        allowPublicPosts
+      } = data?.getCompanySettings
       const temp = toggleData.map(toggleSetting => {
         if (subscriptionModules[toggleSetting.id]) {
           return {
@@ -203,19 +262,73 @@ const SettingsTab = ({ user }) => {
         }
         return toggleSetting
       })
+      const keepValue = KEEPACTIVITYLOGS.find(
+        keep => keep.value === keepActivityLogs
+      )
+      setKeepLog(keepValue)
+
+      const deletedValue = KEEPACTIVITYLOGS.find(
+        keep => keep.value === keepDeletedPosts
+      )
+      setDeleteLog(deletedValue)
+
+      temp[0] = { ...temp[0], toggle: allowPublicPosts }
       setToggleData(temp)
+      setOriginalToggle(temp)
     }
   }, [loading, data, error])
 
   const handleToggleChange = data => {
-    const newData = toggleData.map(toggle => {
-      if (toggle.id === data.id) {
-        return { ...data, toggle: !data.toggle }
-      }
-      return toggle
-    })
+    if (data) {
+      if (data.canToggle) {
+        const newData = toggleData.map(toggle => {
+          if (toggle.id === data.id) {
+            return { ...data, toggle: !data.toggle }
+          }
+          return toggle
+        })
 
-    setToggleData(newData)
+        setToggleData(newData)
+      } else {
+        const TOGGLE_MESSAGE = `The ${
+          data?.label || 'toggle'
+        } field is read only`
+        showToast('warning', TOGGLE_MESSAGE, null, null, 1000)
+      }
+    }
+  }
+
+  const handleSelectOnChange = (data, type) => {
+    if (type === 'keep') {
+      setKeepLog(data)
+    } else {
+      setDeleteLog(data)
+    }
+  }
+
+  const saveSettings = () => {
+    const temp = toggleData
+    const subscriptionModules = temp.reduce((acc, toggle) => {
+      const tempAcc = acc
+      if (toggle.canToggle && toggle.id !== 'allowPublicPosts') {
+        tempAcc[toggle.id] = { enable: toggle.toggle }
+      }
+      return tempAcc
+    }, {})
+
+    const data = {
+      allowPublicPosts: toggleData[0].toggle,
+      keepActivityLogs: keepLog?.value || '',
+      keepDeletedPosts: deleteLog?.value || '',
+      subscriptionModules: subscriptionModules
+    }
+
+    updateSettings({
+      variables: {
+        data: data,
+        companyId: companyID
+      }
+    })
   }
 
   return (
@@ -224,14 +337,19 @@ const SettingsTab = ({ user }) => {
         <h1 className="font-bold text-xl">General</h1>
         <div className={styles.withToggle}>
           <div className="mr-5">
-            <p className="font-bold text-lg">Allow public Posts and View</p>
+            <p className="font-bold text-lg">{toggleData[0]?.label}</p>
             <p>
               Allow this company and every property under them to post content
               in some features publicly (ex. Bulletin Board. ) Sign in on the
               mobile app isnt`t required when this is turned on.
             </p>
           </div>
-          <Toggle />
+          <Toggle
+            onChange={() => {
+              handleToggleChange(toggleData[0])
+            }}
+            toggle={toggleData[0]?.toggle}
+          />
         </div>
         <div className="pb-5 border-neutral-400 border-b">
           <div className="mr-10">
@@ -241,7 +359,11 @@ const SettingsTab = ({ user }) => {
             </p>
           </div>
           <div className="w-1/4">
-            <Select options={activityHistoryOptions} />
+            <Select
+              options={KEEPACTIVITYLOGS}
+              onChange={data => handleSelectOnChange(data, 'keep')}
+              value={keepLog}
+            />
           </div>
         </div>
         <div className="mt-5 pb-5 border-neutral-400 border-b">
@@ -255,7 +377,11 @@ const SettingsTab = ({ user }) => {
             </p>
           </div>
           <div className="w-1/4">
-            <Select options={activityHistoryOptions} />
+            <Select
+              options={KEEPACTIVITYLOGS}
+              onChange={data => handleSelectOnChange(data, 'delete')}
+              value={deleteLog}
+            />
           </div>
         </div>
         <div className="mt-5">
@@ -268,11 +394,18 @@ const SettingsTab = ({ user }) => {
           </div>
         </div>
         <ToggleSettings
-          settings={toggleData}
+          settings={toggleData.slice(1)}
           setToggleData={handleToggleChange}
         />
         <div className="w-100 flex justify-end">
-          <Button label="Save" danger />
+          <Button
+            disabled={
+              dequal(originalToggle, toggleData) && !keepLog && !deleteLog
+            }
+            label="Save"
+            danger
+            onClick={saveSettings}
+          />
         </div>
       </div>
     </div>

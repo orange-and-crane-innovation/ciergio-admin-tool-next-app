@@ -14,19 +14,49 @@ import styles from './property.module.css'
 const COMPANY_ADMIN = 'company_admin'
 const COMPLEX_ADMIN = 'complex_admin'
 
+const OVERVIEW = 'Overview'
+const ABOUT = 'About'
+const HISTORY = 'History'
+const SETTINGS = 'Settings'
+const TABS = [
+  {
+    type: OVERVIEW,
+    id: OVERVIEW
+  },
+  {
+    type: ABOUT,
+    id: ABOUT
+  },
+  {
+    type: HISTORY,
+    id: HISTORY
+  },
+  {
+    type: SETTINGS,
+    id: SETTINGS
+  }
+]
+
+const settingsTabLabel = {
+  COMPANY: TABS,
+  COMPLEX: [TABS[0], TABS[2], TABS[3]]
+}
+
 const PropertyComponent = () => {
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
 
   const router = useRouter()
   const { type } = router.query
+  const { route } = router
+  const routeType = route.split('/')[2].toUpperCase()
 
   const DEFAULT_TAB =
-    (type === 'overview' && '1') ||
-    (!type && '1') ||
-    (type === 'about' && '2') ||
-    (type === 'history' && '3') ||
-    (type === 'settings' && '4')
+    (type === OVERVIEW.toLowerCase() && OVERVIEW) ||
+    (!type && OVERVIEW) ||
+    (type === ABOUT.toLowerCase() && ABOUT) ||
+    (type === HISTORY.toLowerCase() && HISTORY) ||
+    (type === SETTINGS.toLowerCase() && SETTINGS)
 
   const accountTypeData =
     (accountType === COMPANY_ADMIN && user?.accounts?.data[0]?.company) ||
@@ -54,30 +84,30 @@ const PropertyComponent = () => {
 
       <Tabs defaultTab={DEFAULT_TAB}>
         <Tabs.TabLabels>
-          <Tabs.TabLabel id="1" route="/property/company/overview">
-            Overview
-          </Tabs.TabLabel>
-          <Tabs.TabLabel id="2" route="/property/company/about">
-            About
-          </Tabs.TabLabel>
-          <Tabs.TabLabel id="3" route="/property/company/history">
-            History
-          </Tabs.TabLabel>
-          <Tabs.TabLabel id="4" route="/property/company/settings">
-            Settings
-          </Tabs.TabLabel>
+          {settingsTabLabel[routeType] &&
+            settingsTabLabel[routeType].map((settingLabel, index) => {
+              return (
+                <Tabs.TabLabel
+                  key={index}
+                  id={settingLabel.id}
+                  route={`/property/${routeType.toLowerCase()}/${settingLabel.type.toLowerCase()}`}
+                >
+                  {settingLabel.type}
+                </Tabs.TabLabel>
+              )
+            })}
         </Tabs.TabLabels>
         <Tabs.TabPanels>
-          <Tabs.TabPanel id="1">
+          <Tabs.TabPanel id={OVERVIEW}>
             <OverviewTab />
           </Tabs.TabPanel>
-          <Tabs.TabPanel id="2">
+          <Tabs.TabPanel id={ABOUT}>
             <AccountTab />
           </Tabs.TabPanel>
-          <Tabs.TabPanel id="3">
+          <Tabs.TabPanel id={HISTORY}>
             <HistoryTab />
           </Tabs.TabPanel>
-          <Tabs.TabPanel id="4">
+          <Tabs.TabPanel id={SETTINGS}>
             <SettingsTab user={user} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
