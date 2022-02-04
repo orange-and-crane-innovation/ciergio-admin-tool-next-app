@@ -219,7 +219,7 @@ const SettingsTab = ({ user }) => {
       showToast('info', 'Saving Settings...', null, null, 1000)
     }
 
-    if (!loading && !error && dataUpdate) {
+    if (!loadingUpdate && !updateError && dataUpdate) {
       showToast('success', 'Settings Saved', null, null, 1000)
     }
   }, [loadingUpdate, updateError])
@@ -258,7 +258,8 @@ const SettingsTab = ({ user }) => {
       )
       setDeleteLog(deletedValue)
 
-      temp[0] = { ...temp[0], toggle: allowPublicPosts }
+      temp[0] = { ...temp[0], toggle: allowPublicPosts, canToggle: true }
+
       setToggleData(temp)
       setOriginalToggle(temp)
     }
