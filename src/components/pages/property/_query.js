@@ -12,45 +12,48 @@ const getCompanySettings = gql`
       keepDeletedPosts
       subscriptionModules {
         bulletinBoard {
-          enable
+          displayName
         }
         messages {
-          enable
+          displayName
         }
         qrCode {
-          enable
+          displayName
         }
         notifications {
-          enable
+          displayName
         }
         directory {
-          enable
+          displayName
         }
         forms {
-          enable
+          displayName
         }
         contactPage {
-          enable
+          displayName
         }
         guestAndDelivery {
-          enable
+          displayName
         }
         maintenanceAndRepairs {
-          enable
+          displayName
         }
         myDues {
-          enable
+          displayName
         }
         communityBoard {
-          enable
+          displayName
         }
         prayerRequests {
+          displayName
           enable
         }
         dailyReading {
+          displayName
           enable
         }
         donations {
+          displayName
           enable
         }
       }

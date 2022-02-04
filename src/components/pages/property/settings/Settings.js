@@ -9,7 +9,6 @@ import { MyDuesExtraComponent, DonationsContent } from './components'
 import { useQuery, useMutation } from '@apollo/client'
 import { getCompanySettings, updateCompanySettings } from '../_query'
 import showToast from '@app/utils/toast'
-import { filter } from 'lodash'
 import { dequal } from 'dequal'
 
 const KEEPACTIVITYLOGS = [
@@ -31,92 +30,72 @@ const TOGGLESETTINGS = [
   {
     label: 'Allow public Posts and View',
     id: 'allowPublicPosts',
-    toggle: false,
-    canToggle: true
+    toggle: false
   },
   {
     label: 'Bulletin Board',
     id: 'bulletinBoard',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'QR Code',
     id: 'qrCode',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'Messages',
     id: 'messages',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'Guest and Delivery',
     id: 'guestAndDelivery',
-    toggle: false,
-    canToggle: false
-  },
-  {
-    label: 'Maintenance & Repairs',
-    id: 'maintenance',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'My Dues',
     id: 'myDues',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'Notifications',
     id: 'notifications',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'Directory',
     id: 'directory',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'Forms',
     id: 'forms',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
-    label: 'Contact Page',
+    label: 'Contact Us',
     id: 'contactPage',
-    toggle: false,
-    canToggle: false
+    toggle: false
   },
   {
     label: 'Donations',
     id: 'donations',
-    toggle: false,
-    canToggle: true
+    toggle: false
   },
   {
-    label: 'Daily Reading',
+    label: 'Daily Readings',
     id: 'dailyReading',
-    toggle: false,
-    canToggle: true
+    toggle: false
   },
   {
     label: 'Prayer Request',
     id: 'prayerRequests',
-    toggle: false,
-    canToggle: true
+    toggle: false
   },
   {
     label: 'Community Board',
     id: 'communityBoard',
-    toggle: false,
-    canToggle: false
+    toggle: false
   }
 ]
 
@@ -254,10 +233,17 @@ const SettingsTab = ({ user }) => {
         allowPublicPosts
       } = data?.getCompanySettings
       const temp = toggleData.map(toggleSetting => {
-        if (subscriptionModules[toggleSetting.id]) {
+        const toggle = subscriptionModules[toggleSetting.id]
+        const keys = toggle ? Object.keys(toggle) : []
+
+        if (toggle) {
           return {
             ...toggleSetting,
-            toggle: subscriptionModules[toggleSetting.id]?.enable
+            toggle: toggle?.enable,
+            ...(toggle?.displayName
+              ? { label: toggle?.displayName }
+              : { label: toggleSetting?.label }),
+            canToggle: keys.indexOf('enable') > 0
           }
         }
         return toggleSetting
@@ -310,8 +296,11 @@ const SettingsTab = ({ user }) => {
     const temp = toggleData
     const subscriptionModules = temp.reduce((acc, toggle) => {
       const tempAcc = acc
-      if (toggle.canToggle && toggle.id !== 'allowPublicPosts') {
-        tempAcc[toggle.id] = { enable: toggle.toggle }
+      if (toggle.id !== 'allowPublicPosts') {
+        tempAcc[toggle.id] = {
+          displayName: toggle.label,
+          ...(toggle?.canToggle && { enable: toggle?.toggle })
+        }
       }
       return tempAcc
     }, {})
