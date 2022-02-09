@@ -39,12 +39,13 @@ const TABS = [
 
 const settingsTabLabel = {
   COMPANY: TABS,
-  COMPLEX: [TABS[0], TABS[2], TABS[3]]
+  COMPLEX: TABS.filter(tab => tab.id !== ABOUT)
 }
 
 const PropertyComponent = () => {
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
+  const companyID = user?.accounts?.data[0]?.company?._id
 
   const router = useRouter()
   const { type } = router.query

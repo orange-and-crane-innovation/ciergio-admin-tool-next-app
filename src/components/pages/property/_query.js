@@ -77,4 +77,22 @@ const updateCompanySettings = gql`
     }
   }
 `
-export { getCompanySettings, updateCompanySettings }
+
+const getComplexes = gql`
+  query getComplexes($where: GetComplexesParams) {
+    getComplexes(where: $where) {
+      count
+      limit
+      skip
+      data {
+        _id
+        name
+        buildings {
+          count
+        }
+      }
+    }
+  }
+`
+
+export { getCompanySettings, updateCompanySettings, getComplexes }
