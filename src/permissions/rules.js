@@ -8,11 +8,15 @@ const rules = {
         '/daily-readings',
         '/forms',
         '/directory',
+        '/property',
         '/contact-us',
         '/notifications',
         '/offerings'
       ],
       allowedNestedRoutes: [
+        '/property/company',
+        '/property/complex',
+        '/property/building',
         '/properties/company',
         '/properties/manage/categories',
         '/staff/all-staff',
@@ -93,9 +97,20 @@ const rules = {
         '/directory',
         '/contact-us',
         '/notifications',
-        '/offerings'
+        '/offerings',
+        '/property'
       ],
       allowedNestedRoutes: [
+        '/property/company',
+        '/property/company/overview',
+        '/property/company/about',
+        '/property/company/history',
+        '/property/company/settings',
+        '/property/complex',
+        '/property/complex/overview',
+        '/property/complex/history',
+        '/property/complex/settings',
+        '/property/building',
         '/staff/all-staff',
         '/staff/pending-invites',
         '/posts',

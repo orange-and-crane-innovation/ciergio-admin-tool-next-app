@@ -1,0 +1,4 @@
+.withToggle {
+    @apply flex flex-row justify-between pb-5 ;
+}
+

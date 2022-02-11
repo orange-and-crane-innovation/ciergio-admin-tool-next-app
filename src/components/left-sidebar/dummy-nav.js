@@ -41,6 +41,28 @@ const navigation = [
         ]
       },
       {
+        url: '/property',
+        icon: 'ciergio-building',
+        title: 'My Property',
+        items: [
+          {
+            url: '/property/company',
+            title: 'My Company',
+            items: []
+          },
+          {
+            url: '/property/complex',
+            title: 'My Complex',
+            items: []
+          },
+          {
+            url: '/property/building',
+            title: 'My Building',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/staff',
         icon: 'ciergio-user-group',
         title: 'My Staff',

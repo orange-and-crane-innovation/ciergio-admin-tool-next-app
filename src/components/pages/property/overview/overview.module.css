@@ -1,0 +1,5 @@
+
+ .tableContainer {
+     @apply flex flex-col;
+     width: 78% !important;
+ }

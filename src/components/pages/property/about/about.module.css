@@ -1,0 +1,30 @@
+
+ .tableContainer {
+    @apply flex flex-col;
+    width: 78% !important;
+}
+
+.container {
+    @apply p-3 my-2 border-b  flex flex-row;
+}
+
+.detailsContainer {
+    @apply flex flex-col ml-4;
+}
+
+.detailsContainer:first-child {
+    @apply text-neutral-900;
+}
+
+.iconContainer {
+    @apply p-3 font-bold text-xl;
+}
+
+.cardContent {
+    @apply flex flex-col;
+}
+
+.cardContent .container:last-child {
+    border: none !important;
+
+}
