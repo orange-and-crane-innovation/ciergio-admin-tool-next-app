@@ -60,10 +60,10 @@ const columns = [
     name: 'Date of Mass',
     width: ''
   },
-  {
-    name: 'Time of Mass',
-    width: ''
-  },
+  // {
+  //   name: 'Time of Mass',
+  //   width: ''
+  // },
   {
     name: 'Message',
     width: ''
@@ -317,7 +317,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   pareyerFor: prayer.for,
                   prayerFrom: prayer.from,
                   prayerDate: friendlyDateTimeFormat(dayjs(prayer?.date), 'LL'),
-                  prayerTime: toFriendlyTime(prayer?.time),
+                  // prayerTime: toFriendlyTime(prayer?.time),
                   message: (
                     <span className={styles.messageContainer}>
                       {content || '--'}
