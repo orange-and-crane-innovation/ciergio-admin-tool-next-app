@@ -195,7 +195,7 @@ const BULK_UPDATE_MUTATION = gql`
 `
 
 const UPDATE_POST_MUTATION = gql`
-  mutation ($id: String, $data: PostInput) {
+  mutation($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -205,7 +205,7 @@ const UPDATE_POST_MUTATION = gql`
 `
 
 const SWITCH_POST_MUTATION = gql`
-  mutation ($data: switchPostPositionInput) {
+  mutation($data: switchPostPositionInput) {
     switchPostPosition(data: $data) {
       _id
       processId
@@ -324,12 +324,7 @@ const PostComponent = () => {
     }
   }
 
-  const {
-    loading,
-    data,
-    error,
-    refetch: refetchPosts
-  } = useQuery(
+  const { loading, data, error, refetch: refetchPosts } = useQuery(
     isDailyReadingsPage
       ? GET_ALL_POST_DAILY_READINGS_QUERY
       : GET_ALL_POST_QUERY,
@@ -1050,22 +1045,38 @@ const PostComponent = () => {
     return data?.getAllPost?.post?.map((item, index) => {
       let buildingName, status
 
-      const complexID =
-        item?.author?.accountType === 'complex_admin'
-          ? item?.author?.complex?._id
-          : item?.author?.company?._id
+      // item -> author -> complex
+      // user -> accounts -> data[0] ->
 
-      const isPinned =
-        !isEmpty(item.pinnedForComplex) &&
-        item.pinnedForComplex !== null &&
-        item.pinnedForComplex.find(id => id === complexID)
+      let complexID = null
+
+      const complexIDFromItem = item?.author?.complex?._id
+
+      if (accountType === 'complex_admin') {
+        // check if the author is self complex id
+
+        const complexIDFromLocalStorage = user?.accounts?.data[0]?.complex?._id
+
+        // if its equal it means the post is from the user
+        if (complexIDFromLocalStorage === complexIDFromItem) {
+          complexID = complexIDFromItem || complexIDFromLocalStorage
+        }
+      } else {
+        //  the author should be a company admin
+
+        // list of complexIDS listed from this company admin
+        const complexIDSFromLocalStorage =
+          user?.accounts?.data[0]?.company?.complexes?.data
+        const isComplexCameFromAdmin = complexIDSFromLocalStorage.find(
+          cmplx => cmplx._id === complexIDFromItem
+        )
+
+        if (isComplexCameFromAdmin) {
+          complexID = isComplexCameFromAdmin?._id
+        }
+      }
 
       const dropdownData = [
-        {
-          label: isPinned ? 'Unpin this post' : 'Pin this post',
-          icon: <RiPushpinLine size={18} />,
-          function: () => pinPost(item?._id, complexID, isPinned)
-        },
         {
           label: isDailyReadingsPage
             ? 'Daily Reading Details'
@@ -1084,6 +1095,19 @@ const PostComponent = () => {
           function: () => handleShowModal('share', item._id)
         }
       ]
+
+      const isPinned =
+        !isEmpty(item.pinnedForComplex) &&
+        item.pinnedForComplex !== null &&
+        item.pinnedForComplex.find(id => id === complexID)
+
+      if (complexID) {
+        dropdownData.unshift({
+          label: isPinned ? 'Unpin this post' : 'Pin this post',
+          icon: <RiPushpinLine size={18} />,
+          function: () => pinPost(item?._id, complexID, isPinned)
+        })
+      }
 
       switch (item.author?.accountType) {
         case ACCOUNT_TYPES.SUP.value: {
