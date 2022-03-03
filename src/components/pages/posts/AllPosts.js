@@ -35,6 +35,7 @@ import DateRange from '@app/components/daterange'
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
 import { ACCOUNT_TYPES } from '@app/constants'
+import Props from 'prop-types'
 
 import ViewsCard from './components/ViewsCard'
 import UpdateCard from './components/UpdateCard'
@@ -43,6 +44,8 @@ import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SearchControl from '@app/components/globals/SearchControl'
 import NotifCard from '@app/components/globals/NotifCard'
+import Select from '@app/components/forms/form-select'
+import ReactSelect from 'react-select'
 
 import Can from '@app/permissions/can'
 import styles from './Main.module.css'
@@ -214,6 +217,10 @@ const SWITCH_POST_MUTATION = gql`
   }
 `
 
+const ModalContentWrapper = ({ children }) => (
+  <div className="w-full">{children}</div>
+)
+
 const PostComponent = () => {
   const router = useRouter()
   const [posts, setPosts] = useState()
@@ -257,6 +264,7 @@ const PostComponent = () => {
     ? 'Daily Readings'
     : 'Bulletin Board'
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
+  const [selectedComplexPin, setSelectedComplexPin] = useState(null)
 
   const tableRowData = [
     {
@@ -763,108 +771,149 @@ const PostComponent = () => {
     }
   }
 
-  const handleShowModal = (type, id) => {
-    const selected = data?.getAllPost?.post?.filter(item => item._id === id)
+  // complexID = optional
+  // isPinned = optional
+  const handleShowModal = React.useCallback(
+    (type, id, complexID, isPinned) => {
+      const selected = data?.getAllPost?.post?.filter(item => item._id === id)
 
-    if (selected || selectedData?.length > 0) {
-      setModalType(type)
+      if ((selected || selectedData?.length > 0) && type) {
+        setModalType(type)
 
-      switch (type) {
-        case 'details': {
-          setModalTitle('Article Details')
-          setModalContent(
-            <PostDetailsCard
-              date={selected[0].createdAt}
-              avatar={selected[0].author.user?.avatar}
-              firstName={selected[0].author?.user?.firstName}
-              lastName={selected[0].author?.user?.lastName}
-              count={selected[0].views?.count}
-              uniqueCount={selected[0].views?.unique?.count}
-            />
-          )
-          setModalFooter(null)
-          break
-        }
-        case 'views': {
-          setModalTitle('Who Viewed this Article')
-          setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
-          setModalFooter(null)
-          break
-        }
-        case 'delete': {
-          setModalTitle('Move to Trash')
-          setModalContent(
-            <UpdateCard type="trashed" title={selected[0].title} />
-          )
-          setModalFooter(true)
-          setModalID(selected[0]._id)
-          break
-        }
-        case 'bulk': {
-          setModalTitle('Bulk Update Post')
-          setModalContent(
-            <UpdateCard
-              type={selectedBulk}
-              title={`(${selectedData.length}) items`}
-            />
-          )
-          setModalFooter(true)
-          break
-        }
-        case 'download-qr': {
-          setModalTitle('Download QR')
-          setModalContent(<UpdateCard type="download-qr" data={selected[0]} />)
-          setModalFooter(null)
-          break
-        }
-        case 'share': {
-          setModalTitle('Share To Social Media')
-          setModalContent(
-            <div className="grid grid-cols-3 gap-4 justify-items-center">
-              <div className="share-social-item">
-                <FacebookShareButton
-                  url={selected[0].shareLink}
-                  quote={null}
-                  hashtag={null}
-                  description={null}
-                >
-                  <FacebookIcon size={32} round />
-                  <div>Facebook</div>
-                </FacebookShareButton>
+        switch (type) {
+          case 'details': {
+            setModalTitle('Article Details')
+            setModalContent(
+              <PostDetailsCard
+                date={selected[0].createdAt}
+                avatar={selected[0].author.user?.avatar}
+                firstName={selected[0].author?.user?.firstName}
+                lastName={selected[0].author?.user?.lastName}
+                count={selected[0].views?.count}
+                uniqueCount={selected[0].views?.unique?.count}
+              />
+            )
+            setModalFooter(null)
+            break
+          }
+          case 'views': {
+            setModalTitle('Who Viewed this Article')
+            setModalContent(
+              <ViewsCard data={selected[0].views?.unique?.users} />
+            )
+            setModalFooter(null)
+            break
+          }
+          case 'delete': {
+            setModalTitle('Move to Trash')
+            setModalContent(
+              <UpdateCard type="trashed" title={selected[0].title} />
+            )
+            setModalFooter(true)
+            setModalID(selected[0]._id)
+            break
+          }
+          case 'bulk': {
+            setModalTitle('Bulk Update Post')
+            setModalContent(
+              <UpdateCard
+                type={selectedBulk}
+                title={`(${selectedData.length}) items`}
+              />
+            )
+            setModalFooter(true)
+            break
+          }
+          case 'download-qr': {
+            setModalTitle('Download QR')
+            setModalContent(
+              <UpdateCard type="download-qr" data={selected[0]} />
+            )
+            setModalFooter(null)
+            break
+          }
+          case 'share': {
+            setModalTitle('Share To Social Media')
+            setModalContent(
+              <div className="grid grid-cols-3 gap-4 justify-items-center">
+                <div className="share-social-item">
+                  <FacebookShareButton
+                    url={selected[0].shareLink}
+                    quote={null}
+                    hashtag={null}
+                    description={null}
+                  >
+                    <FacebookIcon size={32} round />
+                    <div>Facebook</div>
+                  </FacebookShareButton>
+                </div>
+                <div className="share-social-item">
+                  <TwitterShareButton
+                    title={null}
+                    url={selected[0].shareLink}
+                    hashtags={[]}
+                  >
+                    <TwitterIcon size={32} round />
+                    <div>Twitter</div>
+                  </TwitterShareButton>
+                </div>
+                <div className="share-social-item">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(selected[0].shareLink)
+                      showToast('info', 'Link is copied!')
+                      handleClearModal()
+                    }}
+                  >
+                    <div className="link-icon">
+                      <FiLink />
+                    </div>
+                    <div>Copy Link</div>
+                  </button>
+                </div>
               </div>
-              <div className="share-social-item">
-                <TwitterShareButton
-                  title={null}
-                  url={selected[0].shareLink}
-                  hashtags={[]}
-                >
-                  <TwitterIcon size={32} round />
-                  <div>Twitter</div>
-                </TwitterShareButton>
+            )
+            setModalFooter(null)
+            break
+          }
+          case 'pin': {
+            const listOfComplexes =
+              user?.accounts?.data[0]?.company?.complexes?.data
+            const options =
+              !isEmpty(listOfComplexes) &&
+              listOfComplexes.map(listOfComplex => ({
+                label: listOfComplex?.name,
+                value: listOfComplex?._id
+              }))
+            setModalType('pin')
+            setModalTitle('Select Complex where to pin this post')
+            setModalFooter(true)
+            setModalContent(
+              <div>
+                <ReactSelect
+                  options={options}
+                  onChange={val =>
+                    setSelectedComplexPin({ ...val, id, isPinned })
+                  }
+                  value={selectedComplexPin?.value}
+                  placeholder="Select Complex"
+                  theme={theme => ({
+                    ...theme,
+                    colors: {
+                      ...theme.colors,
+                      primary: '#f56222'
+                    }
+                  })}
+                />
               </div>
-              <div className="share-social-item">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(selected[0].shareLink)
-                    showToast('info', 'Link is copied!')
-                    handleClearModal()
-                  }}
-                >
-                  <div className="link-icon">
-                    <FiLink />
-                  </div>
-                  <div>Copy Link</div>
-                </button>
-              </div>
-            </div>
-          )
-          setModalFooter(null)
-          break
+            )
+          }
         }
       }
       setShowModal(old => !old)
-    }
-  }
+    },
+    [selectedComplexPin, data, showModal, modalTitle, modalContent, modalFooter]
+  )
 
   const handleClearModal = () => {
     handleShowModal()
@@ -1052,15 +1101,9 @@ const PostComponent = () => {
 
       const complexIDFromItem = item?.author?.complex?._id
 
-      if (accountType === 'complex_admin') {
-        // check if the author is self complex id
-
-        const complexIDFromLocalStorage = user?.accounts?.data[0]?.complex?._id
-
-        // if its equal it means the post is from the user
-        if (complexIDFromLocalStorage === complexIDFromItem) {
-          complexID = complexIDFromItem || complexIDFromLocalStorage
-        }
+      if (item?.author?.accountType === 'complex_admin') {
+        // check if the author is self complex
+        complexID = complexIDFromItem
       } else {
         //  the author should be a company admin
 
@@ -1071,8 +1114,21 @@ const PostComponent = () => {
           cmplx => cmplx._id === complexIDFromItem
         )
 
+        // if the post is from complex user
         if (isComplexCameFromAdmin) {
           complexID = isComplexCameFromAdmin?._id
+        } else {
+          // if the post from the company admin
+          if (accountType === 'complex_admin') {
+            complexID = user?.accounts?.data[0]?.complex?._id
+          } else {
+            const companyIDFromItem = item?.author?.company?._id
+            const companyIDFromLocalStorage =
+              user?.accounts?.data[0]?.company?._id
+            if (companyIDFromItem === companyIDFromLocalStorage) {
+              complexID = true
+            }
+          }
         }
       }
 
@@ -1101,11 +1157,33 @@ const PostComponent = () => {
         item.pinnedForComplex !== null &&
         item.pinnedForComplex.find(id => id === complexID)
 
-      if (complexID) {
+      const typeOfComplex = typeof complexID
+      const accountTypeAuthor = item?.author?.accountType
+
+      const complexAdminAuthor =
+        accountType === 'complex_admin'
+          ? (accountTypeAuthor === 'company_admin' && false) ||
+            (accountTypeAuthor === 'complex_admin' && true)
+          : (accountTypeAuthor === 'complex_admin' ||
+              accountTypeAuthor === 'company_admin') &&
+            true
+
+      if (complexID && complexAdminAuthor) {
         dropdownData.unshift({
-          label: isPinned ? 'Unpin this post' : 'Pin this post',
+          label: isPinned
+            ? 'Unpin this post'
+            : typeOfComplex === 'boolean'
+            ? 'Pin this post to complex'
+            : 'Pin this post',
           icon: <RiPushpinLine size={18} />,
-          function: () => pinPost(item?._id, complexID, isPinned)
+          ...(typeOfComplex === 'string'
+            ? {
+                function: () => pinPost(item?._id, complexID, isPinned)
+              }
+            : {
+                function: () =>
+                  handleShowModal('pin', item?._id, complexID, isPinned)
+              })
         })
       }
 
@@ -1529,20 +1607,33 @@ const PostComponent = () => {
         visible={showModal}
         onClose={handleClearModal}
         footer={modalFooter}
-        okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
+        okText={
+          modalType === 'pin'
+            ? 'Pin'
+            : modalType === 'delete'
+            ? 'Yes, move to trash'
+            : 'Yes'
+        }
         onOk={() =>
-          modalType === 'delete'
-            ? onDeletePost()
-            : modalType === 'bulk'
-            ? onBulkSubmit()
-            : null
+          (modalType === 'pin' &&
+            pinPost(
+              selectedComplexPin?.id,
+              selectedComplexPin?.value,
+              selectedComplexPin?.isPinned
+            )) ||
+          (modalType === 'delete' && onDeletePost()) ||
+          (modalType === 'bulk' && onBulkSubmit())
         }
         onCancel={() => setShowModal(old => !old)}
       >
-        <div className="w-full">{modalContent}</div>
+        <ModalContentWrapper>{modalContent}</ModalContentWrapper>
       </Modal>
     </>
   )
+}
+
+ModalContentWrapper.propTypes = {
+  children: Props.node
 }
 
 export default PostComponent
