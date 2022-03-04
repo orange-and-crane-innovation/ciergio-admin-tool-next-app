@@ -43,6 +43,7 @@ import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SearchControl from '@app/components/globals/SearchControl'
 import NotifCard from '@app/components/globals/NotifCard'
+import Props from 'prop-types'
 
 import Can from '@app/permissions/can'
 import styles from './Main.module.css'
@@ -58,70 +59,7 @@ const bulkOptions = [
   }
 ]
 
-const GET_ALL_POST_QUERY = gql`
-  query getAllPost(
-    $where: AllPostInput
-    $limit: Int
-    $offset: Int
-    $sort: PostSort
-  ) {
-    getAllPost(where: $where, limit: $limit, offset: $offset, sort: $sort) {
-      count
-      limit
-      offset
-      post {
-        _id
-        pinnedForComplex
-        title
-        content
-        status
-        createdAt
-        updatedAt
-        publishedAt
-        offering
-        shareLink
-        author {
-          _id
-          user {
-            firstName
-            lastName
-            email
-            avatar
-          }
-          accountType
-          company {
-            _id
-            name
-          }
-          complex {
-            _id
-            name
-          }
-          building {
-            _id
-            name
-          }
-        }
-        category {
-          name
-        }
-        views {
-          count
-          unique {
-            count
-            users {
-              firstName
-              lastName
-              avatar
-            }
-          }
-        }
-      }
-    }
-  }
-`
-
-const GET_ALL_POST_DAILY_READINGS_QUERY = gql`
+const GET_ALL_POSTS_QUERY = gql`
   query getAllPost(
     $where: AllPostInput
     $limit: Int
@@ -195,7 +133,7 @@ const BULK_UPDATE_MUTATION = gql`
 `
 
 const UPDATE_POST_MUTATION = gql`
-  mutation ($id: String, $data: PostInput) {
+  mutation($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -205,7 +143,7 @@ const UPDATE_POST_MUTATION = gql`
 `
 
 const SWITCH_POST_MUTATION = gql`
-  mutation ($data: switchPostPositionInput) {
+  mutation($data: switchPostPositionInput) {
     switchPostPosition(data: $data) {
       _id
       processId
@@ -214,7 +152,7 @@ const SWITCH_POST_MUTATION = gql`
   }
 `
 
-const PostComponent = () => {
+const PostComponent = ({ typeOfPage }) => {
   const router = useRouter()
   const [posts, setPosts] = useState()
   const [searchText, setSearchText] = useState()
@@ -244,18 +182,16 @@ const PostComponent = () => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
+  const isPastoralWorksPage = router.pathname === '/pastoral-work'
+
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : isDailyReadingsPage
-    ? 'daily-readings'
-    : 'posts'
-  const headerName = isQRCodePage
-    ? 'Active QR Codes'
-    : isDailyReadingsPage
-    ? 'Daily Readings'
-    : 'Bulletin Board'
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
+
+  const headerName = isQRCodePage ? 'Active QR Codes' : typeOfPage()
+
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
 
   const tableRowData = [
@@ -273,12 +209,12 @@ const PostComponent = () => {
     },
     {
       name: 'Title',
-      width: isDailyReadingsPage ? '20%' : '30%'
+      width: isDailyReadingsPage || isPastoralWorksPage ? '20%' : '30%'
     },
     {
       name: '',
       width: '25%',
-      hidden: !isDailyReadingsPage
+      hidden: !isDailyReadingsPage || !isPastoralWorksPage
     },
     {
       name: 'Author',
@@ -287,7 +223,7 @@ const PostComponent = () => {
     {
       name: 'Category',
       width: '15%',
-      hidden: isDailyReadingsPage
+      hidden: isDailyReadingsPage || isPastoralWorksPage
     },
     {
       name: reorder ? 'Reorder' : isQRCodePage ? 'QR Code' : 'Status',
@@ -316,23 +252,16 @@ const PostComponent = () => {
     }
   }
 
-  if (isDailyReadingsPage) {
-    fetchFilter.type = 'daily_reading'
+  if (isDailyReadingsPage || isPastoralWorksPage) {
+    fetchFilter.type = typeOfPage('daily_reading', 'post', 'pastoral_works')
 
     if (selectedDate && selectedDate !== '') {
       fetchFilter.dailyReadingDateRange = selectedDate
     }
   }
 
-  const {
-    loading,
-    data,
-    error,
-    refetch: refetchPosts
-  } = useQuery(
-    isDailyReadingsPage
-      ? GET_ALL_POST_DAILY_READINGS_QUERY
-      : GET_ALL_POST_QUERY,
+  const { loading, data, error, refetch: refetchPosts } = useQuery(
+    GET_ALL_POSTS_QUERY,
     {
       enabled: false,
       variables: {
@@ -378,7 +307,7 @@ const PostComponent = () => {
   ] = useMutation(SWITCH_POST_MUTATION)
 
   useEffect(() => {
-    setIsBulkButtonHidden(isDailyReadingsPage)
+    setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
     refetchPosts()
   }, [])
 
@@ -397,9 +326,11 @@ const PostComponent = () => {
             let buildingName, status
             const dropdownData = [
               {
-                label: isDailyReadingsPage
-                  ? 'Daily Reading Details'
-                  : 'Article Details',
+                label: typeOfPage(
+                  'Daily Reading Details',
+                  'Article Details',
+                  'Pastoral Work Details'
+                ),
                 icon: <FiFileText />,
                 function: () => handleShowModal('details', item._id)
               },
@@ -546,7 +477,7 @@ const PostComponent = () => {
                 </div>
               ),
               category:
-                !isDailyReadingsPage &&
+                (!isDailyReadingsPage || !isPastoralWorksPage) &&
                 (item.category?.name ?? 'Uncategorized'),
               status: reorder ? (
                 <>
@@ -621,7 +552,7 @@ const PostComponent = () => {
         setSelectedData([])
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setIsBulkButtonHidden(isDailyReadingsPage)
+        setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
         setShowModal(false)
 
         switch (selectedBulk) {
@@ -698,7 +629,7 @@ const PostComponent = () => {
   const onClearBulk = () => {
     setSelectedBulk(null)
     setIsBulkButtonDisabled(true)
-    setIsBulkButtonHidden(isDailyReadingsPage)
+    setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
   }
 
   const goToCreatePage = () => {
@@ -757,7 +688,7 @@ const PostComponent = () => {
         setSelectedBulk(null)
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setIsBulkButtonHidden(isDailyReadingsPage)
+        setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
       }
     }
 
@@ -776,7 +707,13 @@ const PostComponent = () => {
 
       switch (type) {
         case 'details': {
-          setModalTitle('Article Details')
+          setModalTitle(
+            typeOfPage(
+              'Daily Reading Detail',
+              'Article Detail',
+              'Pastoral Work Detail'
+            )
+          )
           setModalContent(
             <PostDetailsCard
               date={selected[0].createdAt}
@@ -892,7 +829,7 @@ const PostComponent = () => {
       setIsBulkButtonHidden(false)
     } else {
       setIsBulkButtonDisabled(true)
-      setIsBulkButtonHidden(isDailyReadingsPage)
+      setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
     }
   }
 
@@ -1067,9 +1004,12 @@ const PostComponent = () => {
           function: () => pinPost(item?._id, complexID, isPinned)
         },
         {
-          label: isDailyReadingsPage
-            ? 'Daily Reading Details'
-            : 'Article Details',
+          label: typeOfPage(
+            'Daily Reading Details',
+            'Article Details',
+            'Pastoral Work Details'
+          ),
+
           icon: <FiFileText />,
           function: () => handleShowModal('details', item._id)
         },
@@ -1236,29 +1176,30 @@ const PostComponent = () => {
                   </>
                 )}
 
-                {!isDailyReadingsPage && item?.offering && (
-                  <Can
-                    perform={
-                      isAttractionsEventsPage
-                        ? 'attractions:view::donations'
-                        : 'bulletin:view::donations'
-                    }
-                    yes={
-                      <>
-                        {` | `}
-                        <Link href={`/${donationsRouteName}/${item._id}`}>
-                          <a className="mx-2 hover:underline" target="_blank">
-                            View Donations
-                          </a>
-                        </Link>
-                      </>
-                    }
-                  />
-                )}
+                {(!isDailyReadingsPage || !isPastoralWorksPage) &&
+                  item?.offering && (
+                    <Can
+                      perform={
+                        isAttractionsEventsPage
+                          ? 'attractions:view::donations'
+                          : 'bulletin:view::donations'
+                      }
+                      yes={
+                        <>
+                          {` | `}
+                          <Link href={`/${donationsRouteName}/${item._id}`}>
+                            <a className="mx-2 hover:underline" target="_blank">
+                              View Donations
+                            </a>
+                          </Link>
+                        </>
+                      }
+                    />
+                  )}
               </div>
             </div>
           </td>
-          {isDailyReadingsPage && (
+          {(isDailyReadingsPage || isPastoralWorksPage) && (
             <td>
               <span className={styles.TextWrapper}>{item?.title}</span>
               {isDailyReadingsPage && item?.offering && (
@@ -1291,7 +1232,7 @@ const PostComponent = () => {
             </div>
           </td>
 
-          {!isDailyReadingsPage && (
+          {(!isDailyReadingsPage || !isPastoralWorksPage) && (
             <td>{item.category?.name ?? 'Uncategorized'}</td>
           )}
           <td>
@@ -1519,6 +1460,10 @@ const PostComponent = () => {
       </Modal>
     </>
   )
+}
+
+PostComponent.propTpes = {
+  typeOfPage: Props.func.isRequired
 }
 
 export default PostComponent
