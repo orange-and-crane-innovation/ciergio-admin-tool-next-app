@@ -182,7 +182,7 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
-  const isPastoralWorksPage = router.pathname === '/pastoral-work'
+  const isPastoralWorksPage = router.pathname === '/pastoral-works'
 
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'

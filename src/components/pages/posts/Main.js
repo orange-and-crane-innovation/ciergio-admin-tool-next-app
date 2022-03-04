@@ -53,10 +53,10 @@ const PostComponent = () => {
             <AllPostPage typeOfPage={typeOfPage} />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <MyPostPage />
+            <MyPostPage typeOfPage={typeOfPage} />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
-            <TrashPage />
+            <TrashPage typeOfPage={typeOfPage} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

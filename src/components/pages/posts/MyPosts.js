@@ -20,6 +20,7 @@ import Dropdown from '@app/components/dropdown'
 import Modal from '@app/components/modal'
 import Tooltip from '@app/components/tooltip'
 import DateRange from '@app/components/daterange'
+import Props from 'prop-types'
 
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
@@ -172,7 +173,7 @@ const BULK_UPDATE_MUTATION = gql`
 `
 
 const UPDATE_POST_MUTATION = gql`
-  mutation ($id: String, $data: PostInput) {
+  mutation($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -181,7 +182,7 @@ const UPDATE_POST_MUTATION = gql`
   }
 `
 
-const PostComponent = () => {
+const PostComponent = ({ typeOfPage }) => {
   const router = useRouter()
   const [posts, setPosts] = useState()
   const [searchText, setSearchText] = useState()
@@ -212,6 +213,7 @@ const PostComponent = () => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
+  const isPastoralWorksPage = router.pathname === '/pastoral-works'
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
     : isQRCodePage
@@ -284,21 +286,16 @@ const PostComponent = () => {
     }
   }
 
-  if (isDailyReadingsPage) {
-    fetchFilter.type = 'daily_reading'
+  if (isDailyReadingsPage || isPastoralWorksPage) {
+    fetchFilter.type = typeOfPage('daily_reading', 'post', 'pastoral_works')
 
     if (selectedDate && selectedDate !== '') {
       fetchFilter.dailyReadingDateRange = selectedDate
     }
   }
 
-  const {
-    loading,
-    data,
-    error,
-    refetch: refetchPosts
-  } = useQuery(
-    isDailyReadingsPage
+  const { loading, data, error, refetch: refetchPosts } = useQuery(
+    isDailyReadingsPage || isPastoralWorksPage
       ? GET_ALL_POST_DAILY_READINGS_QUERY
       : GET_ALL_POST_QUERY,
     {
@@ -1015,6 +1012,10 @@ const PostComponent = () => {
       </Modal>
     </>
   )
+}
+
+PostComponent.propTypes = {
+  typeOfPage: Props.func
 }
 
 export default PostComponent
