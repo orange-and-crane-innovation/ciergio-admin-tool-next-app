@@ -20,6 +20,7 @@ const rules = {
         '/properties/company',
         '/properties/manage/categories',
         '/staff/all-staff',
+        '/staff/manage-roles',
         '/staff/pending-invites',
         '/posts',
         '/posts/create',
