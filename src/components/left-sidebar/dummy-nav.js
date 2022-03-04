@@ -171,6 +171,23 @@ const navigation = [
         items: []
       },
       {
+        url: '/pastoral-works',
+        icon: 'ciergio-list',
+        title: 'Pastoral Works',
+        items: [
+          {
+            url: '/pastoral-works',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/pastoral-works/create',
+            title: 'Create Pastoral Works',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/prayer-requests',
         icon: 'ciergio-prayer',
         title: 'Prayer Requests',

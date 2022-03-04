@@ -15,18 +15,28 @@ const PostComponent = () => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
+  const isBulletinPostsPage = router.pathname === '/posts'
+  const isPastoralWorksPage = router.pathname === '/pastoral-works'
+
+  const typeOfPage = (
+    dailyText = 'Daily Readings',
+    bulletinText = 'Bulletin Board',
+    pastoralText = 'Pastoral Works'
+  ) => {
+    return (
+      (isDailyReadingsPage && dailyText) ||
+      (isBulletinPostsPage && bulletinText) ||
+      (isPastoralWorksPage && pastoralText)
+    )
+  }
+
   const pageName = isAttractionsEventsPage
     ? 'Attractions & Events'
     : isQRCodePage
     ? 'QR Code'
-    : isDailyReadingsPage
-    ? 'Daily Readings'
-    : 'Bulletin Board'
-  const tabName = isQRCodePage
-    ? 'Active QR Posts'
-    : isDailyReadingsPage
-    ? 'Daily Readings'
-    : 'Bulletin Board'
+    : typeOfPage()
+
+  const tabName = isQRCodePage ? 'Active QR Posts' : typeOfPage()
 
   return (
     <div className={styles.PostContainer}>
@@ -40,13 +50,13 @@ const PostComponent = () => {
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
-            <AllPostPage />
+            <AllPostPage typeOfPage={typeOfPage} />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="2">
-            <MyPostPage />
+            <MyPostPage typeOfPage={typeOfPage} />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="3">
-            <TrashPage />
+            <TrashPage typeOfPage={typeOfPage} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
