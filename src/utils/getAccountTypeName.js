@@ -15,7 +15,7 @@ const getAccountTypeName = data => {
         ? ACCOUNT_TYPES.PARISHHEAD.name
         : data === ACCOUNT_TYPES.MEM.value
         ? ACCOUNT_TYPES.MEM.name
-        : 'Unknown User Type'
+        : data
   } else {
     accountTypeName =
       data === ACCOUNT_TYPES.SUP.value

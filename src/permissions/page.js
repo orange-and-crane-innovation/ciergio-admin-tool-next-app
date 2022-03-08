@@ -8,6 +8,7 @@ const _ = require('lodash')
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
 const check = (type, role, route, nestedRoute) => {
+  return true // @Jhondi, this is for testing only. please revise
   const allowedPageRoutes = rules[type][role].allowedRoutes
   const allowedNestedPageRoutes =
     nestedRoute && rules[type][role].allowedNestedRoutes
