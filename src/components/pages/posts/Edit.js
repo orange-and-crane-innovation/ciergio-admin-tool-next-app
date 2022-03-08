@@ -45,7 +45,7 @@ import style from './Create.module.css'
 const saveSvgAsPng = require('save-svg-as-png')
 
 const UPDATE_POST_MUTATION = gql`
-  mutation ($id: String, $data: PostInput) {
+  mutation($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -282,14 +282,28 @@ const CreatePosts = () => {
   const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = pathname === '/attractions-events/edit/[id]'
   const isQRCodePage = pathname === '/qr-code/edit/[id]'
+
   const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
+  const isBulletinPostsPage = pathname === '/posts/edit/[id]'
+  const isPastoralWorksPage = pathname === '/pastoral-works/edit/[id]'
+
+  const typeOfPage = (
+    dailyText = 'daily_reading',
+    bulletinText = 'post',
+    pastoralText = 'pastoral_works'
+  ) => {
+    return (
+      (isDailyReadingsPage && dailyText) ||
+      (isBulletinPostsPage && bulletinText) ||
+      (isPastoralWorksPage && pastoralText)
+    )
+  }
+
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : isDailyReadingsPage
-    ? 'daily-readings'
-    : 'posts'
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
 
   const [
     updatePost,
@@ -328,7 +342,7 @@ const CreatePosts = () => {
     resolver: yupResolver(
       selectedStatus === 'draft'
         ? validationSchemaDraft
-        : isDailyReadingsPage
+        : isDailyReadingsPage || isPastoralWorksPage
         ? validationSchemaDailyReadings
         : validationSchema
     ),
@@ -939,7 +953,7 @@ const CreatePosts = () => {
           }
         }
       }
-      if (isDailyReadingsPage) {
+      if (isDailyReadingsPage || isPastoralWorksPage) {
         updateData.data.dailyReadingDate = DATE.toFriendlyISO(
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
@@ -1246,7 +1260,7 @@ const CreatePosts = () => {
           <Card
             content={
               <div className={style.CreateContentContainer}>
-                {isDailyReadingsPage && (
+                {(isDailyReadingsPage || isPastoralWorksPage) && (
                   <>
                     <h2 className={style.CreatePostHeaderSmall}>
                       Daily Reading Date
@@ -1300,7 +1314,11 @@ const CreatePosts = () => {
                 )}
 
                 <h2 className={style.CreatePostHeaderSmall}>
-                  {isDailyReadingsPage ? 'Daily Reading Title' : 'Title'}
+                  {typeOfPage(
+                    'Daily Reading Title',
+                    'Title',
+                    'Pastoral Work Title'
+                  )}
                 </h2>
                 <div className={style.CreatePostSubContent}>
                   <div className={style.CreatePostSubContentGrow}>
@@ -1561,7 +1579,7 @@ const CreatePosts = () => {
             />
           )}
 
-          {!isDailyReadingsPage && (
+          {!isDailyReadingsPage && !isPastoralWorksPage && (
             <Card
               header={<span className={style.CardHeader}>Category</span>}
               content={
@@ -1683,7 +1701,7 @@ const CreatePosts = () => {
                           )} `
                         : ' Immediately'}
                     </strong>
-                    {!isDailyReadingsPage && (
+                    {!isDailyReadingsPage && !isPastoralWorksPage && (
                       <span
                         className={style.CreatePostLink}
                         onClick={handleShowPublishTimeModal}
