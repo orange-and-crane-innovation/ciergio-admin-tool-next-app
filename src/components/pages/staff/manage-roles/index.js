@@ -1,4 +1,5 @@
 import RolesTable from './RolesTable'
+import RoleNameList from './RoleNameList'
 
 const ManageRolesComponent = () => {
   return (
@@ -6,10 +7,8 @@ const ManageRolesComponent = () => {
       <h1 className="content-title">Manage Roles</h1>
       <div className="mt-11">
         <div className="flex flex-row gap-5">
-          <div>wew</div>
-          <div>
-            <RolesTable />
-          </div>
+          <RoleNameList />
+          <RolesTable />
         </div>
       </div>
     </section>

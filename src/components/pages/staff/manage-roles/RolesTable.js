@@ -1,5 +1,7 @@
 import Props from 'prop-types'
 import CheckBox from '@app/components/forms/form-checkbox'
+import { useQuery } from '@apollo/client'
+import { GET_ROLES } from './api/_query'
 
 const LIST_OF_ROLES_HEADER = [
   {
@@ -36,7 +38,7 @@ const LIST_OF_ROLES_HEADER = [
 
 const SingleHeader = ({ title, description, icon }) => {
   return (
-    <div className="flex-1">
+    <div className="flex-1" style={{ minHeight: '150px' }}>
       <div className="flex flex-col gap-2 ">
         <span className={`${icon} text-primary-500 text-l`}></span>
         <span className="text-l font-bold">{title}</span>
@@ -66,7 +68,10 @@ const Row = () => {
 
 const Rows = ({ roles }) => {
   return (
-    <div className="flex flex-col p-2 border-b-2 border-l-2 border-r-2">
+    <div
+      style={{ minHeight: '20px' }}
+      className="flex flex-col p-2 border-b-2 border-l-2 border-r-2"
+    >
       {roles ? (
         roles.map((role, idx) => <Row {...role} key={idx} />)
       ) : (
@@ -79,11 +84,18 @@ const Rows = ({ roles }) => {
 }
 
 const RolesTable = () => {
+  // Fetch roles
+  const { loading, data, error } = useQuery(GET_ROLES)
+
+  if (!loading) {
+    console.log({ data })
+  }
+
   return (
-    <>
+    <div>
       <Headers />
       <Rows />
-    </>
+    </div>
   )
 }
 
