@@ -975,8 +975,16 @@ const PostComponent = ({ typeOfPage }) => {
                 emptyText={
                   <NotifCard
                     icon={<FiFileText />}
-                    header="You haven’t created a bulletin post yet"
-                    content="Bulletin posts are a great way to share information with your members. Create one now!"
+                    header={`You haven’t created a ${typeOfPage(
+                      'Daily Reading',
+                      'Bulletin',
+                      'Pastoral Work'
+                    )} post yet`}
+                    content={`${typeOfPage(
+                      'Daily Reading',
+                      'Bulletin',
+                      'Pastoral Work'
+                    )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }
               />
