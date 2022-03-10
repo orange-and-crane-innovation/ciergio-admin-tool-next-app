@@ -91,6 +91,10 @@ const CategoriesComponent = () => {
       hidden: isSystemCircle
     },
     {
+      name: 'Pastoral Works',
+      value: 'pastoral_works'
+    },
+    {
       name: 'Notifications',
       value: 'flash'
     }
@@ -283,6 +287,8 @@ const CategoriesComponent = () => {
     pageHeader = isSystemPray ? 'Prayer Requests' : 'Maintenance and Repairs'
   } else if (categoryType === 'flash') {
     pageHeader = 'Flash Notifications'
+  } else if (categoryType === 'pastoral_works') {
+    pageHeader = 'Pastoral Works'
   }
 
   return (
