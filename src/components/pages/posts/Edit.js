@@ -1592,7 +1592,7 @@ const CreatePosts = () => {
                       render={({ name, value, onChange }) => (
                         <SelectCategory
                           placeholder="Select a Category"
-                          type={isPastoralWorksPage ? 'pastoral_works' : 'post'}
+                          type={typeOfPage('', 'post', 'pastoral_works')}
                           onChange={e => {
                             onChange(e.value)
                             onCategorySelect(e)

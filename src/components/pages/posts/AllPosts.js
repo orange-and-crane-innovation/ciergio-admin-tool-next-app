@@ -1205,8 +1205,6 @@ const PostComponent = ({ typeOfPage }) => {
         }
       }
 
-      console.log({ item })
-
       return (
         <tr key={index} data-id={item._id}>
           {!reorder && !isPinned && <td>{checkbox}</td>}
@@ -1416,7 +1414,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type="post"
+              type={typeOfPage('', 'post', 'pastoral_works')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -1485,9 +1483,11 @@ const PostComponent = ({ typeOfPage }) => {
                         label={
                           isQRCodePage
                             ? 'Generate QR Code'
-                            : isDailyReadingsPage
-                            ? 'Add Daily Reading'
-                            : 'Create Post'
+                            : typeOfPage(
+                                'Add Daily Reading',
+                                'Create Post',
+                                'Add Pastoral Work'
+                              )
                         }
                         onClick={goToCreatePage}
                       />
