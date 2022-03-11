@@ -342,7 +342,7 @@ const CreatePosts = () => {
     resolver: yupResolver(
       selectedStatus === 'draft'
         ? validationSchemaDraft
-        : isDailyReadingsPage || isPastoralWorksPage
+        : isDailyReadingsPage
         ? validationSchemaDailyReadings
         : validationSchema
     ),
@@ -953,7 +953,7 @@ const CreatePosts = () => {
           }
         }
       }
-      if (isDailyReadingsPage || isPastoralWorksPage) {
+      if (isDailyReadingsPage) {
         updateData.data.dailyReadingDate = DATE.toFriendlyISO(
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
@@ -1260,7 +1260,7 @@ const CreatePosts = () => {
           <Card
             content={
               <div className={style.CreateContentContainer}>
-                {(isDailyReadingsPage || isPastoralWorksPage) && (
+                {isDailyReadingsPage && (
                   <>
                     <h2 className={style.CreatePostHeaderSmall}>
                       Daily Reading Date
@@ -1553,6 +1553,7 @@ const CreatePosts = () => {
                     <Toggle
                       onChange={onToggleOfferings}
                       defaultChecked={toggleOfferings}
+                      toggle={toggleOfferings}
                     />
                     <div className={style.CreatePostOfferingsSubContent}>
                       <div className={style.CreatePostOfferingSubContent2}>
@@ -1579,7 +1580,7 @@ const CreatePosts = () => {
             />
           )}
 
-          {!isDailyReadingsPage && !isPastoralWorksPage && (
+          {!isDailyReadingsPage && (
             <Card
               header={<span className={style.CardHeader}>Category</span>}
               content={
@@ -1591,7 +1592,7 @@ const CreatePosts = () => {
                       render={({ name, value, onChange }) => (
                         <SelectCategory
                           placeholder="Select a Category"
-                          type="post"
+                          type={typeOfPage('', 'post', 'pastoral_works')}
                           onChange={e => {
                             onChange(e.value)
                             onCategorySelect(e)
@@ -1701,7 +1702,7 @@ const CreatePosts = () => {
                           )} `
                         : ' Immediately'}
                     </strong>
-                    {!isDailyReadingsPage && !isPastoralWorksPage && (
+                    {!isDailyReadingsPage && (
                       <span
                         className={style.CreatePostLink}
                         onClick={handleShowPublishTimeModal}
@@ -1819,7 +1820,15 @@ const CreatePosts = () => {
 
               <Button
                 type="button"
-                label={post?.status === 'draft' ? 'Publish' : 'Update Post'}
+                label={
+                  post?.status === 'draft'
+                    ? 'Publish'
+                    : typeOfPage(
+                        'Update Daily Reading',
+                        'Update Post',
+                        'Update Pastoral Work'
+                      )
+                }
                 primary
                 onMouseDown={() => onUpdateStatus('active')}
                 onClick={handleSubmit(e => {

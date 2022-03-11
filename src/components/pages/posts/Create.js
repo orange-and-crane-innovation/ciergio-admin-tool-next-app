@@ -189,7 +189,7 @@ const CreatePosts = () => {
     resolver: yupResolver(
       selectedStatus === 'draft'
         ? validationSchemaDraft
-        : isDailyReadingsPage || isPastoralWorksPage
+        : isDailyReadingsPage
         ? validationSchemaDailyReadings
         : validationSchema
     ),
@@ -521,7 +521,6 @@ const CreatePosts = () => {
   }
 
   const onSubmit = (data, status) => {
-    alert('test')
     if (
       data?.title === '' &&
       (data?.content === null || data?.content === '') &&
@@ -593,7 +592,7 @@ const CreatePosts = () => {
         createData.qr = true
       }
 
-      if (isDailyReadingsPage || isPastoralWorksPage) {
+      if (isDailyReadingsPage) {
         createData.dailyReadingDate = DATE.toFriendlyISO(
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
@@ -797,7 +796,7 @@ const CreatePosts = () => {
           <Card
             content={
               <div className={style.CreateContentContainer}>
-                {(isDailyReadingsPage || isPastoralWorksPage) && (
+                {isDailyReadingsPage && (
                   <>
                     <h2 className={style.CreatePostHeaderSmall}>
                       {typeOfPage(
@@ -1117,7 +1116,7 @@ const CreatePosts = () => {
             />
           )}
 
-          {!isDailyReadingsPage && !isPastoralWorksPage && (
+          {!isDailyReadingsPage && (
             <Card
               header={<span className={style.CardHeader}>Category</span>}
               content={
@@ -1129,7 +1128,7 @@ const CreatePosts = () => {
                       render={({ name, value, onChange }) => (
                         <SelectCategory
                           placeholder="Select a Category"
-                          type="post"
+                          type={typeOfPage('', 'post', 'pastoral_works')}
                           onChange={e => {
                             onChange(e.value)
                             onCategorySelect(e)
@@ -1238,7 +1237,7 @@ const CreatePosts = () => {
                           : ' Immediately'}
                       </strong>
                     </span>
-                    {!isDailyReadingsPage && !isPastoralWorksPage && (
+                    {!isDailyReadingsPage && (
                       <span
                         className={style.CreatePostLink}
                         onClick={handleShowPublishTimeModal}

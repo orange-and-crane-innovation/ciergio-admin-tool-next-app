@@ -188,7 +188,6 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
-  const isPastoralWorksPage = router.pathname === '/pastoral-works'
 
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
@@ -216,12 +215,12 @@ const PostComponent = ({ typeOfPage }) => {
     },
     {
       name: 'Title',
-      width: isDailyReadingsPage || isPastoralWorksPage ? '20%' : '30%'
+      width: isDailyReadingsPage ? '20%' : '30%'
     },
     {
       name: '',
       width: '25%',
-      hidden: !isDailyReadingsPage && !isPastoralWorksPage
+      hidden: !isDailyReadingsPage
     },
     {
       name: 'Author',
@@ -231,7 +230,7 @@ const PostComponent = ({ typeOfPage }) => {
     {
       name: 'Category',
       width: '15%',
-      hidden: isDailyReadingsPage || isPastoralWorksPage
+      hidden: isDailyReadingsPage
     },
     {
       name: reorder ? 'Reorder' : isQRCodePage ? 'QR Code' : 'Status',
@@ -245,7 +244,7 @@ const PostComponent = ({ typeOfPage }) => {
 
   const fetchFilter = {
     status: ['published'],
-    type: 'post',
+    type: typeOfPage('daily_reading', 'post', 'pastoral_works'),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
@@ -260,9 +259,7 @@ const PostComponent = ({ typeOfPage }) => {
     }
   }
 
-  if (isDailyReadingsPage || isPastoralWorksPage) {
-    fetchFilter.type = typeOfPage('daily_reading', 'post', 'pastoral_works')
-
+  if (isDailyReadingsPage) {
     if (selectedDate && selectedDate !== '') {
       fetchFilter.dailyReadingDateRange = selectedDate
     }
@@ -315,7 +312,7 @@ const PostComponent = ({ typeOfPage }) => {
   ] = useMutation(SWITCH_POST_MUTATION)
 
   useEffect(() => {
-    setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+    setIsBulkButtonHidden(isDailyReadingsPage)
     refetchPosts()
   }, [])
 
@@ -486,7 +483,6 @@ const PostComponent = ({ typeOfPage }) => {
               ),
               category:
                 !isDailyReadingsPage &&
-                !isPastoralWorksPage &&
                 (item.category?.name ?? 'Uncategorized'),
               status: reorder ? (
                 <>
@@ -561,7 +557,7 @@ const PostComponent = ({ typeOfPage }) => {
         setSelectedData([])
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+        setIsBulkButtonHidden(isDailyReadingsPage)
         setShowModal(false)
 
         switch (selectedBulk) {
@@ -638,7 +634,7 @@ const PostComponent = ({ typeOfPage }) => {
   const onClearBulk = () => {
     setSelectedBulk(null)
     setIsBulkButtonDisabled(true)
-    setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+    setIsBulkButtonHidden(isDailyReadingsPage)
   }
 
   const goToCreatePage = () => {
@@ -697,7 +693,7 @@ const PostComponent = ({ typeOfPage }) => {
         setSelectedBulk(null)
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+        setIsBulkButtonHidden(isDailyReadingsPage)
       }
     }
 
@@ -873,7 +869,7 @@ const PostComponent = ({ typeOfPage }) => {
       setIsBulkButtonHidden(false)
     } else {
       setIsBulkButtonDisabled(true)
-      setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+      setIsBulkButtonHidden(isDailyReadingsPage)
     }
   }
 
@@ -1071,9 +1067,11 @@ const PostComponent = ({ typeOfPage }) => {
 
       const dropdownData = [
         {
-          label: isDailyReadingsPage
-            ? 'Daily Reading Details'
-            : 'Article Details',
+          label: typeOfPage(
+            'Daily Reading Details',
+            'Article Details',
+            'Pastoral Work Details'
+          ),
           icon: <FiFileText />,
           function: () => handleShowModal('details', item._id)
         },
@@ -1207,8 +1205,6 @@ const PostComponent = ({ typeOfPage }) => {
         }
       }
 
-      console.log({ item })
-
       return (
         <tr key={index} data-id={item._id}>
           {!reorder && !isPinned && <td>{checkbox}</td>}
@@ -1219,7 +1215,7 @@ const PostComponent = ({ typeOfPage }) => {
           )}
           <td>
             <div className="flex flex-col">
-              {isDailyReadingsPage || isPastoralWorksPage ? (
+              {isDailyReadingsPage ? (
                 <Tooltip text={item?.title}>
                   {DATE.toFriendlyShortDate(item?.dailyReadingDate)}
                 </Tooltip>
@@ -1277,30 +1273,29 @@ const PostComponent = ({ typeOfPage }) => {
                   </>
                 )}
 
-                {(!isDailyReadingsPage || !isPastoralWorksPage) &&
-                  item?.offering && (
-                    <Can
-                      perform={
-                        isAttractionsEventsPage
-                          ? 'attractions:view::donations'
-                          : 'bulletin:view::donations'
-                      }
-                      yes={
-                        <>
-                          {` | `}
-                          <Link href={`/${donationsRouteName}/${item._id}`}>
-                            <a className="mx-2 hover:underline" target="_blank">
-                              View Donations
-                            </a>
-                          </Link>
-                        </>
-                      }
-                    />
-                  )}
+                {!isDailyReadingsPage && item?.offering && (
+                  <Can
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:view::donations'
+                        : 'bulletin:view::donations'
+                    }
+                    yes={
+                      <>
+                        {` | `}
+                        <Link href={`/${donationsRouteName}/${item._id}`}>
+                          <a className="mx-2 hover:underline" target="_blank">
+                            View Donations
+                          </a>
+                        </Link>
+                      </>
+                    }
+                  />
+                )}
               </div>
             </div>
           </td>
-          {(isDailyReadingsPage || isPastoralWorksPage) && (
+          {isDailyReadingsPage && (
             <td>
               <span className={styles.TextWrapper}>{item?.title}</span>
               {isDailyReadingsPage && item?.offering && (
@@ -1333,7 +1328,7 @@ const PostComponent = ({ typeOfPage }) => {
             </div>
           </td>
 
-          {!isDailyReadingsPage && !isPastoralWorksPage && (
+          {!isDailyReadingsPage && (
             <td>{item.category?.name ?? 'Uncategorized'}</td>
           )}
           <td>
@@ -1419,7 +1414,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type="post"
+              type={typeOfPage('', 'post', 'pastoral_works')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -1488,9 +1483,11 @@ const PostComponent = ({ typeOfPage }) => {
                         label={
                           isQRCodePage
                             ? 'Generate QR Code'
-                            : isDailyReadingsPage
-                            ? 'Add Daily Reading'
-                            : 'Create Post'
+                            : typeOfPage(
+                                'Add Daily Reading',
+                                'Create Post',
+                                'Add Pastoral Work'
+                              )
                         }
                         onClick={goToCreatePage}
                       />
