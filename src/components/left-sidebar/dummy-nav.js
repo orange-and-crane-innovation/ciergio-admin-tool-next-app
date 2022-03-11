@@ -69,7 +69,7 @@ const navigation = [
         items: [
           {
             url: '/staff/all-staff',
-            title: 'All Staff',
+            title: 'Manage Staff',
             items: []
           },
           {

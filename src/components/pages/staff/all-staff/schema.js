@@ -6,10 +6,13 @@ export const inviteStaffValidationSchema = yup.object().shape({
     value: yup.string().required('This field is required')
   }),
   email: yup.string().email().required('This field is required'),
-  jobTitle: yup.string().required('This field is required'),
-  company: yup.string().nullable().required('This field is required'),
-  complex: yup.string().nullable().required('This field is required'),
-  building: yup.string().nullable().required('This field is required')
+  /* jobTitle: yup.string().nullable().required('This field is required'), */
+  company: yup.object().shape({
+    label: yup.string().required(),
+    value: yup.string().required('This field is required')
+  })
+  /*  complex: yup.string().nullable().required('This field is required'),
+  building: yup.string().nullable().required('This field is required') */
 })
 
 export const editStaffValidationSchema = yup.object().shape({

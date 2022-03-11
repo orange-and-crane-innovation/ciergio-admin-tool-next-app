@@ -77,6 +77,14 @@ export const GET_COMPANIES = gql`
     }
   }
 `
+export const GET_COMPANY_ROLES = gql`
+  query getCompanyRoles($id: String!) {
+    getCompanyRoles(where: { companyId: $id }) {
+      _id
+      name
+    }
+  }
+`
 
 export const GET_COMPLEXES = gql`
   query getComplexesByCompanyId($id: String!) {
@@ -141,6 +149,18 @@ export const GET_PENDING_INVITES = gql`
           name
         }
       }
+    }
+  }
+`
+export const INVITE_STAFF = gql`
+  mutation addStaff($data: InputAddStaff, $id: String) {
+    addStaff(data: $data, companyId: $id) {
+      _id
+      processId
+      message
+      slave
+      vpc
+      registrationCode
     }
   }
 `
