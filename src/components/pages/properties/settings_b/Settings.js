@@ -10,6 +10,7 @@ import { useQuery, useMutation } from '@apollo/client'
 import { getCompanySettings, updateCompanySettings } from './_query'
 import showToast from '@app/utils/toast'
 import { dequal } from 'dequal'
+import { useRouter } from 'next/router'
 
 const KEEPACTIVITYLOGS = [
   {
@@ -204,13 +205,14 @@ const ToggleSettings = ({ settings, setToggleData }) => {
   )
 }
 
-const SettingsTab = ({ companyId }) => {
+const SettingsTab = ({ companyId, type }) => {
   const [originalToggle, setOriginalToggle] = useState([])
   const [toggleData, setToggleData] = useState(TOGGLESETTINGS)
   const [keepLog, setKeepLog] = useState(null)
   const [deleteLog, setDeleteLog] = useState(null)
+  const router = useRouter()
 
-  const { loading, data, error } = useQuery(getCompanySettings, {
+  const { loading, data, error, refetch } = useQuery(getCompanySettings, {
     variables: {
       where: {
         companyId: companyId
@@ -242,6 +244,11 @@ const SettingsTab = ({ companyId }) => {
       showToast('success', 'Settings Saved', null, null, 1000)
     }
   }, [loadingUpdate, updateError])
+
+  useEffect(() => {
+    refetch()
+    router.replace(`/properties/${type}/${router.query.id}/settings`)
+  }, [])
 
   useEffect(() => {
     if (!loading && !error) {
@@ -432,7 +439,8 @@ ToggleSettings.propTypes = {
 }
 
 SettingsTab.propTypes = {
-  companyId: Props.string
+  companyId: Props.string,
+  type: Props.string
 }
 
 export { SettingsTab }

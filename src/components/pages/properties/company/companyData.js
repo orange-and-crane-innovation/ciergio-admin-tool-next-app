@@ -693,7 +693,7 @@ const CompanyDataComponent = () => {
           </Tabs.TabPanel>
           <Tabs.TabPanel id="settings">
             {/* <SettingsPage type="company" /> */}
-            <SettingsTab companyId={companyProfile?._id} />
+            <SettingsTab type="company" companyId={companyProfile?._id} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
