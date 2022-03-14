@@ -56,6 +56,22 @@ const getCompanySettings = gql`
           displayName
           enable
         }
+        homePage {
+          displayName
+          enable
+        }
+        faqPage {
+          displayName
+          enable
+        }
+        settingsPage {
+          displayName
+          enable
+        }
+        pastoralWorks {
+          displayName
+          enable
+        }
       }
     }
   }

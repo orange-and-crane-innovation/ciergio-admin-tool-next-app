@@ -23,6 +23,7 @@ import EditModal from '../components/complex/editModal'
 import DeleteModal from '../components/complex/deleteModal'
 import EditModalCompany from '../components/company/editModal'
 import EditSubsctiptionModal from '../components/company/editSubscriptionModal'
+import { SettingsTab } from '../settings_b/Settings'
 
 import styles from './index.module.css'
 
@@ -351,6 +352,10 @@ const CompanyDataComponent = () => {
   }, [loadingProfile, dataProfile, errorProfile])
 
   useEffect(() => {
+    console.log({ companyProfile })
+  }, [companyProfile])
+
+  useEffect(() => {
     if (!loading) {
       if (error) {
         errorHandler(error)
@@ -634,7 +639,7 @@ const CompanyDataComponent = () => {
           <Tabs.TabLabel id="history">History</Tabs.TabLabel>
           <Tabs.TabLabel
             id="settings"
-            isHidden={systemType === 'pray' || systemType === 'circle'}
+            // isHidden={systemType === 'pray' || systemType === 'circle'}
           >
             Settings
           </Tabs.TabLabel>
@@ -687,22 +692,23 @@ const CompanyDataComponent = () => {
             <HistoryPage type="company" header={tableRowHistoryData} />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="settings">
-            <SettingsPage type="company" />
+            {/* <SettingsPage type="company" /> */}
+            <SettingsTab companyId={companyProfile?._id} />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
 
-      {showModal &&
-        (modalType === 'create' ? (
-          <CreateModal
-            processType={modalType}
-            title={modalTitle}
-            data={modalData}
-            isShown={showModal}
-            onSave={e => onSubmit(modalType, e)}
-            onCancel={onCancel}
-          />
-        ) : modalType === 'edit' ? (
+      {(showModal && modalType === 'create' && (
+        <CreateModal
+          processType={modalType}
+          title={modalTitle}
+          data={modalData}
+          isShown={showModal}
+          onSave={e => onSubmit(modalType, e)}
+          onCancel={onCancel}
+        />
+      )) ||
+        (modalType === 'edit' && (
           <EditModal
             processType={modalType}
             title={modalTitle}
@@ -711,7 +717,8 @@ const CompanyDataComponent = () => {
             onSave={e => onSubmit(modalType, e)}
             onCancel={onCancel}
           />
-        ) : modalType === 'delete' ? (
+        )) ||
+        (modalType === 'delete' && (
           <DeleteModal
             processType={modalType}
             title={modalTitle}
@@ -720,7 +727,8 @@ const CompanyDataComponent = () => {
             onSave={() => onSubmit(modalType, modalData)}
             onCancel={onCancel}
           />
-        ) : modalType === 'edit_company' ? (
+        )) ||
+        (modalType === 'edit_company' && (
           <EditModalCompany
             processType={modalType}
             title={modalTitle}
@@ -729,14 +737,15 @@ const CompanyDataComponent = () => {
             onSave={e => onSubmit(modalType, e)}
             onCancel={onCancel}
           />
-        ) : modalType === 'edit_subscription' ? (
+        )) ||
+        (modalType === 'edit_subscription' && (
           <EditSubsctiptionModal
             data={modalData}
             isShown={showModal}
             onSave={e => onSubmit(modalType, e)}
             onCancel={onCancel}
           />
-        ) : null)}
+        ))}
     </div>
   )
 }

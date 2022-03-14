@@ -7,7 +7,7 @@ import Input from '@app/components/forms/form-input'
 import Props from 'prop-types'
 import { MyDuesExtraComponent, DonationsContent } from './components'
 import { useQuery, useMutation } from '@apollo/client'
-import { getCompanySettings, updateCompanySettings } from '../_query'
+import { getCompanySettings, updateCompanySettings } from './_query'
 import showToast from '@app/utils/toast'
 import { dequal } from 'dequal'
 
@@ -95,6 +95,26 @@ const TOGGLESETTINGS = [
   {
     label: 'Community Board',
     id: 'communityBoard',
+    toggle: false
+  },
+  {
+    label: 'Faq Page',
+    id: 'faqPage',
+    toggle: false
+  },
+  {
+    label: 'Home Page',
+    id: 'homePage',
+    toggle: false
+  },
+  {
+    label: 'Settings Page',
+    id: 'settingsPage',
+    toggle: false
+  },
+  {
+    label: 'Pastoral Works',
+    id: 'pastoralWorks',
     toggle: false
   }
 ]
@@ -184,8 +204,7 @@ const ToggleSettings = ({ settings, setToggleData }) => {
   )
 }
 
-const SettingsTab = ({ user }) => {
-  const companyID = user?.accounts?.data[0]?.company?._id
+const SettingsTab = ({ companyId }) => {
   const [originalToggle, setOriginalToggle] = useState([])
   const [toggleData, setToggleData] = useState(TOGGLESETTINGS)
   const [keepLog, setKeepLog] = useState(null)
@@ -194,7 +213,7 @@ const SettingsTab = ({ user }) => {
   const { loading, data, error } = useQuery(getCompanySettings, {
     variables: {
       where: {
-        companyId: companyID
+        companyId: companyId
       }
     }
   })
@@ -316,7 +335,7 @@ const SettingsTab = ({ user }) => {
     updateSettings({
       variables: {
         data: data,
-        companyId: companyID
+        companyId: companyId
       }
     })
   }
@@ -413,7 +432,7 @@ ToggleSettings.propTypes = {
 }
 
 SettingsTab.propTypes = {
-  user: Props.object
+  companyId: Props.string
 }
 
 export { SettingsTab }
