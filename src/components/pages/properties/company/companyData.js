@@ -637,10 +637,7 @@ const CompanyDataComponent = () => {
           <Tabs.TabLabel id="overview">Overview</Tabs.TabLabel>
           <Tabs.TabLabel id="about">About</Tabs.TabLabel>
           <Tabs.TabLabel id="history">History</Tabs.TabLabel>
-          <Tabs.TabLabel
-            id="settings"
-            // isHidden={systemType === 'pray' || systemType === 'circle'}
-          >
+          <Tabs.TabLabel id="settings" isHidden={systemType === 'circle'}>
             Settings
           </Tabs.TabLabel>
         </Tabs.TabLabels>
@@ -692,8 +689,11 @@ const CompanyDataComponent = () => {
             <HistoryPage type="company" header={tableRowHistoryData} />
           </Tabs.TabPanel>
           <Tabs.TabPanel id="settings">
-            {/* <SettingsPage type="company" /> */}
-            <SettingsTab type="company" companyId={companyProfile?._id} />
+            {systemType === 'pray' ? (
+              <SettingsTab type="company" companyId={companyProfile?._id} />
+            ) : (
+              systemType !== 'circle' && <SettingsPage type="company" />
+            )}
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>
