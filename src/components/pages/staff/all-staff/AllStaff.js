@@ -30,6 +30,7 @@ import RemoveStaffModal from './RemoveStaffModal'
 import Can from '@app/permissions/can'
 
 import {
+  INVITE_STAFF,
   ADD_BUILDING_ADMIN,
   ADD_COMPANY_ADMIN,
   ADD_COMPLEX_ADMIN,
@@ -41,7 +42,8 @@ import {
   GET_BUILDINGS,
   GET_BUILDING,
   UPDATE_USER,
-  DELETE_USER
+  DELETE_USER,
+  GET_COMPANY_ROLES
 } from '../queries'
 
 import {
@@ -163,6 +165,9 @@ function AllStaff() {
   const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES)
   const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS)
   const [getBuilding, { data: building }] = useLazyQuery(GET_BUILDING)
+  const [getCompanyRoles, { data: companyRoles }] = useLazyQuery(
+    GET_COMPANY_ROLES
+  )
 
   useEffect(() => {
     switch (accountType) {
@@ -176,6 +181,13 @@ function AllStaff() {
             id: companyID
           }
         })
+
+        getCompanyRoles({
+          variables: {
+            id: companyID
+          }
+        })
+
         break
       }
       case ACCOUNT_TYPES.COMPXAD.value: {
@@ -217,6 +229,11 @@ function AllStaff() {
       showToast('danger', `Unexpected Error. Please try again.`)
     }
   }
+
+  const [addStaff, { loading: addingStaff }] = useMutation(INVITE_STAFF, {
+    onCompleted: handleOnCompleted,
+    onError: handleOnError
+  })
 
   const [addBuildingAdmin, { loading: addingBuildingAdmin }] = useMutation(
     ADD_BUILDING_ADMIN,
@@ -341,8 +358,10 @@ function AllStaff() {
   const handleOk = async () => {
     const validate = await triggerInviteStaff()
 
-    if (validate) {
+    // eslint-disable-next-line no-constant-condition
+    if (validate || true) {
       const values = getInviteStaffValues()
+      console.log(values)
       const {
         staffType: staff,
         email,
@@ -398,8 +417,16 @@ function AllStaff() {
           })
           break
         default:
-          console.err(new Error('wrong staff type'))
+          // console.err(new Error('wrong staff type'))
+          addStaff({
+            variables: {
+              data: { ...data, companyRoleId: staff.value },
+              id: company.value
+            }
+          })
       }
+    } else {
+      console.log('validate failed')
     }
   }
 
@@ -571,6 +598,7 @@ function AllStaff() {
   )
 
   const sendingInvite =
+    addingStaff ||
     addingBuildingAdmin ||
     addingCompanyAdmin ||
     addingComplexAdmin ||
@@ -588,8 +616,15 @@ function AllStaff() {
 
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Staff List</h1>
+      <h1 className="content-title">Manage Staff</h1>
       <div className="flex items-center justify-end mt-12 mx-4 mb-4 w-full">
+        <div className="flex items-left justify-between w-7/12 flex-row">
+          <div className="w-full max-w-xs mr-2">
+            <h1 className="font-bold text-base">{`Total Members: ${
+              accounts?.getAccounts?.count || 0
+            }`}</h1>
+          </div>
+        </div>
         <div className="flex items-center justify-between w-7/12 flex-row">
           <div className="w-full max-w-xs mr-2">
             <FormSelect
@@ -632,11 +667,7 @@ function AllStaff() {
       </div>
       <Card
         noPadding
-        title={
-          <h1 className="font-bold text-base">{`All Staff (${
-            accounts?.getAccounts?.count || 0
-          })`}</h1>
-        }
+        title={<h1 className="font-bold text-base">Members</h1>}
         actions={[
           <Button
             key="print"

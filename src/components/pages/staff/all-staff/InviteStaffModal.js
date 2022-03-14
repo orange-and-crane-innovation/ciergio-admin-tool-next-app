@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useLazyQuery } from '@apollo/client'
 import { Controller } from 'react-hook-form'
 import P from 'prop-types'
@@ -6,10 +6,11 @@ import P from 'prop-types'
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
+import ReactSelect from 'react-select'
 
 import { ACCOUNT_TYPES } from '@app/constants'
 
-import { GET_BUILDINGS, GET_COMPLEXES } from '../queries'
+import { GET_BUILDINGS, GET_COMPLEXES, GET_COMPANY_ROLES } from '../queries'
 import { CREATE_STAFF_ROLES } from '../constants'
 import styles from '../staff.module.css'
 
@@ -37,11 +38,38 @@ function InviteStaffModal({
 
   const [getComplexes, { data: complexes }] = useLazyQuery(GET_COMPLEXES)
   const [getBuildings, { data: buildings }] = useLazyQuery(GET_BUILDINGS)
+  const [getCompanyRoles, { data: companyRoles }] = useLazyQuery(
+    GET_COMPANY_ROLES
+  )
+
+  const [companyRoleOptions, setcompanyRoleOptions] = useState([])
+  const [myCompanies, setMyCompanies] = useState(companyOptions)
+
+  useEffect(() => {
+    if (accountType === 'company_admin') {
+      setMyCompanies([
+        {
+          label: profile?.accounts?.data[0]?.company?.name,
+          value: profile?.accounts?.data[0]?.company?._id
+        }
+      ])
+    }
+
+    return () => {
+      setMyCompanies(companyOptions)
+    }
+  }, [accountType, companyOptions])
 
   useEffect(() => {
     switch (accountType) {
       case ACCOUNT_TYPES.COMPYAD.value: {
         getComplexes({
+          variables: {
+            id: companyID
+          }
+        })
+
+        getCompanyRoles({
           variables: {
             id: companyID
           }
@@ -68,6 +96,15 @@ function InviteStaffModal({
       })
     }
   }, [companyId, isComplex, isBuilding])
+
+  useEffect(() => {
+    if (companyRoles && companyRoles.getCompanyRoles)
+      setcompanyRoleOptions(
+        companyRoles.getCompanyRoles?.map(role => {
+          return { label: role.name, value: role._id }
+        })
+      )
+  }, [companyRoles])
 
   useEffect(() => {
     if (complexId && isBuilding) {
@@ -117,28 +154,7 @@ function InviteStaffModal({
     >
       <div className={styles.inviteStaffContainer}>
         <div className="mb-4">
-          <p className="font-bold text-base text-gray-500 mb-2">Staff Type</p>
-          <Controller
-            control={control}
-            name="staffType"
-            render={({ name, onChange, value }) => (
-              <FormSelect
-                name={name}
-                value={value}
-                options={CREATE_STAFF_ROLES}
-                error={
-                  errors?.staffType?.message
-                    ? 'This field is required'
-                    : errors?.staffType?.value?.message
-                }
-                onChange={onChange}
-                placeholder="Select Staff Type"
-              />
-            )}
-          />
-        </div>
-        <div className="mb-4">
-          <p className="font-bold text-base text-gray-500 mb-2">Email</p>
+          <p className="font-bold text-base text-gray-500 mb-2">Staff Email</p>
           <Controller
             name="email"
             control={control}
@@ -158,7 +174,79 @@ function InviteStaffModal({
             )}
           />
         </div>
-        {staffType ? (
+        <div className="mb-4">
+          <p className="font-bold text-base text-gray-500 mb-2">
+            Role (optional)
+          </p>
+          <Controller
+            control={control}
+            name="staffType"
+            render={({ name, onChange, value }) => (
+              <ReactSelect
+                styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                menuPortalTarget={document.body}
+                options={[
+                  { name: 'Not Now', value: '' },
+                  ...companyRoleOptions
+                ]}
+                onChange={onChange}
+                value={value}
+                placeholder="Choose Role"
+              />
+            )}
+          />
+        </div>
+        <div>
+          {accountType === 'company_admin' && (
+            <>
+              <Controller
+                name="company"
+                control={control}
+                render={({ value, onChange, name }) => (
+                  <ReactSelect
+                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                    menuPortalTarget={document.body}
+                    options={myCompanies}
+                    onChange={onChange}
+                    value={value}
+                    placeholder={'Select COmpany'}
+                  />
+                )}
+              />
+            </>
+          )}
+          {accountType !== 'company_admin' &&
+            accountType !== ACCOUNT_TYPES.BUIGAD.value && (
+              <p className="font-bold text-base text-gray-500 mb-2">
+                Assign To
+              </p>
+            )}
+          {accountType === ACCOUNT_TYPES.SUP.value && (
+            <Controller
+              name="company"
+              control={control}
+              render={({ value, onChange, name }) => (
+                <FormSelect
+                  name={name}
+                  value={
+                    companyOptions
+                      ? companyOptions.filter(item => item.value === value)
+                      : null
+                  }
+                  onChange={e => onChange(e.value)}
+                  options={companyOptions}
+                  placeholder="Select a company"
+                  error={
+                    errors?.company?.message ?? errors?.company?.value?.message
+                  }
+                  subLabel={<p className="mb-2">Company</p>}
+                  containerClasses="mb-4"
+                />
+              )}
+            />
+          )}
+        </div>
+        {accountType !== 'company_admin' && staffType ? (
           <>
             <div>
               {staffType !== ACCOUNT_TYPES.RECEP.value && (
@@ -183,41 +271,6 @@ function InviteStaffModal({
                 </>
               )}
 
-              <div>
-                {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
-                  <p className="font-bold text-base text-gray-500 mb-2">
-                    Assign To
-                  </p>
-                )}
-
-                {accountType === ACCOUNT_TYPES.SUP.value && (
-                  <Controller
-                    name="company"
-                    control={control}
-                    render={({ value, onChange, name }) => (
-                      <FormSelect
-                        name={name}
-                        value={
-                          companyOptions
-                            ? companyOptions.filter(
-                                item => item.value === value
-                              )
-                            : null
-                        }
-                        onChange={e => onChange(e.value)}
-                        options={companyOptions}
-                        placeholder="Select a company"
-                        error={
-                          errors?.company?.message ??
-                          errors?.company?.value?.message
-                        }
-                        subLabel={<p className="mb-2">Company</p>}
-                        containerClasses="mb-4"
-                      />
-                    )}
-                  />
-                )}
-              </div>
               {[ACCOUNT_TYPES.SUP.value, ACCOUNT_TYPES.COMPYAD.value].includes(
                 accountType
               ) &&
