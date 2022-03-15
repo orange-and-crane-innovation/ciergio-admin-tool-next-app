@@ -7,9 +7,10 @@ import Input from '@app/components/forms/form-input'
 import Props from 'prop-types'
 import { MyDuesExtraComponent, DonationsContent } from './components'
 import { useQuery, useMutation } from '@apollo/client'
-import { getCompanySettings, updateCompanySettings } from '../_query'
+import { getCompanySettings, updateCompanySettings } from './_query'
 import showToast from '@app/utils/toast'
 import { dequal } from 'dequal'
+import { useRouter } from 'next/router'
 
 const KEEPACTIVITYLOGS = [
   {
@@ -95,6 +96,26 @@ const TOGGLESETTINGS = [
   {
     label: 'Community Board',
     id: 'communityBoard',
+    toggle: false
+  },
+  {
+    label: 'Faq Page',
+    id: 'faqPage',
+    toggle: false
+  },
+  {
+    label: 'Home Page',
+    id: 'homePage',
+    toggle: false
+  },
+  {
+    label: 'Settings Page',
+    id: 'settingsPage',
+    toggle: false
+  },
+  {
+    label: 'Pastoral Works',
+    id: 'pastoralWorks',
     toggle: false
   }
 ]
@@ -184,17 +205,17 @@ const ToggleSettings = ({ settings, setToggleData }) => {
   )
 }
 
-const SettingsTab = ({ user }) => {
-  const companyID = user?.accounts?.data[0]?.company?._id
+const SettingsTab = ({ companyId, type }) => {
   const [originalToggle, setOriginalToggle] = useState([])
   const [toggleData, setToggleData] = useState(TOGGLESETTINGS)
   const [keepLog, setKeepLog] = useState(null)
   const [deleteLog, setDeleteLog] = useState(null)
+  const router = useRouter()
 
-  const { loading, data, error } = useQuery(getCompanySettings, {
+  const { loading, data, error, refetch } = useQuery(getCompanySettings, {
     variables: {
       where: {
-        companyId: companyID
+        companyId: companyId
       }
     }
   })
@@ -223,6 +244,11 @@ const SettingsTab = ({ user }) => {
       showToast('success', 'Settings Saved', null, null, 1000)
     }
   }, [loadingUpdate, updateError])
+
+  useEffect(() => {
+    refetch()
+    router.replace(`/properties/${type}/${router.query.id}/settings`)
+  }, [])
 
   useEffect(() => {
     if (!loading && !error) {
@@ -316,7 +342,7 @@ const SettingsTab = ({ user }) => {
     updateSettings({
       variables: {
         data: data,
-        companyId: companyID
+        companyId: companyId
       }
     })
   }
@@ -413,7 +439,8 @@ ToggleSettings.propTypes = {
 }
 
 SettingsTab.propTypes = {
-  user: Props.object
+  companyId: Props.string,
+  type: Props.string
 }
 
 export { SettingsTab }
