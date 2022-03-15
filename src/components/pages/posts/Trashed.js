@@ -219,7 +219,6 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
-  const isPastoralWorksPage = router.pathname === '/pastoral-works'
 
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
@@ -272,7 +271,7 @@ const PostComponent = ({ typeOfPage }) => {
 
   const fetchFilter = {
     status: ['trashed'],
-    type: 'post',
+    type: typeOfPage('daily_reading', 'post', 'pastoral_works'),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
@@ -287,16 +286,14 @@ const PostComponent = ({ typeOfPage }) => {
     }
   }
 
-  if (isDailyReadingsPage || isPastoralWorksPage) {
-    fetchFilter.type = typeOfPage('daily_reading', 'post', 'pastoral_works')
-
+  if (isDailyReadingsPage) {
     if (selectedDate && selectedDate !== '') {
       fetchFilter.dailyReadingDateRange = selectedDate
     }
   }
 
   const { loading, data, error, refetch: refetchPosts } = useQuery(
-    isDailyReadingsPage || isPastoralWorksPage
+    isDailyReadingsPage
       ? GET_ALL_POST_DAILY_READINGS_QUERY
       : GET_ALL_POST_QUERY,
     {
@@ -894,7 +891,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type="post"
+              type={typeOfPage('', 'post', 'pastoral_works')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -931,8 +928,16 @@ const PostComponent = ({ typeOfPage }) => {
                 emptyText={
                   <NotifCard
                     icon={<FiFileText />}
-                    header="You haven’t created a bulletin post yet"
-                    content="Bulletin posts are a great way to share information with your members. Create one now!"
+                    header={`You haven’t created a ${typeOfPage(
+                      'Daily Reading',
+                      'Bulletin',
+                      'Pastoral Work'
+                    )} post yet`}
+                    content={`${typeOfPage(
+                      'Daily Reading',
+                      'Bulletin',
+                      'Pastoral Work'
+                    )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }
               />

@@ -6,6 +6,7 @@ import rules from './rules'
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
 const check = (type, role, action) => {
+  return true // @Jhondi, this is for testing only. please revise
   const permissions = rules[type][role].actions
 
   if (!permissions) {

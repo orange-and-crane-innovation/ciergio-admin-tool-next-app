@@ -43,7 +43,7 @@ import Can from '@app/permissions/can'
 import style from './Create.module.css'
 
 const CREATE_POST_MUTATION = gql`
-  mutation ($data: PostInput) {
+  mutation($data: PostInput) {
     createPost(data: $data) {
       _id
       processId
@@ -144,13 +144,26 @@ const CreatePosts = () => {
   const isAttractionsEventsPage = pathname === '/attractions-events/create'
   const isQRCodePage = pathname === '/qr-code/create'
   const isDailyReadingsPage = pathname === '/daily-readings/create'
+  const isBulletinPostsPage = pathname === '/posts/create'
+  const isPastoralWorksPage = pathname === '/pastoral-works/create'
+
+  const typeOfPage = (
+    dailyText = 'daily_reading',
+    bulletinText = 'post',
+    pastoralText = 'pastoral_works'
+  ) => {
+    return (
+      (isDailyReadingsPage && dailyText) ||
+      (isBulletinPostsPage && bulletinText) ||
+      (isPastoralWorksPage && pastoralText)
+    )
+  }
+
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : isDailyReadingsPage
-    ? 'daily-readings'
-    : 'posts'
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
 
   const [
     createPost,
@@ -517,7 +530,6 @@ const CreatePosts = () => {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
     } else {
       const createData = {
-        type: 'post',
         categoryId: data.category,
         title: data?.title || 'Untitled',
         content:
@@ -531,6 +543,7 @@ const CreatePosts = () => {
             ? 'scheduled'
             : status,
         primaryMedia: imageUploadedData,
+        type: typeOfPage('daily_reading', 'post', 'pastoral_works') || '',
         embeddedMediaFiles: videoUrl
           ? [
               {
@@ -578,8 +591,8 @@ const CreatePosts = () => {
       if (isQRCodePage) {
         createData.qr = true
       }
+
       if (isDailyReadingsPage) {
-        createData.type = 'daily_reading'
         createData.dailyReadingDate = DATE.toFriendlyISO(
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
         )
@@ -751,7 +764,11 @@ const CreatePosts = () => {
       {loadingCreate && <PageLoader fullPage />}
       <div className={style.CreatePostContainer}>
         <h1 className={style.CreatePostHeader}>
-          {isDailyReadingsPage ? 'Create Daily Reading' : 'Create a Post'}
+          {typeOfPage(
+            'Create Daily Reading',
+            'Create Post',
+            'Create Pastoral Work'
+          )}
         </h1>
         <form>
           <Card
@@ -782,7 +799,11 @@ const CreatePosts = () => {
                 {isDailyReadingsPage && (
                   <>
                     <h2 className={style.CreatePostHeaderSmall}>
-                      Daily Reading Date
+                      {typeOfPage(
+                        'Daily Reading Date',
+                        '',
+                        'Daily Pastoral Work Date'
+                      )}
                     </h2>
                     <div className={style.CreatePostCardContent}>
                       <div className={style.CreatePostSubContent}>
@@ -833,7 +854,11 @@ const CreatePosts = () => {
                 )}
 
                 <h2 className={style.CreatePostHeaderSmall}>
-                  {isDailyReadingsPage ? 'Daily Reading Title' : 'Title'}
+                  {typeOfPage(
+                    'Daily Reading Title',
+                    'Title',
+                    'Pastoral Work Title'
+                  )}
                 </h2>
                 <div className={style.CreatePostSubContent}>
                   <div className={style.CreatePostSubContentGrow}>
@@ -846,7 +871,11 @@ const CreatePosts = () => {
                           type="text"
                           name={name}
                           value={value}
-                          placeholder="What's the title of your bulletin post?"
+                          placeholder={`"What's the title of your ${typeOfPage(
+                            'Daily Reading Post',
+                            'Bulletin Post',
+                            'Pastoral Work Post'
+                          )}?"`}
                           maxLength={inputMaxLength}
                           count={textCount}
                           error={errors?.title?.message ?? null}
@@ -1099,7 +1128,7 @@ const CreatePosts = () => {
                       render={({ name, value, onChange }) => (
                         <SelectCategory
                           placeholder="Select a Category"
-                          type="post"
+                          type={typeOfPage('', 'post', 'pastoral_works')}
                           onChange={e => {
                             onChange(e.value)
                             onCategorySelect(e)
@@ -1270,9 +1299,11 @@ const CreatePosts = () => {
                 label={
                   isQRCodePage
                     ? 'Generate QR and Publish'
-                    : isDailyReadingsPage
-                    ? 'Publish'
-                    : 'Publish Post'
+                    : typeOfPage(
+                        'Publish Daily Reading',
+                        'Publish Post',
+                        'Publish Pastoral Work'
+                      )
                 }
                 primary
                 onMouseDown={() => onUpdateStatus('active')}

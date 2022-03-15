@@ -35,6 +35,7 @@ import DateRange from '@app/components/daterange'
 import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
 import { ACCOUNT_TYPES } from '@app/constants'
+import Props from 'prop-types'
 
 import ViewsCard from './components/ViewsCard'
 import UpdateCard from './components/UpdateCard'
@@ -43,7 +44,8 @@ import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import SearchControl from '@app/components/globals/SearchControl'
 import NotifCard from '@app/components/globals/NotifCard'
-import Props from 'prop-types'
+import Select from '@app/components/forms/form-select'
+import ReactSelect from 'react-select'
 
 import Can from '@app/permissions/can'
 import styles from './Main.module.css'
@@ -152,6 +154,10 @@ const SWITCH_POST_MUTATION = gql`
   }
 `
 
+const ModalContentWrapper = ({ children }) => (
+  <div className="w-full">{children}</div>
+)
+
 const PostComponent = ({ typeOfPage }) => {
   const router = useRouter()
   const [posts, setPosts] = useState()
@@ -182,7 +188,6 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
-  const isPastoralWorksPage = router.pathname === '/pastoral-works'
 
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
@@ -193,6 +198,7 @@ const PostComponent = ({ typeOfPage }) => {
   const headerName = isQRCodePage ? 'Active QR Codes' : typeOfPage()
 
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
+  const [selectedComplexPin, setSelectedComplexPin] = useState(null)
 
   const tableRowData = [
     {
@@ -209,21 +215,22 @@ const PostComponent = ({ typeOfPage }) => {
     },
     {
       name: 'Title',
-      width: isDailyReadingsPage || isPastoralWorksPage ? '20%' : '30%'
+      width: isDailyReadingsPage ? '20%' : '30%'
     },
     {
       name: '',
       width: '25%',
-      hidden: !isDailyReadingsPage || !isPastoralWorksPage
+      hidden: !isDailyReadingsPage
     },
     {
       name: 'Author',
       width: '25%'
     },
+
     {
       name: 'Category',
       width: '15%',
-      hidden: isDailyReadingsPage || isPastoralWorksPage
+      hidden: isDailyReadingsPage
     },
     {
       name: reorder ? 'Reorder' : isQRCodePage ? 'QR Code' : 'Status',
@@ -237,7 +244,7 @@ const PostComponent = ({ typeOfPage }) => {
 
   const fetchFilter = {
     status: ['published'],
-    type: 'post',
+    type: typeOfPage('daily_reading', 'post', 'pastoral_works'),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
@@ -252,9 +259,7 @@ const PostComponent = ({ typeOfPage }) => {
     }
   }
 
-  if (isDailyReadingsPage || isPastoralWorksPage) {
-    fetchFilter.type = typeOfPage('daily_reading', 'post', 'pastoral_works')
-
+  if (isDailyReadingsPage) {
     if (selectedDate && selectedDate !== '') {
       fetchFilter.dailyReadingDateRange = selectedDate
     }
@@ -307,7 +312,7 @@ const PostComponent = ({ typeOfPage }) => {
   ] = useMutation(SWITCH_POST_MUTATION)
 
   useEffect(() => {
-    setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+    setIsBulkButtonHidden(isDailyReadingsPage)
     refetchPosts()
   }, [])
 
@@ -477,7 +482,7 @@ const PostComponent = ({ typeOfPage }) => {
                 </div>
               ),
               category:
-                (!isDailyReadingsPage || !isPastoralWorksPage) &&
+                !isDailyReadingsPage &&
                 (item.category?.name ?? 'Uncategorized'),
               status: reorder ? (
                 <>
@@ -552,7 +557,7 @@ const PostComponent = ({ typeOfPage }) => {
         setSelectedData([])
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+        setIsBulkButtonHidden(isDailyReadingsPage)
         setShowModal(false)
 
         switch (selectedBulk) {
@@ -629,7 +634,7 @@ const PostComponent = ({ typeOfPage }) => {
   const onClearBulk = () => {
     setSelectedBulk(null)
     setIsBulkButtonDisabled(true)
-    setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+    setIsBulkButtonHidden(isDailyReadingsPage)
   }
 
   const goToCreatePage = () => {
@@ -688,7 +693,7 @@ const PostComponent = ({ typeOfPage }) => {
         setSelectedBulk(null)
         setIsBulkDisabled(true)
         setIsBulkButtonDisabled(true)
-        setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+        setIsBulkButtonHidden(isDailyReadingsPage)
       }
     }
 
@@ -699,114 +704,149 @@ const PostComponent = ({ typeOfPage }) => {
     }
   }
 
-  const handleShowModal = (type, id) => {
-    const selected = data?.getAllPost?.post?.filter(item => item._id === id)
+  // complexID = optional
+  // isPinned = optional
+  const handleShowModal = React.useCallback(
+    (type, id, complexID, isPinned) => {
+      const selected = data?.getAllPost?.post?.filter(item => item._id === id)
 
-    if (selected || selectedData?.length > 0) {
-      setModalType(type)
+      if ((selected || selectedData?.length > 0) && type) {
+        setModalType(type)
 
-      switch (type) {
-        case 'details': {
-          setModalTitle(
-            typeOfPage(
-              'Daily Reading Detail',
-              'Article Detail',
-              'Pastoral Work Detail'
+        switch (type) {
+          case 'details': {
+            setModalTitle('Article Details')
+            setModalContent(
+              <PostDetailsCard
+                date={selected[0].createdAt}
+                avatar={selected[0].author.user?.avatar}
+                firstName={selected[0].author?.user?.firstName}
+                lastName={selected[0].author?.user?.lastName}
+                count={selected[0].views?.count}
+                uniqueCount={selected[0].views?.unique?.count}
+              />
             )
-          )
-          setModalContent(
-            <PostDetailsCard
-              date={selected[0].createdAt}
-              avatar={selected[0].author.user?.avatar}
-              firstName={selected[0].author?.user?.firstName}
-              lastName={selected[0].author?.user?.lastName}
-              count={selected[0].views?.count}
-              uniqueCount={selected[0].views?.unique?.count}
-            />
-          )
-          setModalFooter(null)
-          break
-        }
-        case 'views': {
-          setModalTitle('Who Viewed this Article')
-          setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
-          setModalFooter(null)
-          break
-        }
-        case 'delete': {
-          setModalTitle('Move to Trash')
-          setModalContent(
-            <UpdateCard type="trashed" title={selected[0].title} />
-          )
-          setModalFooter(true)
-          setModalID(selected[0]._id)
-          break
-        }
-        case 'bulk': {
-          setModalTitle('Bulk Update Post')
-          setModalContent(
-            <UpdateCard
-              type={selectedBulk}
-              title={`(${selectedData.length}) items`}
-            />
-          )
-          setModalFooter(true)
-          break
-        }
-        case 'download-qr': {
-          setModalTitle('Download QR')
-          setModalContent(<UpdateCard type="download-qr" data={selected[0]} />)
-          setModalFooter(null)
-          break
-        }
-        case 'share': {
-          setModalTitle('Share To Social Media')
-          setModalContent(
-            <div className="grid grid-cols-3 gap-4 justify-items-center">
-              <div className="share-social-item">
-                <FacebookShareButton
-                  url={selected[0].shareLink}
-                  quote={null}
-                  hashtag={null}
-                  description={null}
-                >
-                  <FacebookIcon size={32} round />
-                  <div>Facebook</div>
-                </FacebookShareButton>
+            setModalFooter(null)
+            break
+          }
+          case 'views': {
+            setModalTitle('Who Viewed this Article')
+            setModalContent(
+              <ViewsCard data={selected[0].views?.unique?.users} />
+            )
+            setModalFooter(null)
+            break
+          }
+          case 'delete': {
+            setModalTitle('Move to Trash')
+            setModalContent(
+              <UpdateCard type="trashed" title={selected[0].title} />
+            )
+            setModalFooter(true)
+            setModalID(selected[0]._id)
+            break
+          }
+          case 'bulk': {
+            setModalTitle('Bulk Update Post')
+            setModalContent(
+              <UpdateCard
+                type={selectedBulk}
+                title={`(${selectedData.length}) items`}
+              />
+            )
+            setModalFooter(true)
+            break
+          }
+          case 'download-qr': {
+            setModalTitle('Download QR')
+            setModalContent(
+              <UpdateCard type="download-qr" data={selected[0]} />
+            )
+            setModalFooter(null)
+            break
+          }
+          case 'share': {
+            setModalTitle('Share To Social Media')
+            setModalContent(
+              <div className="grid grid-cols-3 gap-4 justify-items-center">
+                <div className="share-social-item">
+                  <FacebookShareButton
+                    url={selected[0].shareLink}
+                    quote={null}
+                    hashtag={null}
+                    description={null}
+                  >
+                    <FacebookIcon size={32} round />
+                    <div>Facebook</div>
+                  </FacebookShareButton>
+                </div>
+                <div className="share-social-item">
+                  <TwitterShareButton
+                    title={null}
+                    url={selected[0].shareLink}
+                    hashtags={[]}
+                  >
+                    <TwitterIcon size={32} round />
+                    <div>Twitter</div>
+                  </TwitterShareButton>
+                </div>
+                <div className="share-social-item">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(selected[0].shareLink)
+                      showToast('info', 'Link is copied!')
+                      handleClearModal()
+                    }}
+                  >
+                    <div className="link-icon">
+                      <FiLink />
+                    </div>
+                    <div>Copy Link</div>
+                  </button>
+                </div>
               </div>
-              <div className="share-social-item">
-                <TwitterShareButton
-                  title={null}
-                  url={selected[0].shareLink}
-                  hashtags={[]}
-                >
-                  <TwitterIcon size={32} round />
-                  <div>Twitter</div>
-                </TwitterShareButton>
+            )
+            setModalFooter(null)
+            break
+          }
+          case 'pin': {
+            const listOfComplexes =
+              user?.accounts?.data[0]?.company?.complexes?.data
+            const options =
+              !isEmpty(listOfComplexes) &&
+              listOfComplexes.map(listOfComplex => ({
+                label: listOfComplex?.name,
+                value: listOfComplex?._id
+              }))
+            setModalType('pin')
+            setModalTitle('Select Complex where to pin this post')
+            setModalFooter(true)
+            setModalContent(
+              <div>
+                <ReactSelect
+                  options={options}
+                  onChange={val =>
+                    setSelectedComplexPin({ ...val, id, isPinned })
+                  }
+                  value={selectedComplexPin?.value}
+                  placeholder="Select Complex"
+                  theme={theme => ({
+                    ...theme,
+                    colors: {
+                      ...theme.colors,
+                      primary: '#f56222'
+                    }
+                  })}
+                />
               </div>
-              <div className="share-social-item">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(selected[0].shareLink)
-                    showToast('info', 'Link is copied!')
-                    handleClearModal()
-                  }}
-                >
-                  <div className="link-icon">
-                    <FiLink />
-                  </div>
-                  <div>Copy Link</div>
-                </button>
-              </div>
-            </div>
-          )
-          setModalFooter(null)
-          break
+            )
+          }
         }
       }
       setShowModal(old => !old)
-    }
-  }
+    },
+    [selectedComplexPin, data, showModal, modalTitle, modalContent, modalFooter]
+  )
 
   const handleClearModal = () => {
     handleShowModal()
@@ -829,7 +869,7 @@ const PostComponent = ({ typeOfPage }) => {
       setIsBulkButtonHidden(false)
     } else {
       setIsBulkButtonDisabled(true)
-      setIsBulkButtonHidden(isDailyReadingsPage || isPastoralWorksPage)
+      setIsBulkButtonHidden(isDailyReadingsPage)
     }
   }
 
@@ -987,29 +1027,51 @@ const PostComponent = ({ typeOfPage }) => {
     return data?.getAllPost?.post?.map((item, index) => {
       let buildingName, status
 
-      const complexID =
-        item?.author?.accountType === 'complex_admin'
-          ? item?.author?.complex?._id
-          : item?.author?.company?._id
+      // item -> author -> complex
+      // user -> accounts -> data[0] ->
 
-      const isPinned =
-        !isEmpty(item.pinnedForComplex) &&
-        item.pinnedForComplex !== null &&
-        item.pinnedForComplex.find(id => id === complexID)
+      let complexID = null
+
+      const complexIDFromItem = item?.author?.complex?._id
+
+      if (item?.author?.accountType === 'complex_admin') {
+        // check if the author is self complex
+        complexID = complexIDFromItem
+      } else {
+        //  the author should be a company admin
+
+        // list of complexIDS listed from this company admin
+        const complexIDSFromLocalStorage =
+          user?.accounts?.data[0]?.company?.complexes?.data
+        const isComplexCameFromAdmin = complexIDSFromLocalStorage.find(
+          cmplx => cmplx._id === complexIDFromItem
+        )
+
+        // if the post is from complex user
+        if (isComplexCameFromAdmin) {
+          complexID = isComplexCameFromAdmin?._id
+        } else {
+          // if the post from the company admin
+          if (accountType === 'complex_admin') {
+            complexID = user?.accounts?.data[0]?.complex?._id
+          } else {
+            const companyIDFromItem = item?.author?.company?._id
+            const companyIDFromLocalStorage =
+              user?.accounts?.data[0]?.company?._id
+            if (companyIDFromItem === companyIDFromLocalStorage) {
+              complexID = true
+            }
+          }
+        }
+      }
 
       const dropdownData = [
-        {
-          label: isPinned ? 'Unpin this post' : 'Pin this post',
-          icon: <RiPushpinLine size={18} />,
-          function: () => pinPost(item?._id, complexID, isPinned)
-        },
         {
           label: typeOfPage(
             'Daily Reading Details',
             'Article Details',
             'Pastoral Work Details'
           ),
-
           icon: <FiFileText />,
           function: () => handleShowModal('details', item._id)
         },
@@ -1024,6 +1086,41 @@ const PostComponent = ({ typeOfPage }) => {
           function: () => handleShowModal('share', item._id)
         }
       ]
+
+      const isPinned =
+        !isEmpty(item.pinnedForComplex) &&
+        item.pinnedForComplex !== null &&
+        item.pinnedForComplex.find(id => id === complexID)
+
+      const typeOfComplex = typeof complexID
+      const accountTypeAuthor = item?.author?.accountType
+
+      const complexAdminAuthor =
+        accountType === 'complex_admin'
+          ? (accountTypeAuthor === 'company_admin' && false) ||
+            (accountTypeAuthor === 'complex_admin' && true)
+          : (accountTypeAuthor === 'complex_admin' ||
+              accountTypeAuthor === 'company_admin') &&
+            true
+
+      if (complexID && complexAdminAuthor) {
+        dropdownData.unshift({
+          label: isPinned
+            ? 'Unpin this post'
+            : typeOfComplex === 'boolean'
+            ? 'Pin this post to complex'
+            : 'Pin this post',
+          icon: <RiPushpinLine size={18} />,
+          ...(typeOfComplex === 'string'
+            ? {
+                function: () => pinPost(item?._id, complexID, isPinned)
+              }
+            : {
+                function: () =>
+                  handleShowModal('pin', item?._id, complexID, isPinned)
+              })
+        })
+      }
 
       switch (item.author?.accountType) {
         case ACCOUNT_TYPES.SUP.value: {
@@ -1176,30 +1273,29 @@ const PostComponent = ({ typeOfPage }) => {
                   </>
                 )}
 
-                {(!isDailyReadingsPage || !isPastoralWorksPage) &&
-                  item?.offering && (
-                    <Can
-                      perform={
-                        isAttractionsEventsPage
-                          ? 'attractions:view::donations'
-                          : 'bulletin:view::donations'
-                      }
-                      yes={
-                        <>
-                          {` | `}
-                          <Link href={`/${donationsRouteName}/${item._id}`}>
-                            <a className="mx-2 hover:underline" target="_blank">
-                              View Donations
-                            </a>
-                          </Link>
-                        </>
-                      }
-                    />
-                  )}
+                {!isDailyReadingsPage && item?.offering && (
+                  <Can
+                    perform={
+                      isAttractionsEventsPage
+                        ? 'attractions:view::donations'
+                        : 'bulletin:view::donations'
+                    }
+                    yes={
+                      <>
+                        {` | `}
+                        <Link href={`/${donationsRouteName}/${item._id}`}>
+                          <a className="mx-2 hover:underline" target="_blank">
+                            View Donations
+                          </a>
+                        </Link>
+                      </>
+                    }
+                  />
+                )}
               </div>
             </div>
           </td>
-          {(isDailyReadingsPage || isPastoralWorksPage) && (
+          {isDailyReadingsPage && (
             <td>
               <span className={styles.TextWrapper}>{item?.title}</span>
               {isDailyReadingsPage && item?.offering && (
@@ -1232,7 +1328,7 @@ const PostComponent = ({ typeOfPage }) => {
             </div>
           </td>
 
-          {(!isDailyReadingsPage || !isPastoralWorksPage) && (
+          {!isDailyReadingsPage && (
             <td>{item.category?.name ?? 'Uncategorized'}</td>
           )}
           <td>
@@ -1318,7 +1414,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type="post"
+              type={typeOfPage('', 'post', 'pastoral_works')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -1387,9 +1483,11 @@ const PostComponent = ({ typeOfPage }) => {
                         label={
                           isQRCodePage
                             ? 'Generate QR Code'
-                            : isDailyReadingsPage
-                            ? 'Add Daily Reading'
-                            : 'Create Post'
+                            : typeOfPage(
+                                'Add Daily Reading',
+                                'Create Post',
+                                'Add Pastoral Work'
+                              )
                         }
                         onClick={goToCreatePage}
                       />
@@ -1422,8 +1520,16 @@ const PostComponent = ({ typeOfPage }) => {
                 emptyText={
                   <NotifCard
                     icon={<FiFileText />}
-                    header="You haven’t created a bulletin post yet"
-                    content="Bulletin posts are a great way to share information with your members. Create one now!"
+                    header={`You haven’t created a ${typeOfPage(
+                      'Daily Reading',
+                      'Bulletin',
+                      'Pastoral Work'
+                    )} post yet`}
+                    content={`${typeOfPage(
+                      'Daily Reading',
+                      'Bulletin',
+                      'Pastoral Work'
+                    )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }
               />
@@ -1446,20 +1552,33 @@ const PostComponent = ({ typeOfPage }) => {
         visible={showModal}
         onClose={handleClearModal}
         footer={modalFooter}
-        okText={modalType === 'delete' ? 'Yes, move to trash' : 'Yes'}
+        okText={
+          modalType === 'pin'
+            ? 'Pin'
+            : modalType === 'delete'
+            ? 'Yes, move to trash'
+            : 'Yes'
+        }
         onOk={() =>
-          modalType === 'delete'
-            ? onDeletePost()
-            : modalType === 'bulk'
-            ? onBulkSubmit()
-            : null
+          (modalType === 'pin' &&
+            pinPost(
+              selectedComplexPin?.id,
+              selectedComplexPin?.value,
+              selectedComplexPin?.isPinned
+            )) ||
+          (modalType === 'delete' && onDeletePost()) ||
+          (modalType === 'bulk' && onBulkSubmit())
         }
         onCancel={() => setShowModal(old => !old)}
       >
-        <div className="w-full">{modalContent}</div>
+        <ModalContentWrapper>{modalContent}</ModalContentWrapper>
       </Modal>
     </>
   )
+}
+
+ModalContentWrapper.propTypes = {
+  children: Props.node
 }
 
 PostComponent.propTpes = {

@@ -92,6 +92,7 @@ const rules = {
       allowedRoutes: [
         '/messages',
         '/posts',
+        '/staff',
         '/daily-readings',
         '/pastoral-works',
         '/prayer-requests',

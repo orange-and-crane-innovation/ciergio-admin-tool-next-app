@@ -65,7 +65,7 @@ function Join({ onSubmit, isLoading, isSubmitting, data }) {
   useEffect(() => {
     if (data) {
       setValue('email', data?.email)
-      setAccountType(data?.accountType)
+      setAccountType(data?.jobTitle ?? '')
       setProperty(
         data?.accountType === ACCOUNT_TYPES.COMPXAD.value
           ? data?.complex?.name
@@ -90,6 +90,9 @@ function Join({ onSubmit, isLoading, isSubmitting, data }) {
   const onCheck = e => {
     setIsCheck(e.target.checked)
   }
+  const jobTitleMessage = data?.jobTitle
+    ? `as a ${getAccountTypeName(accountType)} `
+    : ''
 
   return (
     <main className={style.Join}>
@@ -103,11 +106,7 @@ function Join({ onSubmit, isLoading, isSubmitting, data }) {
           {data && (
             <form className={style.JoinForm} onSubmit={handleSubmit(onSubmit)}>
               <h2>Register</h2>
-              <p>
-                {`You are registering as a ${getAccountTypeName(
-                  accountType
-                )} for ${property}.`}
-              </p>
+              <p>{`You are registering ${jobTitleMessage}for ${property}.`}</p>
 
               <Controller
                 name="email"

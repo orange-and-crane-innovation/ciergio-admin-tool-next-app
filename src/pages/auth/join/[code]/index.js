@@ -19,6 +19,10 @@ const VERIFY_CODE_QUERY = gql`
         email
         accountType
         existingUser
+        jobTitle
+        companyRole {
+          name
+        }
         company {
           name
         }

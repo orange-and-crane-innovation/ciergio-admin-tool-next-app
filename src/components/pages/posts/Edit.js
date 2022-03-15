@@ -45,7 +45,7 @@ import style from './Create.module.css'
 const saveSvgAsPng = require('save-svg-as-png')
 
 const UPDATE_POST_MUTATION = gql`
-  mutation ($id: String, $data: PostInput) {
+  mutation($id: String, $data: PostInput) {
     updatePost(id: $id, data: $data) {
       _id
       processId
@@ -282,14 +282,28 @@ const CreatePosts = () => {
   const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = pathname === '/attractions-events/edit/[id]'
   const isQRCodePage = pathname === '/qr-code/edit/[id]'
+
   const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
+  const isBulletinPostsPage = pathname === '/posts/edit/[id]'
+  const isPastoralWorksPage = pathname === '/pastoral-works/edit/[id]'
+
+  const typeOfPage = (
+    dailyText = 'daily_reading',
+    bulletinText = 'post',
+    pastoralText = 'pastoral_works'
+  ) => {
+    return (
+      (isDailyReadingsPage && dailyText) ||
+      (isBulletinPostsPage && bulletinText) ||
+      (isPastoralWorksPage && pastoralText)
+    )
+  }
+
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : isDailyReadingsPage
-    ? 'daily-readings'
-    : 'posts'
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
 
   const [
     updatePost,
@@ -1300,7 +1314,11 @@ const CreatePosts = () => {
                 )}
 
                 <h2 className={style.CreatePostHeaderSmall}>
-                  {isDailyReadingsPage ? 'Daily Reading Title' : 'Title'}
+                  {typeOfPage(
+                    'Daily Reading Title',
+                    'Title',
+                    'Pastoral Work Title'
+                  )}
                 </h2>
                 <div className={style.CreatePostSubContent}>
                   <div className={style.CreatePostSubContentGrow}>
@@ -1535,6 +1553,7 @@ const CreatePosts = () => {
                     <Toggle
                       onChange={onToggleOfferings}
                       defaultChecked={toggleOfferings}
+                      toggle={toggleOfferings}
                     />
                     <div className={style.CreatePostOfferingsSubContent}>
                       <div className={style.CreatePostOfferingSubContent2}>
@@ -1573,7 +1592,7 @@ const CreatePosts = () => {
                       render={({ name, value, onChange }) => (
                         <SelectCategory
                           placeholder="Select a Category"
-                          type="post"
+                          type={typeOfPage('', 'post', 'pastoral_works')}
                           onChange={e => {
                             onChange(e.value)
                             onCategorySelect(e)
@@ -1801,7 +1820,15 @@ const CreatePosts = () => {
 
               <Button
                 type="button"
-                label={post?.status === 'draft' ? 'Publish' : 'Update Post'}
+                label={
+                  post?.status === 'draft'
+                    ? 'Publish'
+                    : typeOfPage(
+                        'Update Daily Reading',
+                        'Update Post',
+                        'Update Pastoral Work'
+                      )
+                }
                 primary
                 onMouseDown={() => onUpdateStatus('active')}
                 onClick={handleSubmit(e => {
