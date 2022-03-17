@@ -10,6 +10,7 @@ import { CREATE_COMPANY_ROLES } from './api/_query'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
+import { AiOutlinePlusCircle } from 'react-icons/ai'
 
 const SCHEMA = yup.object().shape({
   name: yup.string().label('Role Name').required()
@@ -85,7 +86,8 @@ const CreateRole = ({ refetch, companyID }) => {
     <>
       <Button
         primary
-        label="Create Role"
+        leftIcon={<AiOutlinePlusCircle />}
+        label="Add New Role"
         onClick={() => setVisible(prev => !prev)}
       />
       <Modal

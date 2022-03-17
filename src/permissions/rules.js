@@ -115,6 +115,7 @@ const rules = {
         '/property/complex/settings',
         '/property/building',
         '/staff/all-staff',
+        '/staff/manage-roles',
         '/staff/pending-invites',
         '/posts',
         '/posts/create',
