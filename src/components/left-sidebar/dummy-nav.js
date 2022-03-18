@@ -51,6 +51,11 @@ const navigation = [
             items: []
           },
           {
+            url: '/staff/manage-roles',
+            title: 'Manage Roles',
+            items: []
+          },
+          {
             url: '/staff/pending-invites',
             title: 'Pending Staff Invites',
             items: []
