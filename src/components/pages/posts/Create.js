@@ -1090,7 +1090,10 @@ const CreatePosts = () => {
               content={
                 <div className={style.CreateContentContainer}>
                   <div className={style.CreatePostOfferingsContent}>
-                    <Toggle onChange={onToggleOfferings} />
+                    <Toggle
+                      onChange={onToggleOfferings}
+                      toggle={toggleOfferings}
+                    />
                     <div className={style.CreatePostOfferingsSubContent}>
                       <div className={style.CreatePostOfferingSubContent2}>
                         <i
