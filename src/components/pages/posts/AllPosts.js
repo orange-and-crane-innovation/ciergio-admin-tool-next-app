@@ -170,6 +170,7 @@ const PostComponent = ({ typeOfPage }) => {
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
   const [modalID, setModalID] = useState()
+  const [modalOkText, setModalOkText] = useState('')
   const [modalContent, setModalContent] = useState()
   const [modalTitle, setModalTitle] = useState()
   const [modalFooter, setModalFooter] = useState(null)
@@ -188,7 +189,6 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
-
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
     : isQRCodePage
@@ -199,7 +199,6 @@ const PostComponent = ({ typeOfPage }) => {
 
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
   const [selectedComplexPin, setSelectedComplexPin] = useState(null)
-
   const tableRowData = [
     {
       name: (
@@ -650,6 +649,14 @@ const PostComponent = ({ typeOfPage }) => {
     setLimitPage(Number(e.value))
   }
 
+  const handleSelect = val => {
+    if (val?.pinned) {
+      setModalOkText('Unpin')
+    }
+
+    setSelectedComplexPin(val)
+  }
+
   const onCheckAll = e => {
     const checkboxes = document.getElementsByName('checkbox')
 
@@ -707,7 +714,7 @@ const PostComponent = ({ typeOfPage }) => {
   // complexID = optional
   // isPinned = optional
   const handleShowModal = React.useCallback(
-    (type, id, complexID, isPinned) => {
+    (type, id, complexID, isPinned, pinnedList) => {
       const selected = data?.getAllPost?.post?.filter(item => item._id === id)
 
       if ((selected || selectedData?.length > 0) && type) {
@@ -814,21 +821,45 @@ const PostComponent = ({ typeOfPage }) => {
               user?.accounts?.data[0]?.company?.complexes?.data
             const options =
               !isEmpty(listOfComplexes) &&
-              listOfComplexes.map(listOfComplex => ({
-                label: listOfComplex?.name,
-                value: listOfComplex?._id
-              }))
+              listOfComplexes.map(listOfComplex => {
+                const isPinnedC = pinnedList.find(
+                  pin => pin === listOfComplex?._id
+                )
+
+                if (isPinnedC) {
+                  return {
+                    label: (
+                      <div className="flex flex-row justify-start">
+                        <RiPushpinLine size={18} />
+                        {listOfComplex?.name}
+                      </div>
+                    ),
+                    value: listOfComplex?._id,
+                    pinned: true
+                  }
+                }
+
+                return {
+                  label: listOfComplex?.name,
+                  value: listOfComplex?._id,
+                  pinned: false
+                }
+              })
             setModalType('pin')
             setModalTitle('Select Complex where to pin this post')
             setModalFooter(true)
+            const val = options.find(
+              option => option.value === selectedComplexPin?.value
+            )
+
             setModalContent(
               <div>
                 <ReactSelect
                   options={options}
-                  onChange={val =>
-                    setSelectedComplexPin({ ...val, id, isPinned })
-                  }
-                  value={selectedComplexPin?.value}
+                  onChange={val => handleSelect({ ...val, id, isPinned })}
+                  value={val}
+                  defaultValue={val}
+                  isClearable={true}
                   placeholder="Select Complex"
                   theme={theme => ({
                     ...theme,
@@ -843,13 +874,20 @@ const PostComponent = ({ typeOfPage }) => {
           }
         }
       }
+
       setShowModal(old => !old)
     },
     [selectedComplexPin, data, showModal, modalTitle, modalContent, modalFooter]
   )
 
   const handleClearModal = () => {
-    handleShowModal()
+    setSelectedComplexPin(null)
+    setModalType(null)
+    setModalID(null)
+    setShowModal(show => !show)
+    setModalOkText('')
+    setModalFooter(null)
+    setModalContent(null)
   }
 
   const resetPages = () => {
@@ -1004,21 +1042,23 @@ const PostComponent = ({ typeOfPage }) => {
   }
 
   const pinPost = async (id, complexId, pin) => {
-    try {
-      const isPinned = !!pin
-      await updatePost({
-        variables: {
-          id: id,
-          data: {
-            pinOption: {
-              complexId: complexId,
-              pin: !isPinned
+    if (id && complexId) {
+      try {
+        const isPinned = !!pin
+        await updatePost({
+          variables: {
+            id: id,
+            data: {
+              pinOption: {
+                complexId: complexId,
+                pin: !isPinned
+              }
             }
           }
-        }
-      })
-    } catch (error) {
-      errorHandler(error)
+        })
+      } catch (error) {
+        errorHandler(error)
+      }
     }
   }
 
@@ -1031,6 +1071,7 @@ const PostComponent = ({ typeOfPage }) => {
       // user -> accounts -> data[0] ->
 
       let complexID = null
+      let pinThisComplex = false
 
       const complexIDFromItem = item?.author?.complex?._id
 
@@ -1059,7 +1100,8 @@ const PostComponent = ({ typeOfPage }) => {
             const companyIDFromLocalStorage =
               user?.accounts?.data[0]?.company?._id
             if (companyIDFromItem === companyIDFromLocalStorage) {
-              complexID = true
+              complexID = companyIDFromItem
+              pinThisComplex = true
             }
           }
         }
@@ -1092,7 +1134,6 @@ const PostComponent = ({ typeOfPage }) => {
         item.pinnedForComplex !== null &&
         item.pinnedForComplex.find(id => id === complexID)
 
-      const typeOfComplex = typeof complexID
       const accountTypeAuthor = item?.author?.accountType
 
       const complexAdminAuthor =
@@ -1107,17 +1148,29 @@ const PostComponent = ({ typeOfPage }) => {
         dropdownData.unshift({
           label: isPinned
             ? 'Unpin this post'
-            : typeOfComplex === 'boolean'
+            : pinThisComplex
             ? 'Pin this post to complex'
             : 'Pin this post',
           icon: <RiPushpinLine size={18} />,
-          ...(typeOfComplex === 'string'
+          ...(!pinThisComplex
             ? {
-                function: () => pinPost(item?._id, complexID, isPinned)
+                function: () =>
+                  pinPost(
+                    item?._id,
+                    complexID,
+                    isPinned,
+                    item?.pinnedForComplex
+                  )
               }
             : {
                 function: () =>
-                  handleShowModal('pin', item?._id, complexID, isPinned)
+                  handleShowModal(
+                    'pin',
+                    item?._id,
+                    complexID,
+                    isPinned,
+                    item?.pinnedForComplex
+                  )
               })
         })
       }
@@ -1553,7 +1606,9 @@ const PostComponent = ({ typeOfPage }) => {
         onClose={handleClearModal}
         footer={modalFooter}
         okText={
-          modalType === 'pin'
+          modalOkText !== ''
+            ? modalOkText
+            : modalType === 'pin'
             ? 'Pin'
             : modalType === 'delete'
             ? 'Yes, move to trash'
