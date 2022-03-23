@@ -61,6 +61,18 @@ function InviteStaffModal({
   }, [accountType, companyOptions])
 
   useEffect(() => {
+    if (companyId && accountType === ACCOUNT_TYPES.SUP.value) {
+      getCompanyRoles({
+        variables: {
+          id: companyId.value
+        }
+      })
+    }
+
+    return () => {}
+  }, [companyId])
+
+  useEffect(() => {
     switch (accountType) {
       case ACCOUNT_TYPES.COMPYAD.value: {
         getComplexes({
@@ -104,7 +116,7 @@ function InviteStaffModal({
           return { label: role.name, value: role._id }
         })
       )
-  }, [companyRoles])
+  }, [companyID, companyRoles])
 
   useEffect(() => {
     if (complexId && isBuilding) {
@@ -200,17 +212,11 @@ function InviteStaffModal({
           {accountType === 'company_admin' && (
             <>
               <Controller
-                name="company"
+                name="company2"
                 control={control}
+                defaultValue={companyID}
                 render={({ value, onChange, name }) => (
-                  <ReactSelect
-                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                    menuPortalTarget={document.body}
-                    options={myCompanies}
-                    onChange={onChange}
-                    value={value}
-                    placeholder={'Select COmpany'}
-                  />
+                  <input name={name} type={'hidden'} value={companyID}></input>
                 )}
               />
             </>
@@ -226,27 +232,22 @@ function InviteStaffModal({
               name="company"
               control={control}
               render={({ value, onChange, name }) => (
-                <FormSelect
+                <ReactSelect
                   name={name}
-                  value={
-                    companyOptions
-                      ? companyOptions.filter(item => item.value === value)
-                      : null
-                  }
-                  onChange={e => onChange(e.value)}
+                  styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  menuPortalTarget={document.body}
                   options={companyOptions}
+                  onChange={onChange}
+                  value={value}
                   placeholder="Select a company"
-                  error={
-                    errors?.company?.message ?? errors?.company?.value?.message
-                  }
-                  subLabel={<p className="mb-2">Company</p>}
-                  containerClasses="mb-4"
                 />
               )}
             />
           )}
         </div>
-        {accountType !== 'company_admin' && staffType ? (
+        {accountType !== 'company_admin' &&
+        accountType !== 'administrator' &&
+        staffType ? (
           <>
             <div>
               {staffType !== ACCOUNT_TYPES.RECEP.value && (

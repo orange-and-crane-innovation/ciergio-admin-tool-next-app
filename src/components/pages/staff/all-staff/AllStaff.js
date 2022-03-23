@@ -348,6 +348,7 @@ function AllStaff() {
       email: '',
       jobTitle: '',
       company: null,
+      company2: null,
       complex: null,
       building: null
     })
@@ -367,6 +368,7 @@ function AllStaff() {
         email,
         jobTitle,
         company,
+        company2,
         complex,
         building
       } = values
@@ -375,7 +377,7 @@ function AllStaff() {
         email,
         jobTitle
       }
-      switch (staff.value) {
+      switch (staff?.value) {
         case COMPANY_ADMIN:
           addCompanyAdmin({
             variables: {
@@ -420,8 +422,10 @@ function AllStaff() {
           // console.err(new Error('wrong staff type'))
           addStaff({
             variables: {
-              data: { ...data, companyRoleId: staff.value },
-              id: company.value
+              data: staff
+                ? { ...data, companyRoleId: staff ? staff.value : '' }
+                : { ...data },
+              id: company2 || company.value
             }
           })
       }
