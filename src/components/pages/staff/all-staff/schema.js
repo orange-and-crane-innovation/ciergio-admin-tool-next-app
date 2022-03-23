@@ -10,7 +10,8 @@ export const inviteStaffValidationSchema = yup.object().shape({
   company: yup.object().shape({
     label: yup.string().required(),
     value: yup.string().required('This field is required')
-  })
+  }),
+  company2: yup.string()
   /*  complex: yup.string().nullable().required('This field is required'),
   building: yup.string().nullable().required('This field is required') */
 })
