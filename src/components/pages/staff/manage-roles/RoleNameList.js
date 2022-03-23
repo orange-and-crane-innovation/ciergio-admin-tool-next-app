@@ -33,9 +33,9 @@ const RoleName = ({ role, key, handleModal }) => {
   ]
   return (
     <div
-      className="flex-1 shrink min-w-3xs basis-0 max-h-5xs min-h-5xs"
+      className="flex-1 shrink min-w-3xs basis-0"
+      style={{ minHeight: '32px', maxHeight: '32px' }}
       key={key}
-      style={{ minHeight: '20px' }}
     >
       <div className="flex flex-row justify-between items-center">
         <span className="font-bold mb-2">{role?.name}</span>
@@ -147,7 +147,7 @@ const RoleNames = ({ roleNames, refetch }) => {
 
   return (
     <>
-      <div className="mt-10 flex flex-col gap-7">
+      <div className="mt-10 flex flex-col gap-8">
         {roleNames &&
           roleNames.map((role, idx) => (
             <RoleName handleModal={handleModal} key={role.id} role={role} />

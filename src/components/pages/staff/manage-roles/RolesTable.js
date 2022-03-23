@@ -1,12 +1,13 @@
-import Props from 'prop-types'
 import { useEffect, useState } from 'react'
-import flatten from 'lodash/flatten'
-import uniq from 'lodash/uniq'
-import isEmpty from 'lodash/isEmpty'
-import sortBy from 'lodash/sortBy'
+
+import Props from 'prop-types'
 import Select from '@app/components/forms/form-select'
-import showToast from '@app/utils/toast'
 import { UPDATE_COMPANY_ROLES } from './api/_query'
+import flatten from 'lodash/flatten'
+import isEmpty from 'lodash/isEmpty'
+import showToast from '@app/utils/toast'
+import sortBy from 'lodash/sortBy'
+import uniq from 'lodash/uniq'
 import { useMutation } from '@apollo/client'
 
 const ACCESSLEVEL = [
@@ -25,6 +26,49 @@ const ACCESSLEVEL = [
   {
     value: 'none',
     label: 'None'
+  }
+]
+
+const PermissionGroups = [
+  {
+    group: 'accounts',
+    accessLevel: 'none'
+  },
+  {
+    group: 'messaging',
+    accessLevel: 'none'
+  },
+  {
+    group: 'registry',
+    accessLevel: 'none'
+  },
+  {
+    group: 'post',
+    accessLevel: 'none'
+  },
+  {
+    group: 'engagements',
+    accessLevel: 'none'
+  },
+  {
+    group: 'issues',
+    accessLevel: 'none'
+  },
+  {
+    group: 'dues',
+    accessLevel: 'none'
+  },
+  {
+    group: 'incident_reports',
+    accessLevel: 'none'
+  },
+  {
+    group: 'notifications',
+    accessLevel: 'none'
+  },
+  {
+    group: 'payments',
+    accessLevel: 'none'
   }
 ]
 
@@ -214,24 +258,36 @@ const RolesTable = ({ data, loading }) => {
 
   useEffect(() => {
     if (!loading && data) {
+      const existedHeaders = PermissionGroups.map(permissionGroup =>
+        permissionGroup.group.replace(/[^a-zA-Z ]/g, ' ')
+      )
       const permissionHeaders = data?.getCompanyRoles.map(getCompanyRole => {
         const companyRoles = getCompanyRole.permissions.map(
-          (permission, idx) => permission.group
+          permission => permission.group
         )
 
         return companyRoles
       })
 
-      const flattenHeaders = uniq(flatten(permissionHeaders))
+      const listOfHeaders = [...flatten(permissionHeaders), ...existedHeaders]
+
+      const flattenHeaders = uniq(listOfHeaders)
       const tableHeaders = flattenHeaders.map(flattenHeader => ({
         title: flattenHeader
       }))
 
       const permissionRows = data?.getCompanyRoles.map(getCompanyRole => {
-        const temp = getCompanyRole.permissions.map(permission => ({
-          ...permission
-        }))
+        const temp = PermissionGroups.map(permissionGroup => {
+          const isExist = getCompanyRole.permissions.find(
+            crole => crole.group === permissionGroup.group
+          )
 
+          if (isExist) {
+            return isExist
+          } else {
+            return permissionGroup
+          }
+        })
         return {
           id: getCompanyRole._id,
           permissions: temp
