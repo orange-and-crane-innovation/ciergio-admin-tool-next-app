@@ -194,10 +194,10 @@ const ToggleSettings = ({ settings, setToggleData }) => {
                   toggle={setting.toggle}
                 />
               </div>
-              <RenderExtraComponent
+              {/* <RenderExtraComponent
                 type={setting.id}
                 isToggle={setting.toggle}
-              />
+              /> */}
             </div>
           )
         })}
@@ -262,14 +262,16 @@ const SettingsTab = ({ companyId, type }) => {
         const toggle = subscriptionModules[toggleSetting.id]
         const keys = toggle ? Object.keys(toggle) : []
 
+        const isCanEnableKey = keys.indexOf('enable') > 0
+
         if (toggle) {
           return {
             ...toggleSetting,
-            toggle: toggle?.enable,
+            ...(isCanEnableKey ? { toggle: toggle?.enable } : { toggle: true }),
             ...(toggle?.displayName
               ? { label: toggle?.displayName }
               : { label: toggleSetting?.label }),
-            canToggle: keys.indexOf('enable') > 0
+            canToggle: isCanEnableKey
           }
         }
         return toggleSetting
