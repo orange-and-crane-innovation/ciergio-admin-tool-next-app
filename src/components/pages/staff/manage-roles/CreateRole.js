@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react'
+import * as yup from 'yup'
+
+import { Controller, useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+
+import { AiOutlinePlusCircle } from 'react-icons/ai'
 import Button from '@app/components/button/Button'
+import { CREATE_COMPANY_ROLES } from './api/_query'
+import InputText from '@app/components/forms/form-input'
 import Modal from '@app/components/modal'
 import Props from 'prop-types'
-import InputText from '@app/components/forms/form-input'
 import showToast from '@app/utils/toast'
 import { useMutation } from '@apollo/client'
-import { CREATE_COMPANY_ROLES } from './api/_query'
-
 import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
-import { AiOutlinePlusCircle } from 'react-icons/ai'
 
 const SCHEMA = yup.object().shape({
   name: yup.string().label('Role Name').required()
@@ -60,6 +61,7 @@ const CreateRole = ({ refetch, companyID }) => {
     if (!loading && data && !error) {
       if (data) {
         refetch()
+        setVisible(false)
         showToast('success', 'Successfully updated a permission')
       }
     }
