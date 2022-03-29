@@ -1,18 +1,19 @@
+import isEmpty from 'lodash/isEmpty'
 import Props from 'prop-types'
 import { useEffect, useState } from 'react'
-import Dropdown from '@app/components/dropdown'
+import { Controller, useForm } from 'react-hook-form'
+import { BsPencil, BsTrash } from 'react-icons/bs'
 import { FaEllipsisH } from 'react-icons/fa'
-import { BsTrash, BsPencil } from 'react-icons/bs'
-import Modal from '@app/components/modal'
-import Input from '@app/components/forms/form-input'
-import { UPDATE_COMPANY_ROLES } from './api/_query'
-
-import { useForm, Controller } from 'react-hook-form'
-import { useMutation } from '@apollo/client'
 import * as yup from 'yup'
-import { yupResolver } from '@hookform/resolvers/yup'
-import isEmpty from 'lodash/isEmpty'
+
+import { useMutation } from '@apollo/client'
+import Dropdown from '@app/components/dropdown'
+import Input from '@app/components/forms/form-input'
+import Modal from '@app/components/modal'
 import showToast from '@app/utils/toast'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+import { DELETE_COMPANY_ROLES, UPDATE_COMPANY_ROLES } from './api/_query'
 
 const EDIT_SCHEMA = yup.object().shape({
   name: yup.string().label('Role Name').required()
@@ -83,6 +84,11 @@ const RoleNames = ({ roleNames, refetch }) => {
     { loading: loadingUpdate, data: dataUpdate, error: errorUpdate }
   ] = useMutation(UPDATE_COMPANY_ROLES)
 
+  const [
+    deleteCompanyRole,
+    { loading: loadingDelete, data: dataDelete, error: errorDelete }
+  ] = useMutation(DELETE_COMPANY_ROLES)
+
   const { handleSubmit, control, errors, setValue } = useForm({
     resolver: isEditType && yupResolver(EDIT_SCHEMA),
     defaultValues: isEditType && {
@@ -104,6 +110,21 @@ const RoleNames = ({ roleNames, refetch }) => {
     }
     setVisible(false)
   }, [loadingUpdate, dataUpdate, errorUpdate])
+
+  useEffect(() => {
+    if (!loadingDelete && dataDelete && !errorDelete) {
+      if (dataDelete) {
+        setRoleValue({})
+        refetch()
+        showToast('success', 'A role is successfully deleted')
+      }
+    }
+
+    if (errorUpdate && !dataDelete) {
+      showToast('danger', 'Theres a problem deleting a role')
+    }
+    setVisible(false)
+  }, [loadingDelete, dataDelete, errorDelete])
 
   const handleModal = (type, role) => {
     if (type && !isEmpty(role)) {
@@ -141,7 +162,11 @@ const RoleNames = ({ roleNames, refetch }) => {
         }
       })
     } else {
-      console.log('delete')
+      deleteCompanyRole({
+        variables: {
+          companyRoleId: roleValue?._id
+        }
+      })
     }
   }
 
@@ -157,9 +182,13 @@ const RoleNames = ({ roleNames, refetch }) => {
         title={isEditType ? 'Edit Role' : 'Delete Role'}
         onClose={() => setVisible(false)}
         okText={isEditType ? 'Update' : 'Delete'}
-        okButtonProps={{ danger: !isEditType }}
+        okButtonProps={{
+          danger: !isEditType,
+          disabled: loadingUpdate || loadingDelete
+        }}
         visible={visible}
         onOk={handleSubmit(onSubmit)}
+        onCancel={() => setVisible(false)}
       >
         {isEditType ? (
           <EditModalContent control={control} errors={errors} />
