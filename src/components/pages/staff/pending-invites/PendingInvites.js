@@ -58,14 +58,14 @@ const bulkOptions = [
 const getAssignment = invite => {
   switch (invite.accountType) {
     case COMPANY_ADMIN:
-      return invite.company.name
+      return invite.company.name ?? ''
     case COMPLEX_ADMIN:
-      return invite.complex.name
+      return invite.complex.name ?? ''
     case BUILDING_ADMIN:
     case RECEPTIONIST:
     case UNIT_OWNER:
     case 'resident':
-      return invite.building.name
+      return invite.building.name ?? ''
     default:
       console.log('Error: accountType not found')
   }
