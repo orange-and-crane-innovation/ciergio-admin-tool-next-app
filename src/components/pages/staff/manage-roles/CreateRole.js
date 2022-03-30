@@ -62,7 +62,7 @@ const CreateRole = ({ refetch, companyID }) => {
       if (data) {
         refetch()
         setVisible(false)
-        showToast('success', 'Successfully updated a permission')
+        showToast('success', 'Successfully added a new role')
       }
     }
 
@@ -90,7 +90,10 @@ const CreateRole = ({ refetch, companyID }) => {
         primary
         leftIcon={<AiOutlinePlusCircle />}
         label="Add New Role"
-        onClick={() => setVisible(prev => !prev)}
+        onClick={() => {
+          control.setValue('name', '')
+          setVisible(prev => !prev)
+        }}
       />
       <Modal
         title="Add New Role"
