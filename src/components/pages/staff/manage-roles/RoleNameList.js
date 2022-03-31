@@ -46,27 +46,30 @@ const RoleName = ({ role, key, handleModal }) => {
   )
 }
 
-const EditModalContent = ({ control, errors }) => {
+const EditModalContent = ({ control, errors, selected }) => {
   return (
     <Controller
       control={control}
       name="name"
-      render={field => (
-        <Input
-          {...field}
-          label="Role Name"
-          error={errors?.name?.message ?? null}
-        />
-      )}
+      render={field => {
+        field.value = !field.value ? selected?.name : field.value
+        return (
+          <Input
+            {...field}
+            label="Role Name"
+            error={errors?.name?.message ?? null}
+          />
+        )
+      }}
     />
   )
 }
 
-const DeleteModalContent = () => {
+const DeleteModalContent = ({ selected }) => {
   return (
     <p>
-      Are you sure you want to delete the <b>Management</b> role? This action
-      cannot be undone.
+      Are you sure you want to delete the <b>{selected?.name}</b> role? This
+      action cannot be undone.
     </p>
   )
 }
@@ -191,9 +194,13 @@ const RoleNames = ({ roleNames, refetch }) => {
         onCancel={() => setVisible(false)}
       >
         {isEditType ? (
-          <EditModalContent control={control} errors={errors} />
+          <EditModalContent
+            control={control}
+            errors={errors}
+            selected={roleValue}
+          />
         ) : (
-          <DeleteModalContent />
+          <DeleteModalContent selected={roleValue} />
         )}
       </Modal>
     </>
@@ -231,6 +238,10 @@ RoleName.propTypes = {
   handleModal: Props.func
 }
 
+DeleteModalContent.propTypes = {
+  selected: Props.object
+}
+
 RoleNameList.propTypes = {
   data: Props.array,
   loading: Props.bool,
@@ -238,6 +249,7 @@ RoleNameList.propTypes = {
 }
 
 EditModalContent.propTypes = {
+  selected: Props.object,
   control: Props.any,
   errors: Props.object
 }
