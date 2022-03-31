@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import Toggle from '@app/components/toggle'
-import styles from './settings.module.css'
-import Select from '@app/components/forms/form-select'
+import { DonationsContent, MyDuesExtraComponent } from './components'
+import React, { useEffect, useState } from 'react'
+import { getCompanySettings, updateCompanySettings } from './_query'
+import { useMutation, useQuery } from '@apollo/client'
+
 import Button from '@app/components/button'
 import Input from '@app/components/forms/form-input'
 import Props from 'prop-types'
-import { MyDuesExtraComponent, DonationsContent } from './components'
-import { useQuery, useMutation } from '@apollo/client'
-import { getCompanySettings, updateCompanySettings } from './_query'
-import showToast from '@app/utils/toast'
+import Select from '@app/components/forms/form-select'
+import Toggle from '@app/components/toggle'
 import { dequal } from 'dequal'
+import showToast from '@app/utils/toast'
+import styles from './settings.module.css'
 import { useRouter } from 'next/router'
 
 const KEEPACTIVITYLOGS = [
@@ -194,10 +195,10 @@ const ToggleSettings = ({ settings, setToggleData }) => {
                   toggle={setting.toggle}
                 />
               </div>
-              <RenderExtraComponent
+              {/* <RenderExtraComponent
                 type={setting.id}
                 isToggle={setting.toggle}
-              />
+              /> */}
             </div>
           )
         })}
@@ -262,14 +263,16 @@ const SettingsTab = ({ companyId, type }) => {
         const toggle = subscriptionModules[toggleSetting.id]
         const keys = toggle ? Object.keys(toggle) : []
 
+        const isCanEnableKey = keys.indexOf('enable') > 0
+
         if (toggle) {
           return {
             ...toggleSetting,
-            toggle: toggle?.enable,
+            ...(isCanEnableKey ? { toggle: toggle?.enable } : { toggle: true }),
             ...(toggle?.displayName
               ? { label: toggle?.displayName }
               : { label: toggleSetting?.label }),
-            canToggle: keys.indexOf('enable') > 0
+            canToggle: isCanEnableKey
           }
         }
         return toggleSetting

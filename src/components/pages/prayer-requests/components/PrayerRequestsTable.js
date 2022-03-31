@@ -32,7 +32,7 @@ import Button from '@app/components/button'
 import moment from 'moment'
 import CreatePrayerRequestModal from './CreatePrayerRequestModal'
 import PrayerRequestPrintView from './PrayerRequestPrintView'
-
+import errorHandler from '@app/utils/errorHandler'
 import styles from './PrayerRequestsTable.module.css'
 
 const columns = [
@@ -111,22 +111,25 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
     status === 'new' ? 'Prayer Request - New' : 'Prayer Request - Received'
 
   const printRef = useRef()
-  const {
-    data,
-    loading,
-    refetch: refetchPrayerRequests
-  } = useQuery(queryTemplate, {
-    variables: {
-      complexId,
-      offset,
-      limit: pageLimit,
-      search: debouncedSearchText,
-      categoryId: category?.value || null
-    },
-    fetchPolicy: 'network-only'
-  })
+  const { data, loading, refetch: refetchPrayerRequests } = useQuery(
+    queryTemplate,
+    {
+      variables: {
+        complexId,
+        offset,
+        limit: pageLimit,
+        search: debouncedSearchText,
+        categoryId: category?.value || null
+      },
+      fetchPolicy: 'network-only'
+    }
+  )
 
-  const { data: categories } = useQuery(GET_POST_CATEGORY)
+  const {
+    data: categories,
+    loading: loadingCategories,
+    error: errorCategories
+  } = useQuery(GET_POST_CATEGORY)
 
   const [createRequest, { loading: creatingPrayerRequest }] = useMutation(
     CREATE_PRAYER_REQUEST,
@@ -253,14 +256,19 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
   }, [prayerRequests?.issue])
 
   const categoryOptions = useMemo(() => {
-    if (categories?.getPostCategory?.count > 0) {
-      const cats = categories.getPostCategory.category.map(cat => ({
+    if (!loadingCategories && !errorCategories && categories) {
+      const cats = categories?.getPostCategory?.category.map(cat => ({
         label: cat.name,
         value: cat._id
       }))
+
       return cats
     }
-  }, [categories?.getPostCategory])
+
+    if (errorCategories) {
+      errorHandler(errorCategories)
+    }
+  }, [categories, loadingCategories, errorCategories])
 
   useEffect(() => {
     // let path = '/prayer-requests/list'

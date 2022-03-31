@@ -48,6 +48,16 @@ const UPDATE_COMPANY_ROLES = gql`
   }
 `
 
+const DELETE_COMPANY_ROLES = gql`
+  mutation deleteCompanyRole($companyRoleId: String) {
+    deleteCompanyRole(companyRoleId: $companyRoleId) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
 const CREATE_COMPANY_ROLES = gql`
   mutation createCompanyRole(
     $data: InputCreateCompanyRole
@@ -65,5 +75,6 @@ export {
   GET_ROLES,
   GET_ROLE,
   GET_COMPANY_ROLES,
-  UPDATE_COMPANY_ROLES
+  UPDATE_COMPANY_ROLES,
+  DELETE_COMPANY_ROLES
 }

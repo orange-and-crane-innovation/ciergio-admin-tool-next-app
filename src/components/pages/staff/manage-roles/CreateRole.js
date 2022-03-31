@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react'
-import Button from '@app/components/button/Button'
-import Modal from '@app/components/modal'
 import Props from 'prop-types'
-import InputText from '@app/components/forms/form-input'
-import showToast from '@app/utils/toast'
-import { useMutation } from '@apollo/client'
-import { CREATE_COMPANY_ROLES } from './api/_query'
-
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { AiOutlinePlusCircle } from 'react-icons/ai'
+import * as yup from 'yup'
+
+import { useMutation } from '@apollo/client'
+import Button from '@app/components/button/Button'
+import InputText from '@app/components/forms/form-input'
+import Modal from '@app/components/modal'
+import showToast from '@app/utils/toast'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+import { CREATE_COMPANY_ROLES } from './api/_query'
 
 const SCHEMA = yup.object().shape({
   name: yup.string().label('Role Name').required()
@@ -60,7 +61,8 @@ const CreateRole = ({ refetch, companyID }) => {
     if (!loading && data && !error) {
       if (data) {
         refetch()
-        showToast('success', 'Successfully updated a permission')
+        setVisible(false)
+        showToast('success', 'Successfully added a new role')
       }
     }
 
@@ -88,7 +90,10 @@ const CreateRole = ({ refetch, companyID }) => {
         primary
         leftIcon={<AiOutlinePlusCircle />}
         label="Add New Role"
-        onClick={() => setVisible(prev => !prev)}
+        onClick={() => {
+          control.setValue('name', '')
+          setVisible(prev => !prev)
+        }}
       />
       <Modal
         title="Add New Role"
@@ -96,6 +101,7 @@ const CreateRole = ({ refetch, companyID }) => {
         onClose={() => setVisible(false)}
         okText="Create Role"
         onOk={handleSubmit(onSubmit)}
+        onCancel={() => setVisible(false)}
       >
         <ModalContent control={control} errors={errors} />
       </Modal>

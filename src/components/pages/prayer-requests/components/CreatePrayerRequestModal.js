@@ -2,9 +2,9 @@ import P from 'prop-types'
 import { Controller } from 'react-hook-form'
 import Modal from '@app/components/modal'
 import FormInput from '@app/components/forms/form-input'
-import FormSelect from '@app/components/forms/form-select'
-import { TimeInput, DateInput } from '@app/components/datetime'
+import { DateInput } from '@app/components/datetime'
 import styles from './CreatePrayerRequest.module.css'
+import ReactSelect from 'react-select'
 
 const CreatePrayerRequestModal = ({
   visible,
@@ -87,19 +87,33 @@ const CreatePrayerRequestModal = ({
                 >
                   Category
                 </label>
-                <FormSelect
+                <ReactSelect
                   placeholder="Choose category"
                   name={name}
                   options={categoryOptions}
                   onChange={onChange}
                   value={value}
-                  error={
-                    errors?.category?.message
-                      ? 'This field is required'
-                      : errors?.category?.value.message
-                  }
+                  className="mb-2"
+                  styles={{
+                    control: base => ({
+                      ...base,
+                      borderColor: errors?.category ? 'red' : base.borderColor,
+                      boxShadow: 'none'
+                    }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isSelected
+                        ? '#F56222'
+                        : base.backgroundColor
+                    })
+                  }}
                   containerClasses="mb-4"
                 />
+                <div className="mb-4 text-danger-500 text-md font-bold">
+                  {errors?.category?.message
+                    ? 'This field is required'
+                    : errors?.category?.value.message}
+                </div>
               </>
             )}
           />
