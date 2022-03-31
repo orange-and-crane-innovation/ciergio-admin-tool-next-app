@@ -1,12 +1,13 @@
-import RolesTable from './RolesTable'
-import RoleNameList from './RoleNameList'
-import CreateRole from './CreateRole'
+import isEmpty from 'lodash/isEmpty'
 
 import { useQuery } from '@apollo/client'
-import { GET_COMPANY_ROLES } from './api/_query'
 import PageLoader from '@app/components/page-loader'
 import errorHandler from '@app/utils/errorHandler'
-import isEmpty from 'lodash/isEmpty'
+
+import CreateRole from './CreateRole'
+import RoleNameList from './RoleNameList'
+import RolesTable from './RolesTable'
+import { GET_COMPANY_ROLES } from './api/_query'
 
 const ManageRolesComponent = () => {
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -15,7 +16,8 @@ const ManageRolesComponent = () => {
   const { loading, data, error, refetch } = useQuery(GET_COMPANY_ROLES, {
     variables: {
       where: {
-        companyId: companyID
+        companyId: companyID,
+        status: 'active'
       }
     }
   })
