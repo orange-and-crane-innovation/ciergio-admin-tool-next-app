@@ -5,6 +5,7 @@ import Modal from '@app/components/modal'
 import UploaderImage from '@app/components/uploader/image'
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
+import ReactSelect from 'react-select'
 import FormAddress from '@app/components/forms/form-address'
 import PhoneNumberInput from '@app/components/globals/PhoneNumberInput'
 
@@ -97,15 +98,17 @@ function ContactModal({
         </div>
         <form>
           <h1 className="text-base font-bold mb-4">Contact Details</h1>
+          <span className="font-bold text-neutral-500">
+            Choose a contact category
+          </span>
           <Controller
             name="category"
             control={control}
             render={({ name, value, onChange }) => (
-              <FormSelect
-                label="Choose contact category"
-                name={name}
+              <ReactSelect
+                styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                menuPortalTarget={document.body}
                 options={categoryOptions}
-                placeholder="Choose a contact category"
                 onChange={option => {
                   setIsDirty(true)
                   onChange(option)
@@ -118,6 +121,7 @@ function ContactModal({
                       }
                     : value
                 }
+                placeholder="Choose a contact category"
                 error={errors?.category?.value?.message}
               />
             )}
