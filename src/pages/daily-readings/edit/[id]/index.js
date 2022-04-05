@@ -1,13 +1,11 @@
 import EditPosts from '@app/components/pages/posts/Edit'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function EditBulletinPage() {
   return (
-    <Page
-      route="/daily-readings"
-      nestedRoute="/daily-readings/edit"
-      page={<EditPosts />}
-    />
+    <RolesPermissions roleName="post" permission="dailyReading">
+      <EditPosts />
+    </RolesPermissions>
   )
 }
 

@@ -1,8 +1,12 @@
 import Notifications from '@app/components/pages/notifications'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function NotificationsPage() {
-  return <Page route="/notifications" page={<Notifications />} />
+  return (
+    <RolesPermissions roleName="notifications" permission="notifications">
+      <Notifications />
+    </RolesPermissions>
+  )
 }
 
 export default NotificationsPage

@@ -1,35 +1,30 @@
-import { useState, useEffect, useContext, useRef } from 'react'
-import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
-import { useRouter } from 'next/router'
-import { uniqBy } from 'lodash'
-import { FiEdit } from 'react-icons/fi'
-
-import Toggle from '@app/components/toggle'
-import FormSelect from '@app/components/forms/form-select'
-
-import axios from '@app/utils/axios'
-import showToast from '@app/utils/toast'
-import useDebounce from '@app/utils/useDebounce'
-import { ACCOUNT_TYPES } from '@app/constants'
-
-import ConversationBox from './components/ConversationBox'
-import MessageBox from './components/MessageBox'
-import NewMessageModal from './components/NewMessageModal'
-
-import styles from './messages.module.css'
-
 import {
+  GET_UNREAD_MESSAGE_QUERY,
   createConversation,
-  getMessages,
   getAccounts,
   getConversations,
-  sendMessage,
-  updateConversation,
+  getMessages,
   seenMessage,
-  GET_UNREAD_MESSAGE_QUERY
+  sendMessage,
+  updateConversation
 } from './queries'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
 
-import { Context } from '@app/lib/global/store'
+import { ACCOUNT_TYPES } from '@app/constants'
+import { Context } from '@app/lib/global/MsgContext/store'
+import ConversationBox from './components/ConversationBox'
+import { FiEdit } from 'react-icons/fi'
+import FormSelect from '@app/components/forms/form-select'
+import MessageBox from './components/MessageBox'
+import NewMessageModal from './components/NewMessageModal'
+import Toggle from '@app/components/toggle'
+import axios from '@app/utils/axios'
+import showToast from '@app/utils/toast'
+import styles from './messages.module.css'
+import { uniqBy } from 'lodash'
+import useDebounce from '@app/utils/useDebounce'
+import { useRouter } from 'next/router'
 
 const convoOptions = [
   {
@@ -290,8 +285,10 @@ export default function Main() {
     }
   }, [selectedConvo, convoID])
 
-  const [fetchAccounts, { data: accounts, loading: loadingAccounts }] =
-    useLazyQuery(getAccounts)
+  const [
+    fetchAccounts,
+    { data: accounts, loading: loadingAccounts }
+  ] = useLazyQuery(getAccounts)
 
   const [
     createNewConversation,

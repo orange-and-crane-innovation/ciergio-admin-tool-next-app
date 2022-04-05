@@ -1,12 +1,16 @@
-import { useRouter } from 'next/router'
 import Contacts from '@app/components/pages/contact-us/complex'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
+import { useRouter } from 'next/router'
 
 function ContactList() {
   const router = useRouter()
   const { id } = router.query
 
-  return <Page route="/contact-us" ne page={<Contacts id={id} />} />
+  return (
+    <RolesPermissions roleName="contactPage" permission="contactPage">
+      <Contacts id={id} />
+    </RolesPermissions>
+  )
 }
 
 export default ContactList

@@ -1,8 +1,12 @@
 import Posts from '@app/components/pages/posts'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PostsPage() {
-  return <Page route="/daily-readings" page={<Posts />} />
+  return (
+    <RolesPermissions roleName="post" permission="dailyReading">
+      <Posts />
+    </RolesPermissions>
+  )
 }
 
 export default PostsPage

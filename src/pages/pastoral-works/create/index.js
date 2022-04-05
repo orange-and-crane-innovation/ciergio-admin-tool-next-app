@@ -1,13 +1,11 @@
 import CreatePosts from '@app/components/pages/posts/create'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PastoralWorksCreateBulletinPage() {
   return (
-    <Page
-      route="/pastoral-works"
-      nestedRoute="/pastoral-works/create"
-      page={<CreatePosts />}
-    />
+    <RolesPermissions roleName="pastoralWorks" permission="pastoralWorks">
+      <CreatePosts />
+    </RolesPermissions>
   )
 }
 

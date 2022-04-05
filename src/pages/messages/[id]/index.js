@@ -1,8 +1,12 @@
 import Messages from '@app/components/pages/messages'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function MessagesPage() {
-  return <Page route="/messages" page={<Messages />} />
+  return (
+    <RolesPermissions roleName="messaging" permission="messages">
+      <Messages />
+    </RolesPermissions>
+  )
 }
 
 export default MessagesPage

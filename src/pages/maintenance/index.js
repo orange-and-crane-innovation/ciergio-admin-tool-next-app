@@ -1,8 +1,7 @@
-import Maintenance from '@app/components/pages/maintenance'
-import Page from '@app/permissions/page'
-import { useRouter } from 'next/router'
-
 import { ACCOUNT_TYPES } from '@app/constants'
+import Maintenance from '@app/components/pages/maintenance'
+import { RolesPermissions } from '@app/components/rolespermissions'
+import { useRouter } from 'next/router'
 
 function MaintenancePage() {
   const router = useRouter()
@@ -27,7 +26,11 @@ function MaintenancePage() {
       )
     }
   } else if (router?.query?.buildingId) {
-    return <Page route="/maintenance" page={<Maintenance />} />
+    return (
+      <RolesPermissions roleName="issues" permission="maintenanceAndRepairs">
+        <Maintenance />
+      </RolesPermissions>
+    )
   }
 
   return null

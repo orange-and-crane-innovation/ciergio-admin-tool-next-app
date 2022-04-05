@@ -1,8 +1,12 @@
 import Company from '@app/components/pages/maintenance/company'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function ComplexesPage() {
-  return <Page route="/maintenance/company" page={<Company />} />
+  return (
+    <RolesPermissions roleName="issues" permission="maintenanceAndRepairs">
+      <Company />
+    </RolesPermissions>
+  )
 }
 
 export default ComplexesPage

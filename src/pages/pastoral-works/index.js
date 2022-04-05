@@ -1,8 +1,12 @@
 import Posts from '@app/components/pages/posts'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PastoralWorksPage() {
-  return <Page route="/pastoral-works" page={<Posts />} />
+  return (
+    <RolesPermissions roleName="pastoralWorks" permission="pastoralWorks">
+      <Posts />
+    </RolesPermissions>
+  )
 }
 
 export default PastoralWorksPage

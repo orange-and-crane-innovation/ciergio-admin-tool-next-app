@@ -166,6 +166,7 @@ export const MutationResponse = `
     _id
     active
     accountType
+    companyRoleId
     user {
       ${User}
     }

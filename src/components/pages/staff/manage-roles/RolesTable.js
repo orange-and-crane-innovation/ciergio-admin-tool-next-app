@@ -1,12 +1,13 @@
-import Props from 'prop-types'
 import { useEffect, useState } from 'react'
-import flatten from 'lodash/flatten'
-import uniq from 'lodash/uniq'
-import isEmpty from 'lodash/isEmpty'
-import sortBy from 'lodash/sortBy'
+
+import Props from 'prop-types'
 import Select from '@app/components/forms/form-select'
-import showToast from '@app/utils/toast'
 import { UPDATE_COMPANY_ROLES } from './api/_query'
+import flatten from 'lodash/flatten'
+import isEmpty from 'lodash/isEmpty'
+import showToast from '@app/utils/toast'
+import sortBy from 'lodash/sortBy'
+import uniq from 'lodash/uniq'
 import { useMutation } from '@apollo/client'
 
 const ACCESSLEVEL = [

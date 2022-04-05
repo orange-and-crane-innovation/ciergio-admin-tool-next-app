@@ -1,8 +1,12 @@
 import Overview from '@app/components/pages/dues/Overview'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 const OverviewPage = () => {
-  return <Page route="/dues" nestedRoute="/dues/overview" page={<Overview />} />
+  return (
+    <RolesPermissions roleName="myDues" permission="myDues">
+      <Overview />
+    </RolesPermissions>
+  )
 }
 
 export default OverviewPage

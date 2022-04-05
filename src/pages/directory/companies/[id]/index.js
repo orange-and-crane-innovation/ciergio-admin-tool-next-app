@@ -1,12 +1,16 @@
-import { useRouter } from 'next/router'
 import Company from '@app/components/pages/directory/company'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
+import { useRouter } from 'next/router'
 
 function CompanyPage() {
   const router = useRouter()
   const { id } = router.query
 
-  return <Page route="/directory" page={<Company id={id} />} />
+  return (
+    <RolesPermissions permission="directory">
+      <Company id={id} />
+    </RolesPermissions>
+  )
 }
 
 export default CompanyPage
