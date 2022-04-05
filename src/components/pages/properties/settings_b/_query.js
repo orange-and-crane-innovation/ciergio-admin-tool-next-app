@@ -44,6 +44,9 @@ const getCompanySettings = gql`
         communityBoard {
           displayName
         }
+        settingsPage {
+          displayName
+        }
         prayerRequests {
           displayName
           enable
@@ -61,10 +64,6 @@ const getCompanySettings = gql`
           enable
         }
         faqPage {
-          displayName
-          enable
-        }
-        settingsPage {
           displayName
           enable
         }
