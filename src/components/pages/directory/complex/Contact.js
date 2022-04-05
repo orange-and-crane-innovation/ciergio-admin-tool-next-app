@@ -444,7 +444,7 @@ function Contact({ id }) {
                 className="my-4 mx-4"
               />
             }
-            no={null}
+            no={<span>No Access</span>}
           />
         </div>
       </div>
