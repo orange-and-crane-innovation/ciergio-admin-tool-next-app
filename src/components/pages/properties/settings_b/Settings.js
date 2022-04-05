@@ -80,6 +80,11 @@ const TOGGLESETTINGS = [
     toggle: false
   },
   {
+    label: 'Settings Page',
+    id: 'settingsPage',
+    toggle: false
+  },
+  {
     label: 'Donations',
     id: 'donations',
     toggle: false
@@ -107,11 +112,6 @@ const TOGGLESETTINGS = [
   {
     label: 'Home Page',
     id: 'homePage',
-    toggle: false
-  },
-  {
-    label: 'Settings Page',
-    id: 'settingsPage',
     toggle: false
   },
   {
