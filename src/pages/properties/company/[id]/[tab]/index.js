@@ -1,13 +1,11 @@
 import CompanyDataComponent from '@app/components/pages/properties/company/companyData'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function CompanySinglePropertiesPage() {
   return (
-    <Page
-      route="/properties"
-      nestedRoute="/properties/company"
-      page={<CompanyDataComponent />}
-    />
+    <RolesPermissions roleName="accounts">
+      <CompanyDataComponent />
+    </RolesPermissions>
   )
 }
 

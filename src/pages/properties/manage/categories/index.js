@@ -1,13 +1,11 @@
 import CategoriesPage from '@app/components/pages/properties/manage/categories'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function ManageCategoriesPage() {
   return (
-    <Page
-      route="/properties"
-      nestedRoute="/properties/manage/categories"
-      page={<CategoriesPage />}
-    />
+    <RolesPermissions roleName="accounts">
+      <CategoriesPage />
+    </RolesPermissions>
   )
 }
 

@@ -1,9 +1,11 @@
 import CreateForms from '@app/components/pages/forms/Create'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function CreateFormsPage() {
   return (
-    <Page route="/forms" nestedRoute="/forms/create" page={<CreateForms />} />
+    <RolesPermissions roleName="forms" permission="forms">
+      <CreateForms />
+    </RolesPermissions>
   )
 }
 

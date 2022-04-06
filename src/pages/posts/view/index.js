@@ -1,9 +1,11 @@
 import PostViewPage from '@app/components/pages/posts/view'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PostViewComponent() {
   return (
-    <Page route="/posts" nestedRoute="/posts/view" page={<PostViewPage />} />
+    <RolesPermissions roleName="post" permission="bulletinBoard">
+      <PostViewPage />
+    </RolesPermissions>
   )
 }
 

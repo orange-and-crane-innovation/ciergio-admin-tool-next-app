@@ -1,5 +1,5 @@
 import Overview from '@app/components/pages/dues/Overview'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 export default function OverviewPage() {
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -7,16 +7,12 @@ export default function OverviewPage() {
   const complexName = user?.accounts?.data[0]?.complex?.name
 
   return (
-    <Page
-      route="/dues"
-      nestedRoute="/dues/overview"
-      page={
-        <Overview
-          complexID={complexID}
-          accountType="complex"
-          complexName={complexName}
-        />
-      }
-    />
+    <RolesPermissions roleName="myDues" permission="myDues">
+      <Overview
+        complexID={complexID}
+        accountType="complex"
+        complexName={complexName}
+      />
+    </RolesPermissions>
   )
 }

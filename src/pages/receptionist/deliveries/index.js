@@ -1,13 +1,11 @@
 import Delveries from '@app/components/pages/receptionist'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function ReceptionistDeliveriesPage() {
   return (
-    <Page
-      route="/receptionist"
-      nestedRoute="/receptionist/deliveries"
-      page={<Delveries />}
-    />
+    <RolesPermissions permission="guestAndDelivery">
+      <Delveries />
+    </RolesPermissions>
   )
 }
 export default ReceptionistDeliveriesPage

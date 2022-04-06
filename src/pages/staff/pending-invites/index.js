@@ -1,13 +1,11 @@
 import PendingInvites from '@app/components/pages/staff/pending-invites'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PendingInvitesPage() {
   return (
-    <Page
-      route="/staff"
-      nestedRoute="/staff/pending-invites"
-      page={<PendingInvites />}
-    />
+    <RolesPermissions permission="directory">
+      <PendingInvites />
+    </RolesPermissions>
   )
 }
 
