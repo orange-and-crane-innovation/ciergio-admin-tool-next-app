@@ -1,6 +1,10 @@
 import Donations from '@app/components/pages/donations'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 export default function DonationsPage() {
-  return <Page route="/offerings" page={<Donations />} />
+  return (
+    <RolesPermissions roleName="payments">
+      <Donations />
+    </RolesPermissions>
+  )
 }

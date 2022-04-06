@@ -1,13 +1,11 @@
 import CreateNotification from '@app/components/pages/notifications/create'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function CreateNotificationPage() {
   return (
-    <Page
-      route="/notifications"
-      nestedRoute="/notifications/create"
-      page={<CreateNotification />}
-    />
+    <RolesPermissions roleName="notifications" permission="notifications">
+      <CreateNotification />
+    </RolesPermissions>
   )
 }
 export default CreateNotificationPage

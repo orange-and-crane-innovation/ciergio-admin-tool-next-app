@@ -1,13 +1,11 @@
+import { RolesPermissions } from '@app/components/rolespermissions'
 import Visitors from '@app/components/pages/receptionist'
-import Page from '@app/permissions/page'
 
 function ReceptionistVistorsPage() {
   return (
-    <Page
-      route="/receptionist"
-      nestedRoute="/receptionist/visitors"
-      page={<Visitors />}
-    />
+    <RolesPermissions permission="guestAndDelivery">
+      <Visitors />
+    </RolesPermissions>
   )
 }
 

@@ -1,13 +1,11 @@
 import PostViewPage from '@app/components/pages/posts/view'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PastoralWorksPostViewComponent() {
   return (
-    <Page
-      route="/psatoral-works"
-      nestedRoute="/pastoral-wprks/view"
-      page={<PostViewPage />}
-    />
+    <RolesPermissions roleName="pastoralWorks" permission="pastoralWorks">
+      <PostViewPage />
+    </RolesPermissions>
   )
 }
 

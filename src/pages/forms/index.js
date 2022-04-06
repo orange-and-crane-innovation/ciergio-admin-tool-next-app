@@ -1,8 +1,12 @@
 import Forms from '@app/components/pages/forms'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function FormsPage() {
-  return <Page route="/forms" page={<Forms />} />
+  return (
+    <RolesPermissions roleName="forms" permission="forms">
+      <Forms />
+    </RolesPermissions>
+  )
 }
 
 export default FormsPage

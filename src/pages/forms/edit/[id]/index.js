@@ -1,8 +1,12 @@
 import EditForms from '@app/components/pages/forms/edit'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function EditFormsPage() {
-  return <Page route="/forms" nestedRoute="/forms/edit" page={<EditForms />} />
+  return (
+    <RolesPermissions roleName="forms" permission="forms">
+      <EditForms />
+    </RolesPermissions>
+  )
 }
 
 export default EditFormsPage

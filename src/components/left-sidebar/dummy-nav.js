@@ -6,12 +6,16 @@ const navigation = [
         url: '/dashboard',
         icon: 'ciergio-home',
         title: 'Dashboard',
+        permission: 'homePage',
+
         items: []
       },
       {
         url: '/properties',
         icon: 'ciergio-building',
         title: 'My Properties',
+        roleName: 'accounts',
+
         items: [
           {
             url: '/properties/company',
@@ -44,6 +48,8 @@ const navigation = [
         url: '/staff',
         icon: 'ciergio-user-group',
         title: 'My Staff',
+        roleName: 'accounts',
+
         items: [
           {
             url: '/staff/all-staff',
@@ -83,6 +89,8 @@ const navigation = [
         url: '/posts',
         icon: 'ciergio-list',
         title: 'Bulletin Board',
+        roleName: 'post',
+        permission: 'bulletinBoard',
         items: [
           {
             url: '/posts',
@@ -100,6 +108,8 @@ const navigation = [
         url: '/daily-readings',
         icon: 'ciergio-list',
         title: 'Daily Readings',
+        permission: 'dailyReading',
+        roleName: 'post',
         items: [
           {
             url: '/daily-readings',
@@ -117,6 +127,7 @@ const navigation = [
         url: '/attractions-events',
         icon: 'ciergio-list',
         title: 'Attractions and Events',
+
         items: [
           {
             url: '/attractions-events',
@@ -134,6 +145,8 @@ const navigation = [
         url: '/qr-code',
         icon: 'ciergio-qr',
         title: 'QR Code',
+        roleName: 'qrCode',
+        permission: 'qrCode',
         items: [
           {
             url: '/qr-code',
@@ -151,12 +164,16 @@ const navigation = [
         url: '/maintenance',
         icon: 'ciergio-wrench',
         title: 'Maintenance & Repairs',
+        permission: 'maintenanceAndRepairs',
+        roleName: 'issues',
         items: []
       },
       {
         url: '/pastoral-works',
         icon: 'ciergio-list',
         title: 'Pastoral Works',
+        roleName: 'pastoralWorks',
+        permission: 'pastoralWorks',
         items: [
           {
             url: '/pastoral-works',
@@ -174,12 +191,16 @@ const navigation = [
         url: '/prayer-requests',
         icon: 'ciergio-prayer',
         title: 'Prayer Requests',
+        roleName: 'issues',
+        permission: 'prayerRequests',
         items: []
       },
       {
         url: '/dues',
         icon: 'ciergio-bill',
         title: 'My Dues',
+        roleName: 'myDues',
+        permission: 'myDues',
         items: [
           {
             url: '/dues/billing',
@@ -202,12 +223,15 @@ const navigation = [
         url: '/offerings',
         icon: 'ciergio-donate-2',
         title: 'Offerings',
+        roleName: 'payments',
         items: []
       },
       {
         url: '/messages',
         icon: 'ciergio-mail',
         title: 'Messages',
+        roleName: 'messaging',
+        permission: 'messaging',
         items: [],
         badge: 'unreadMsg'
       },
@@ -215,6 +239,7 @@ const navigation = [
         url: '/forms',
         icon: 'ciergio-file',
         title: 'Downloadable Forms',
+        roleName: 'forms',
         items: [
           {
             url: '/forms/create',
@@ -232,18 +257,23 @@ const navigation = [
         url: '/directory',
         icon: 'ciergio-store',
         title: 'Directory',
+        permission: 'directory',
         items: []
       },
       {
         url: '/contact-us',
         icon: 'ciergio-email-at',
         title: 'Contact Us',
+        roleName: 'contactPage',
+        permission: 'contactPage',
         items: []
       },
       {
         url: '/notifications',
         icon: 'ciergio-mail',
         title: 'Notifications',
+        roleName: 'notifications',
+        permission: 'notifications',
         items: [
           {
             url: '/notifications/list',
@@ -261,6 +291,7 @@ const navigation = [
         url: '/receptionist',
         icon: 'ciergio-list',
         title: 'Guest and Delivery',
+        permission: 'guestAndDelivery',
         items: [
           {
             url: '/receptionist/visitors',
@@ -288,6 +319,7 @@ const navigation = [
         url: '/my-members',
         icon: 'ciergio-user',
         title: 'My Members',
+
         items: []
       }
     ]

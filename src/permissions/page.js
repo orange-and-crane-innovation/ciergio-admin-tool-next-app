@@ -1,14 +1,14 @@
-import { useState, useMemo } from 'react'
-import P from 'prop-types'
-import NotFound from '@app/pages/404'
-import rules from './rules'
+import { useMemo, useState } from 'react'
 
-const _ = require('lodash')
+import NotFound from '@app/pages/404'
+import P from 'prop-types'
+import includes from 'lodash/includes'
+import isEmpty from 'lodash/isEmpty'
+import rules from './rules'
 
 const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
 
 const check = (type, role, route, nestedRoute) => {
-  return true // @Jhondi, this is for testing only. please revise
   const allowedPageRoutes = rules[type][role].allowedRoutes
   const allowedNestedPageRoutes =
     nestedRoute && rules[type][role].allowedNestedRoutes
@@ -18,15 +18,15 @@ const check = (type, role, route, nestedRoute) => {
     return false
   }
 
-  if (!_.isEmpty(allowedNestedPageRoutes)) {
+  if (!isEmpty(allowedNestedPageRoutes)) {
     if (
-      _.includes(allowedPageRoutes, route) &&
-      _.includes(allowedNestedPageRoutes, nestedRoute)
+      includes(allowedPageRoutes, route) &&
+      includes(allowedNestedPageRoutes, nestedRoute)
     ) {
       return true
     }
   } else {
-    if (_.includes(allowedPageRoutes, route)) {
+    if (includes(allowedPageRoutes, route)) {
       return true
     }
   }

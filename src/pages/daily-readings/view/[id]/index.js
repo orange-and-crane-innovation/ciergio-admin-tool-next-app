@@ -1,13 +1,11 @@
 import PostViewPage from '@app/components/pages/posts/view'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PostViewComponent() {
   return (
-    <Page
-      route="/daily-readings"
-      nestedRoute="/daily-readings/view"
-      page={<PostViewPage />}
-    />
+    <RolesPermissions roleName="post" permission="dailyReading">
+      <PostViewPage />
+    </RolesPermissions>
   )
 }
 

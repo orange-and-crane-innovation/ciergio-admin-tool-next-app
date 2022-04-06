@@ -1,40 +1,54 @@
-import React from 'react'
-import P from 'prop-types'
-import Title from './title'
 import Item from './item'
 import Logo from './logo'
-
-import rules from '@app/permissions/rules'
+import P from 'prop-types'
+import React from 'react'
+import { RolesPermissions } from '../rolespermissions'
+import Title from './title'
 import navigation from './dummy-nav'
+import rules from '@app/permissions/rules'
 
 const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
-  const rule = rules[systemType][userRole]
-  const allowedRoutes = rule?.allowedRoutes || []
-  const allowedNestedRoutes = rule?.allowedNestedRoutes || []
+  // const rule = rules[systemType][userRole]
+  // const allowedRoutes = rule?.allowedRoutes || []
+  // const allowedNestedRoutes = rule?.allowedNestedRoutes || []
 
   return (
     <div className="left-sidebar left-sidebar-1 scrollableContainer">
       <Logo show={true} onToggle={onToggle} isCollapsed={isCollapsed} />
-      {navigation.map((menu, i) => (
-        <React.Fragment key={i}>
-          <Title>{menu.title}</Title>
-          <ul>
-            {menu.items.map((l0, a) => {
-              const url = l0.url
+      {navigation.map((menu, i) => {
+        return (
+          <React.Fragment key={i}>
+            <Title>{menu.title}</Title>
+            <ul>
+              {menu.items.map((l0, a) => {
+                // const url = l0.url
+                // old checking of the routes is allowed
+                // if (allowedRoutes.indexOf(url) !== -1) {
 
-              if (allowedRoutes.indexOf(url) !== -1) {
+                // }
+
                 return (
-                  <li key={a} className="l0">
-                    <Item
-                      icon={l0.icon}
-                      items={l0.items}
-                      url={l0.url}
-                      title={l0.title}
-                      badge={l0.badge}
-                    />
-                    <ul>
-                      {l0.items.map((l1, b) => {
-                        if (allowedNestedRoutes.indexOf(l1.url) !== -1) {
+                  <RolesPermissions
+                    no={null}
+                    permission={l0?.permission}
+                    roleName={l0?.roleName}
+                    key={a}
+                  >
+                    <li className="l0">
+                      <Item
+                        icon={l0.icon}
+                        items={l0.items}
+                        url={l0.url}
+                        title={l0.title}
+                        badge={l0.badge}
+                      />
+                      <ul>
+                        {l0.items.map((l1, b) => {
+                          // old checking if the nested routes is allowed based on old constant rules
+                          // if (allowedNestedRoutes.indexOf(l1.url) !== -1) {
+
+                          // }
+
                           return (
                             <li key={b} className="l1">
                               <Item {...l1} />
@@ -61,18 +75,16 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
                               </ul>
                             </li>
                           )
-                        }
-                        return null
-                      })}
-                    </ul>
-                  </li>
+                        })}
+                      </ul>
+                    </li>
+                  </RolesPermissions>
                 )
-              }
-              return null
-            })}
-          </ul>
-        </React.Fragment>
-      ))}
+              })}
+            </ul>
+          </React.Fragment>
+        )
+      })}
     </div>
   )
 }
