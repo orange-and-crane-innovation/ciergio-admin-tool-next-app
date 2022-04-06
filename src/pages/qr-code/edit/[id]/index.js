@@ -1,9 +1,12 @@
 import EditPosts from '@app/components/pages/posts/Edit'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function EditBulletinPage() {
+  const permission = 'qrCode'
   return (
-    <Page route="/qr-code" nestedRoute="/qr-code/edit" page={<EditPosts />} />
+    <RolesPermissions permission={permission} roleName={permission}>
+      <EditPosts />
+    </RolesPermissions>
   )
 }
 

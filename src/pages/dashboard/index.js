@@ -1,8 +1,12 @@
 import Dashboard from '@app/components/pages/dashboard'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function DashboardPage() {
-  return <Page route="/dashboard" page={<Dashboard />} />
+  return (
+    <RolesPermissions permission="homePage">
+      <Dashboard />
+    </RolesPermissions>
+  )
 }
 
 export default DashboardPage

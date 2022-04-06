@@ -1,9 +1,11 @@
 import CreatePosts from '@app/components/pages/posts/create'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function CreateBulletinPage() {
   return (
-    <Page route="/posts" nestedRoute="/posts/create" page={<CreatePosts />} />
+    <RolesPermissions roleName="post" permission="bulletinBoard">
+      <CreatePosts />
+    </RolesPermissions>
   )
 }
 

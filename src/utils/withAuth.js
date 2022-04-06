@@ -1,14 +1,14 @@
-/* eslint-disable no-unused-vars */
-import { useQuery, gql } from '@apollo/client'
-import { useRouter } from 'next/router'
-import { useEffect, useState, useContext } from 'react'
 import * as GraphQLVar from './schema-varibles'
 
-import PageLoader from '@app/components/page-loader'
-import Notification from '@app/components/notification'
+/* eslint-disable no-unused-vars */
+import { gql, useQuery } from '@apollo/client'
+import { useContext, useEffect, useState } from 'react'
 
-import { Context } from '@app/lib/global/store'
+import { Context } from '@app/lib/global/MsgContext/store'
+import Notification from '@app/components/notification'
+import PageLoader from '@app/components/page-loader'
 import { Subscribe } from '@app/lib/apollo/client'
+import { useRouter } from 'next/router'
 
 const SubscribeInstance = new Subscribe()
 
@@ -27,7 +27,7 @@ const GET_PROFILE_QUERY = gql`
   `
 
 export const NEW_MESSAGE_ADDED_SUBSCRIPTION = gql`
-  subscription ($userId: String) {
+  subscription($userId: String) {
     newMessageAdded(userId: $userId) {
       _id
       message
@@ -62,7 +62,7 @@ export const NEW_MESSAGE_ADDED_SUBSCRIPTION = gql`
 `
 
 export const MESSAGE_UPDATED_SUBSCRIPTION = gql`
-  subscription ($userId: String) {
+  subscription($userId: String) {
     messageUpdated(userId: $userId) {
       _id
       message
@@ -74,7 +74,7 @@ export const MESSAGE_UPDATED_SUBSCRIPTION = gql`
 `
 
 export const EXTENSION_ACCOUN_REQUEST_RECEIVE_SUBSCRIPTION = gql`
-  subscription ($userId: String) {
+  subscription($userId: String) {
     extensionAccountRequestReceived(userId: $userId) {
       _id
       firstName
@@ -96,7 +96,7 @@ export const EXTENSION_ACCOUN_REQUEST_RECEIVE_SUBSCRIPTION = gql`
 `
 
 export const NEW_WEB_NOTIFICATION_SUBSCRIPTION = gql`
-  subscription ($accountId: String) {
+  subscription($accountId: String) {
     new_web_notification(accountId: $accountId) {
       _id
       type
@@ -111,7 +111,7 @@ export const NEW_WEB_NOTIFICATION_SUBSCRIPTION = gql`
 `
 
 export const GET_UNREAD_MESSAGE_QUERY = gql`
-  query ($accountId: String) {
+  query($accountId: String) {
     getUnreadConversationCount(where: { accountId: $accountId })
   }
 `

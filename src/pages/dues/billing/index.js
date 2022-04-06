@@ -1,6 +1,6 @@
-import { useRouter } from 'next/router'
 import Billing from '@app/components/pages/dues'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
+import { useRouter } from 'next/router'
 
 export default function DuesPage() {
   const router = useRouter()
@@ -10,16 +10,12 @@ export default function DuesPage() {
   const complexID = user?.accounts?.data[0]?.complex?._id
 
   if (buildingID) {
-    console.log('test')
     return (
-      <Page
-        route="/dues"
-        nestedRoute="/dues/billing"
-        page={<Billing complexId={complexID} bid={buildingID} />}
-      />
+      <RolesPermissions roleName="myDues" permission="myDues">
+        <Billing complexId={complexID} bid={buildingID} />
+      </RolesPermissions>
     )
   } else {
-    console.log('teerrst')
     router.push(`/dues/billing/${buildingId}`)
   }
   return null

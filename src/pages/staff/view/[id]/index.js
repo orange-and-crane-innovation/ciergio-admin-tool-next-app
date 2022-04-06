@@ -1,8 +1,12 @@
+import { RolesPermissions } from '@app/components/rolespermissions'
 import StaffProfile from '@app/components/pages/staff/profile'
-import Page from '@app/permissions/page'
 
 function StaffProfilePage() {
-  return <Page route="/staff" page={<StaffProfile />} />
+  return (
+    <RolesPermissions roleName="accounts">
+      <StaffProfile />
+    </RolesPermissions>
+  )
 }
 
 export default StaffProfilePage

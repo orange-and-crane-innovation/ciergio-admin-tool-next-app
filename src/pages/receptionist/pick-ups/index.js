@@ -1,13 +1,11 @@
 import PickUps from '@app/components/pages/receptionist'
-import Page from '@app/permissions/page'
+import { RolesPermissions } from '@app/components/rolespermissions'
 
 function ReceptionistPickUpsPage() {
   return (
-    <Page
-      route="/receptionist"
-      nestedRoute="/receptionist/pick-ups"
-      page={<PickUps />}
-    />
+    <RolesPermissions permission="guestAndDelivery">
+      <PickUps />
+    </RolesPermissions>
   )
 }
 

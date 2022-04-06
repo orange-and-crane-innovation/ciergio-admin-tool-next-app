@@ -1,8 +1,12 @@
+import { RolesPermissions } from '@app/components/rolespermissions'
 import Staff from '@app/components/pages/staff'
-import Page from '@app/permissions/page'
 
 function StaffPage() {
-  return <Page route="/staff" page={<Staff />} />
+  return (
+    <RolesPermissions roleName="accounts">
+      <Staff />
+    </RolesPermissions>
+  )
 }
 
 export default StaffPage
