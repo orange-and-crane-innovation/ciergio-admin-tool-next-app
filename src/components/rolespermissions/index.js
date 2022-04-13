@@ -59,11 +59,15 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
     typeof window !== 'undefined' ? localStorage.getItem('profile') : null
   const user = JSON.parse(profile)
   const companyID = user?.accounts?.data[0]?.company?._id
+  const accountType = user?.accounts?.data[0]?.accountType
   // companyRoleId
   const companyRoleId = user?.accounts?.data[0]?.companyRoleId
 
   const [rolespermissions, setRolesPermissions] = useState({})
   const [loadingRoles, setLoadingRoles] = useState(false)
+
+  const MODULES = process.env.NEXT_PUBLIC_MODULES
+  const isSuperAdmin = accountType === 'administrator'
 
   const { loading, data, error } = useQuery(getCompanySettings, {
     variables: {
@@ -86,43 +90,67 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
   })
 
   useEffect(() => {
-    if (loading && loadingCompanyRoles) {
-      setLoadingRoles(true)
-    }
+    if (!isSuperAdmin) {
+      if (loading && loadingCompanyRoles) {
+        setLoadingRoles(true)
+      }
 
-    if (!loading && data && !loadingCompanyRoles && dataCompanyRoles) {
-      const { getCompanySettings } = data
-      const { getCompanyRoles } = dataCompanyRoles
+      if (!loading && data && !loadingCompanyRoles && dataCompanyRoles) {
+        const { getCompanySettings } = data
+        const { getCompanyRoles } = dataCompanyRoles
 
-      const userCompanyRole = getCompanyRoles?.find(
-        getCompanyRole => getCompanyRole._id === companyRoleId
-      )
-
-      // loading the default permissions
-      const temp = PermissionGroups.map(permissionGroup => {
-        const isExist = userCompanyRole?.permissions.find(
-          crole => crole.group === permissionGroup.group
+        const userCompanyRole = getCompanyRoles?.find(
+          getCompanyRole => getCompanyRole._id === companyRoleId
         )
 
-        return isExist
-          ? {
-              group: isExist?.group,
-              accessLevel: isExist?.accessLevel
-            }
-          : permissionGroup
-      })
+        // loading the default permissions
+        const temp = PermissionGroups.map(permissionGroup => {
+          const isExist = userCompanyRole?.permissions.find(
+            crole => crole.group === permissionGroup.group
+          )
 
-      // now we will compare the roles and permissions
-      setRolesPermissions({
-        permissions: getCompanySettings?.subscriptionModules,
-        roles: temp
-      })
-      setLoadingRoles(false)
-    }
+          return isExist
+            ? {
+                group: isExist?.group,
+                accessLevel: isExist?.accessLevel
+              }
+            : permissionGroup
+        })
+        const payload = {
+          permissions: getCompanySettings?.subscriptionModules,
+          roles: temp
+        }
 
-    if (error && errorCompanyRoles) {
-      errorHandler(error)
-      setLoadingRoles(false)
+        // now we will compare the roles and permissions
+        setRolesPermissions(payload)
+        setLoadingRoles(false)
+      }
+
+      if (error && errorCompanyRoles) {
+        errorHandler(error)
+        setLoadingRoles(false)
+      }
+    } else {
+      if (MODULES) {
+        const roles = MODULES.split(',').map(module => ({
+          group: module.trim(),
+          accessLevel: 'administer'
+        }))
+
+        const permissions = {}
+
+        MODULES.split(',').forEach(module => {
+          permissions[`${module.trim()}`] = {
+            enabled: true
+          }
+        })
+
+        const payload = {
+          roles,
+          permissions
+        }
+        setRolesPermissions(payload)
+      }
     }
   }, [
     loading,
@@ -131,7 +159,9 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
     loadingCompanyRoles,
     dataCompanyRoles,
     errorCompanyRoles,
-    companyRoleId
+    companyRoleId,
+    isSuperAdmin,
+    MODULES
   ])
 
   // we can make a shortcut here, if the role is allowed we can render even not checking the permission
@@ -158,8 +188,12 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
 
   // we will first check the role of the user then after check if it has permission
   return (
-    <Roles role={roleName} rolespermissions={rolespermissions}>
-      <Permissions permission={permission} rolespermissions={rolespermissions}>
+    <Roles role={roleName} no={no} rolespermissions={rolespermissions}>
+      <Permissions
+        no={no}
+        permission={permission}
+        rolespermissions={rolespermissions}
+      >
         {children}
       </Permissions>
     </Roles>

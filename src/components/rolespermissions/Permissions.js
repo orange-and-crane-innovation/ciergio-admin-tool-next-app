@@ -3,7 +3,6 @@ import isEmpty from 'lodash/isEmpty'
 
 const isAllowed = (rolespermissions, permission) => {
   const { permissions } = rolespermissions
-
   if (isEmpty(permissions)) {
     console.log("ERROR: one of the provided params don't exist!")
     return false
@@ -27,7 +26,7 @@ const Permissions = ({ permission, rolespermissions, children, no }) => {
   if (permission === null) {
     return children
   } else {
-    return isAllowedPermission && children
+    return isAllowedPermission ? children : no
   }
 }
 
