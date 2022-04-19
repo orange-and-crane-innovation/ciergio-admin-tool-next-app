@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from 'react'
-import { useLazyQuery, gql } from '@apollo/client'
-import PropTypes from 'prop-types'
-
-import FormSelect from '@app/components/forms/form-select'
+import React, { useEffect, useState } from 'react'
+import { gql, useLazyQuery } from '@apollo/client'
 
 import { ACCOUNT_TYPES } from '@app/constants'
-
+import FormSelect from '@app/components/forms/form-select'
+import PropTypes from 'prop-types'
 import styles from './index.module.css'
+
+// we will initialize here since we will get the categories from the backend we will just match all of these to the list from the backend
+const PASTORAL_WORKS_CATEGORY_ORDER = [
+  'Parish Events',
+  'Food Program',
+  'Educational Program',
+  'Youth Events',
+  'For Vacation',
+  'Special Outreach',
+  'Calamities',
+  'Media Program',
+  'Prayers',
+  'IT App Info/Support'
+]
 
 const GET_POST_CATEGORY_QUERY = gql`
   query getPostCategory(
@@ -63,7 +75,8 @@ const SelectCategoryComponent = ({
   disabled,
   placeholder,
   onChange,
-  onClear
+  onClear,
+  isPastoralWorksPage
 }) => {
   const [lists, setLists] = useState()
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -143,7 +156,25 @@ const SelectCategoryComponent = ({
           label: item.name
         }
       })
-      setLists(dataLists)
+
+      const sorted = []
+      PASTORAL_WORKS_CATEGORY_ORDER.forEach((ct, index) => {
+        const isExist = dataLists.find(dl => ct === dl.label)
+
+        if (isExist) {
+          sorted.push(isExist)
+        }
+      })
+
+      const unsorted = dataLists.filter(dl => {
+        const isExist = sorted.find(s => s.label === dl.label)
+
+        return !isExist && dl
+      })
+
+      const dataListSorted = [...sorted, ...unsorted]
+
+      setLists(!isPastoralWorksPage ? dataLists : dataListSorted)
     }
   }, [
     loadingCategory,
@@ -183,7 +214,8 @@ SelectCategoryComponent.propTypes = {
   disabled: PropTypes.bool,
   placeholder: PropTypes.string,
   onChange: PropTypes.func,
-  onClear: PropTypes.func
+  onClear: PropTypes.func,
+  isPastoralWorksPage: PropTypes.bool
 }
 
 export default SelectCategoryComponent
