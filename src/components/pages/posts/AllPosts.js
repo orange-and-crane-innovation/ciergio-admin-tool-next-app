@@ -1,54 +1,52 @@
+import {
+  FaAngleDown,
+  FaAngleUp,
+  FaEllipsisH,
+  FaPlusCircle
+} from 'react-icons/fa'
+import {
+  FacebookIcon,
+  FacebookShareButton,
+  TwitterIcon,
+  TwitterShareButton
+} from 'react-share'
+import { FiEye, FiFileText, FiLink, FiShare2 } from 'react-icons/fi'
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/jsx-key */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/router'
-import Link from 'next/link'
-import { gql, useQuery, useMutation } from '@apollo/client'
+import React, { useEffect, useMemo, useState } from 'react'
 import { debounce, isEmpty } from 'lodash'
-import {
-  FaPlusCircle,
-  FaEllipsisH,
-  FaAngleUp,
-  FaAngleDown
-} from 'react-icons/fa'
-import { FiFileText, FiEye, FiShare2, FiLink } from 'react-icons/fi'
-import { RiPushpinLine } from 'react-icons/ri'
-import {
-  FacebookShareButton,
-  TwitterShareButton,
-  FacebookIcon,
-  TwitterIcon
-} from 'react-share'
-import PageLoader from '@app/components/page-loader'
+import { gql, useMutation, useQuery } from '@apollo/client'
+
+import { ACCOUNT_TYPES } from '@app/constants'
+import Button from '@app/components/button'
+import Can from '@app/permissions/can'
 import Card from '@app/components/card'
 import Checkbox from '@app/components/forms/form-checkbox'
-import Button from '@app/components/button'
-import Table from '@app/components/table'
-import Pagination from '@app/components/pagination'
-import Dropdown from '@app/components/dropdown'
-import Modal from '@app/components/modal'
-import Tooltip from '@app/components/tooltip'
-import DateRange from '@app/components/daterange'
-
 import { DATE } from '@app/utils'
-import showToast from '@app/utils/toast'
-import { ACCOUNT_TYPES } from '@app/constants'
-import Props from 'prop-types'
-
-import ViewsCard from './components/ViewsCard'
-import UpdateCard from './components/UpdateCard'
+import DateRange from '@app/components/daterange'
+import Dropdown from '@app/components/dropdown'
+import Link from 'next/link'
+import Modal from '@app/components/modal'
+import NotifCard from '@app/components/globals/NotifCard'
+import PageLoader from '@app/components/page-loader'
+import Pagination from '@app/components/pagination'
 import PostDetailsCard from './components/PostDetailsCard'
+import Props from 'prop-types'
+import ReactSelect from 'react-select'
+import { RiPushpinLine } from 'react-icons/ri'
+import SearchControl from '@app/components/globals/SearchControl'
+import Select from '@app/components/forms/form-select'
 import SelectBulk from '@app/components/globals/SelectBulk'
 import SelectCategory from '@app/components/globals/SelectCategory'
-import SearchControl from '@app/components/globals/SearchControl'
-import NotifCard from '@app/components/globals/NotifCard'
-import Select from '@app/components/forms/form-select'
-import ReactSelect from 'react-select'
-
-import Can from '@app/permissions/can'
+import Table from '@app/components/table'
+import Tooltip from '@app/components/tooltip'
+import UpdateCard from './components/UpdateCard'
+import ViewsCard from './components/ViewsCard'
+import showToast from '@app/utils/toast'
 import styles from './Main.module.css'
+import { useRouter } from 'next/router'
 
 const bulkOptions = [
   {
@@ -188,6 +186,7 @@ const PostComponent = ({ typeOfPage }) => {
   const isSystemCircle = systemType === 'circle'
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
+  const isPastoralWorksPage = router.pathname === '/pastoral-works'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
@@ -1471,6 +1470,7 @@ const PostComponent = ({ typeOfPage }) => {
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
+              isPastoralWorksPage={isPastoralWorksPage}
             />
           )}
 
