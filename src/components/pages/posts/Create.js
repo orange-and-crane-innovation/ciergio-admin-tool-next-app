@@ -3,44 +3,40 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-key */
 
-import React, { useState, useEffect } from 'react'
-import { gql, useMutation } from '@apollo/client'
-import { useRouter } from 'next/router'
-import axios from 'axios'
-import { FaSpinner, FaTimes } from 'react-icons/fa'
-import { FiVideo, FiFilm } from 'react-icons/fi'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import dayjs from 'dayjs'
-import Datetime from 'react-datetime'
 
+import { Controller, useForm } from 'react-hook-form'
+import { FaSpinner, FaTimes } from 'react-icons/fa'
+import { FiFilm, FiVideo } from 'react-icons/fi'
+import React, { useEffect, useState } from 'react'
+import { gql, useMutation } from '@apollo/client'
+
+import { ACCOUNT_TYPES } from '@app/constants'
+import AudienceModal from './components/AudienceModal'
+import Button from '@app/components/button'
+import Can from '@app/permissions/can'
 import Card from '@app/components/card'
+import { DATE } from '@app/utils'
+import Datetime from 'react-datetime'
+import FileUpload from '@app/components/uploader/simple'
 import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
-import Button from '@app/components/button'
-import UploaderImage from '@app/components/uploader/image'
-import FileUpload from '@app/components/uploader/simple'
 import Modal from '@app/components/modal'
+import OfferingsCard from './components/OfferingsCard'
 import PageLoader from '@app/components/page-loader'
 import ProgressBar from '@app/components/progress-bar'
-import Toggle from '@app/components/toggle'
-
-import { DATE } from '@app/utils'
-import { ACCOUNT_TYPES } from '@app/constants'
-
-import VideoPlayer from '@app/components/globals/VideoPlayer'
-import SelectCategory from '@app/components/globals/SelectCategory'
-
-import showToast from '@app/utils/toast'
-
-import UpdateCard from './components/UpdateCard'
-import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
-import OfferingsCard from './components/OfferingsCard'
-
-import Can from '@app/permissions/can'
+import SelectCategory from '@app/components/globals/SelectCategory'
+import Toggle from '@app/components/toggle'
+import UpdateCard from './components/UpdateCard'
+import UploaderImage from '@app/components/uploader/image'
+import VideoPlayer from '@app/components/globals/VideoPlayer'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import showToast from '@app/utils/toast'
 import style from './Create.module.css'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const CREATE_POST_MUTATION = gql`
   mutation($data: PostInput) {
@@ -1136,6 +1132,7 @@ const CreatePosts = () => {
                             onChange(e.value)
                             onCategorySelect(e)
                           }}
+                          isPastoralWorksPage={isPastoralWorksPage}
                           onClear={onClearCategory}
                           error={errors?.category?.message ?? null}
                           selected={selectedCategory}
