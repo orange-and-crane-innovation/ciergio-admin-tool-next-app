@@ -1,63 +1,58 @@
-import React, { useState, useMemo, useEffect } from 'react'
-import { initializeApollo } from '@app/lib/apollo/client'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMutation, useQuery, useLazyQuery } from '@apollo/client'
-import useDebounce from '@app/utils/useDebounce'
-import { yupResolver } from '@hookform/resolvers/yup'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
-import { HiOutlinePrinter } from 'react-icons/hi'
+import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
+import { HiOutlinePrinter } from 'react-icons/hi'
 
-import { Card } from '@app/components/globals'
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import FormSelect from '@app/components/forms/form-select'
-
+import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchComponent from '@app/components/globals/SearchControl'
-
-import showToast from '@app/utils/toast'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
-import errorHandler from '@app/utils/errorHandler'
 import { ACCOUNT_TYPES } from '@app/constants'
-
-import InviteStaffModal from './InviteStaffModal'
-import EditStaffModal from './EditStaffModal'
-import RemoveStaffModal from './RemoveStaffModal'
-
+import { initializeApollo } from '@app/lib/apollo/client'
 import Can from '@app/permissions/can'
+import errorHandler from '@app/utils/errorHandler'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import showToast from '@app/utils/toast'
+import useDebounce from '@app/utils/useDebounce'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 import {
-  INVITE_STAFF,
+  ALL_ROLES,
+  BUILDING_ADMIN,
+  BUILDING_ROLES,
+  COMPANY_ADMIN,
+  COMPANY_ROLES,
+  COMPLEX_ADMIN,
+  COMPLEX_ROLES,
+  RECEPTIONIST,
+  STAFF_ROLES,
+  columns
+} from '../constants'
+import {
   ADD_BUILDING_ADMIN,
   ADD_COMPANY_ADMIN,
   ADD_COMPLEX_ADMIN,
   ADD_RECEPTIONIST,
   ADD_UNIT_OWNER,
-  GET_ACCOUNTS,
-  GET_COMPANIES,
-  GET_COMPLEXES,
-  GET_BUILDINGS,
-  GET_BUILDING,
-  UPDATE_USER,
   DELETE_USER,
-  GET_COMPANY_ROLES
+  GET_ACCOUNTS,
+  GET_BUILDING,
+  GET_BUILDINGS,
+  GET_COMPANIES,
+  GET_COMPANY_ROLES,
+  GET_COMPLEXES,
+  INVITE_STAFF,
+  UPDATE_USER
 } from '../queries'
-
-import {
-  BUILDING_ADMIN,
-  COMPANY_ADMIN,
-  COMPLEX_ADMIN,
-  RECEPTIONIST,
-  columns,
-  ALL_ROLES,
-  COMPANY_ROLES,
-  COMPLEX_ROLES,
-  BUILDING_ROLES,
-  STAFF_ROLES
-} from '../constants'
+import EditStaffModal from './EditStaffModal'
+import InviteStaffModal from './InviteStaffModal'
+import RemoveStaffModal from './RemoveStaffModal'
 import {
   editStaffValidationSchema,
   inviteStaffValidationSchema
@@ -184,7 +179,8 @@ function AllStaff() {
 
         getCompanyRoles({
           variables: {
-            id: companyID
+            id: companyID,
+            status: 'active'
           }
         })
 
@@ -435,7 +431,7 @@ function AllStaff() {
   }
 
   const handleEditOk = values => {
-    const { staffFirstName, staffLastName } = values
+    const { staffFirstName, staffLastName, staffType } = values
     const data = {
       firstName: staffFirstName,
       lastName: staffLastName
@@ -444,6 +440,10 @@ function AllStaff() {
     updateUser({
       variables: {
         data,
+        companyRole: {
+          companyRoleId: staffType.value,
+          accountId: selectedStaff?._id
+        },
         id: selectedStaff?.user?._id
       }
     })
@@ -525,28 +525,37 @@ function AllStaff() {
           ? accounts.getAccounts.data.map(staff => {
               const { user, company, complex, building, accountType } = staff
               const roleType = getAccountTypeName(accountType)
-
+              console.log('profile', profile)
+              console.log('staff', staff)
               let dropdownData = [
                 {
-                  label: 'View Staff',
+                  label: `${
+                    profile._id === user?._id ? 'View Profile' : 'View Staff'
+                  }`,
                   icon: <span className="ciergio-user" />,
                   function: () => router.push(`/staff/view/${user?._id}`)
-                },
-                {
-                  label: 'Edit Staff',
-                  icon: <span className="ciergio-edit" />,
-                  function: () => {
-                    setSelectedStaff(staff)
-                    resetEditStaffForm({
-                      staffFirstName: user?.firstName,
-                      staffLastName: user.lastName
-                    })
-                    handleShowModal('edit')
-                  }
                 }
               ]
 
-              if (accountType !== 'member') {
+              if (profile._id !== user?._id) {
+                dropdownData = [
+                  ...dropdownData,
+                  {
+                    label: 'Edit Staff',
+                    icon: <span className="ciergio-edit" />,
+                    function: () => {
+                      setSelectedStaff(staff)
+                      resetEditStaffForm({
+                        staffFirstName: user?.firstName,
+                        staffLastName: user.lastName
+                      })
+                      handleShowModal('edit')
+                    }
+                  }
+                ]
+              }
+
+              if (accountType !== 'member' && profile._id !== user?._id) {
                 dropdownData = [
                   ...dropdownData,
                   {
@@ -721,16 +730,19 @@ function AllStaff() {
           register: registerInviteStaff
         }}
       />
-      <EditStaffModal
-        form={{
-          control: editStaffControl,
-          errors: editStaffErrors
-        }}
-        open={showEditModal}
-        onCancel={() => handleClearModal('edit')}
-        onOk={handleEditSubmit(handleEditOk)}
-        loading={updatingUser}
-      />
+      {showEditModal && (
+        <EditStaffModal
+          form={{
+            control: editStaffControl,
+            errors: editStaffErrors
+          }}
+          open={showEditModal}
+          onCancel={() => handleClearModal('edit')}
+          onOk={handleEditSubmit(handleEditOk)}
+          loading={updatingUser}
+          selectedStaff={selectedStaff}
+        />
+      )}
       <RemoveStaffModal
         open={showDeleteModal}
         onCancel={() => handleClearModal('delete')}

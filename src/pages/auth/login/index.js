@@ -27,6 +27,7 @@ export const GET_PROFILE = gql`
       lastName
       accounts {
         data {
+          companyRoleId
           accountType
           active
         }

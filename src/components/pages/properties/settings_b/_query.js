@@ -17,35 +17,43 @@ const getCompanySettings = gql`
         messages {
           displayName
         }
-        qrCode {
-          displayName
-        }
         notifications {
-          displayName
-        }
-        directory {
           displayName
         }
         forms {
           displayName
         }
+        directory {
+          displayName
+          enable
+        }
+        qrCode {
+          displayName
+          enable
+        }
         contactPage {
           displayName
+          enable
         }
         guestAndDelivery {
           displayName
+          enable
         }
         maintenanceAndRepairs {
           displayName
+          enable
         }
         myDues {
           displayName
+          enable
         }
         communityBoard {
           displayName
+          enable
         }
         settingsPage {
           displayName
+          enable
         }
         prayerRequests {
           displayName

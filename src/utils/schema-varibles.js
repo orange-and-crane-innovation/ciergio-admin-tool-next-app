@@ -164,6 +164,7 @@ export const MutationResponse = `
 `,
   UserAccount = `
     _id
+    companyRoleId
     active
     accountType
     companyRoleId
