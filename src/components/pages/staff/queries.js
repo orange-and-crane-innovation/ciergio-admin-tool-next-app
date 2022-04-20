@@ -8,6 +8,7 @@ export const GET_ACCOUNTS = gql`
       limit
       data {
         _id
+        companyRoleId
         accountType
         user {
           _id
@@ -18,12 +19,15 @@ export const GET_ACCOUNTS = gql`
         }
         company {
           name
+          _id
         }
         complex {
           name
+          _id
         }
         building {
           name
+          _id
         }
       }
     }
@@ -46,12 +50,15 @@ export const GET_ACCOUNT = gql`
         }
         company {
           name
+          _id
         }
         complex {
           name
+          _id
         }
         building {
           name
+          _id
         }
         history(where: { accountId: $id }) {
           limit
@@ -78,8 +85,8 @@ export const GET_COMPANIES = gql`
   }
 `
 export const GET_COMPANY_ROLES = gql`
-  query getCompanyRoles($id: String!) {
-    getCompanyRoles(where: { companyId: $id }) {
+  query getCompanyRoles($id: String!, $status: String!) {
+    getCompanyRoles(where: { companyId: $id, status: $status }) {
       _id
       name
     }
@@ -236,8 +243,12 @@ export const ADD_UNIT_OWNER = gql`
 `
 
 export const UPDATE_USER = gql`
-  mutation updateUser($data: InputUpdateUser, $id: String) {
-    updateUser(data: $data, userId: $id) {
+  mutation updateUser(
+    $data: InputUpdateUser
+    $companyRole: InputCompanyRole
+    $id: String
+  ) {
+    updateUser(data: $data, companyRole: $companyRole, userId: $id) {
       processId
       message
       slave
