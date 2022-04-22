@@ -48,7 +48,7 @@ const GET_ALLLOWED_POST_CATEGORY_QUERY = gql`
 `
 
 const ADD_CATEGORY_QUERY = gql`
-  mutation (
+  mutation(
     $accountType: CategoryAccountType
     $accountId: String
     $categoryIds: [String]
@@ -66,7 +66,7 @@ const ADD_CATEGORY_QUERY = gql`
 `
 
 const REMOVE_CATEGORY_QUERY = gql`
-  mutation (
+  mutation(
     $accountType: CategoryAccountType
     $accountId: String
     $categoryIds: [String]
