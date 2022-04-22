@@ -68,6 +68,7 @@ const GET_POST_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        hideCreatedAt
         author {
           user {
             firstName
@@ -135,6 +136,7 @@ const GET_POST_PRAY_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        hideCreatedAt
         author {
           user {
             firstName
@@ -274,6 +276,7 @@ const CreatePosts = () => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [errorSelectedDate, setErrorSelectedDate] = useState()
   const [toggleOfferings, setToggleOfferings] = useState()
+  const [toggleHideDate, setToggleHideDate] = useState()
   const [isEdit, setIsEdit] = useState(true)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const isSystemPray = systemType === 'pray'
@@ -484,6 +487,7 @@ const CreatePosts = () => {
         setSelectedPublishDateTime(new Date(itemData?.publishedAt))
         setSelectedDate(itemData?.dailyReadingDate)
         setToggleOfferings(itemData?.offering)
+        setToggleHideDate(itemData?.hideCreatedAt)
       }
     }
   }, [loadingPost, dataPost, errorPost, setValue])
@@ -961,6 +965,7 @@ const CreatePosts = () => {
       if (isSystemPray) {
         updateData.data.offering = toggleOfferings
       }
+      updateData.data.hideCreatedAt = toggleHideDate
 
       updatePost({ variables: updateData })
     }
@@ -1200,6 +1205,10 @@ const CreatePosts = () => {
 
   const onToggleOfferings = e => {
     setToggleOfferings(e)
+  }
+
+  const onToggleHideDate = e => {
+    setToggleHideDate(e)
   }
 
   return (
@@ -1693,25 +1702,39 @@ const CreatePosts = () => {
                     </span>
                   </div>
 
-                  <div className="flex">
-                    <span className={style.CreatePostSection}>Publish: </span>
-                    <strong>
-                      {selectedPublishTimeType === 'later'
-                        ? ` Scheduled, ${dayjs(selectedPublishDateTime).format(
-                            'MMM DD, YYYY - hh:mm A'
-                          )} `
-                        : ' Immediately'}
-                    </strong>
-                    {!isDailyReadingsPage && (
-                      <span
-                        className={style.CreatePostLink}
-                        onClick={handleShowPublishTimeModal}
-                      >
-                        Edit
+                  <div className={style.CreatePostPublishSubContent}>
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Publish: </span>
+                      <strong>
+                        {selectedPublishTimeType === 'later'
+                          ? ` Scheduled, ${dayjs(
+                              selectedPublishDateTime
+                            ).format('MMM DD, YYYY - hh:mm A')} `
+                          : ' Immediately'}
+                      </strong>
+                      {!isDailyReadingsPage && (
+                        <span
+                          className={style.CreatePostLink}
+                          onClick={handleShowPublishTimeModal}
+                        >
+                          Edit
+                        </span>
+                      )}
+                    </span>
+
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>
+                        Hide Publish Data: &nbsp;{' '}
                       </span>
-                    )}
+                      <span className="mr-2">
+                        <Toggle
+                          onChange={onToggleHideDate}
+                          defaultChecked={toggleHideDate}
+                          toggle={toggleHideDate}
+                        />
+                      </span>
+                    </span>
                   </div>
-                  <span />
                 </div>
               </div>
             }

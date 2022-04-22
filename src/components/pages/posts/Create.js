@@ -132,6 +132,7 @@ const CreatePosts = () => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [errorSelectedDate, setErrorSelectedDate] = useState()
   const [toggleOfferings, setToggleOfferings] = useState()
+  const [toggleHideDate, setToggleHideDate] = useState()
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const isSystemPray = systemType === 'pray'
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -596,6 +597,7 @@ const CreatePosts = () => {
       if (isSystemPray) {
         createData.offering = toggleOfferings
       }
+      createData.hideCreatedAt = toggleHideDate
 
       createPost({ variables: { data: createData } })
     }
@@ -753,6 +755,10 @@ const CreatePosts = () => {
 
   const onToggleOfferings = e => {
     setToggleOfferings(e)
+  }
+
+  const onToggleHideDate = e => {
+    setToggleHideDate(e)
   }
 
   return (
@@ -1226,27 +1232,40 @@ const CreatePosts = () => {
                     </span>
                   </div>
 
-                  <div className="flex">
-                    <span className={style.CreatePostSection}>Publish: </span>
-                    <span className="mr-2">
-                      <strong>
-                        {selectedPublishTimeType === 'later'
-                          ? ` Scheduled, ${dayjs(
-                              selectedPublishDateTime
-                            ).format('MMM DD, YYYY - hh:mm A')} `
-                          : ' Immediately'}
-                      </strong>
-                    </span>
-                    {!isDailyReadingsPage && (
-                      <span
-                        className={style.CreatePostLink}
-                        onClick={handleShowPublishTimeModal}
-                      >
-                        Edit
+                  <div className={style.CreatePostPublishSubContent}>
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Publish: </span>
+                      <span className="mr-2">
+                        <strong>
+                          {selectedPublishTimeType === 'later'
+                            ? ` Scheduled, ${dayjs(
+                                selectedPublishDateTime
+                              ).format('MMM DD, YYYY - hh:mm A')} `
+                            : ' Immediately'}
+                        </strong>
                       </span>
-                    )}
+                      {!isDailyReadingsPage && (
+                        <span
+                          className={style.CreatePostLink}
+                          onClick={handleShowPublishTimeModal}
+                        >
+                          Edit
+                        </span>
+                      )}
+                    </span>
+
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>
+                        Hide Publish Data: &nbsp;{' '}
+                      </span>
+                      <span className="mr-2">
+                        <Toggle
+                          onChange={onToggleHideDate}
+                          toggle={toggleHideDate}
+                        />
+                      </span>
+                    </span>
                   </div>
-                  <span />
                 </div>
               </div>
             }
