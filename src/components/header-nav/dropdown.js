@@ -1,15 +1,15 @@
+import { useRouter } from 'next/router'
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { useState, useEffect, useRef } from 'react'
-import { gql, useMutation } from '@apollo/client'
-import { useRouter } from 'next/router'
+import React, { useEffect, useRef, useState } from 'react'
 import { FiChevronRight } from 'react-icons/fi'
-import Userinfo from './user-info'
-import MenuItem from './menu-item'
 
-import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
+import { gql, useMutation } from '@apollo/client'
+import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
 import showToast from '@app/utils/toast'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
+
+import MenuItem from './menu-item'
+import Userinfo from './user-info'
 
 const SWITCH_ACCOUNT_MUTATION = gql`
   mutation switchAccount($data: InputSwitchAccount) {
@@ -29,10 +29,10 @@ const Dropdown = () => {
   const dropdownRef = useRef(null)
   const activeAccount = profile?.accounts?.data[0]
 
-  const [switchAccount, { loading, data, called, error }] = useMutation(
-    SWITCH_ACCOUNT_MUTATION,
-    { onError: _e => {} }
-  )
+  const [
+    switchAccount,
+    { loading, data, called, error }
+  ] = useMutation(SWITCH_ACCOUNT_MUTATION, { onError: _e => {} })
 
   useEffect(() => {
     if (loading) {
@@ -197,7 +197,7 @@ const Dropdown = () => {
                       ? activeAccount?.building?.name
                       : activeAccount?.company?.name
                   }
-                  userTitle={getAccountTypeName(activeAccount?.accountType)}
+                  userTitle={activeAccount?.companyRole?.name}
                 />
               </div>
 
@@ -255,7 +255,7 @@ const Dropdown = () => {
                                 ? item?.building?.name
                                 : item?.company?.name
                             }
-                            userTitle={getAccountTypeName(item?.accountType)}
+                            userTitle={item?.companyRole?.name}
                             size={'SM'}
                           />
                         </div>

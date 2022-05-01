@@ -8,8 +8,17 @@ export const GET_ACCOUNTS = gql`
       limit
       data {
         _id
-        companyRoleId
         accountType
+        companyRoleId
+        companyRole {
+          _id
+          name
+          status
+          permissions {
+            group
+            accessLevel
+          }
+        }
         user {
           _id
           firstName
