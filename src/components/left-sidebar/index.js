@@ -1,16 +1,17 @@
-import Item from './item'
-import Logo from './logo'
 import P from 'prop-types'
 import React from 'react'
+
 import { RolesPermissions } from '../rolespermissions'
-import Title from './title'
 import navigation from './dummy-nav'
-import rules from '@app/permissions/rules'
+import Item from './item'
+import Logo from './logo'
+import Title from './title'
 
 const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
   // const rule = rules[systemType][userRole]
   // const allowedRoutes = rule?.allowedRoutes || []
   // const allowedNestedRoutes = rule?.allowedNestedRoutes || []
+  console.log('SIDEBARRRR')
 
   return (
     <div className="left-sidebar left-sidebar-1 scrollableContainer">
@@ -29,6 +30,7 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
 
                 return (
                   <RolesPermissions
+                    text={l0?.title}
                     no={null}
                     permission={l0?.permission}
                     roleName={l0?.roleName}

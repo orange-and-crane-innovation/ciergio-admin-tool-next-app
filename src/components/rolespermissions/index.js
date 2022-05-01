@@ -1,67 +1,58 @@
-import Roles, { isAllowedRole } from './Roles'
+import isEmpty from 'lodash/isEmpty'
+import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 
-import { GET_COMPANY_ROLES } from '@app/components/pages/staff/manage-roles/api/_query'
-import NotFound from '@app/pages/404'
-import PageLoader from '@app/components/page-loader'
-import Permissions from './Permissions'
-import PropTypes from 'prop-types'
-import errorHandler from '@app/utils/errorHandler'
-import { getCompanySettings } from '@app/components/pages/properties/settings_b/_query'
-import isEmpty from 'lodash/isEmpty'
 import { useQuery } from '@apollo/client'
+import PageLoader from '@app/components/page-loader'
+import { getCompanySettings } from '@app/components/pages/properties/settings_b/_query'
+import { ACCESSLEVEL } from '@app/constants'
+import NotFound from '@app/pages/404'
+import errorHandler from '@app/utils/errorHandler'
 
-const PermissionGroups = [
-  {
-    group: 'accounts',
-    accessLevel: 'none'
-  },
-  {
-    group: 'messaging',
-    accessLevel: 'none'
-  },
-  {
-    group: 'registry',
-    accessLevel: 'none'
-  },
-  {
-    group: 'post',
-    accessLevel: 'none'
-  },
-  {
-    group: 'engagements',
-    accessLevel: 'none'
-  },
-  {
-    group: 'issues',
-    accessLevel: 'none'
-  },
-  {
-    group: 'dues',
-    accessLevel: 'none'
-  },
-  {
-    group: 'incident_reports',
-    accessLevel: 'none'
-  },
-  {
-    group: 'notifications',
-    accessLevel: 'none'
-  },
-  {
-    group: 'payments',
-    accessLevel: 'none'
+const isPermitted = (rolespermissions, role) => {
+  const { roles } = rolespermissions
+
+  if (isEmpty(roles)) {
+    return false
   }
-]
 
-const RolesPermissions = ({ permission, roleName, children, no }) => {
+  const isRoleExist = roles.find(r => r?.group === role)
+
+  if (isRoleExist) {
+    if (isRoleExist.accessLevel === ACCESSLEVEL.NONE) {
+      return false
+    }
+
+    return true
+  }
+
+  return false
+}
+
+const isAllowedModule = (rolespermissions, permission) => {
+  const { permissions } = rolespermissions
+  if (isEmpty(permissions)) {
+    return false
+  }
+  const moduleChecker = permissions[permission]
+  if (moduleChecker !== undefined) {
+    if (moduleChecker.enable !== undefined) {
+      return moduleChecker.enable
+    }
+
+    return true
+  }
+
+  return false
+}
+
+const RolesPermissions = ({ permission, roleName, children, no, text }) => {
   const profile =
     typeof window !== 'undefined' ? localStorage.getItem('profile') : null
   const user = JSON.parse(profile)
   const companyID = user?.accounts?.data[0]?.company?._id
   const accountType = user?.accounts?.data[0]?.accountType
-  // companyRoleId
-  const companyRoleId = user?.accounts?.data[0]?.companyRoleId
+  const userCompanyRole = user?.accounts?.data[0]?.companyRole
 
   const [rolespermissions, setRolesPermissions] = useState({})
   const [loadingRoles, setLoadingRoles] = useState(false)
@@ -69,19 +60,8 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
   const MODULES = process.env.NEXT_PUBLIC_MODULES
   const isSuperAdmin = accountType === 'administrator'
 
+  // Get company Setting query
   const { loading, data, error } = useQuery(getCompanySettings, {
-    variables: {
-      where: {
-        companyId: companyID
-      }
-    }
-  })
-
-  const {
-    loading: loadingCompanyRoles,
-    data: dataCompanyRoles,
-    error: errorCompanyRoles
-  } = useQuery(GET_COMPANY_ROLES, {
     variables: {
       where: {
         companyId: companyID
@@ -91,42 +71,37 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
 
   useEffect(() => {
     if (!isSuperAdmin) {
-      if (loading && loadingCompanyRoles) {
+      if (loading) {
         setLoadingRoles(true)
       }
 
-      if (!loading && data && !loadingCompanyRoles && dataCompanyRoles) {
+      if (!loading && data) {
         const { getCompanySettings } = data
-        const { getCompanyRoles } = dataCompanyRoles
-
-        const userCompanyRole = getCompanyRoles?.find(
-          getCompanyRole => getCompanyRole._id === companyRoleId
-        )
-
-        // loading the default permissions
-        const temp = PermissionGroups.map(permissionGroup => {
-          const isExist = userCompanyRole?.permissions.find(
-            crole => crole.group === permissionGroup.group
-          )
-
-          return isExist
-            ? {
-                group: isExist?.group,
-                accessLevel: isExist?.accessLevel
-              }
-            : permissionGroup
-        })
         const payload = {
           permissions: getCompanySettings?.subscriptionModules,
-          roles: temp
+          roles: userCompanyRole?.permissions
         }
 
-        // now we will compare the roles and permissions
+        console.log('<++++++++++++++++>')
+        console.log('TEXT', text)
+        console.log('PERMISSION', permission)
+        console.log('ROLENAME', roleName)
+        console.log('USER PERMISSIONS', userCompanyRole?.permissions)
+        console.log('COMPANYSETTINGS', getCompanySettings?.subscriptionModules)
+        console.log(
+          'SHOULD SHOWWWWW 1',
+          isPermitted(rolespermissions, roleName)
+        )
+        console.log(
+          'SHOULD SHOWWWWW 2',
+          isAllowedModule(rolespermissions, permission)
+        )
+        console.log('<++++++++++++++++>')
         setRolesPermissions(payload)
         setLoadingRoles(false)
       }
 
-      if (error && errorCompanyRoles) {
+      if (error) {
         errorHandler(error)
         setLoadingRoles(false)
       }
@@ -152,23 +127,7 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
         setRolesPermissions(payload)
       }
     }
-  }, [
-    loading,
-    data,
-    error,
-    loadingCompanyRoles,
-    dataCompanyRoles,
-    errorCompanyRoles,
-    companyRoleId,
-    isSuperAdmin,
-    MODULES
-  ])
-
-  // we can make a shortcut here, if the role is allowed we can render even not checking the permission
-  const roleAllowed =
-    !loadingRoles &&
-    !isEmpty(rolespermissions) &&
-    isAllowedRole(rolespermissions, roleName)
+  }, [loading, data])
 
   if (loadingRoles) {
     return (
@@ -178,7 +137,7 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
     )
   }
 
-  if (roleAllowed && !loadingRoles) {
+  if (isPermitted(rolespermissions, roleName) && !loadingRoles) {
     return children
   }
 
@@ -186,18 +145,10 @@ const RolesPermissions = ({ permission, roleName, children, no }) => {
     return no
   }
 
-  // we will first check the role of the user then after check if it has permission
-  return (
-    <Roles role={roleName} no={no} rolespermissions={rolespermissions}>
-      <Permissions
-        no={no}
-        permission={permission}
-        rolespermissions={rolespermissions}
-      >
-        {children}
-      </Permissions>
-    </Roles>
-  )
+  return isPermitted(rolespermissions, roleName) ||
+    isAllowedModule(rolespermissions, permission)
+    ? children
+    : null
 }
 
 const PageNotRestricted = () => (
@@ -213,6 +164,7 @@ RolesPermissions.defaultProps = {
 }
 
 RolesPermissions.propTypes = {
+  text: PropTypes.string,
   permission: PropTypes.string,
   roleName: PropTypes.string,
   children: PropTypes.node.isRequired,
