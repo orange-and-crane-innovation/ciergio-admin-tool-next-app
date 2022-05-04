@@ -45,7 +45,18 @@ export const GET_PROFILE = gql`
         skip
         data {
           _id
+          active
+          accountType
           companyRoleId
+          companyRole {
+            _id
+            name
+            status
+            permissions {
+              group
+              accessLevel
+            }
+          }
           accountType
           active
         }

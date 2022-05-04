@@ -3,7 +3,7 @@ import UnitDataComponent from '@app/components/pages/properties/unit'
 
 function UnitSinglePropertiesPage() {
   return (
-    <RolesPermissions roleName="accounts">
+    <RolesPermissions permissionGroup="accounts" moduleName="myProperties">
       <UnitDataComponent />
     </RolesPermissions>
   )

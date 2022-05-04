@@ -4,7 +4,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 const ManageRolesPage = () => {
   return (
-    <RolesPermissions permission="directory">
+    <RolesPermissions permissionGroup="accounts" moduleName="myStaff">
       <ManageRoles />
     </RolesPermissions>
   )

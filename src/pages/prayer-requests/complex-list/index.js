@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function ComplexesPage() {
   return (
-    <RolesPermissions permission="prayerRequests" roleName="issues">
+    <RolesPermissions permissionGroup="issues" moduleName="prayerRequests">
       <Complexes />
     </RolesPermissions>
   )

@@ -168,6 +168,15 @@ export const MutationResponse = `
     active
     accountType
     companyRoleId
+    companyRole {
+      _id
+      name
+      status
+      permissions {
+        group
+        accessLevel
+      }
+    }
     user {
       ${User}
     }

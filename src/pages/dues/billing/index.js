@@ -11,7 +11,7 @@ export default function DuesPage() {
 
   if (buildingID) {
     return (
-      <RolesPermissions roleName="myDues" permission="myDues">
+      <RolesPermissions roleName="dues" permission="myDues">
         <Billing complexId={complexID} bid={buildingID} />
       </RolesPermissions>
     )
