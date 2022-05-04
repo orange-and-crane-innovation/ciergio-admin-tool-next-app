@@ -46,8 +46,12 @@ const GET_POST_CATEGORY_QUERY = gql`
 `
 
 const CREATE_POST_CATEGORY_MUTATION = gql`
-  mutation createPostCategory($name: String, $type: CategoryType) {
-    createPostCategory(name: $name, type: $type) {
+  mutation createPostCategory(
+    $name: String
+    $type: CategoryType
+    $companyId: String
+  ) {
+    createPostCategory(name: $name, type: $type, companyId: $companyId) {
       _id
       processId
       message
@@ -100,12 +104,22 @@ const CategoriesComponent = () => {
     }
   ]
 
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyID = profile?.accounts?.data[0]?.company?._id
+
+  let isSuperUser = accountType === 'administrator'
+
+  let getCategoryWhere = {
+    type: categoryType
+  }
+
+  if (!isSuperUser) getCategoryWhere.companyId = companyID
+
   const { loading, data, error, refetch } = useQuery(GET_POST_CATEGORY_QUERY, {
     enabled: false,
     variables: {
-      where: {
-        type: categoryType
-      },
+      where: getCategoryWhere,
       sort: {
         by: 'name',
         order: 'asc'
@@ -244,7 +258,9 @@ const CategoriesComponent = () => {
   const onSubmit = async (type, data) => {
     try {
       if (type === 'create') {
-        await createPostCategory({ variables: data })
+        await createPostCategory({
+          variables: isSuperUser ? data : { ...data, companyId: companyID }
+        })
       } else if (type === 'edit') {
         const updateData = {
           id: data.id,
