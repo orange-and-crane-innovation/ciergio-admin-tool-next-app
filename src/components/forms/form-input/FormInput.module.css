@@ -4,6 +4,11 @@
   .FormInputButton {
     @apply absolute top-3 right-4;
   }
+
+
+  [hidden] {
+    display: none !important;
+  }
 }
 
 .FormInput {
@@ -92,3 +97,4 @@
     @apply cursor-not-allowed pointer-events-none;
   }
 }
+
