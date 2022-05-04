@@ -14,6 +14,29 @@ const getCompanySettings = gql`
         bulletinBoard {
           displayName
         }
+
+        bulletinBoard {
+          displayName
+        }
+        myProperties {
+          displayName
+        }
+        myStaff {
+          displayName
+        }
+        myResidents {
+          displayName
+          enable
+        }
+        attactionsAndEvents {
+          displayName
+          enable
+        }
+        myMembers {
+          displayName
+          enable
+        }
+
         messages {
           displayName
         }

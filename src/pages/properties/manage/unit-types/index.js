@@ -3,7 +3,7 @@ import UnitTypePage from '@app/components/pages/properties/manage/unit-types'
 
 function ManageUnitTypePage() {
   return (
-    <RolesPermissions roleName="accounts">
+    <RolesPermissions permissionGroup="accounts" moduleName="myProperties">
       <UnitTypePage />
     </RolesPermissions>
   )

@@ -8,7 +8,7 @@ export default function PrayerRequestsPage() {
 
   const isComplexAdmin = accountType === 'complex_admin'
   return (
-    <RolesPermissions permission="prayerRequests" roleName="issues">
+    <RolesPermissions permissionGroup="issues" moduleName="prayerRequests">
       {isComplexAdmin ? <PrayerRequests /> : <Complexes />}
     </RolesPermissions>
   )

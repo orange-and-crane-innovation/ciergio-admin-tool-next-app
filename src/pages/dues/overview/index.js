@@ -7,7 +7,7 @@ export default function OverviewPage() {
   const complexName = user?.accounts?.data[0]?.complex?.name
 
   return (
-    <RolesPermissions roleName="myDues" permission="myDues">
+    <RolesPermissions roleName="dues" permission="myDues">
       <Overview
         complexID={complexID}
         accountType="complex"

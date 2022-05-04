@@ -3,7 +3,7 @@ import Visitors from '@app/components/pages/receptionist'
 
 function ReceptionistVistorsPage() {
   return (
-    <RolesPermissions permission="guestAndDelivery">
+    <RolesPermissions permissionGroup="registry" moduleName="guestAndDelivery">
       <Visitors />
     </RolesPermissions>
   )

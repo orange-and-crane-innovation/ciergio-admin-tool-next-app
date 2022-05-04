@@ -1,6 +1,7 @@
+import { useRouter } from 'next/router'
+
 import CompanyPage from '@app/components/pages/properties/company'
 import { RolesPermissions } from '@app/components/rolespermissions'
-import { useRouter } from 'next/router'
 
 function CompanyPropertiesPage() {
   const router = useRouter()
@@ -9,7 +10,7 @@ function CompanyPropertiesPage() {
 
   if (accountType === 'administrator') {
     return (
-      <RolesPermissions roleName="accounts">
+      <RolesPermissions permissionGroup="accounts" moduleName="myProperties">
         <CompanyPage />
       </RolesPermissions>
     )

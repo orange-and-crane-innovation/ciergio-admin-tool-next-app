@@ -4,7 +4,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function AllStaffPage() {
   return (
-    <RolesPermissions permission="directory">
+    <RolesPermissions permissionGroup="accounts" moduleName="myStaff">
       <AllStaff />
     </RolesPermissions>
   )

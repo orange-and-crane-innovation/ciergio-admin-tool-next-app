@@ -9,34 +9,35 @@ import { ACCESSLEVEL } from '@app/constants'
 import NotFound from '@app/pages/404'
 import errorHandler from '@app/utils/errorHandler'
 
-const isPermitted = (rolespermissions, role) => {
-  const { roles } = rolespermissions
+const isPermitted = (modulespermissions, permission) => {
+  const { userPermissions } = modulespermissions
 
-  if (isEmpty(roles)) {
+  if (isEmpty(userPermissions)) {
     return false
   }
 
-  const isRoleExist = roles.find(r => r?.group === role)
+  const isPermissionExist = userPermissions.find(p => p?.group === permission)
 
-  if (isRoleExist) {
-    if (isRoleExist.accessLevel === ACCESSLEVEL.NONE) {
+  if (isPermissionExist) {
+    if (isPermissionExist.accessLevel === ACCESSLEVEL.NONE) {
       return false
     }
-
     return true
   }
 
   return false
 }
 
-const isAllowedModule = (rolespermissions, permission) => {
-  const { permissions } = rolespermissions
-  if (isEmpty(permissions)) {
+const isAllowedModule = (modulespermissions, module) => {
+  const { companyModules } = modulespermissions
+  if (isEmpty(companyModules)) {
     return false
   }
-  const moduleChecker = permissions[permission]
+  const moduleChecker = companyModules[module]
   if (moduleChecker !== undefined) {
-    if (moduleChecker.enable !== undefined) {
+    if (moduleChecker.enable === undefined) {
+      return true
+    } else if (moduleChecker.enable !== undefined) {
       return moduleChecker.enable
     }
 
@@ -46,7 +47,7 @@ const isAllowedModule = (rolespermissions, permission) => {
   return false
 }
 
-const RolesPermissions = ({ permission, roleName, children, no, text }) => {
+const RolesPermissions = ({ moduleName, permissionGroup, children, no }) => {
   const profile =
     typeof window !== 'undefined' ? localStorage.getItem('profile') : null
   const user = JSON.parse(profile)
@@ -54,7 +55,7 @@ const RolesPermissions = ({ permission, roleName, children, no, text }) => {
   const accountType = user?.accounts?.data[0]?.accountType
   const userCompanyRole = user?.accounts?.data[0]?.companyRole
 
-  const [rolespermissions, setRolesPermissions] = useState({})
+  const [modulespermissions, setModulesPermissions] = useState({})
   const [loadingRoles, setLoadingRoles] = useState(false)
 
   const MODULES = process.env.NEXT_PUBLIC_MODULES
@@ -78,53 +79,16 @@ const RolesPermissions = ({ permission, roleName, children, no, text }) => {
       if (!loading && data) {
         const { getCompanySettings } = data
         const payload = {
-          permissions: getCompanySettings?.subscriptionModules,
-          roles: userCompanyRole?.permissions
+          companyModules: getCompanySettings?.subscriptionModules,
+          userPermissions: userCompanyRole?.permissions
         }
-
-        console.log('<++++++++++++++++>')
-        console.log('TEXT', text)
-        console.log('PERMISSION', permission)
-        console.log('ROLENAME', roleName)
-        console.log('USER PERMISSIONS', userCompanyRole?.permissions)
-        console.log('COMPANYSETTINGS', getCompanySettings?.subscriptionModules)
-        console.log(
-          'SHOULD SHOWWWWW 1',
-          isPermitted(rolespermissions, roleName)
-        )
-        console.log(
-          'SHOULD SHOWWWWW 2',
-          isAllowedModule(rolespermissions, permission)
-        )
-        console.log('<++++++++++++++++>')
-        setRolesPermissions(payload)
+        setModulesPermissions(payload)
         setLoadingRoles(false)
       }
 
       if (error) {
         errorHandler(error)
         setLoadingRoles(false)
-      }
-    } else {
-      if (MODULES) {
-        const roles = MODULES.split(',').map(module => ({
-          group: module.trim(),
-          accessLevel: 'administer'
-        }))
-
-        const permissions = {}
-
-        MODULES.split(',').forEach(module => {
-          permissions[`${module.trim()}`] = {
-            enabled: true
-          }
-        })
-
-        const payload = {
-          roles,
-          permissions
-        }
-        setRolesPermissions(payload)
       }
     }
   }, [loading, data])
@@ -137,18 +101,19 @@ const RolesPermissions = ({ permission, roleName, children, no, text }) => {
     )
   }
 
-  if (isPermitted(rolespermissions, roleName) && !loadingRoles) {
-    return children
-  }
-
-  if (permission === null && roleName === null && !loadingRoles) {
+  if (moduleName === null && permissionGroup === null && !loadingRoles) {
     return no
   }
 
-  return isPermitted(rolespermissions, roleName) ||
-    isAllowedModule(rolespermissions, permission)
+  const existOnENV = MODULES.split(', ').includes(moduleName)
+
+  return isSuperAdmin && existOnENV
     ? children
-    : null
+    : existOnENV &&
+      isPermitted(modulespermissions, permissionGroup) &&
+      isAllowedModule(modulespermissions, moduleName)
+    ? children
+    : no
 }
 
 const PageNotRestricted = () => (
@@ -159,14 +124,13 @@ const PageNotRestricted = () => (
 
 RolesPermissions.defaultProps = {
   no: <PageNotRestricted />,
-  permission: null,
-  roleName: null
+  permissionGroup: null,
+  moduleName: null
 }
 
 RolesPermissions.propTypes = {
-  text: PropTypes.string,
-  permission: PropTypes.string,
-  roleName: PropTypes.string,
+  permissionGroup: PropTypes.string,
+  moduleName: PropTypes.string,
   children: PropTypes.node.isRequired,
   no: PropTypes.node
 }

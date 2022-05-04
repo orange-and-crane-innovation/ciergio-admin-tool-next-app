@@ -3,7 +3,7 @@ import StaffProfile from '@app/components/pages/staff/profile'
 
 function StaffProfilePage() {
   return (
-    <RolesPermissions roleName="accounts">
+    <RolesPermissions permissionGroup="accounts" moduleName="myStaff">
       <StaffProfile />
     </RolesPermissions>
   )
