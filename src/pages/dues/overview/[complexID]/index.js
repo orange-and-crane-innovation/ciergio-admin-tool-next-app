@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 const OverviewPage = () => {
   return (
-    <RolesPermissions roleName="dues" permission="myDues">
+    <RolesPermissions permissionGroup="dues" moduleName="myDues">
       <Overview />
     </RolesPermissions>
   )

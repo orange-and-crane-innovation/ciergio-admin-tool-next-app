@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function NotificationsListPage() {
   return (
-    <RolesPermissions roleName="notifications" permission="notifications">
+    <RolesPermissions permissionGroup="notifications" moduleName="notifications">
       <NotificationsList />
     </RolesPermissions>
   )

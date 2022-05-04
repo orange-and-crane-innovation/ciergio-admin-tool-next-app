@@ -7,7 +7,7 @@ function ContactList() {
   const { id } = router.query
 
   return (
-    <RolesPermissions permission="directory" roleName="accounts">
+    <RolesPermissions moduleName="directory" permissionGroup="accounts">
       <Contacts id={id} />
     </RolesPermissions>
   )

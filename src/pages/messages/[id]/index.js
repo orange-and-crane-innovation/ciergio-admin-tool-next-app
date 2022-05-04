@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function MessagesPage() {
   return (
-    <RolesPermissions roleName="messaging" permission="messages">
+    <RolesPermissions permissionGroup="messaging" moduleName="messages">
       <Messages />
     </RolesPermissions>
   )

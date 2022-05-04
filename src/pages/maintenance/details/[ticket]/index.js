@@ -3,7 +3,7 @@ import Ticket from '@app/components/pages/maintenance/components/ticket'
 
 function TicketPage() {
   return (
-    <RolesPermissions roleName="issues" permission="maintenanceAndRepairs">
+    <RolesPermissions permissionGroup="issues" moduleName="maintenanceAndRepairs">
       <Ticket />
     </RolesPermissions>
   )
