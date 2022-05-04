@@ -2,15 +2,13 @@ import P from 'prop-types'
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useEffect, useState } from 'react'
-import { FiMoreHorizontal, FiSettings } from 'react-icons/fi'
+import { FiSettings } from 'react-icons/fi'
 
 import { gql, useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
 import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
-import Dropdown from '@app/components/dropdown'
 import PageLoader from '@app/components/page-loader'
 import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
 import showToast from '@app/utils/toast'
 
 import style from './Manage.module.css'
@@ -316,7 +314,7 @@ function ManageAccount({ onSubmit, isSubmitting }) {
                                 ? item?.building?.name
                                 : item?.company?.name
                             }
-                            userTitle={getAccountTypeName(item?.accountType)}
+                            userTitle={item?.companyRole?.name}
                             size={'SM'}
                           />
                         </div>
