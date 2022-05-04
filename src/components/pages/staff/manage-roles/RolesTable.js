@@ -13,7 +13,7 @@ import { useMutation } from '@apollo/client'
 const ACCESSLEVEL = [
   {
     value: 'administer',
-    label: 'Read & Write'
+    label: 'Admin'
   },
   {
     value: 'edit',
