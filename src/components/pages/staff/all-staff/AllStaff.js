@@ -524,9 +524,7 @@ function AllStaff() {
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
               const { user, company, complex, building, accountType } = staff
-              const roleType = getAccountTypeName(accountType)
-              console.log('profile', profile)
-              console.log('staff', staff)
+              const roleType = staff?.companyRole?.name || ''
               let dropdownData = [
                 {
                   label: `${

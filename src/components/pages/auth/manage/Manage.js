@@ -1,23 +1,19 @@
+import P from 'prop-types'
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { useState, useEffect } from 'react'
-import { gql, useQuery, useLazyQuery, useMutation } from '@apollo/client'
-import P from 'prop-types'
-import { FiMoreHorizontal, FiSettings } from 'react-icons/fi'
+import React, { useEffect, useState } from 'react'
+import { FiSettings } from 'react-icons/fi'
 
+import { gql, useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
 import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
 import PageLoader from '@app/components/page-loader'
-import Dropdown from '@app/components/dropdown'
-
-import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
+import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
 import showToast from '@app/utils/toast'
 
-import Userinfo from './components/user-info'
-import CreateModal from './components/createAccount'
-
 import style from './Manage.module.css'
+import CreateModal from './components/createAccount'
+import Userinfo from './components/user-info'
 
 export const GET_PROFILE = gql`
   query {
@@ -47,9 +43,18 @@ export const GET_PROFILE = gql`
         skip
         data {
           _id
-          companyRoleId
-          accountType
           active
+          accountType
+          companyRoleId
+          companyRole {
+            _id
+            name
+            status
+            permissions {
+              group
+              accessLevel
+            }
+          }
           company {
             name
             avatar
@@ -309,7 +314,7 @@ function ManageAccount({ onSubmit, isSubmitting }) {
                                 ? item?.building?.name
                                 : item?.company?.name
                             }
-                            userTitle={getAccountTypeName(item?.accountType)}
+                            userTitle={item?.companyRole?.name}
                             size={'SM'}
                           />
                         </div>

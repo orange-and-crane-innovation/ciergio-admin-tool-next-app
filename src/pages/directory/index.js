@@ -8,21 +8,21 @@ function DirectoryPage() {
   const accountType = profile?.accounts?.data[0]?.accountType
   if (accountType === 'administrator') {
     return (
-      <RolesPermissions permission="directory">
+      <RolesPermissions permission="directory" roleName="accounts">
         <Directory />
       </RolesPermissions>
     )
   }
   if (accountType === 'complex_admin') {
     return (
-      <RolesPermissions permission="directory">
+      <RolesPermissions permission="directory" roleName="accounts">
         <Contacts />
       </RolesPermissions>
     )
   }
   if (accountType === 'company_admin') {
     return (
-      <RolesPermissions permission="directory">
+      <RolesPermissions permission="directory" roleName="accounts">
         <Companies />
       </RolesPermissions>
     )

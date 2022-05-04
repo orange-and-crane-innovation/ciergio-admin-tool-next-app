@@ -1,17 +1,18 @@
-import { DonationsContent, MyDuesExtraComponent } from './components'
+import { dequal } from 'dequal'
+import { useRouter } from 'next/router'
+import Props from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import { getCompanySettings, updateCompanySettings } from './_query'
-import { useMutation, useQuery } from '@apollo/client'
 
+import { useMutation, useQuery } from '@apollo/client'
 import Button from '@app/components/button'
 import Input from '@app/components/forms/form-input'
-import Props from 'prop-types'
 import Select from '@app/components/forms/form-select'
 import Toggle from '@app/components/toggle'
-import { dequal } from 'dequal'
 import showToast from '@app/utils/toast'
+
+import { getCompanySettings, updateCompanySettings } from './_query'
+import { DonationsContent, MyDuesExtraComponent } from './components'
 import styles from './settings.module.css'
-import { useRouter } from 'next/router'
 
 const KEEPACTIVITYLOGS = [
   {
@@ -32,6 +33,31 @@ const TOGGLESETTINGS = [
   {
     label: 'Allow public Posts and View',
     id: 'allowPublicPosts',
+    toggle: false
+  },
+  {
+    label: 'My Properties',
+    id: 'myProperties',
+    toggle: true
+  },
+  {
+    label: 'My Staff',
+    id: 'myStaff',
+    toggle: true
+  },
+  {
+    label: 'My Residents',
+    id: 'myResidents',
+    toggle: false
+  },
+  {
+    label: 'Attactions and Events',
+    id: 'attactionsAndEvents',
+    toggle: false
+  },
+  {
+    label: 'My Members',
+    id: 'myMembers',
     toggle: false
   },
   {
@@ -181,6 +207,7 @@ const ToggleSettings = ({ settings, setToggleData }) => {
     <div className="flex flex-col">
       {settings &&
         settings.map((setting, index) => {
+          // console.log('settings', settings)
           return (
             <div
               key={index}
@@ -259,9 +286,11 @@ const SettingsTab = ({ companyId, type }) => {
         subscriptionModules,
         allowPublicPosts
       } = data?.getCompanySettings
+      console.log('subscriptionModules', subscriptionModules)
       const temp = toggleData.map(toggleSetting => {
         const toggle = subscriptionModules[toggleSetting.id]
         const keys = toggle ? Object.keys(toggle) : []
+        console.log('toggleSetting', toggleSetting)
 
         const isCanEnableKey = keys.indexOf('enable') > 0
 
@@ -334,6 +363,9 @@ const SettingsTab = ({ companyId, type }) => {
       }
       return tempAcc
     }, {})
+
+    // delete subscriptionModules.myProperties
+    // delete subscriptionModules.myStaff
 
     const data = {
       allowPublicPosts: toggleData[0].toggle,

@@ -2,9 +2,8 @@ import PostViewPage from '@app/components/pages/posts/view'
 import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PostViewComponent() {
-  const permission = 'qrCode'
   return (
-    <RolesPermissions permission={permission} roleName={permission}>
+    <RolesPermissions permissionGroup="post" moduleName="qrCode">
       <PostViewPage />
     </RolesPermissions>
   )
