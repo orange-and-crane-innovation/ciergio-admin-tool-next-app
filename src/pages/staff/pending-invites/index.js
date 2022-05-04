@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PendingInvitesPage() {
   return (
-    <RolesPermissions permission="directory">
+    <RolesPermissions permissionGroup="accounts" moduleName="myStaff">
       <PendingInvites />
     </RolesPermissions>
   )

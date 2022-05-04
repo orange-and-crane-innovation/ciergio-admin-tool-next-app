@@ -7,7 +7,7 @@ function CompanyPage() {
   const { id } = router.query
 
   return (
-    <RolesPermissions permission="directory">
+    <RolesPermissions permission="directory" roleName="accounts">
       <Company id={id} />
     </RolesPermissions>
   )

@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PrayerRequestsPage() {
   return (
-    <RolesPermissions permission="prayerRequests" roleName="issues">
+    <RolesPermissions permissionGroup="issues" moduleName="prayerRequests">
       <PrayerRequests />
     </RolesPermissions>
   )

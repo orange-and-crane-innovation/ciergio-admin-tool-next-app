@@ -2,9 +2,8 @@ import CreatePosts from '@app/components/pages/posts/create'
 import { RolesPermissions } from '@app/components/rolespermissions'
 
 function CreateBulletinPage() {
-  const permission = 'qrCode'
   return (
-    <RolesPermissions permission={permission} roleName={permission}>
+    <RolesPermissions permissionGroup="post" moduleName="qrCode">
       <CreatePosts />
     </RolesPermissions>
   )
