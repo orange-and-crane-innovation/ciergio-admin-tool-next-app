@@ -122,12 +122,22 @@ const CategoriesComponent = () => {
     }
   ]
 
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyID = profile?.accounts?.data[0]?.company?._id
+
+  let isSuperUser = accountType === 'administrator'
+
+  let getCategoryWhere = {
+    type: categoryType
+  }
+
+  if (!isSuperUser) getCategoryWhere.companyId = companyID
+
   const { loading, data, error, refetch } = useQuery(GET_POST_CATEGORY_QUERY, {
     enabled: false,
     variables: {
-      where: {
-        type: categoryType
-      },
+      where: getCategoryWhere,
       sort: {
         by: 'name',
         order: 'asc'
@@ -292,18 +302,11 @@ const CategoriesComponent = () => {
   }
 
   const onSubmit = async (type, data) => {
-    const currentUser = JSON.parse(localStorage.getItem('profile'))
     try {
       if (type === 'create') {
-        const {
-          accounts: { data: accntData }
-        } = currentUser
-
-        const createData = {
-          ...data,
-          companyId: accntData[0]?.company?._id
-        }
-        await createPostCategory({ variables: createData })
+        await createPostCategory({
+          variables: isSuperUser ? data : { ...data, companyId: companyID }
+        })
       } else if (type === 'edit') {
         const updateData = {
           id: data.id,

@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function CreateBulletinPage() {
   return (
-    <RolesPermissions roleName="post" permission="bulletinBoard">
+    <RolesPermissions permissionGroup="post" moduleName="bulletinBoard">
       <CreatePosts />
     </RolesPermissions>
   )

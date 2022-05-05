@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PastoralWorksEditBulletinPage() {
   return (
-    <RolesPermissions roleName="post" permission="pastoralWorks">
+    <RolesPermissions permissionGroup="post" moduleName="pastoralWorks">
       <EditPosts />
     </RolesPermissions>
   )

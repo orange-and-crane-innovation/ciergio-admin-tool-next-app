@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function EditFormsPage() {
   return (
-    <RolesPermissions roleName="post" permission="forms">
+    <RolesPermissions permissionGroup="post" moduleName="forms">
       <EditForms />
     </RolesPermissions>
   )
