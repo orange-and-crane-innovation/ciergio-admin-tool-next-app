@@ -8,6 +8,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import P from 'prop-types'
 import * as yup from 'yup'
+import { gql, useLazyQuery } from '@apollo/client'
 
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
@@ -125,11 +126,55 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
     }
   )
 
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const company = profile?.accounts?.data[0]?.company?._id
+
+  const GET_POST_CATEGORY_QUERY = gql`
+    query getPostCategory(
+      $where: PostCategoryInput
+      $limit: Int
+      $offset: Int
+      $sort: PostCategorySort
+    ) {
+      getPostCategory(
+        where: $where
+        limit: $limit
+        offset: $offset
+        sort: $sort
+      ) {
+        count
+        category {
+          _id
+          name
+        }
+      }
+    }
+  `
+
+  let categoryWhere = {
+    type: 'issue'
+  }
+  if (accountType !== 'administrator') {
+    categoryWhere = { ...categoryWhere, companyId: company }
+  }
+
   const {
     data: categories,
     loading: loadingCategories,
     error: errorCategories
-  } = useQuery(GET_POST_CATEGORY)
+  } = useQuery(GET_POST_CATEGORY_QUERY, {
+    enabled: false,
+    fetchPolicy: 'network-only',
+    variables: {
+      where: categoryWhere,
+      sort: {
+        order: 'asc'
+      },
+      limit: 500,
+      offset: 0
+    }
+  })
 
   const [createRequest, { loading: creatingPrayerRequest }] = useMutation(
     CREATE_PRAYER_REQUEST,
