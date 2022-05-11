@@ -45,6 +45,31 @@ const navigation = [
         ]
       },
       {
+        url: '/members',
+        icon: 'ciergio-user',
+        title: 'My Members',
+        moduleName: 'myMembers',
+        permissionGroup: 'accounts',
+
+        items: [
+          {
+            url: '/members/all-members',
+            title: 'All Members',
+            items: []
+          },
+          {
+            url: '/members/groups',
+            title: 'Groups',
+            items: []
+          },
+          {
+            url: '/members/pending-member-invites',
+            title: 'Pending Member Invites',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/staff',
         icon: 'ciergio-user-group',
         title: 'My Staff',
@@ -321,13 +346,6 @@ const navigation = [
             items: []
           }
         ]
-      },
-      {
-        url: '/my-members',
-        icon: 'ciergio-user',
-        title: 'My Members',
-
-        items: []
       }
     ]
   }

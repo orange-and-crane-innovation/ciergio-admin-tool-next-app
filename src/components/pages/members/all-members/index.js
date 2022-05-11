@@ -1,16 +1,15 @@
+import { debounce } from 'lodash'
 import React, { useState } from 'react'
-
-import FormSelect from '@app/components/forms/form-select'
-import FormInput from '@app/components/forms/form-input'
-import Button from '@app/components/button'
-import { Card, Table, Action } from '@app/components/globals'
-
-import { FaTimes, FaSearch, FaPlusCircle } from 'react-icons/fa'
-import { HiOutlinePrinter } from 'react-icons/hi'
+import { FaPlusCircle } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
+import { HiOutlinePrinter } from 'react-icons/hi'
 
+import Button from '@app/components/button'
+import SearchControl from '@app/components/globals/SearchControl'
+import { Action, Card, Table } from '@app/components/globals'
 import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
-import ViewResidentModal from './ViewResidentModal'
+
+import ViewResidentModal from './../ViewResidentModal'
 
 const tableRows = [
   {
@@ -98,34 +97,26 @@ function MyMembers() {
 
   const handleResidentView = () => setViewResident(old => !old)
 
+  const onSearch = debounce(e => {
+    setSearchText(e.target.value !== '' ? e.target.value : null)
+  }, 1000)
+
+  const onClearSearch = () => {
+    setSearchText(null)
+  }
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">Registered Members</h1>
 
-      <div className="flex items-center justify-end mt-12 mx-4 w-full">
-        <div className="flex items-center justify-between w-8/12 flex-row">
-          <FormSelect options={[]} className="mr-4" placeholder="Choose One" />
-          <FormSelect
-            options={[]}
-            className="mr-4"
-            placeholder="Filter Verified Email"
+      <div className="flex items-center justify-end mt-12 w-full">
+        <div className="flex items-center justify-between w-8/12 flex-row flex-row-reverse">
+          <SearchControl
+            placeholder="Search"
+            searchText={searchText}
+            onSearch={onSearch}
+            onClearSearch={onClearSearch}
           />
-          <div className="w-full relative mr-4">
-            <span className="absolute top-4 left-4">
-              {searchText ? (
-                <FaTimes className="cursor-pointer" onClick={() => {}} />
-              ) : (
-                <FaSearch />
-              )}
-            </span>
-            <FormInput
-              name="search"
-              placeholder="Search"
-              inputClassName="pl-8"
-              onChange={e => setSearchText(e.target.value)}
-              value={searchText}
-            />
-          </div>
         </div>
       </div>
 
