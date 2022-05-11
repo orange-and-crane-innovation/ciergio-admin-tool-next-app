@@ -6,20 +6,6 @@ import FormSelect from '@app/components/forms/form-select'
 import PropTypes from 'prop-types'
 import styles from './index.module.css'
 
-// we will initialize here since we will get the categories from the backend we will just match all of these to the list from the backend
-const PASTORAL_WORKS_CATEGORY_ORDER = [
-  'Parish Events',
-  'Food Program',
-  'Educational Program',
-  'Youth Events',
-  'For Vacation',
-  'Special Outreach',
-  'Calamities',
-  'Media Program',
-  'Prayers',
-  'IT App Info/Support'
-]
-
 const GET_POST_CATEGORY_QUERY = gql`
   query getPostCategory(
     $where: PostCategoryInput
@@ -86,6 +72,13 @@ const SelectCategoryComponent = ({
   const isSystemPray = system === 'pray'
   const isSystemCircle = system === 'circle'
 
+  let categoryWhere = {
+    type: type
+  }
+  if (accountType !== ACCOUNT_TYPES.SUP.value) {
+    categoryWhere = { ...categoryWhere, companyId: company }
+  }
+
   const [
     getCategories,
     { loading: loadingCategory, data: dataCategory, error: errorCategory }
@@ -93,9 +86,7 @@ const SelectCategoryComponent = ({
     enabled: false,
     fetchPolicy: 'network-only',
     variables: {
-      where: {
-        type: type
-      },
+      where: categoryWhere,
       sort: {
         by: 'name',
         order: 'asc'
@@ -117,6 +108,7 @@ const SelectCategoryComponent = ({
     fetchPolicy: 'network-only',
     variables: {
       where: {
+        // companyId: company,
         settings: {
           accountType: 'company',
           accountId: company
@@ -131,15 +123,7 @@ const SelectCategoryComponent = ({
   })
 
   useEffect(() => {
-    if (
-      isSystemPray ||
-      isSystemCircle ||
-      accountType === ACCOUNT_TYPES.SUP.value
-    ) {
-      getCategories()
-    } else {
-      getAllowedCategories()
-    }
+    getCategories()
   }, [])
 
   useEffect(() => {
@@ -157,24 +141,7 @@ const SelectCategoryComponent = ({
         }
       })
 
-      const sorted = []
-      PASTORAL_WORKS_CATEGORY_ORDER.forEach((ct, index) => {
-        const isExist = dataLists.find(dl => ct === dl.label)
-
-        if (isExist) {
-          sorted.push(isExist)
-        }
-      })
-
-      const unsorted = dataLists.filter(dl => {
-        const isExist = sorted.find(s => s.label === dl.label)
-
-        return !isExist && dl
-      })
-
-      const dataListSorted = [...sorted, ...unsorted]
-
-      setLists(!isPastoralWorksPage ? dataLists : dataListSorted)
+      setLists(dataLists)
     }
   }, [
     loadingCategory,
