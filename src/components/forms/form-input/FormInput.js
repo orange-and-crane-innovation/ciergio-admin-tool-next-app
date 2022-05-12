@@ -69,7 +69,7 @@ function FormInput({
           }
           className={inputClasses}
           placeholder={placeholder}
-          value={value}
+          // value={value} // Remove because input is already maintaining internal value state and it should come from outside state
           defaultValue={defaultValue}
           maxLength={maxLength}
           readOnly={readOnly}

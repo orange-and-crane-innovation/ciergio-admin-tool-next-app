@@ -52,7 +52,7 @@ const EditModalContent = ({ control, errors, selected }) => {
       control={control}
       name="name"
       render={field => {
-        field.value = !field.value ? selected?.name : field.value
+        field.defaultValue = !field.value ? selected?.name : field.value
         return (
           <Input
             {...field}
