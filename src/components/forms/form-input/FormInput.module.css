@@ -38,7 +38,7 @@
     @apply block;
 
     & .formLabel {
-      @apply block mb-4;
+      @apply block mb-4 font-bold;
     }
 
     & span {
