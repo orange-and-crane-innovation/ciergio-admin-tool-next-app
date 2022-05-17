@@ -124,6 +124,8 @@ const CreatePosts = () => {
   const [selectedComplexSpecific, setSelectedComplexSpecific] = useState()
   const [selectedBuildingExcept, setSelectedBuildingExcept] = useState()
   const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState()
+  const [selectedGroupSpecific, setSelectedGroupSpecific] = useState()
+  const [selectedGroupExcept, setSelectedGroupExcept] = useState()
   const [selectedPublishTimeType, setSelectedPublishTimeType] = useState('now')
   const [selectedPublishDateTime, setSelectedPublishDateTime] = useState(
     new Date()
@@ -585,6 +587,16 @@ const CreatePosts = () => {
           buildingIds: selectedBuildingExcept.map(item => item.value)
         }
       }
+      if (selectedGroupSpecific) {
+        createData.audienceExceptions = {
+          buildingIds: selectedBuildingExcept.map(item => item.value)
+        }
+      }
+      if (selectedGroupExcept) {
+        createData.audienceExceptions = {
+          buildingIds: selectedBuildingExcept.map(item => item.value)
+        }
+      }
       if (isQRCodePage) {
         createData.qr = true
       }
@@ -641,6 +653,14 @@ const CreatePosts = () => {
 
   const onSelectBuildingSpecific = data => {
     setSelectedBuildingSpecific(data)
+  }
+
+  const onSelectGroupSpecific = data => {
+    setSelectedGroupSpecific(data)
+  }
+
+  const onSelectGroupExcept = data => {
+    setSelectedGroupExcept(data)
   }
 
   const handleShowAudienceModal = () => {
@@ -1344,6 +1364,8 @@ const CreatePosts = () => {
           onSelectComplexSpecific={onSelectComplexSpecific}
           onSelectBuildingExcept={onSelectBuildingExcept}
           onSelectBuildingSpecific={onSelectBuildingSpecific}
+          onSelectGroupSpecific={onSelectGroupSpecific}
+          onSelectGroupExcept={onSelectGroupExcept}
           onSave={onSaveAudience}
           onCancel={onCancelAudience}
           onClose={onCancelAudience}
@@ -1355,6 +1377,8 @@ const CreatePosts = () => {
           valueComplexSpecific={selectedComplexSpecific}
           valueBuildingExcept={selectedBuildingExcept}
           valueBuildingSpecific={selectedBuildingSpecific}
+          valueGroupExcept={selectedGroupExcept}
+          valueGroupSpecific={selectedGroupSpecific}
         />
 
         <PublishTimeModal

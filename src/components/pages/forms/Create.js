@@ -520,7 +520,7 @@ const CreatePosts = () => {
           />
 
           <Card
-            header={<span className={style.CardHeader}>Publish Details</span>}
+            header={<span className={style.CardHeader}>Publish Detailss</span>}
             content={
               <div className={style.CreateContentContainer}>
                 <div className={style.CreatePostPublishContent}>

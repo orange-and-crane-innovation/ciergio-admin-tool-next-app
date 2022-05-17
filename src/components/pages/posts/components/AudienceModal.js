@@ -9,6 +9,7 @@ import { ACCOUNT_TYPES } from '@app/constants'
 import SelectCompany from '@app/components/globals/SelectCompany'
 import SelectComplex from '@app/components/globals/SelectComplex'
 import SelectBuilding from '@app/components/globals/SelectBuilding'
+import SelectGroup from '@app/components/globals/SelectGroup'
 
 const Component = ({
   isShown,
@@ -27,21 +28,34 @@ const Component = ({
   valueComplexExcept,
   valueComplexSpecific,
   valueBuildingExcept,
-  valueBuildingSpecific
+  valueBuildingSpecific,
+  valueGroupExcept,
+  valueGroupSpecific
 }) => {
   const [selectedAudience, setSelectedAudience] = useState(valueAudienceType)
-  const [selectedCompanyExcept, setSelectedCompanyExcept] =
-    useState(valueCompanyExcept)
-  const [selectedCompanySpecific, setSelectedCompanySpecific] =
-    useState(valueCompanySpecific)
-  const [selectedComplexExcept, setSelectedComplexExcept] =
-    useState(valueComplexExcept)
-  const [selectedComplexSpecific, setSelectedComplexSpecific] =
-    useState(valueComplexSpecific)
-  const [selectedBuildingExcept, setSelectedBuildingExcept] =
-    useState(valueBuildingExcept)
+  const [selectedCompanyExcept, setSelectedCompanyExcept] = useState(
+    valueCompanyExcept
+  )
+  const [selectedCompanySpecific, setSelectedCompanySpecific] = useState(
+    valueCompanySpecific
+  )
+  const [selectedComplexExcept, setSelectedComplexExcept] = useState(
+    valueComplexExcept
+  )
+  const [selectedComplexSpecific, setSelectedComplexSpecific] = useState(
+    valueComplexSpecific
+  )
+  const [selectedBuildingExcept, setSelectedBuildingExcept] = useState(
+    valueBuildingExcept
+  )
   const [selectedBuildingSpecific, setSelectedBuildingSpecific] = useState(
     valueBuildingSpecific
+  )
+  const [selectedGroupExcept, setSelectedGroupExcept] = useState(
+    valueGroupExcept
+  )
+  const [selectedGroupSpecific, setSelectedGroupSpecific] = useState(
+    valueGroupSpecific
   )
   const user = JSON.parse(localStorage.getItem('profile'))
   const accountType = user?.accounts?.data[0]?.accountType
@@ -51,10 +65,15 @@ const Component = ({
     setSelectedAudience(valueAudienceType)
     setSelectedCompanyExcept(valueCompanyExcept)
     setSelectedCompanySpecific(valueCompanySpecific)
+
     setSelectedComplexExcept(valueComplexExcept)
     setSelectedComplexSpecific(valueComplexSpecific)
+
     setSelectedBuildingExcept(valueBuildingExcept)
     setSelectedBuildingSpecific(valueBuildingSpecific)
+
+    setSelectedGroupExcept(valueGroupExcept)
+    setSelectedGroupSpecific(valueGroupSpecific)
   }, [
     valueAudienceType,
     valueCompanyExcept,
@@ -62,7 +81,9 @@ const Component = ({
     valueComplexExcept,
     valueComplexSpecific,
     valueBuildingExcept,
-    valueBuildingSpecific
+    valueBuildingSpecific,
+    valueGroupExcept,
+    valueGroupSpecific
   ])
 
   const onSelectAudience = e => {
@@ -134,6 +155,17 @@ const Component = ({
 
   const handleClearBuildingSpecific = () => {
     setSelectedBuildingSpecific(null)
+  }
+
+  const handleSelectGroupSpecific = data => {
+    setSelectedGroupExcept(null)
+    setSelectedGroupSpecific(data)
+    setSelectedGroupSpecific(data)
+    setSelectedGroupExcept(null)
+  }
+
+  const handleClearGroupSpecific = () => {
+    setSelectedGroupExcept(null)
   }
 
   switch (accountType) {
@@ -329,6 +361,20 @@ const Component = ({
                     />
                   </div>
                 )}
+
+                {/* {accountType === ACCOUNT_TYPES.COMPYAD.value && ( */}
+                <div className="mb-4">
+                  <p className="font-bold text-neutral-500 mb-2">Groups</p>
+                  <SelectGroup
+                    type="active"
+                    placeholder="Select a Group"
+                    companyId={user?.accounts?.data[0]?.company?._id}
+                    onChange={handleSelectGroupSpecific}
+                    onClear={handleClearGroupSpecific}
+                    selected={selectedGroupSpecific}
+                  />
+                </div>
+                {/* )} */}
               </>
             )}
           </div>
@@ -347,6 +393,8 @@ Component.propTypes = {
   onSelectComplexSpecific: PropTypes.func,
   onSelectBuildingExcept: PropTypes.func,
   onSelectBuildingSpecific: PropTypes.func,
+  onSelectGroupSpecific: PropTypes.func,
+  onSelectGroupExcept: PropTypes.func,
   onSave: PropTypes.func,
   onCancel: PropTypes.func,
   valueAudienceType: PropTypes.string,
@@ -355,7 +403,9 @@ Component.propTypes = {
   valueComplexExcept: PropTypes.array,
   valueComplexSpecific: PropTypes.array,
   valueBuildingExcept: PropTypes.array,
-  valueBuildingSpecific: PropTypes.array
+  valueBuildingSpecific: PropTypes.array,
+  valueGroupExcept: PropTypes.array,
+  valueGroupSpecific: PropTypes.array
 }
 
 export default Component

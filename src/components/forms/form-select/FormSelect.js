@@ -27,13 +27,21 @@ const ValueContainer = ({ children, ...props }) => {
 
   if (!hasValue || !isMulti) {
     return (
-      <components.ValueContainer {...props}>
+      <components.ValueContainer
+        {...props}
+        className={styles.valueCont}
+        css={{ zIndex: 100000 }}
+      >
         {children}
       </components.ValueContainer>
     )
   }
   return (
-    <components.ValueContainer {...props}>
+    <components.ValueContainer
+      {...props}
+      className={styles.valueCont}
+      css={{ zIndex: 100000 }}
+    >
       {!inputValue && content}
       {children[1]}
     </components.ValueContainer>
