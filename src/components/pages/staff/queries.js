@@ -19,12 +19,19 @@ export const GET_ACCOUNTS = gql`
             accessLevel
           }
         }
+        companyGroups {
+          _id
+          name
+        }
         user {
           _id
           firstName
           lastName
           avatar
           jobTitle
+          email
+          birthDate
+          gender
         }
         company {
           name
