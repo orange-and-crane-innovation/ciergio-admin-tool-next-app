@@ -1,28 +1,40 @@
 import { debounce } from 'lodash'
+import isEmpty from 'lodash/isEmpty'
 import { useRouter } from 'next/router'
-import React, { useState, useMemo } from 'react'
-import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
+import Props from 'prop-types'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
+import ReactSelect from 'react-select'
+import * as yup from 'yup'
 
-import Can from '@app/permissions/can'
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
+import { gql, useMutation, useQuery } from '@apollo/client'
 import Button from '@app/components/button'
+import Dropdown from '@app/components/dropdown'
+import Input from '@app/components/forms/form-input'
+import { Card } from '@app/components/globals'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchControl from '@app/components/globals/SearchControl'
-import { Action, Card, Table } from '@app/components/globals'
+import Modal from '@app/components/modal'
 import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
+import { GET_ACCOUNTS } from '@app/components/pages/staff/queries'
+import Can from '@app/permissions/can'
+import errorHandler from '@app/utils/errorHandler'
+import showToast from '@app/utils/toast'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 import ViewResidentModal from './../ViewResidentModal'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import gql from 'graphql-tag'
-import Link from 'next/link'
-import Dropdown from '@app/components/dropdown'
+
+const SCHEMA = yup.object().shape({
+  email: yup
+    .string()
+    .email('Invalid email format')
+    .required('Member Email required')
+})
 
 const columns = [
-  {
-    name: '',
-    width: ''
-  },
   {
     name: 'Name',
     width: ''
@@ -37,72 +49,138 @@ const columns = [
   },
   {
     name: '',
-    width: ''
+    width: '4%'
   }
 ]
 
-export const GET_ACCOUNTS = gql`
-  query getAccounts($where: GetAccountsParams, $skip: Int, $limit: Int) {
-    getAccounts(where: $where, skip: $skip, limit: $limit) {
-      count
-      skip
-      limit
-      data {
-        _id
-        accountType
-        companyRoleId
-        companyGroups {
-          _id
-          name
-        }
-        companyRole {
-          _id
-          name
-          status
-          permissions {
-            group
-            accessLevel
-          }
-        }
-        user {
-          _id
-          email
-          firstName
-          lastName
-          avatar
-          jobTitle
-        }
-        company {
-          name
-          _id
-        }
-        complex {
-          name
-          _id
-        }
-        building {
-          name
-          _id
-        }
-      }
+const GET_COMPANY_GROUPS = gql`
+  query($where: getCompanyGroupsParams) {
+    getCompanyGroups(where: $where) {
+      _id
+      name
+      status
+      companyId
     }
   }
 `
 
+const INVITE_MEMBER = gql`
+  mutation inviteMember($data: InputInviteMember, $companyId: String) {
+    inviteMember(data: $data, companyId: $companyId) {
+      _id
+      message
+    }
+  }
+`
+
+const InviteModalContent = ({ control, errors, selected, options }) => {
+  return (
+    <>
+      <Controller
+        control={control}
+        name="email"
+        render={field => {
+          return (
+            <Input
+              {...field}
+              label="Member Email"
+              error={errors?.email?.message ?? null}
+              placeholder="Enter email address"
+              description={
+                <p className="mb-2">An invite will be sent to this email.</p>
+              }
+            />
+          )
+        }}
+      />
+
+      <br />
+
+      <p className="font-bold text-base mb-2">Group (Optional)</p>
+      <p className="mb-2">
+        Assigning members to groups allows them to be chosen as an audience in
+        Bulletin Board and they will be included in dedicated group chats.
+      </p>
+      <Controller
+        control={control}
+        name="groupids"
+        render={({ name, onChange, value }) => (
+          <ReactSelect
+            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            menuPortalTarget={document.body}
+            options={options}
+            onChange={onChange}
+            value={value}
+            placeholder="Choose group"
+            isMulti
+          />
+        )}
+      />
+    </>
+  )
+}
+
+const defaultModalState = {
+  type: 'invite',
+  visible: false,
+  okText: 'Invite Member',
+  title: 'Invite Member'
+}
+
 function MyMembers() {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
+  const [modalState, setModalState] = useState(defaultModalState)
+
   const [showModal, setShowModal] = useState(false)
-  const [viewResident, setViewResident] = useState(false)
-  const [selectedResident, setSelectedResident] = useState(null)
+  const [viewMember, setViewMember] = useState(false)
+  const [selectedMember, setSelectedMember] = useState(null)
   const [selectedStaff, setSelectedStaff] = useState(null)
+  const [groupOptions, setGroupOptions] = useState()
+
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
   const [skipCount, setSkipCount] = useState(0)
 
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const companyId = user?.accounts?.data[0]?.company?._id
+
+  const { loading: loadingGroups, data: groups, error: errorGroups } = useQuery(
+    GET_COMPANY_GROUPS,
+    {
+      enabled: false,
+      variables: {
+        where: {
+          companyId: companyId,
+          status: 'active'
+        }
+      }
+    }
+  )
+
+  useEffect(() => {
+    if (groups && groups.getCompanyGroups)
+      setGroupOptions(
+        groups.getCompanyGroups?.map(g => {
+          return { label: g.name, value: g._id }
+        })
+      )
+  }, [groups])
+
+  const closeModal = () => {
+    setModalState({
+      ...modalState,
+      visible: false
+    })
+  }
+  const { control, errors } = useForm({
+    resolver: yupResolver(SCHEMA)
+  })
+
   const handleShowModal = () => setShowModal(old => !old)
 
-  const handleResidentView = () => setViewResident(old => !old)
+  const handleViewMember = () => setViewMember(old => !old)
 
   const onSearch = debounce(e => {
     setSearchText(e.target.value !== '' ? e.target.value : null)
@@ -112,9 +190,6 @@ function MyMembers() {
     setSearchText(null)
   }
 
-  const user = JSON.parse(localStorage.getItem('profile'))
-  const profile = JSON.parse(localStorage.getItem('profile'))
-  const companyId = user?.accounts?.data[0]?.company?._id
   const where = {
     accountTypes: 'member',
     companyId
@@ -134,7 +209,7 @@ function MyMembers() {
     }
   })
 
-  const staffData = useMemo(
+  const tableListData = useMemo(
     () => ({
       count: accounts?.getAccounts?.count || 0,
       limit: accounts?.getAccounts?.limit || 0,
@@ -142,15 +217,8 @@ function MyMembers() {
       data:
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
-              const {
-                user,
-                company,
-                complex,
-                building,
-                accountType,
-                companyGroups
-              } = staff
-              const roleType = staff?.companyRole?.name || ''
+              console.log('staff', staff)
+              const { user, accountType, companyGroups } = staff
               let dropdownData = [
                 {
                   label: `${
@@ -158,8 +226,19 @@ function MyMembers() {
                   }`,
                   icon: <span className="ciergio-user" />,
                   function: () => {
-                    setSelectedResident(staff)
-                    setViewResident(staff)
+                    const viewItem = {
+                      _id: user?._id,
+                      full_name: `${user?.firstName} ${user?.lastName}`,
+                      first_name: user?.firstName,
+                      last_name: user?.lastName,
+                      birthday: user?.birthDate,
+                      gender: user?.gender,
+                      email: user?.email,
+                      avatar: user?.avatar,
+                      groups: companyGroups
+                    }
+                    setSelectedMember(viewItem)
+                    setViewMember(true)
                   }
                 }
               ]
@@ -171,7 +250,7 @@ function MyMembers() {
                     label: 'Edit Member',
                     icon: <span className="ciergio-edit" />,
                     function: () => {
-                      setSelectedResident(staff)
+                      setSelectedMember(staff)
                       // resetEditStaffForm({
                       //   staffFirstName: user?.firstName,
                       //   staffLastName: user.lastName
@@ -197,24 +276,20 @@ function MyMembers() {
               }
 
               return {
-                avatar: (
-                  <div className="w-11 h-11 rounded-full overflow-auto">
-                    <img
-                      className="h-full w-full object-contain object-center"
-                      src={
-                        user?.avatar ||
-                        `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
-                      }
-                      alt="user-avatar"
-                    />
-                  </div>
-                ),
                 name: (
-                  <Link href={`/staff/view/${user?._id}`}>
-                    <a className="mx-2 hover:underline capitalize font-bold">
-                      {`${user?.firstName} ${user?.lastName}`}
-                    </a>
-                  </Link>
+                  <div className="flex items-center space-x-6">
+                    <div className="w-11 h-11 rounded-full overflow-auto">
+                      <img
+                        className="h-full w-full object-contain object-center"
+                        src={
+                          user?.avatar ||
+                          `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
+                        }
+                        alt="user-avatar"
+                      />
+                    </div>
+                    <span>{`${user?.firstName} ${user?.lastName}`}</span>
+                  </div>
                 ),
                 email: <>{user.email}</>,
                 group: (
@@ -235,8 +310,46 @@ function MyMembers() {
           : []
     }),
     [accounts?.getAccounts, router]
-    // [accounts?.getAccounts, router, resetEditStaffForm]
   )
+
+  const [
+    inviteMember,
+    { loading: inviteLoading, data: inviteData, error: inviteError }
+  ] = useMutation(INVITE_MEMBER)
+
+  const onSubmit = val => {
+    if (!isEmpty(val)) {
+      if (modalState.type === 'invite') {
+        let groupids = null
+        if (val?.groupids) groupids = val?.groupids.map(g => g.value)
+
+        inviteMember({
+          variables: {
+            companyId: companyId,
+            data: {
+              email: val?.email,
+              companyGroupIds: groupids
+            }
+          }
+        })
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (!inviteLoading) {
+      if (inviteData && !inviteError) {
+        showToast('success', `Successfully invite a member`)
+        closeModal()
+        // refetch()
+      }
+
+      if (!inviteData && inviteError) {
+        const err = inviteError
+        errorHandler(err)
+      }
+    }
+  }, [inviteLoading, inviteData, inviteError])
 
   return (
     <section className="content-wrap">
@@ -254,7 +367,7 @@ function MyMembers() {
       </div>
 
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Members`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">{`Registered Members`}</h1>
         <div className="flex items-center">
           <Button
             default
@@ -271,8 +384,13 @@ function MyMembers() {
           <Button
             default
             leftIcon={<FaPlusCircle />}
-            label="Add Member"
-            onClick={handleShowModal}
+            label="Invite a member"
+            onClick={() =>
+              setModalState({
+                ...defaultModalState,
+                visible: true
+              })
+            }
             className="mr-4 mt-4"
           />
         </div>
@@ -280,7 +398,7 @@ function MyMembers() {
       <Card
         content={
           <PrimaryDataTable
-            data={staffData}
+            data={tableListData}
             columns={columns}
             loading={loadingAccounts}
             currentPage={activePage}
@@ -289,26 +407,60 @@ function MyMembers() {
             setPageOffset={setSkipCount}
             setPageLimit={setLimitPage}
           />
-          // <Table
-          //   columns={tableRows}
-          //   payload={tableData}
-          //   onRowClick={resident => {
-          //     setSelectedResident(resident)
-          //     setViewResident(old => !old)
-          //   }}
-          //   pagination
-          // />
         }
       />
 
+      <Modal
+        title={modalState.title}
+        onClose={closeModal}
+        okText={modalState.okText}
+        okButtonProps={{
+          danger: modalState.type === 'delete',
+          disabled: loadingGroups || inviteLoading
+        }}
+        visible={modalState.visible}
+        onOk={async () => {
+          await control.trigger()
+          if (isEmpty(errors)) {
+            onSubmit(control.getValues())
+          }
+        }}
+        onCancel={closeModal}
+      >
+        {modalState.visible && (
+          <>
+            {/* {(modalState.type === 'add' || modalState.type === 'edit') && ( */}
+            {modalState.type === 'invite' && (
+              <InviteModalContent
+                control={control}
+                errors={errors}
+                // selected={selectedGroup}
+                options={groupOptions}
+              />
+            )}
+
+            {/* {modalState.type === 'delete' && (
+              <DeleteModalContent selected={selectedGroup} control={control} />
+            )} */}
+          </>
+        )}
+      </Modal>
+
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
+
       <ViewResidentModal
-        showModal={viewResident}
-        onShowModal={handleResidentView}
-        resident={selectedResident}
+        showModal={viewMember}
+        onShowModal={handleViewMember}
+        resident={selectedMember}
       />
     </section>
   )
+}
+
+InviteModalContent.propTypes = {
+  options: Props.array,
+  control: Props.any,
+  errors: Props.object
 }
 
 export default MyMembers

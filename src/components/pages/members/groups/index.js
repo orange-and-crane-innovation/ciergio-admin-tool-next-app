@@ -1,23 +1,23 @@
 import { debounce } from 'lodash'
 import isEmpty from 'lodash/isEmpty'
+import { useRouter } from 'next/router'
 import Props from 'prop-types'
-import React, { useState, useEffect } from 'react'
-import { FaPlusCircle, FaEllipsisH, FaExclamationCircle } from 'react-icons/fa'
-import { gql, useQuery, useMutation } from '@apollo/client'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
+import * as yup from 'yup'
 
+import { gql, useMutation, useQuery } from '@apollo/client'
 import Button from '@app/components/button'
-import { Card } from '@app/components/globals'
-import Table from '@app/components/table'
 import Dropdown from '@app/components/dropdown'
+import Input from '@app/components/forms/form-input'
+import { Card } from '@app/components/globals'
 import SearchControl from '@app/components/globals/SearchControl'
 import Modal from '@app/components/modal'
-import showToast from '@app/utils/toast'
-import * as yup from 'yup'
-import { Controller, useForm } from 'react-hook-form'
-import Input from '@app/components/forms/form-input'
-import { yupResolver } from '@hookform/resolvers/yup'
-
+import Table from '@app/components/table'
 import errorHandler from '@app/utils/errorHandler'
+import showToast from '@app/utils/toast'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const SCHEMA = yup.object().shape({
   name: yup.string().label('Group name').required()
@@ -131,6 +131,7 @@ const DeleteModalContent = ({ selected }) => {
 }
 
 const Groups = () => {
+  const router = useRouter()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const companyID = profile.accounts.data[0].company._id
   const [groups, setGroups] = useState()
@@ -163,6 +164,10 @@ const Groups = () => {
     { loading: deleteLoading, data: deleteData, error: deleteError }
   ] = useMutation(DELETE_COMPANY_GROUP)
 
+  const { control, errors } = useForm({
+    resolver: yupResolver(SCHEMA)
+  })
+
   // const onSearch = debounce(e => {
   //   setSearchText(e.target.value !== '' ? e.target.value : null)
   // }, 1000)
@@ -170,10 +175,6 @@ const Groups = () => {
   // const onClearSearch = () => {
   //   setSearchText(null)
   // }
-
-  const { control, errors } = useForm({
-    resolver: yupResolver(SCHEMA)
-  })
 
   const onSubmit = val => {
     if (!isEmpty(val)) {
@@ -259,7 +260,7 @@ const Groups = () => {
               const dropdownData = [
                 {
                   label: 'View',
-                  function: () => console.log('HEY ')
+                  function: () => router.push(`/members/groups/${item?._id}`)
                 },
                 {
                   label: 'Add Members',
