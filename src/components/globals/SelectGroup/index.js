@@ -17,13 +17,14 @@ const GET_GROUP_QUERY = gql`
   }
 `
 
-const SelectComplexComponent = ({
+const SelectGroupComponent = ({
   type,
   companyId,
   selected,
   error,
   onChange,
-  onClear
+  onClear,
+  placeholder
 }) => {
   const [lists, setLists] = useState()
 
@@ -63,7 +64,7 @@ const SelectComplexComponent = ({
     <div className={styles.SelectCompanyContainer}>
       <FormSelect
         name="complexIds"
-        placeholder={'Select a group'}
+        placeholder={placeholder || 'Select groups(s)'}
         valueholder="Complex"
         noOptionsMessage={() => 'No item found.'}
         defaultValue={selected}
@@ -77,7 +78,8 @@ const SelectComplexComponent = ({
   )
 }
 
-SelectComplexComponent.propTypes = {
+SelectGroupComponent.propTypes = {
+  placeholder: PropTypes.string,
   type: PropTypes.string,
   userType: PropTypes.string,
   companyId: PropTypes.string,
@@ -87,4 +89,4 @@ SelectComplexComponent.propTypes = {
   onClear: PropTypes.func
 }
 
-export default SelectComplexComponent
+export default SelectGroupComponent

@@ -588,13 +588,13 @@ const CreatePosts = () => {
         }
       }
       if (selectedGroupSpecific) {
-        createData.audienceExceptions = {
-          buildingIds: selectedBuildingExcept.map(item => item.value)
+        createData.audienceExpanse = {
+          companyGroupIds: selectedGroupSpecific.map(item => item.value)
         }
       }
       if (selectedGroupExcept) {
         createData.audienceExceptions = {
-          buildingIds: selectedBuildingExcept.map(item => item.value)
+          companyGroupIds: selectedGroupExcept.map(item => item.value)
         }
       }
       if (isQRCodePage) {
@@ -656,6 +656,7 @@ const CreatePosts = () => {
   }
 
   const onSelectGroupSpecific = data => {
+    console.log('AUDIENCEEEEEE', data)
     setSelectedGroupSpecific(data)
   }
 

@@ -27,11 +27,7 @@ const ValueContainer = ({ children, ...props }) => {
 
   if (!hasValue || !isMulti) {
     return (
-      <components.ValueContainer
-        {...props}
-        className={styles.valueCont}
-        css={{ zIndex: 100000 }}
-      >
+      <components.ValueContainer {...props} className={styles.valueCont}>
         {children}
       </components.ValueContainer>
     )
@@ -84,8 +80,12 @@ const InputSelect = ({
           }),
           option: (base, state) => ({
             ...base,
-            backgroundColor: state.isSelected ? '#F56222' : base.backgroundColor
-          })
+            backgroundColor: state.isSelected
+              ? '#F56222'
+              : base.backgroundColor,
+            borderBottom: '1px solid #fff'
+          }),
+          menuPortal: base => ({ ...base, zIndex: 102 })
         }}
         classNamePrefix={styles.FormSelect}
         id={id}

@@ -35,7 +35,3 @@
     @apply text-danger-500 text-md font-bold;
   }
 }
-
-.valueCont {
-  zindex: 999;
-}

@@ -20,6 +20,8 @@ const Component = ({
   onSelectComplexSpecific,
   onSelectBuildingExcept,
   onSelectBuildingSpecific,
+  onSelectGroupSpecific,
+  onSelectGroupExcept,
   onSave,
   onCancel,
   valueAudienceType,
@@ -160,11 +162,22 @@ const Component = ({
   const handleSelectGroupSpecific = data => {
     setSelectedGroupExcept(null)
     setSelectedGroupSpecific(data)
-    setSelectedGroupSpecific(data)
-    setSelectedGroupExcept(null)
+    onSelectGroupSpecific(data)
+    onSelectGroupExcept(null)
   }
 
   const handleClearGroupSpecific = () => {
+    setSelectedGroupSpecific(null)
+  }
+
+  const handleSelectGroupExcept = data => {
+    setSelectedGroupSpecific(null)
+    setSelectedGroupExcept(data)
+    onSelectGroupExcept(data)
+    onSelectGroupSpecific(null)
+  }
+
+  const handleClearGroupExcept = () => {
     setSelectedGroupExcept(null)
   }
 
@@ -306,6 +319,18 @@ const Component = ({
                     />
                   </div>
                 )}
+
+                <div className="mb-4">
+                  <p className="font-bold text-neutral-500 mb-2">Groups</p>
+                  <SelectGroup
+                    type="active"
+                    userType={accountType}
+                    placeholder="Select Group(s)"
+                    onChange={handleSelectGroupExcept}
+                    onClear={handleClearGroupExcept}
+                    selected={selectedGroupExcept}
+                  />
+                </div>
               </>
             )}
             {selectedAudience === 'specific' && (
@@ -362,19 +387,17 @@ const Component = ({
                   </div>
                 )}
 
-                {/* {accountType === ACCOUNT_TYPES.COMPYAD.value && ( */}
                 <div className="mb-4">
                   <p className="font-bold text-neutral-500 mb-2">Groups</p>
                   <SelectGroup
                     type="active"
-                    placeholder="Select a Group"
+                    placeholder="Select Group(s)"
                     companyId={user?.accounts?.data[0]?.company?._id}
                     onChange={handleSelectGroupSpecific}
                     onClear={handleClearGroupSpecific}
                     selected={selectedGroupSpecific}
                   />
                 </div>
-                {/* )} */}
               </>
             )}
           </div>
