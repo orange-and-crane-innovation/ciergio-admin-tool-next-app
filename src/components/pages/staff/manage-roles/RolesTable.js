@@ -1,14 +1,12 @@
+import _, { isEmpty, sortBy } from 'lodash'
+import Props from 'prop-types'
 import { useEffect, useState } from 'react'
 
-import Props from 'prop-types'
-import Select from '@app/components/forms/form-select'
-import { UPDATE_COMPANY_ROLES } from './api/_query'
-import flatten from 'lodash/flatten'
-import isEmpty from 'lodash/isEmpty'
-import showToast from '@app/utils/toast'
-import sortBy from 'lodash/sortBy'
-import uniq from 'lodash/uniq'
 import { useMutation } from '@apollo/client'
+import Select from '@app/components/forms/form-select'
+import showToast from '@app/utils/toast'
+
+import { UPDATE_COMPANY_ROLES } from './api/_query'
 
 const ACCESSLEVEL = [
   {
@@ -29,75 +27,43 @@ const ACCESSLEVEL = [
   }
 ]
 
-const PermissionGroups = [
-  {
-    group: 'accounts',
-    accessLevel: 'none'
-  },
-  {
-    group: 'messaging',
-    accessLevel: 'none'
-  },
-  {
-    group: 'registry',
-    accessLevel: 'none'
-  },
-  {
-    group: 'post',
-    accessLevel: 'none'
-  },
-  {
-    group: 'engagements',
-    accessLevel: 'none'
-  },
-  {
-    group: 'issues',
-    accessLevel: 'none'
-  },
-  {
-    group: 'dues',
-    accessLevel: 'none'
-  },
-  {
-    group: 'incident_reports',
-    accessLevel: 'none'
-  },
-  {
-    group: 'notifications',
-    accessLevel: 'none'
-  },
-  {
-    group: 'payments',
-    accessLevel: 'none'
-  }
-]
-
 const Header = ({ title, description, icon, classes }) => {
   return (
     <div
-      className={`${classes} min-w-3xs flex-1 shrink basis-0 min-h-5xs px-5`}
+      className={`${classes} min-w-3xs flex-1 shrink basis-0 min-h-5xs px-5 pt-4`}
     >
-      <div className="flex flex-col h-full justify-center items-center">
+      <div className="flex flex-col h-full items-center content-center">
         <span className={`${icon} text-primary-500 text-l`}></span>
         <span className="text-l font-bold capitalize">{title}</span>
-        <p className="text-left">{description}</p>
+        <p className="text-left text-sm">{description}</p>
       </div>
     </div>
   )
 }
 
 const Headers = ({ headers }) => {
+  const keys = sortBy(Object.keys(headers), key => key)
   return (
     <div className="flex flex-row">
       <div className="flex flex-row justify-between border-b-2">
         {headers &&
-          headers.map((header, idx) => (
-            <Header
-              classes={(idx + 1) % 2 === 0 && 'bg-gray-300'}
-              key={idx}
-              {...header}
-            />
-          ))}
+          keys[0] &&
+          keys.map((item, idx) => {
+            const title = replaceWithSpace(item)
+            const description = headers[item]
+              ?.map(i => i.displayName)
+              .toString()
+              .replaceAll(',', ', ')
+
+            return (
+              <Header
+                classes={(idx + 1) % 2 === 0 && 'bg-gray-300'}
+                key={idx}
+                title={title}
+                description={description}
+              />
+            )
+          })}
       </div>
     </div>
   )
@@ -125,6 +91,7 @@ const Row = ({ value, classes, onChange }) => {
 }
 
 const Rows = ({ roles, headers }) => {
+  const keys = sortBy(Object.keys(headers), key => key)
   const [state, setState] = useState([])
   const [tempData, setTempData] = useState([])
 
@@ -210,7 +177,7 @@ const Rows = ({ roles, headers }) => {
 
   return (
     <>
-      {isEmpty(headers) ? (
+      {isEmpty(headers) || isEmpty(keys) ? (
         <div className="w-full text-center">
           <span>No Data</span>
         </div>
@@ -219,10 +186,8 @@ const Rows = ({ roles, headers }) => {
         state.map((role, idx) => {
           return (
             <div key={idx} className="w-full flex flex-row">
-              {headers.map((header, ridx) => {
-                const val = role.permissions.find(
-                  r => r.group === header?.title.replace(/ /g, '_')
-                )
+              {keys.map((keyID, ridx) => {
+                const val = role.permissions.find(r => r.group === keyID)
 
                 let valueFound
 
@@ -230,7 +195,7 @@ const Rows = ({ roles, headers }) => {
                   valueFound = { ...val, id: role.id }
                 } else {
                   valueFound = {
-                    group: header?.title,
+                    group: keyID,
                     accessLevel: 'none',
                     id: role.id
                   }
@@ -255,41 +220,34 @@ const Rows = ({ roles, headers }) => {
 
 const replaceWithSpace = string => string.replace(/[^a-zA-Z ]/g, ' ')
 
-const RolesTable = ({ data, loading }) => {
+const RolesTable = ({ data, loading, modules }) => {
+  const modulesArr = Object.values(modules?.subscriptionModules).filter(
+    module =>
+      typeof module === 'object' &&
+      module !== null &&
+      !module.group?.includes('Page')
+  )
+  const grouped = _.mapValues(_.groupBy(modulesArr, 'group'))
+
   // Fetch roles
-  const [headers, setHeaders] = useState([])
   const [rows, setRows] = useState([])
 
   useEffect(() => {
     if (!loading && data) {
-      const existedHeaders = PermissionGroups.map(permissionGroup =>
-        replaceWithSpace(permissionGroup.group)
-      )
-      const permissionHeaders = data?.getCompanyRoles.map(getCompanyRole => {
-        const companyRoles = getCompanyRole.permissions.map(permission =>
-          replaceWithSpace(permission.group)
-        )
-
-        return companyRoles
-      })
-
-      const listOfHeaders = [...flatten(permissionHeaders), ...existedHeaders]
-
-      const flattenHeaders = uniq(listOfHeaders)
-      const tableHeaders = flattenHeaders.map(flattenHeader => ({
-        title: flattenHeader
-      }))
-
       const permissionRows = data?.getCompanyRoles.map(getCompanyRole => {
-        const temp = PermissionGroups.map(permissionGroup => {
+        const keys = sortBy(Object.keys(grouped), key => key)
+        const temp = keys.map(key => {
           const isExist = getCompanyRole.permissions.find(
-            crole => crole.group === permissionGroup.group
+            crole => crole.group === key
           )
 
           if (isExist) {
             return isExist
           } else {
-            return permissionGroup
+            return {
+              group: key,
+              accessLevel: 'none'
+            }
           }
         })
 
@@ -301,21 +259,21 @@ const RolesTable = ({ data, loading }) => {
       })
 
       setRows(permissionRows)
-      setHeaders(sortBy(tableHeaders, tableHeader => tableHeader.title))
     }
   }, [loading, data])
 
   return (
     <div className="flex flex-col border-t-2 border-l-2 border-r-2 p-0 m-0 flex-nowrap overflow-x-auto">
-      <Headers headers={headers} />
-      <Rows headers={headers} roles={rows} />
+      <Headers headers={grouped} />
+      <Rows roles={rows} headers={grouped} />
     </div>
   )
 }
 
 RolesTable.propTypes = {
   data: Props.array,
-  loading: Props.bool
+  loading: Props.bool,
+  modules: Props.object
 }
 
 Header.propTypes = {
@@ -326,7 +284,7 @@ Header.propTypes = {
 }
 
 Headers.propTypes = {
-  headers: Props.array
+  headers: Props.object
 }
 
 Row.propTypes = {
@@ -337,7 +295,7 @@ Row.propTypes = {
 
 Rows.propTypes = {
   roles: Props.array.isRequired,
-  headers: Props.array
+  headers: Props.object
 }
 
 export default RolesTable

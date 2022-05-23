@@ -1,6 +1,6 @@
 import isEmpty from 'lodash/isEmpty'
 import PropTypes from 'prop-types'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { useQuery } from '@apollo/client'
 import PageLoader from '@app/components/page-loader'
@@ -93,6 +93,16 @@ const RolesPermissions = ({ moduleName, permissionGroup, children, no }) => {
     }
   }, [loading, data])
 
+  const childrenWithProps = React.Children.map(children, child => {
+    // Checking isValidElement is the safe way and avoid errors.
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        companySettings: data?.getCompanySettings
+      })
+    }
+    return child
+  })
+
   if (loadingRoles) {
     return (
       <div className="h-full w-full flex justify-center items-center">
@@ -108,11 +118,11 @@ const RolesPermissions = ({ moduleName, permissionGroup, children, no }) => {
   const existOnENV = MODULES.split(', ').includes(moduleName)
 
   return isSuperAdmin && existOnENV
-    ? children
+    ? childrenWithProps
     : existOnENV &&
       isPermitted(modulespermissions, permissionGroup) &&
       isAllowedModule(modulespermissions, moduleName)
-    ? children
+    ? childrenWithProps
     : no
 }
 
