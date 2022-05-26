@@ -171,6 +171,10 @@ export const GET_PENDING_INVITES = gql`
           _id
           name
         }
+        companyGroups {
+          _id
+          name
+        }
       }
     }
   }
