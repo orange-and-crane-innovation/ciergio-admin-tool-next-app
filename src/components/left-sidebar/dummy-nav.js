@@ -227,8 +227,8 @@ const navigation = [
         url: '/dues',
         icon: 'ciergio-bill',
         title: 'My Dues',
-        permissionGroup: 'myDues',
-        moduleName: 'dues',
+        permissionGroup: 'dues',
+        moduleName: 'myDues',
         items: [
           {
             url: '/dues/billing',

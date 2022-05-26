@@ -13,93 +13,117 @@ const getCompanySettings = gql`
       subscriptionModules {
         bulletinBoard {
           displayName
+          group
         }
 
         bulletinBoard {
           displayName
+          group
         }
         myProperties {
           displayName
+          group
         }
         myStaff {
           displayName
+          group
         }
         myResidents {
           displayName
+          group
           enable
         }
         attactionsAndEvents {
           displayName
+          group
           enable
         }
         myMembers {
           displayName
+          group
           enable
         }
 
         messages {
           displayName
+          group
         }
         notifications {
           displayName
+          group
         }
         forms {
           displayName
+          group
         }
         directory {
           displayName
+          group
           enable
         }
         qrCode {
           displayName
+          group
           enable
         }
         contactPage {
           displayName
+          group
           enable
         }
         guestAndDelivery {
           displayName
+          group
           enable
         }
         maintenanceAndRepairs {
           displayName
+          group
           enable
         }
         myDues {
           displayName
+          group
           enable
         }
         communityBoard {
           displayName
+          group
           enable
         }
         settingsPage {
           displayName
+          group
           enable
         }
         prayerRequests {
           displayName
+          group
           enable
         }
         dailyReading {
           displayName
+          group
           enable
         }
         donations {
           displayName
+          group
           enable
         }
         homePage {
           displayName
+          group
           enable
         }
         faqPage {
           displayName
+          group
           enable
         }
         pastoralWorks {
           displayName
+          group
           enable
         }
       }

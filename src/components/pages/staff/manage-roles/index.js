@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty'
+import Props from 'prop-types'
 
 import { useQuery } from '@apollo/client'
 import PageLoader from '@app/components/page-loader'
@@ -9,7 +10,7 @@ import RoleNameList from './RoleNameList'
 import RolesTable from './RolesTable'
 import { GET_COMPANY_ROLES } from './api/_query'
 
-const ManageRolesComponent = () => {
+const ManageRolesComponent = ({ companySettings }) => {
   const user = JSON.parse(localStorage.getItem('profile'))
   const companyID = user?.accounts?.data[0]?.company?._id
 
@@ -45,7 +46,11 @@ const ManageRolesComponent = () => {
                     data={data}
                     loading={loading}
                   />
-                  <RolesTable data={data} loading={loading} />
+                  <RolesTable
+                    data={data}
+                    loading={loading}
+                    modules={companySettings}
+                  />
                 </>
               ) : (
                 <div className="w-full mt-4 text-center">
@@ -58,6 +63,10 @@ const ManageRolesComponent = () => {
       </div>
     </section>
   )
+}
+
+ManageRolesComponent.propTypes = {
+  companySettings: Props.object
 }
 
 export default ManageRolesComponent
