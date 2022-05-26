@@ -1,7 +1,7 @@
+import PropTypes from 'prop-types'
 /* eslint-disable react/prop-types */
 /* eslint-disable jsx-a11y/no-onchange */
 import React from 'react'
-import PropTypes from 'prop-types'
 import Select, { components } from 'react-select'
 
 import styles from './FormSelect.module.css'
@@ -85,7 +85,8 @@ const InputSelect = ({
           option: (base, state) => ({
             ...base,
             backgroundColor: state.isSelected ? '#F56222' : base.backgroundColor
-          })
+          }),
+          menuPortal: base => ({ ...base, zIndex: 9999 })
         }}
         classNamePrefix={styles.FormSelect}
         id={id}
