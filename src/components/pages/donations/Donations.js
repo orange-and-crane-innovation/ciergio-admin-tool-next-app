@@ -54,8 +54,10 @@ function Donations() {
   const isAdmin = accountType === ACCOUNT_TYPES.SUP.value
   const postID = router?.query?.id
 
-  const [getDonations, { data: donations, loading: loadingDonations, error }] =
-    useLazyQuery(GET_DONATIONS)
+  const [
+    getDonations,
+    { data: donations, loading: loadingDonations, error }
+  ] = useLazyQuery(GET_DONATIONS)
 
   const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS)
 
@@ -95,7 +97,7 @@ function Donations() {
       }
 
       if (searchText !== '') {
-        where.variables.searchText = searchText
+        where.variables.search = searchText
       }
 
       if (selectedCompany) {

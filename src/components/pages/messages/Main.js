@@ -102,7 +102,7 @@ export default function Main() {
         pending: showPendingMessages,
         type: convoType
       },
-      limit: 10,
+      limit: 15,
       skip: offsetConvo
     }
   })
@@ -629,6 +629,7 @@ export default function Main() {
       <MessageBox
         endMessageRef={endMessage}
         participant={selectedConvo}
+        name={selectedConvo?.name}
         conversation={selectedConvo ? convoMessages : {}}
         loading={loadingMessages}
         loadingSend={loadingSendMessage}
