@@ -1,0 +1,431 @@
+import { debounce } from 'lodash'
+import isEmpty from 'lodash/isEmpty'
+import { useRouter } from 'next/router'
+import Props from 'prop-types'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
+import { FiDownload } from 'react-icons/fi'
+import { HiOutlinePrinter } from 'react-icons/hi'
+import ReactSelect from 'react-select'
+import * as yup from 'yup'
+import useDebounce from '@app/utils/useDebounce'
+
+import { friendlyDateTimeFormat } from '@app/utils/date'
+
+import { gql, useMutation, useQuery } from '@apollo/client'
+import Button from '@app/components/button'
+import Dropdown from '@app/components/dropdown'
+import Input from '@app/components/forms/form-input'
+import { Card } from '@app/components/globals'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import SearchControl from '@app/components/globals/SearchControl'
+import Modal from '@app/components/modal'
+import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
+import { GET_PENDING_INVITES } from '@app/components/pages/staff/queries'
+import Can from '@app/permissions/can'
+import errorHandler from '@app/utils/errorHandler'
+import showToast from '@app/utils/toast'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+import ViewResidentModal from './../ViewResidentModal'
+
+const SCHEMA = yup.object().shape({
+  email: yup
+    .string()
+    .email('Invalid email format')
+    .required('Member Email required')
+})
+
+const columns = [
+  {
+    name: 'Email',
+    width: ''
+  },
+  {
+    name: 'Group(s)',
+    width: ''
+  },
+  {
+    name: 'Date Sent',
+    width: ''
+  },
+  {
+    name: '',
+    width: '4%'
+  }
+]
+
+const GET_COMPANY_GROUPS = gql`
+  query($where: getCompanyGroupsParams) {
+    getCompanyGroups(where: $where) {
+      _id
+      name
+      status
+      companyId
+    }
+  }
+`
+
+const INVITE_MEMBER = gql`
+  mutation inviteMember($data: InputInviteMember, $companyId: String) {
+    inviteMember(data: $data, companyId: $companyId) {
+      _id
+      message
+    }
+  }
+`
+
+const InviteModalContent = ({ control, errors, selected, options }) => {
+  return (
+    <>
+      <Controller
+        control={control}
+        name="email"
+        render={field => {
+          return (
+            <Input
+              {...field}
+              label="Member Email"
+              error={errors?.email?.message ?? null}
+              placeholder="Enter email address"
+              description={
+                <p className="mb-2">An invite will be sent to this email.</p>
+              }
+            />
+          )
+        }}
+      />
+
+      <br />
+
+      <p className="font-bold text-base mb-2">Group (Optional)</p>
+      <p className="mb-2">
+        Assigning members to groups allows them to be chosen as an audience in
+        Bulletin Board and they will be included in dedicated group chats.
+      </p>
+      <Controller
+        control={control}
+        name="groupids"
+        render={({ name, onChange, value }) => (
+          <ReactSelect
+            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            menuPortalTarget={document.body}
+            options={options}
+            onChange={onChange}
+            value={value}
+            placeholder="Choose group"
+            isMulti
+          />
+        )}
+      />
+    </>
+  )
+}
+
+const defaultModalState = {
+  type: 'invite',
+  visible: false,
+  okText: 'Invite Member',
+  title: 'Invite Member'
+}
+
+function PendingMemberInvites() {
+  const router = useRouter()
+  const [searchText, setSearchText] = useState('')
+  const debouncedSearchText = useDebounce(searchText, 700)
+  const [modalState, setModalState] = useState(defaultModalState)
+
+  const [showModal, setShowModal] = useState(false)
+  const [viewMember, setViewMember] = useState(false)
+  const [selectedMember, setSelectedMember] = useState(null)
+  const [selectedStaff, setSelectedStaff] = useState(null)
+  const [groupOptions, setGroupOptions] = useState()
+
+  const [activePage, setActivePage] = useState(1)
+  const [limitPage, setLimitPage] = useState(10)
+  const [skipCount, setSkipCount] = useState(0)
+
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const companyId = user?.accounts?.data[0]?.company?._id
+
+  const { loading: loadingGroups, data: groups, error: errorGroups } = useQuery(
+    GET_COMPANY_GROUPS,
+    {
+      enabled: false,
+      variables: {
+        where: {
+          companyId: companyId,
+          status: 'active'
+        }
+      }
+    }
+  )
+
+  useEffect(() => {
+    if (groups && groups.getCompanyGroups)
+      setGroupOptions(
+        groups.getCompanyGroups?.map(g => {
+          return { label: g.name, value: g._id }
+        })
+      )
+  }, [groups])
+
+  const closeModal = () => {
+    setModalState({
+      ...modalState,
+      visible: false
+    })
+  }
+  const { control, errors } = useForm({
+    resolver: yupResolver(SCHEMA)
+  })
+
+  const handleShowModal = () => setShowModal(old => !old)
+
+  const handleViewMember = () => setViewMember(old => !old)
+
+  const onSearch = debounce(e => {
+    setSearchText(e.target.value !== '' ? e.target.value : null)
+  }, 1000)
+
+  const onClearSearch = () => {
+    setSearchText(null)
+  }
+
+  const where = {
+    accountTypes: 'member',
+    companyId,
+    search: debouncedSearchText
+  }
+
+  const {
+    data: accounts,
+    // refetch: refetchAccounts,
+    loading: loadingAccounts
+  } = useQuery(GET_PENDING_INVITES, {
+    skip: where === undefined,
+    variables: {
+      where,
+      limit: limitPage,
+      skip: skipCount === 0 ? null : skipCount
+    }
+  })
+  console.log('accounts', accounts)
+
+  const tableListData = useMemo(
+    () => ({
+      count: accounts?.getPendingRegistration?.count || 0,
+      limit: accounts?.getPendingRegistration?.limit || 0,
+      offset: accounts?.getPendingRegistration?.offset || 0,
+      data:
+        accounts?.getPendingRegistration?.data?.length > 0
+          ? accounts.getPendingRegistration.data.map(staff => {
+              const { _id, accountType, companyGroups, email } = staff
+              let dropdownData = []
+
+              if (profile._id !== _id) {
+                dropdownData = [
+                  ...dropdownData,
+                  {
+                    label: 'Edit Member',
+                    icon: <span className="ciergio-edit" />,
+                    function: () => {
+                      setSelectedMember(staff)
+                      handleShowModal('edit')
+                    }
+                  }
+                ]
+              }
+
+              if (accountType !== 'member' && profile._id !== _id) {
+                dropdownData = [
+                  ...dropdownData,
+                  {
+                    label: 'Remove Member',
+                    icon: <span className="ciergio-trash" />,
+                    function: () => {
+                      setSelectedStaff(staff)
+                      handleShowModal('delete')
+                    }
+                  }
+                ]
+              }
+
+              return {
+                email: <>{email}</>,
+                group: (
+                  <span className="capitalize">
+                    {companyGroups[0] ? companyGroups[0].name : '-'}
+                  </span>
+                ),
+                datesent: <>{friendlyDateTimeFormat(staff.createdAt, 'LL')}</>,
+                dropdown: (
+                  // <Can
+                  //   perform="staff:view::update::delete"
+                  //   yes={
+                  //     <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+                  //   }
+                  // />
+                  <></>
+                )
+              }
+            })
+          : []
+    }),
+    [accounts?.getPendingRegistration, router]
+  )
+
+  const [
+    inviteMember,
+    { loading: inviteLoading, data: inviteData, error: inviteError }
+  ] = useMutation(INVITE_MEMBER)
+
+  const onSubmit = val => {
+    if (!isEmpty(val)) {
+      if (modalState.type === 'invite') {
+        let groupids = null
+        if (val?.groupids) groupids = val?.groupids.map(g => g.value)
+
+        inviteMember({
+          variables: {
+            companyId: companyId,
+            data: {
+              email: val?.email,
+              companyGroupIds: groupids
+            }
+          }
+        })
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (!inviteLoading) {
+      if (inviteData && !inviteError) {
+        showToast('success', `Successfully invite a member`)
+        closeModal()
+        // refetch()
+      }
+
+      if (!inviteData && inviteError) {
+        const err = inviteError
+        errorHandler(err)
+      }
+    }
+  }, [inviteLoading, inviteData, inviteError])
+
+  return (
+    <section className="content-wrap">
+      <h1 className="content-title">Pending Member Invites</h1>
+
+      <div className="flex items-center justify-end mt-12 w-full">
+        <div className="flex items-center justify-between w-8/12 flex-row flex-row-reverse">
+          <SearchControl
+            placeholder="Search"
+            searchText={searchText}
+            onSearch={onSearch}
+            onClearSearch={onClearSearch}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
+        <h1 className="font-bold text-base px-8 py-4">{`Registered Members`}</h1>
+        <div className="flex items-center">
+          <Button
+            default
+            icon={<HiOutlinePrinter />}
+            onClick={() => {}}
+            className="mr-4 mt-4"
+          />
+          <Button
+            default
+            icon={<FiDownload />}
+            onClick={() => {}}
+            className="mr-4 mt-4"
+          />
+          <Button
+            default
+            leftIcon={<FaPlusCircle />}
+            label="Invite a member"
+            onClick={() =>
+              setModalState({
+                ...defaultModalState,
+                visible: true
+              })
+            }
+            className="mr-4 mt-4"
+          />
+        </div>
+      </div>
+      <Card
+        content={
+          <PrimaryDataTable
+            data={tableListData}
+            columns={columns}
+            loading={loadingAccounts}
+            currentPage={activePage}
+            pageLimit={limitPage}
+            setCurrentPage={setActivePage}
+            setPageOffset={setSkipCount}
+            setPageLimit={setLimitPage}
+          />
+        }
+      />
+
+      <Modal
+        title={modalState.title}
+        onClose={closeModal}
+        okText={modalState.okText}
+        okButtonProps={{
+          danger: modalState.type === 'delete',
+          disabled: loadingGroups || inviteLoading
+        }}
+        visible={modalState.visible}
+        onOk={async () => {
+          await control.trigger()
+          if (isEmpty(errors)) {
+            onSubmit(control.getValues())
+          }
+        }}
+        onCancel={closeModal}
+      >
+        {modalState.visible && (
+          <>
+            {/* {(modalState.type === 'add' || modalState.type === 'edit') && ( */}
+            {modalState.type === 'invite' && (
+              <InviteModalContent
+                control={control}
+                errors={errors}
+                // selected={selectedGroup}
+                options={groupOptions}
+              />
+            )}
+
+            {/* {modalState.type === 'delete' && (
+              <DeleteModalContent selected={selectedGroup} control={control} />
+            )} */}
+          </>
+        )}
+      </Modal>
+
+      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
+
+      <ViewResidentModal
+        showModal={viewMember}
+        onShowModal={handleViewMember}
+        resident={selectedMember}
+      />
+    </section>
+  )
+}
+
+InviteModalContent.propTypes = {
+  options: Props.array,
+  control: Props.any,
+  errors: Props.object
+}
+
+export default PendingMemberInvites
