@@ -119,8 +119,7 @@ const Group = () => {
       data:
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
-              console.log("staff", staff)
-              const { user, accountType } = staff
+              const { user, accountType, companyGroups } = staff
 
               let dropdownData = [
                 {
