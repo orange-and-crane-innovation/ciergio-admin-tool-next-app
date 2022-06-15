@@ -263,10 +263,6 @@ const Groups = () => {
                   function: () => router.push(`/members/groups/${item?._id}`)
                 },
                 {
-                  label: 'Add Members',
-                  function: () => console.log('HEY ')
-                },
-                {
                   label: 'Edit',
                   function: () => {
                     setModalState({

@@ -3,6 +3,11 @@ import P from 'prop-types'
 import { friendlyDateTimeFormat } from '@app/utils/date'
 
 function ViewResidentModalContent({ resident }) {
+  const groups = resident?.groups
+    ?.map(i => i.name)
+    .toString()
+    .replaceAll(',', ', ')
+
   return (
     <div className="p-4 flex flex-col">
       <div className="w-full mb-8">
@@ -42,7 +47,7 @@ function ViewResidentModalContent({ resident }) {
       </div>
 
       <div className="w-full flex justify-start">
-        <InfoBlock label="Group(s)" text={''} />
+        <InfoBlock label="Group(s)" text={groups} />
       </div>
 
       <br />
