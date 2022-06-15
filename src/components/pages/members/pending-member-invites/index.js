@@ -8,6 +8,7 @@ import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import ReactSelect from 'react-select'
+import FormSelect from '@app/components/forms/form-select'
 import * as yup from 'yup'
 import useDebounce from '@app/utils/useDebounce'
 
@@ -34,7 +35,8 @@ const SCHEMA = yup.object().shape({
   email: yup
     .string()
     .email('Invalid email format')
-    .required('Member Email required')
+    .required('Member Email is required'),
+  complexId: yup.object().nullable(true).required('Complex is required')
 })
 
 const columns = [
@@ -67,6 +69,20 @@ const GET_COMPANY_GROUPS = gql`
   }
 `
 
+const GET_COMPLEXES_QUERY = gql`
+  query getComplexes($where: GetComplexesParams, $limit: Int, $skip: Int) {
+    getComplexes(where: $where, limit: $limit, skip: $skip) {
+      count
+      limit
+      skip
+      data {
+        _id
+        name
+      }
+    }
+  }
+`
+
 const INVITE_MEMBER = gql`
   mutation inviteMember($data: InputInviteMember, $companyId: String) {
     inviteMember(data: $data, companyId: $companyId) {
@@ -76,7 +92,13 @@ const INVITE_MEMBER = gql`
   }
 `
 
-const InviteModalContent = ({ control, errors, selected, options }) => {
+const InviteModalContent = ({
+  control,
+  errors,
+  selected,
+  groupOptions,
+  complexOptions
+}) => {
   return (
     <>
       <Controller
@@ -108,14 +130,50 @@ const InviteModalContent = ({ control, errors, selected, options }) => {
         control={control}
         name="groupids"
         render={({ name, onChange, value }) => (
+          // <FormSelect
+          //   styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+          //   menuPortalTarget={document.body}
+          //   options={groupOptions}
+          //   onChange={onChange}
+          //   value={value}
+          //   placeholder="Choose group"
+          //   valueholder="Group"
+          //   isMulti
+          //   onClear={() => control?.setValue('groupids', null)}
+          // />
           <ReactSelect
             styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
             menuPortalTarget={document.body}
-            options={options}
+            options={groupOptions}
             onChange={onChange}
             value={value}
             placeholder="Choose group"
             isMulti
+          />
+        )}
+      />
+
+      <br />
+
+      <p className="font-bold text-base mb-2">Complex</p>
+      <p className="mb-2">The user will be tag to this complex</p>
+      <Controller
+        control={control}
+        name="complexId"
+        render={({ name, onChange, value }) => (
+          <FormSelect
+            error={errors?.complexId?.message ?? null}
+            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            menuPortalTarget={document.body}
+            options={complexOptions}
+            onChange={onChange}
+            value={value}
+            placeholder="Choose a complex"
+            isClearable
+            onClear={() => {
+              console.log('control', control)
+              control?.setValue('complexId', null)
+            }}
           />
         )}
       />
@@ -141,6 +199,7 @@ function PendingMemberInvites() {
   const [selectedMember, setSelectedMember] = useState(null)
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [groupOptions, setGroupOptions] = useState()
+  const [complexOptions, setComplexOptions] = useState()
 
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
@@ -163,6 +222,22 @@ function PendingMemberInvites() {
     }
   )
 
+  const {
+    loading: loadingComplexes,
+    data: complexes,
+    error: errorComplexes
+  } = useQuery(GET_COMPLEXES_QUERY, {
+    enabled: false,
+    variables: {
+      where: {
+        companyId: companyId,
+        status: 'active'
+      },
+      limit: 500,
+      skip: 0
+    }
+  })
+
   useEffect(() => {
     if (groups && groups.getCompanyGroups)
       setGroupOptions(
@@ -172,12 +247,22 @@ function PendingMemberInvites() {
       )
   }, [groups])
 
+  useEffect(() => {
+    if (complexes && complexes.getComplexes)
+      setComplexOptions(
+        complexes.getComplexes?.data?.map(c => {
+          return { label: c.name, value: c._id }
+        })
+      )
+  }, [complexes])
+
   const closeModal = () => {
     setModalState({
       ...modalState,
       visible: false
     })
   }
+
   const { control, errors } = useForm({
     resolver: yupResolver(SCHEMA)
   })
@@ -202,7 +287,7 @@ function PendingMemberInvites() {
 
   const {
     data: accounts,
-    // refetch: refetchAccounts,
+    refetch: refetchAccounts,
     loading: loadingAccounts
   } = useQuery(GET_PENDING_INVITES, {
     skip: where === undefined,
@@ -212,7 +297,6 @@ function PendingMemberInvites() {
       skip: skipCount === 0 ? null : skipCount
     }
   })
-  console.log('accounts', accounts)
 
   const tableListData = useMemo(
     () => ({
@@ -293,6 +377,7 @@ function PendingMemberInvites() {
             companyId: companyId,
             data: {
               email: val?.email,
+              complexId: val?.complexId?.value,
               companyGroupIds: groupids
             }
           }
@@ -306,7 +391,7 @@ function PendingMemberInvites() {
       if (inviteData && !inviteError) {
         showToast('success', `Successfully invite a member`)
         closeModal()
-        // refetch()
+        refetchAccounts()
       }
 
       if (!inviteData && inviteError) {
@@ -400,7 +485,8 @@ function PendingMemberInvites() {
                 control={control}
                 errors={errors}
                 // selected={selectedGroup}
-                options={groupOptions}
+                groupOptions={groupOptions}
+                complexOptions={complexOptions}
               />
             )}
 
@@ -423,7 +509,8 @@ function PendingMemberInvites() {
 }
 
 InviteModalContent.propTypes = {
-  options: Props.array,
+  complexOptions: Props.array,
+  groupOptions: Props.array,
   control: Props.any,
   errors: Props.object
 }
