@@ -84,7 +84,7 @@ function DateInput({
               }}
               type="text"
               name={name}
-              value={dateValue}
+              defaultValue={dateValue}
               disabled={disabled}
               readOnly
               icon={<i className="ciergio-calendar absolute right-1" />}
@@ -151,7 +151,7 @@ function TimeInput({
               }}
               type="text"
               name={name}
-              value={timeValue}
+              defaultValue={timeValue}
               disabled={disabled}
               readOnly
               icon={<FiClock />}
