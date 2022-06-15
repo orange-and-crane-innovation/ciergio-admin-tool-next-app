@@ -1,18 +1,24 @@
 import { debounce } from 'lodash'
+import isEmpty from 'lodash/isEmpty'
 import { useRouter } from 'next/router'
-import React, { useMemo, useState } from 'react'
-import { FaEllipsisH } from 'react-icons/fa'
-import { FiDownload } from 'react-icons/fi'
+import Props from 'prop-types'
+import React, { useMemo, useState, useEffect } from 'react'
+import { FaEllipsisH, FaExclamationCircle } from 'react-icons/fa'
+import { FiDownload, FiUserX } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 
-import { gql, useQuery } from '@apollo/client'
+import { gql, useMutation, useQuery } from '@apollo/client'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchControl from '@app/components/globals/SearchControl'
+import Modal from '@app/components/modal'
 import { GET_ACCOUNTS } from '@app/components/pages/staff/queries'
 import Can from '@app/permissions/can'
+import showToast from '@app/utils/toast'
+import errorHandler from '@app/utils/errorHandler'
+
 import ViewResidentModal from './../ViewResidentModal'
 
 const tableRowNames = [
@@ -56,12 +62,60 @@ const GET_COMPANY_GROUPS = gql`
   }
 `
 
+const REMOVE_USER_FROM_GROUP = gql`
+  mutation unAssignCompanyGroup(
+    $accountId: String
+    $companyGroupIds: [String]
+  ) {
+    unAssignCompanyGroup(
+      accountId: $accountId
+      companyGroupIds: $companyGroupIds
+    ) {
+      _id
+      message
+    }
+  }
+`
+
+const defaultModalState = {
+  type: 'remove',
+  visible: false,
+  okText: 'Remove Member',
+  title: 'Remove Member from the Group'
+}
+
+const DeleteModalContent = ({ selected, group }) => {
+  const { user } = selected
+  console.log('selected', selected)
+  return (
+    <div className="w-full text-base leading-7">
+      <div className="mb-4 px-4 pt-4">
+        <p>
+          <span className="font-bold">
+            <FaExclamationCircle className="inline-flex text-danger-700" />{' '}
+            {`Warning: `}
+          </span>
+          {`You're about to remove ${user?.firstName} ${user?.lastName} from ${group?.getCompanyGroup.name} group.`}
+        </p>
+      </div>
+      <div className="-mx-4 mb-4 p-4 bg-blue-100">
+        <ul className="list-disc px-12">
+          <li className="mb-2">{`This will remove ${user?.firstName} ${user?.lastName} from ${group?.getCompanyGroup.name} group.`}</li>
+          <li className="mb-2">{`This action will remove the access of ${user?.firstName} ${user?.lastName} to the chat group after 30 days.`}</li>
+        </ul>
+      </div>
+      <p className="px-4 pt-2 pb-4">{`Are you sure you want to remove the user/member?`}</p>
+    </div>
+  )
+}
+
 const Group = () => {
   const profile = JSON.parse(localStorage.getItem('profile'))
   const companyID = profile.accounts.data[0].company._id
   const router = useRouter()
   const { query } = router
   const { groupID } = query
+  const [modalState, setModalState] = useState(defaultModalState)
   const [searchText, setSearchText] = useState('')
 
   const [viewMember, setViewMember] = useState(false)
@@ -111,6 +165,11 @@ const Group = () => {
     }
   })
 
+  const [
+    unAssignCompanyGroup,
+    { loading: removeLoading, data: removeData, error: removeError }
+  ] = useMutation(REMOVE_USER_FROM_GROUP)
+
   const listData = useMemo(
     () => ({
       count: accounts?.getAccounts?.count || 0,
@@ -149,10 +208,14 @@ const Group = () => {
                 dropdownData = [
                   ...dropdownData,
                   {
-                    label: 'Edit Member',
-                    icon: <span className="ciergio-edit" />,
+                    label: 'Remove Member',
+                    icon: <FiUserX />,
                     function: () => {
-                      console.log('HEY')
+                      setModalState({
+                        ...modalState,
+                        visible: true
+                      })
+                      setSelectedMember(staff)
                     }
                   }
                 ]
@@ -214,6 +277,40 @@ const Group = () => {
 
   const handleViewMember = () => setViewMember(old => !old)
 
+  const closeModal = () => {
+    setModalState({
+      ...modalState,
+      visible: false
+    })
+    setSelectedMember(null)
+  }
+
+  const onSubmit = val => {
+    if (isEmpty(val)) {
+      unAssignCompanyGroup({
+        variables: {
+          accountId: selectedMember?._id,
+          companyGroupIds: group?.getCompanyGroup?._id
+        }
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (!removeLoading) {
+      if (removeData && !removeError) {
+        showToast('success', `Successfully remove a member from a group`)
+        closeModal()
+        refetch()
+      }
+
+      if (!removeData && removeError) {
+        const err = removeError
+        errorHandler(err)
+      }
+    }
+  }, [removeLoading, removeData])
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">{group?.getCompanyGroup?.name}</h1>
@@ -274,6 +371,27 @@ const Group = () => {
         }
       />
 
+      <Modal
+        title={modalState.title}
+        onClose={closeModal}
+        okText={modalState.okText}
+        okButtonProps={{
+          danger: modalState.type === 'delete',
+          disabled: loading || removeLoading
+        }}
+        visible={modalState.visible}
+        onOk={async () => onSubmit()}
+        onCancel={closeModal}
+      >
+        {modalState.visible && (
+          <>
+            {modalState.type === 'remove' && (
+              <DeleteModalContent selected={selectedMember} group={group} />
+            )}
+          </>
+        )}
+      </Modal>
+
       <ViewResidentModal
         showModal={viewMember}
         onShowModal={handleViewMember}
@@ -281,6 +399,11 @@ const Group = () => {
       />
     </section>
   )
+}
+
+DeleteModalContent.propTypes = {
+  selected: Props.object,
+  group: Props.object
 }
 
 export default Group

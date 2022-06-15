@@ -122,7 +122,7 @@ const DeleteModalContent = ({ selected }) => {
       <div className="-mx-4 mb-4 p-4 bg-blue-100">
         <ul className="list-disc px-12">
           <li className="mb-2">{`This will remove the group from existing members.`}</li>
-          <li className="mb-2">{`This action will delete the Accounting chat group after 30 days.`}</li>
+          <li className="mb-2">{`This action will delete the ${selected?.name} chat group after 30 days.`}</li>
         </ul>
       </div>
       <p className="px-4 pt-2 pb-4">{`Are you sure you want to delete this group?`}</p>
