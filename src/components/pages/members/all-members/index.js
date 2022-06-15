@@ -359,6 +359,11 @@ function MyMembers() {
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
               const { user, accountType, companyGroups } = staff
+              const groups = companyGroups
+                ?.map(i => i.name)
+                .toString()
+                .replaceAll(',', ', ')
+
               let dropdownData = [
                 {
                   label: `${
@@ -433,11 +438,7 @@ function MyMembers() {
                   </div>
                 ),
                 email: <>{user.email}</>,
-                group: (
-                  <span className="capitalize">
-                    {companyGroups[0] ? companyGroups[0].name : '-'}
-                  </span>
-                ),
+                group: <span className="capitalize">{groups || '-'}</span>,
                 dropdown: (
                   <Can
                     perform="staff:view::update::delete"

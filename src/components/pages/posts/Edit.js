@@ -1293,7 +1293,7 @@ const CreatePosts = () => {
                                         style.CreatePostInputCustom
                                       }
                                       name="date"
-                                      value={dayjs(selectedDate).format(
+                                      defaultValue={dayjs(selectedDate).format(
                                         'MMM DD, YYYY'
                                       )}
                                       error={errors?.date?.message ?? null}

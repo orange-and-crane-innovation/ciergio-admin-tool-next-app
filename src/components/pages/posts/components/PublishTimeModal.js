@@ -24,8 +24,9 @@ const Component = ({
   errorSelectedDate
 }) => {
   const [selectedDate, setSelectedDate] = useState(valueDateTime)
-  const [selectedPublishType, setSelectedPublishType] =
-    useState(valuePublishType)
+  const [selectedPublishType, setSelectedPublishType] = useState(
+    valuePublishType
+  )
 
   useEffect(() => {
     setSelectedPublishType(valuePublishType)
@@ -116,7 +117,9 @@ const Component = ({
                               }
                             }}
                             name="date"
-                            value={dayjs(selectedDate).format('MMMM DD, YYYY')}
+                            defaultValue={dayjs(selectedDate).format(
+                              'MMMM DD, YYYY'
+                            )}
                             readOnly
                           />
                           <i
@@ -147,7 +150,7 @@ const Component = ({
                               }
                             }}
                             name="time"
-                            value={dayjs(selectedDate).format('h:mm A')}
+                            defaultValue={dayjs(selectedDate).format('h:mm A')}
                             error={errorSelectedDate}
                             readOnly
                           />

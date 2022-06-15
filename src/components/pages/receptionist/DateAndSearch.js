@@ -37,7 +37,7 @@ function SelectDate({
                       <FormInput
                         inputClassName={styles.DataTime}
                         name="input-datetime"
-                        value={toFriendlyShortDate(date)}
+                        defaultValue={toFriendlyShortDate(date)}
                         onChange={() => {}}
                         readOnly
                       />
