@@ -8,13 +8,13 @@ import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import ReactSelect from 'react-select'
-import FormSelect from '@app/components/forms/form-select'
 import * as yup from 'yup'
 
 import { gql, useMutation, useQuery } from '@apollo/client'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import Input from '@app/components/forms/form-input'
+import FormSelect from '@app/components/forms/form-select'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchControl from '@app/components/globals/SearchControl'
@@ -28,12 +28,16 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import ViewResidentModal from './../ViewResidentModal'
 
-const SCHEMA = yup.object().shape({
+const SCHEMA_INVITE = yup.object().shape({
   email: yup
     .string()
     .email('Invalid email format')
     .required('Member Email is required'),
   complexId: yup.object().nullable(true).required('Complex is required')
+})
+
+const SCHEMA_ADD = yup.object().shape({
+  // companyGroupIds: yup.array().required('Group is required')
 })
 
 const columns = [
@@ -89,6 +93,18 @@ const INVITE_MEMBER = gql`
   }
 `
 
+const ADD_MEMBER = gql`
+  mutation assignCompanyGroup($accountId: String, $companyGroupIds: [String]) {
+    assignCompanyGroup(
+      accountId: $accountId
+      companyGroupIds: $companyGroupIds
+    ) {
+      _id
+      message
+    }
+  }
+`
+
 const InviteModalContent = ({
   control,
   errors,
@@ -127,17 +143,6 @@ const InviteModalContent = ({
         control={control}
         name="groupids"
         render={({ name, onChange, value }) => (
-          // <FormSelect
-          //   styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-          //   menuPortalTarget={document.body}
-          //   options={groupOptions}
-          //   onChange={onChange}
-          //   value={value}
-          //   placeholder="Choose group"
-          //   valueholder="Group"
-          //   isMulti
-          //   onClear={() => control?.setValue('groupids', null)}
-          // />
           <ReactSelect
             styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
             menuPortalTarget={document.body}
@@ -167,10 +172,34 @@ const InviteModalContent = ({
             value={value}
             placeholder="Choose a complex"
             isClearable
-            onClear={() => {
-              console.log('control', control)
-              control?.setValue('complexId', null)
-            }}
+            onClear={() => control?.setValue('complexId', null)}
+          />
+        )}
+      />
+    </>
+  )
+}
+
+const AddModalContent = ({ control, errors, groupOptions }) => {
+  return (
+    <>
+      <p className="font-bold text-base mb-2">Group(s)</p>
+      <p className="mb-2">
+        Assigning members to groups allows them to be chosen as an audience in
+        Bulletin Board and they will be included in dedicated group chats.
+      </p>
+      <Controller
+        control={control}
+        name="companyGroupIds"
+        render={({ name, onChange, value }) => (
+          <ReactSelect
+            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            menuPortalTarget={document.body}
+            options={groupOptions}
+            onChange={onChange}
+            value={value}
+            placeholder="Choose group"
+            isMulti
           />
         )}
       />
@@ -183,6 +212,14 @@ const defaultModalState = {
   visible: false,
   okText: 'Invite Member',
   title: 'Invite Member'
+}
+
+const capitalizeText = text => {
+  const arr = text.split(' ')
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1)
+  }
+  return arr.join(' ')
 }
 
 function MyMembers() {
@@ -238,7 +275,7 @@ function MyMembers() {
     if (groups && groups.getCompanyGroups)
       setGroupOptions(
         groups.getCompanyGroups?.map(g => {
-          return { label: g.name, value: g._id }
+          return { label: capitalizeText(g.name), value: g._id }
         })
       )
   }, [groups])
@@ -259,8 +296,12 @@ function MyMembers() {
     })
   }
 
-  const { control, errors } = useForm({
-    resolver: yupResolver(SCHEMA)
+  const { control: controlInvite, errors: errorsInvite } = useForm({
+    resolver: yupResolver(SCHEMA_INVITE)
+  })
+
+  const { control: controlAdd, errors: errorsAdd } = useForm({
+    resolver: yupResolver(SCHEMA_ADD)
   })
 
   const handleShowModal = () => setShowModal(old => !old)
@@ -283,7 +324,7 @@ function MyMembers() {
 
   const {
     data: accounts,
-    // refetch: refetchAccounts,
+    refetch: refetchAccounts,
     loading: loadingAccounts
   } = useQuery(GET_ACCOUNTS, {
     skip: where === undefined,
@@ -293,6 +334,21 @@ function MyMembers() {
       skip: skipCount === 0 ? null : skipCount
     }
   })
+
+  useEffect(() => {
+    if (controlAdd && selectedMember && modalState.type === 'add') {
+      const defaultValue =
+        selectedMember && selectedMember.companyGroups[0]
+          ? selectedMember.companyGroups?.map(g => {
+              return {
+                label: capitalizeText(g.name),
+                value: g._id
+              }
+            })
+          : []
+      controlAdd.setValue('companyGroupIds', defaultValue)
+    }
+  }, [controlAdd, selectedMember, modalState])
 
   const tableListData = useMemo(
     () => ({
@@ -331,15 +387,16 @@ function MyMembers() {
                 dropdownData = [
                   ...dropdownData,
                   {
-                    label: 'Edit Member',
+                    label: 'Update Group(s)',
                     icon: <span className="ciergio-edit" />,
                     function: () => {
                       setSelectedMember(staff)
-                      // resetEditStaffForm({
-                      //   staffFirstName: user?.firstName,
-                      //   staffLastName: user.lastName
-                      // })
-                      handleShowModal('edit')
+                      setModalState({
+                        type: 'add',
+                        visible: true,
+                        okText: 'Update Group(s)',
+                        title: `Update Group(s) for ${user?.firstName} ${user?.lastName}`
+                      })
                     }
                   }
                 ]
@@ -401,6 +458,11 @@ function MyMembers() {
     { loading: inviteLoading, data: inviteData, error: inviteError }
   ] = useMutation(INVITE_MEMBER)
 
+  const [
+    addMember,
+    { loading: addLoading, data: addData, error: addError }
+  ] = useMutation(ADD_MEMBER)
+
   const onSubmit = val => {
     if (!isEmpty(val)) {
       if (modalState.type === 'invite') {
@@ -419,22 +481,41 @@ function MyMembers() {
         })
       }
     }
+
+    if (modalState.type === 'add') {
+      console.log('val', val)
+      let groupids = null
+      if (val?.companyGroupIds)
+        groupids = val?.companyGroupIds.map(g => g.value)
+
+      addMember({
+        variables: {
+          accountId: selectedMember._id,
+          companyGroupIds: groupids
+        }
+      })
+    }
   }
 
   useEffect(() => {
-    if (!inviteLoading) {
+    if (!inviteLoading || !addLoading) {
       if (inviteData && !inviteError) {
         showToast('success', `Successfully invite a member`)
         closeModal()
-        // refetch()
+        refetchAccounts()
+      }
+      if (addData && !addError) {
+        showToast('success', `Successfully updated a member group(s)`)
+        closeModal()
+        refetchAccounts()
       }
 
-      if (!inviteData && inviteError) {
-        const err = inviteError
+      if ((!inviteData && inviteError) || (!addData && addError)) {
+        const err = inviteError || addError
         errorHandler(err)
       }
     }
-  }, [inviteLoading, inviteData, inviteError])
+  }, [inviteLoading, inviteData, inviteError, addLoading, addData, addError])
 
   return (
     <section className="content-wrap">
@@ -501,13 +582,22 @@ function MyMembers() {
         okText={modalState.okText}
         okButtonProps={{
           danger: modalState.type === 'delete',
-          disabled: loadingGroups || loadingComplexes || inviteLoading
+          disabled:
+            loadingGroups || loadingComplexes || inviteLoading || addLoading
         }}
         visible={modalState.visible}
         onOk={async () => {
-          await control.trigger()
-          if (isEmpty(errors)) {
-            onSubmit(control.getValues())
+          if (modalState.type === 'invite') {
+            await controlInvite.trigger()
+            if (isEmpty(errorsInvite)) {
+              onSubmit(controlInvite.getValues())
+            }
+          }
+          if (modalState.type === 'add') {
+            await controlAdd.trigger()
+            if (isEmpty(errorsAdd)) {
+              onSubmit(controlAdd.getValues())
+            }
           }
         }}
         onCancel={closeModal}
@@ -517,11 +607,19 @@ function MyMembers() {
             {/* {(modalState.type === 'add' || modalState.type === 'edit') && ( */}
             {modalState.type === 'invite' && (
               <InviteModalContent
-                control={control}
-                errors={errors}
+                control={controlInvite}
+                errors={errorsInvite}
                 // selected={selectedGroup}
                 groupOptions={groupOptions}
                 complexOptions={complexOptions}
+              />
+            )}
+
+            {modalState.type === 'add' && (
+              <AddModalContent
+                control={controlAdd}
+                errors={errorsAdd}
+                groupOptions={groupOptions}
               />
             )}
 
@@ -545,6 +643,12 @@ function MyMembers() {
 
 InviteModalContent.propTypes = {
   complexOptions: Props.array,
+  groupOptions: Props.array,
+  control: Props.any,
+  errors: Props.object
+}
+
+AddModalContent.propTypes = {
   groupOptions: Props.array,
   control: Props.any,
   errors: Props.object
