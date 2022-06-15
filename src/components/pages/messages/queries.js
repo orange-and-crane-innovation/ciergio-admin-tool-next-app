@@ -148,8 +148,8 @@ export const getMessages = gql`
 `
 
 export const getAccounts = gql`
-  query getAccounts($where: GetAccountsParams) {
-    getAccounts(where: $where, limit: 500, skip: 0) {
+  query getAccounts($where: GetAccountsParams, $limit: Int) {
+    getAccounts(where: $where, limit: $limit, skip: 0) {
       data {
         _id
         active

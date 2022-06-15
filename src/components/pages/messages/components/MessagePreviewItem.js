@@ -35,15 +35,15 @@ export default function MessagePreviewItem({
   }, [data?.participants])
 
   const user = useMemo(() => {
-    return account[0]?.user
+    return account?.[0]?.user
   }, [account])
 
   const accountType = useMemo(() => {
-    return account[0]?.accountType
+    return account?.[0]?.accountType
   }, [account])
 
   const unitName = useMemo(() => {
-    return account[0]?.unit?.name
+    return account?.[0]?.unit?.name
   }, [account])
 
   const name = `${user?.firstName} ${user?.lastName}`

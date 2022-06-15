@@ -62,7 +62,7 @@ export default function Main() {
   const [isFirst, setIsFirst] = useState(true)
   const [isSelected, setIsSelected] = useState(false)
   const maxAttachments = 5
-  const debouncedSearch = useDebounce(search, 500)
+  // const debouncedSearch = useDebounce(search, 500)
 
   const router = useRouter()
   const { id: convoID } = router.query
@@ -70,24 +70,27 @@ export default function Main() {
   const newMsg = state.newMsg
 
   useEffect(() => {
-    fetchAccounts({
-      variables: {
-        where: {
-          accountTypes: [
-            'company_admin',
-            'complex_admin',
-            'building_admin',
-            'receptionist',
-            'unit_owner',
-            'resident',
-            'member'
-          ],
-          companyId,
-          search: debouncedSearch
+    if (search)
+      fetchAccounts({
+        variables: {
+          where: {
+            accountTypes: [
+              'company_admin',
+              'complex_admin',
+              'building_admin',
+              'receptionist',
+              'unit_owner',
+              'resident',
+              'member'
+            ],
+            companyId,
+            search: search,
+            status: 'active'
+          },
+          limit: 10
         }
-      }
-    })
-  }, [debouncedSearch])
+      })
+  }, [search])
 
   const {
     data: convos,
@@ -98,7 +101,7 @@ export default function Main() {
     variables: {
       where: {
         participants: [accountId],
-        includeEmptyConversation: false,
+        includeEmptyConversation: true,
         pending: showPendingMessages,
         type: convoType
       },
@@ -335,7 +338,10 @@ export default function Main() {
   }
 
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
-  const handleCloseNewMessageModal = () => setShowNewMessageModal(false)
+  const handleCloseNewMessageModal = () => {
+    setSearch('')
+    setShowNewMessageModal(false)
+  }
 
   const handleAccountClick = (userid, admins) => {
     setSelectedAccountId(userid)
@@ -566,7 +572,6 @@ export default function Main() {
     <div className={styles.messagesContainer}>
       <div className={styles.messagesListContainer}>
         <div className={styles.messagesListHeader}>
-          {/* <h3 className="text-lg font-bold">Members</h3> */}
           <div className="w-3/4 mt-4">
             <FormSelect
               options={convoOptions}
@@ -577,35 +582,14 @@ export default function Main() {
             />
           </div>
           <div className="flex items-center">
-            {/* <button className={styles.messagesButton}>
-              <GoSettings />
-            </button> */}
             <button
               className={styles.messagesButton}
               onClick={() => {
-                fetchAccounts({
-                  variables: {
-                    where: {
-                      accountTypes: [
-                        'company_admin',
-                        'complex_admin',
-                        'building_admin',
-                        'receptionist',
-                        'unit_owner',
-                        'resident',
-                        'member'
-                      ],
-                      companyId,
-                      status: 'active'
-                    }
-                  }
-                })
                 handleNewMessageModal()
               }}
             >
               <FiEdit className="text-orange-600" />
             </button>
-            {/* <Dropdown label={<AiOutlineEllipsis />} items={dropdownData} /> */}
           </div>
         </div>
         <div className={styles.pendingToggleContainer}>
@@ -649,7 +633,11 @@ export default function Main() {
         onCancel={handleCloseNewMessageModal}
         onSelectUser={handleAccountClick}
         loadingUsers={loadingAccounts}
-        users={accounts?.getAccounts?.data || []}
+        users={
+          search.length > 0 && accounts?.getAccounts?.data
+            ? accounts?.getAccounts?.data
+            : []
+        }
         accountId={accountId}
         onSearchChange={handleSearchAccounts}
         searchText={search}

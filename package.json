@@ -13,7 +13,8 @@
     "clean": "rm -rf .serverless .serverless_nextjs",
     "deploy-pray": "AWS_PROFILE=cgpray serverless",
     "deploy-circle": "AWS_PROFILE=cgcircle serverless",
-    "deploy-home": "AWS_PROFILE=cghome serverless"
+    "deploy-home": "AWS_PROFILE=cghome serverless",
+    "release": "yarn build && yarn deploy-pray"
   },
   "dependencies": {
     "@apollo/client": "3.3.3",
