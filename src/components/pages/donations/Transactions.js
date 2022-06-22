@@ -422,7 +422,11 @@ function Transactions() {
                         </span>
                       </>
                     ),
-                    merchant: <>{donation?.method}</>,
+                    merchant: (
+                      <span className="whitespace-nowrap">
+                        {donation?.srcReference?.company?.name}
+                      </span>
+                    ),
                     payor: (
                       <span className="whitespace-nowrap">
                         {donation?.name}
@@ -455,7 +459,11 @@ function Transactions() {
                         </span>
                       </>
                     ),
-                    merchant: <>{PAYMENTMETHODS[donation?.method]}</>,
+                    merchant: (
+                      <span className="whitespace-nowrap">
+                        {donation?.srcReference?.company?.name}
+                      </span>
+                    ),
                     payor: (
                       <span className="whitespace-nowrap">
                         {donation?.name}
