@@ -9,6 +9,8 @@ import { ACCESSLEVEL } from '@app/constants'
 import NotFound from '@app/pages/404'
 import errorHandler from '@app/utils/errorHandler'
 
+const isSystemPray = process.env.NEXT_PUBLIC_SYSTEM_TYPE === 'pray'
+
 const isPermitted = (modulespermissions, permission) => {
   const { userPermissions } = modulespermissions
 
@@ -57,6 +59,7 @@ const RolesPermissions = ({ moduleName, permissionGroup, children, no }) => {
 
   const [modulespermissions, setModulesPermissions] = useState({})
   const [loadingRoles, setLoadingRoles] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(true)
 
   const MODULES = process.env.NEXT_PUBLIC_MODULES
   const isSuperAdmin = accountType === 'administrator'
@@ -93,6 +96,10 @@ const RolesPermissions = ({ moduleName, permissionGroup, children, no }) => {
     }
   }, [loading, data])
 
+  useEffect(() => {
+    setIsProcessing(false)
+  }, [])
+
   const childrenWithProps = React.Children.map(children, child => {
     // Checking isValidElement is the safe way and avoid errors.
     if (React.isValidElement(child)) {
@@ -103,7 +110,19 @@ const RolesPermissions = ({ moduleName, permissionGroup, children, no }) => {
     return child
   })
 
-  if (loadingRoles) {
+  const notFoundWithProps = React.Children.map(no, child => {
+    // Checking isValidElement is the safe way and avoid errors.
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        isLoading: loading,
+        permissionGroup: permissionGroup,
+        moduleName: moduleName
+      })
+    }
+    return child
+  })
+
+  if (loadingRoles || isProcessing) {
     return (
       <div className="h-full w-full flex justify-center items-center">
         <PageLoader />
@@ -115,15 +134,18 @@ const RolesPermissions = ({ moduleName, permissionGroup, children, no }) => {
     return no
   }
 
+  const notPray = moduleName === 'myProperties'
+
   const existOnENV = MODULES.split(', ').includes(moduleName)
 
   return isSuperAdmin && existOnENV
     ? childrenWithProps
     : existOnENV &&
       isPermitted(modulespermissions, permissionGroup) &&
-      isAllowedModule(modulespermissions, moduleName)
+      isAllowedModule(modulespermissions, moduleName) &&
+      !notPray
     ? childrenWithProps
-    : no
+    : notFoundWithProps
 }
 
 const PageNotRestricted = () => (

@@ -82,11 +82,6 @@ const navigation = [
             items: []
           },
           {
-            url: '/staff/manage-roles',
-            title: 'Manage Roles',
-            items: []
-          },
-          {
             url: '/staff/pending-invites',
             title: 'Pending Staff Invites',
             items: []
@@ -357,6 +352,25 @@ const navigation = [
           {
             url: '/receptionist/services',
             title: 'Services',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/settings',
+        icon: 'ciergio-gear',
+        title: 'Community Settings',
+        permissionGroup: 'accounts',
+        moduleName: 'settingsPage',
+        items: [
+          {
+            url: '/settings/roles-&-permissions',
+            title: 'Roles and Permissions',
+            items: []
+          },
+          {
+            url: '/settings/categories',
+            title: 'Global Categories',
             items: []
           }
         ]
