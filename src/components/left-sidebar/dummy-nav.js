@@ -82,6 +82,11 @@ const navigation = [
             items: []
           },
           {
+            url: '/staff/roles-&-permissions',
+            title: 'Roles and Permissions',
+            items: []
+          },
+          {
             url: '/staff/pending-invites',
             title: 'Pending Staff Invites',
             items: []
@@ -363,11 +368,6 @@ const navigation = [
         permissionGroup: 'accounts',
         moduleName: 'settingsPage',
         items: [
-          {
-            url: '/settings/roles-&-permissions',
-            title: 'Roles and Permissions',
-            items: []
-          },
           {
             url: '/settings/categories',
             title: 'Global Categories',
