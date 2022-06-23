@@ -247,13 +247,27 @@ const navigation = [
           }
         ]
       },
+      // {
+      //   url: '/offerings',
+      //   icon: 'ciergio-donate-2',
+      //   title: 'Offerings',
+      //   permissionGroup: 'payments',
+      //   moduleName: 'donations',
+      //   items: []
+      // },
       {
-        url: '/offerings',
-        icon: 'ciergio-donate-2',
-        title: 'Offerings',
+        url: '/transactions',
+        icon: 'ciergio-bill',
+        title: 'Transactions',
         permissionGroup: 'payments',
         moduleName: 'donations',
-        items: []
+        items: [
+          {
+            url: '/transactions/virtual-terminal',
+            title: 'Virtual Terminal',
+            items: []
+          }
+        ]
       },
       {
         url: '/messages',

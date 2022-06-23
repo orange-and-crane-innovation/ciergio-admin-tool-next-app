@@ -1,5 +1,5 @@
 .tabContainer {
-  @apply container;
+  @apply container max-w-full;
 
   .tabLabel {
     @apply mb-6;
