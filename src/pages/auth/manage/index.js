@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
-import { gql, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 
-import showToast from '@app/utils/toast'
-import { ACCOUNT_TYPES } from '@app/constants'
-
+import { gql, useMutation } from '@apollo/client'
 import ManageAccount from '@app/components/pages/auth/manage'
+import { ACCOUNT_TYPES } from '@app/constants'
+import showToast from '@app/utils/toast'
 
 const SWITCH_ACCOUNT_MUTATION = gql`
   mutation switchAccount($data: InputSwitchAccount) {
@@ -20,14 +19,14 @@ const SWITCH_ACCOUNT_MUTATION = gql`
 function ManageAccountPage() {
   const router = useRouter()
   const [accountType, setAccountType] = useState()
-  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
-  const isSystemPray = system === 'pray'
-  const isSystemCircle = system === 'circle'
+  // const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  // const isSystemPray = system === 'pray'
+  // const isSystemCircle = system === 'circle'
 
-  const [switchAccount, { loading, data, called, error }] = useMutation(
-    SWITCH_ACCOUNT_MUTATION,
-    { onError: () => {} }
-  )
+  const [
+    switchAccount,
+    { loading, data, called, error }
+  ] = useMutation(SWITCH_ACCOUNT_MUTATION, { onError: () => {} })
 
   useEffect(() => {
     if (loading) {
@@ -39,15 +38,21 @@ function ManageAccountPage() {
       if (called && data) {
         localStorage.setItem('keep', data?.switchAccount?.slave)
         const timer = setTimeout(() => {
-          if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
-            router.push('/posts')
-          } else if (
-            isSystemCircle &&
-            accountType !== ACCOUNT_TYPES.SUP.value
-          ) {
-            router.push('/attractions-events')
+          // if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
+          //   router.push('/posts')
+          // } else if (
+          //   isSystemCircle &&
+          //   accountType !== ACCOUNT_TYPES.SUP.value
+          // ) {
+          //   router.push('/attractions-events')
+          // } else {
+          //   router.push('/properties')
+          // }
+
+          if (accountType === ACCOUNT_TYPES.SUP.value) {
+            router.push('/dashboard')
           } else {
-            router.push('/properties')
+            router.push('/account/profile')
           }
           clearInterval(timer)
         }, 1000)
