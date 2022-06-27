@@ -3,10 +3,10 @@
 # PRODUCTION MODE -----------------------------------
 # name: CiergioAdmintool
 
-# ociNextApp:
-#   component: "@sls-next/serverless-component@1.19.0-alpha.35"
+# cgAdminProduction:
+#   component: "@sls-next/serverless-component@3.6.0"
 #   inputs:
-#     runtime: "nodejs12.x"
+#     runtime: "nodejs14.x"
 #     domain: ["admin","ciergiopray.com"]
 #     domainType: "both"
 #     memory: 1024
@@ -17,13 +17,13 @@
 
 # TEST MODE -----------------------------------
 
-name: CiergioTestAdmintool
+name: CiergioStagingAdmintool
 
-ociNextApp:
+cgAdminStaging:
   component: "@sls-next/serverless-component@3.6.0"
   inputs:
     runtime: "nodejs14.x"
-    domain: ["test","ciergiopray.com"]
+    domain: ["staging-admin","ciergiopray.com"]
     domainType: "both"
     memory: 1024
     cloudfront:
