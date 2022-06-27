@@ -1,4 +1,4 @@
-import EditForms from '@app/components/pages/forms/edit'
+import EditForms from '@app/components/pages/forms/Edit'
 import { RolesPermissions } from '@app/components/rolespermissions'
 
 function EditFormsPage() {
