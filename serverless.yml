@@ -22,7 +22,7 @@ name: CiergioStagingAdmintool
 cgAdminStaging:
   component: "@sls-next/serverless-component@3.6.0"
   inputs:
-    runtime: "nodejs14.x"
+    runtime: "nodejs12.x"
     domain: ["staging-admin","ciergiopray.com"]
     domainType: "both"
     memory: 1024
