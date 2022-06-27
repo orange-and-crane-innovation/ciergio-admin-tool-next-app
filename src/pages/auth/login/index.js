@@ -1,11 +1,10 @@
-import { gql, useMutation, useLazyQuery } from '@apollo/client'
-import { useCallback, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { useCallback, useEffect } from 'react'
 
-import showToast from '@app/utils/toast'
-import { ACCOUNT_TYPES } from '@app/constants'
-
+import { gql, useLazyQuery, useMutation } from '@apollo/client'
 import Login from '@app/components/pages/auth/login'
+import { ACCOUNT_TYPES } from '@app/constants'
+import showToast from '@app/utils/toast'
 
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
@@ -50,9 +49,9 @@ export const GET_PROFILE = gql`
 
 function LoginPage() {
   const router = useRouter()
-  const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
-  const isSystemPray = system === 'pray'
-  const isSystemCircle = system === 'circle'
+  // const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  // const isSystemPray = system === 'pray'
+  // const isSystemCircle = system === 'circle'
 
   const [login, { loading, data, client, called, error }] = useMutation(
     LOGIN_MUTATION,
@@ -95,12 +94,18 @@ function LoginPage() {
         const profile = dataProfile ? dataProfile.getProfile : {}
         const accountType = profile?.accounts?.data[0]?.accountType
 
-        if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
-          router.push('/posts')
-        } else if (isSystemCircle && accountType !== ACCOUNT_TYPES.SUP.value) {
-          router.push('/attractions-events')
+        // if (isSystemPray && accountType !== ACCOUNT_TYPES.SUP.value) {
+        //   router.push('/posts')
+        // } else if (isSystemCircle && accountType !== ACCOUNT_TYPES.SUP.value) {
+        //   router.push('/attractions-events')
+        // } else {
+        //   router.push('/properties')
+        // }
+
+        if (accountType === ACCOUNT_TYPES.SUP.value) {
+          router.push('/dashboard')
         } else {
-          router.push('/properties')
+          router.push('/account/profile')
         }
       }
     }
