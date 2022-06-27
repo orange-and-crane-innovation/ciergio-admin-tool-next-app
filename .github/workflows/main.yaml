@@ -25,6 +25,8 @@ jobs:
           node-version: '12.x'
       - name: Install NPM dependencies
         run: yarn
+      - name: Increase Memory
+        run: set NODE_OPTIONS=--max_old_space_size=8192
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
