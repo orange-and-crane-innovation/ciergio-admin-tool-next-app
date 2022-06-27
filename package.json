@@ -88,6 +88,7 @@
     "react-web-notification": "0.8.0",
     "rodal": "1.8.1",
     "save-svg-as-png": "1.4.17",
+    "serverless": "^3.19.0",
     "subscriptions-transport-ws": "0.9.18",
     "toasted-notes": "3.2.0",
     "underscore": "1.12.0",
