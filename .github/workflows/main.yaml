@@ -3,12 +3,21 @@ name: CI
 on:
   push:
     branches: [ staging ]
-  pull_request:
-    branches: [ staging ]
+  # pull_request:
+  #   branches: [ staging ]
   workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ## Environment variable
+      NEXT_PUBLIC_API: https://staging.ciergiopray.com/api
+      NEXT_PUBLIC_SUBSCRIPTION_API: wss://staging.ciergiopray.com/api
+      NEXT_PUBLIC_SYSTEM_TYPE: pray
+      NEXT_PUBLIC_UPLOAD_API: https://dev-fstream.ciergio.com
+      NEXT_PUBLIC_UPLOAD_VIDEO_API: https://dev-videostream.ciergio.com
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: AIzaSyBijY3DqS5WaxPlNYt2LltUTD1eupJzxUs
+      NEXT_PUBLIC_MODULES: "bulletinBoard, contactPage, dailyReading, directory, donations, forms, homePage, messages, myDues, myProperties, myMembers, myStaff, notifications, pastoralWorks, prayerRequests, settingsPage"
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
