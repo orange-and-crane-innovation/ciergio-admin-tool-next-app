@@ -69,27 +69,31 @@ export default function Main() {
   const [state, dispatch] = useContext(Context)
   const newMsg = state.newMsg
 
+  const doFetchAccounts = search => {
+    const where = {
+      accountTypes: [
+        'company_admin',
+        'complex_admin',
+        'building_admin',
+        'receptionist',
+        'unit_owner',
+        'resident',
+        'member'
+      ],
+      companyId,
+      status: 'active'
+    }
+    if (search) where.search = search
+    fetchAccounts({
+      variables: {
+        where,
+        limit: 10
+      }
+    })
+  }
+
   useEffect(() => {
-    if (search)
-      fetchAccounts({
-        variables: {
-          where: {
-            accountTypes: [
-              'company_admin',
-              'complex_admin',
-              'building_admin',
-              'receptionist',
-              'unit_owner',
-              'resident',
-              'member'
-            ],
-            companyId,
-            search: search,
-            status: 'active'
-          },
-          limit: 10
-        }
-      })
+    if (search) doFetchAccounts(search)
   }, [search])
 
   const {
@@ -398,6 +402,9 @@ export default function Main() {
 
   const handleSearchAccounts = text => {
     setSearch(text)
+    if (!text || text.length == 0) {
+      doFetchAccounts()
+    }
   }
 
   const uploadApi = async payload => {
@@ -585,6 +592,7 @@ export default function Main() {
             <button
               className={styles.messagesButton}
               onClick={() => {
+                doFetchAccounts()
                 handleNewMessageModal()
               }}
             >
@@ -633,11 +641,7 @@ export default function Main() {
         onCancel={handleCloseNewMessageModal}
         onSelectUser={handleAccountClick}
         loadingUsers={loadingAccounts}
-        users={
-          search.length > 0 && accounts?.getAccounts?.data
-            ? accounts?.getAccounts?.data
-            : []
-        }
+        users={accounts?.getAccounts?.data || []}
         accountId={accountId}
         onSearchChange={handleSearchAccounts}
         searchText={search}
