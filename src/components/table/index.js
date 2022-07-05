@@ -12,7 +12,8 @@ const Table = ({
   items,
   onRowClick,
   loading,
-  emptyText
+  emptyText,
+  className
 }) => {
   if (loading) {
     return (
@@ -23,7 +24,9 @@ const Table = ({
   }
   let listItem = []
   return (
-    <div className={`scrollableContainer ${styles.tableContainer}`}>
+    <div
+      className={`scrollableContainer ${styles.tableContainer} ${className}`}
+    >
       <table id="table" className={styles.tableControl}>
         <thead className={styles.tableHeader}>
           <tr>
@@ -97,7 +100,8 @@ Table.propTypes = {
   items: PropTypes.object,
   onRowClick: PropTypes.func,
   loading: PropTypes.bool,
-  emptyText: PropTypes.node || PropTypes.string
+  emptyText: PropTypes.node || PropTypes.string,
+  className: PropTypes.string
 }
 
 export default Table
