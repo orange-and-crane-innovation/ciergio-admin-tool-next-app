@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Props from 'prop-types'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
+import { FaEllipsisH, FaPlusCircle, FaExclamationCircle } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import ReactSelect from 'react-select'
@@ -19,8 +19,7 @@ import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchControl from '@app/components/globals/SearchControl'
 import Modal from '@app/components/modal'
-import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
-import { GET_ACCOUNTS } from '@app/components/pages/staff/queries'
+import { GET_ACCOUNTS, DELETE_USER } from '@app/components/pages/staff/queries'
 import Can from '@app/permissions/can'
 import errorHandler from '@app/utils/errorHandler'
 import showToast from '@app/utils/toast'
@@ -38,9 +37,9 @@ const SCHEMA_INVITE = yup.object().shape({
   complexId: yup.object().nullable(true).required('Complex is required')
 })
 
-const SCHEMA_ADD = yup.object().shape({
-  // companyGroupIds: yup.array().required('Group is required')
-})
+const SCHEMA_ADD = yup.object().shape({})
+
+const SCHEMA_DELETE = yup.object().shape({})
 
 const columns = [
   {
@@ -219,6 +218,32 @@ const AddModalContent = ({ control, errors, groupOptions }) => {
   )
 }
 
+const DeleteModalContent = ({ selected }) => {
+  return (
+    <div className="w-full text-base leading-7">
+      <div className="mb-4 px-4 pt-4">
+        <p>
+          <span className="font-bold">
+            <FaExclamationCircle className="inline-flex text-danger-700" />{' '}
+            {`Warning: `}
+          </span>
+          {`You’re about to remove `}
+          <span className="font-bold">{`${selected?.firstName} ${selected?.lastName}`}</span>
+          .
+        </p>
+      </div>
+      <div className="-mx-4 mb-4 p-4 bg-blue-100">
+        <ul className="list-disc px-12">
+          <li className="mb-2">{`${selected?.firstName}'s Profile will be removed from the members list.`}</li>
+          <li className="mb-2">{`${selected?.firstName} will not be able to access the app.`}</li>
+          <li className="mb-2">{`Messages, comments, and notes created by this user will still be viewable.`}</li>
+        </ul>
+      </div>
+      <p className="px-4 pt-2 pb-4">{`Are you sure you want to remove ${selected?.firstName} ${selected?.lastName}?`}</p>
+    </div>
+  )
+}
+
 const defaultModalState = {
   type: 'invite',
   visible: false,
@@ -238,12 +263,9 @@ function MyMembers() {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const [modalState, setModalState] = useState(defaultModalState)
-
-  const [showModal, setShowModal] = useState(false)
   const [viewMember, setViewMember] = useState(false)
   const [editMember, setEditMember] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
-  const [selectedStaff, setSelectedStaff] = useState(null)
   const [groupOptions, setGroupOptions] = useState()
   const [complexOptions, setComplexOptions] = useState()
 
@@ -317,7 +339,9 @@ function MyMembers() {
     resolver: yupResolver(SCHEMA_ADD)
   })
 
-  const handleShowModal = () => setShowModal(old => !old)
+  const { control: controlDelete, errors: errorsDelete } = useForm({
+    resolver: yupResolver(SCHEMA_DELETE)
+  })
 
   const handleViewMember = () => setViewMember(old => !old)
 
@@ -424,7 +448,7 @@ function MyMembers() {
                 ]
               }
 
-              // UPDATE - PROFILE
+              // UPDATE & DELETE - PROFILE
               if (accountType === 'member' && profile._id !== user?._id) {
                 dropdownData = [
                   ...dropdownData,
@@ -435,20 +459,18 @@ function MyMembers() {
                       setSelectedMember(staff)
                       handleEditMember()
                     }
-                  }
-                ]
-              }
-
-              // DELETE
-              if (accountType !== 'member' && profile._id !== user?._id) {
-                dropdownData = [
-                  ...dropdownData,
+                  },
                   {
                     label: 'Remove Member',
                     icon: <span className="ciergio-trash" />,
                     function: () => {
-                      setSelectedStaff(staff)
-                      handleShowModal('delete')
+                      setSelectedMember(staff)
+                      setModalState({
+                        type: 'delete',
+                        visible: true,
+                        okText: 'Yes, remove member',
+                        title: 'Remove Member'
+                      })
                     }
                   }
                 ]
@@ -497,19 +519,15 @@ function MyMembers() {
     { loading: addLoading, data: addData, error: addError }
   ] = useMutation(ADD_MEMBER)
 
-  const [updateUser, { loading: editLoading }] = useMutation(
-    UPDATE_USER_MUTATION,
-    {
-      onCompleted: () => {
-        refetchAccounts()
-        handleEditMember()
-        showToast('success', 'Profile updated successfully!')
-      },
-      onError: e => {
-        errorHandler(e)
-      }
-    }
-  )
+  const [
+    updateUser,
+    { loading: editLoading, data: editData, error: editError }
+  ] = useMutation(UPDATE_USER_MUTATION)
+
+  const [
+    deleteUser,
+    { loading: deleteLoading, data: deleteData, error: deleteError }
+  ] = useMutation(DELETE_USER)
 
   const onSubmit = val => {
     if (modalState.visible) {
@@ -543,6 +561,16 @@ function MyMembers() {
           }
         })
       }
+
+      if (modalState.type === 'delete') {
+        deleteUser({
+          variables: {
+            data: {
+              accountId: selectedMember?._id
+            }
+          }
+        })
+      }
     }
 
     if (editMember) {
@@ -561,24 +589,63 @@ function MyMembers() {
   }
 
   useEffect(() => {
-    if (!inviteLoading || !addLoading) {
+    if (!inviteLoading) {
       if (inviteData && !inviteError) {
         showToast('success', `Successfully invite a member`)
         closeModal()
         refetchAccounts()
       }
+
+      if (!inviteData && inviteError) {
+        errorHandler(inviteError)
+      }
+    }
+  }, [inviteLoading, inviteData, inviteError])
+
+  useEffect(() => {
+    if (!addLoading) {
       if (addData && !addError) {
         showToast('success', `Successfully updated a member group(s)`)
         closeModal()
         refetchAccounts()
       }
 
-      if ((!inviteData && inviteError) || (!addData && addError)) {
-        const err = inviteError || addError
-        errorHandler(err)
+      if (!addData && addError) {
+        errorHandler(addError)
       }
     }
-  }, [inviteLoading, inviteData, inviteError, addLoading, addData, addError])
+  }, [addLoading, addData, addError])
+
+  useEffect(() => {
+    if (!editLoading) {
+      if (editData && !editError) {
+        refetchAccounts()
+        handleEditMember()
+        showToast('success', 'Profile updated successfully!')
+      }
+
+      if (!editData && editError) {
+        errorHandler(editError)
+      }
+    }
+  }, [editLoading, editData, editError])
+
+  useEffect(() => {
+    if (!deleteLoading) {
+      if (deleteData && !deleteError) {
+        showToast(
+          'success',
+          `You have successfully remove ${selectedMember?.user?.firstName} ${selectedMember?.user?.lastName}`
+        )
+        closeModal()
+        refetchAccounts()
+      }
+
+      if (!deleteData && deleteError) {
+        errorHandler(deleteError)
+      }
+    }
+  }, [deleteLoading, deleteData, deleteError])
 
   return (
     <section className="content-wrap">
@@ -646,7 +713,11 @@ function MyMembers() {
         okButtonProps={{
           danger: modalState.type === 'delete',
           disabled:
-            loadingGroups || loadingComplexes || inviteLoading || addLoading
+            loadingGroups ||
+            loadingComplexes ||
+            inviteLoading ||
+            addLoading ||
+            deleteLoading
         }}
         visible={modalState.visible}
         onOk={async () => {
@@ -660,6 +731,12 @@ function MyMembers() {
             await controlAdd.trigger()
             if (isEmpty(errorsAdd)) {
               onSubmit(controlAdd.getValues())
+            }
+          }
+          if (modalState.type === 'delete') {
+            await controlDelete.trigger()
+            if (isEmpty(errorsDelete)) {
+              onSubmit(controlDelete.getValues())
             }
           }
         }}
@@ -686,14 +763,12 @@ function MyMembers() {
               />
             )}
 
-            {/* {modalState.type === 'delete' && (
-              <DeleteModalContent selected={selectedGroup} control={control} />
-            )} */}
+            {modalState.type === 'delete' && (
+              <DeleteModalContent selected={selectedMember?.user} />
+            )}
           </>
         )}
       </Modal>
-
-      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
 
       <ViewMemberModal
         showModal={viewMember}
@@ -701,7 +776,6 @@ function MyMembers() {
         resident={selectedMember}
       />
 
-      {/* {editMember && ( */}
       <EditModal
         data={selectedMember?.user}
         isShown={editMember}
@@ -709,7 +783,6 @@ function MyMembers() {
         onSave={e => onSubmit(e)}
         onCancel={handleEditMember}
       />
-      {/* )} */}
     </section>
   )
 }
@@ -725,6 +798,10 @@ AddModalContent.propTypes = {
   groupOptions: Props.array,
   control: Props.any,
   errors: Props.object
+}
+
+DeleteModalContent.propTypes = {
+  selected: Props.object
 }
 
 export default MyMembers
