@@ -1,30 +1,28 @@
+import { debounce } from 'lodash'
+import { useRouter } from 'next/router'
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useState, useMemo, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { useLazyQuery, useQuery } from '@apollo/client'
-import { debounce } from 'lodash'
+import { useEffect, useMemo, useState } from 'react'
 import { FaCaretDown, FaCaretUp, FaTimes } from 'react-icons/fa'
 import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 
-import Tabs from '@app/components/tabs'
+import { useLazyQuery, useQuery } from '@apollo/client'
+import Button from '@app/components/button'
 import Card from '@app/components/card'
+import DateRange from '@app/components/daterange'
 import FormSelect from '@app/components/forms/form-select'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import Button from '@app/components/button'
-
-import { DATE, ATTR } from '@app/utils'
-import showToast from '@app/utils/toast'
-import {
-  ACCOUNT_TYPES,
-  TRANSACTIONSTATUS,
-  PAYMENTMETHODS
-} from '@app/constants'
-
 import SearchControl from '@app/components/globals/SearchControl'
 import SelectCompany from '@app/components/globals/SelectCompany'
-import DateRange from '@app/components/daterange'
+import Tabs from '@app/components/tabs'
+import {
+  ACCOUNT_TYPES,
+  PAYMENTMETHODS,
+  TRANSACTIONSTATUS
+} from '@app/constants'
+import { ATTR, DATE } from '@app/utils'
+import showToast from '@app/utils/toast'
 
 import { GET_PAYMENT_METHODS, GET_TRANSACTIONS } from './queries'
 
@@ -734,6 +732,7 @@ function Transactions() {
                   setCurrentPage={setActivePage}
                   setPageOffset={setPageOffset}
                   setPageLimit={setPageLimit}
+                  className="overflow-x-auto"
                 />
               }
             />

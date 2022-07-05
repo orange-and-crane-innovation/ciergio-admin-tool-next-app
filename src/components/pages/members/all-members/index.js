@@ -26,7 +26,9 @@ import errorHandler from '@app/utils/errorHandler'
 import showToast from '@app/utils/toast'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import ViewResidentModal from './../ViewResidentModal'
+import ViewMemberModal from './../ViewResidentModal'
+
+import EditModal from './EditModal'
 
 const SCHEMA_INVITE = yup.object().shape({
   email: yup
@@ -101,6 +103,16 @@ const ADD_MEMBER = gql`
     ) {
       _id
       message
+    }
+  }
+`
+
+const UPDATE_USER_MUTATION = gql`
+  mutation updateUser($userId: String, $data: InputUpdateUser) {
+    updateUser(userId: $userId, data: $data) {
+      processId
+      message
+      slave
     }
   }
 `
@@ -229,6 +241,7 @@ function MyMembers() {
 
   const [showModal, setShowModal] = useState(false)
   const [viewMember, setViewMember] = useState(false)
+  const [editMember, setEditMember] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [groupOptions, setGroupOptions] = useState()
@@ -308,6 +321,8 @@ function MyMembers() {
 
   const handleViewMember = () => setViewMember(old => !old)
 
+  const handleEditMember = () => setEditMember(old => !old)
+
   const onSearch = debounce(e => {
     setSearchText(e.target.value !== '' ? e.target.value : null)
   }, 1000)
@@ -338,7 +353,7 @@ function MyMembers() {
   useEffect(() => {
     if (controlAdd && selectedMember && modalState.type === 'add') {
       const defaultValue =
-        selectedMember && selectedMember.companyGroups[0]
+        selectedMember && selectedMember?.companyGroups?.[0]
           ? selectedMember.companyGroups?.map(g => {
               return {
                 label: capitalizeText(g.name),
@@ -364,6 +379,7 @@ function MyMembers() {
                 .toString()
                 .replaceAll(',', ', ')
 
+              // VIEW
               let dropdownData = [
                 {
                   label: `${
@@ -388,6 +404,7 @@ function MyMembers() {
                 }
               ]
 
+              // UPDATE - GROUP
               if (profile._id !== user?._id) {
                 dropdownData = [
                   ...dropdownData,
@@ -407,6 +424,22 @@ function MyMembers() {
                 ]
               }
 
+              // UPDATE - PROFILE
+              if (accountType === 'member' && profile._id !== user?._id) {
+                dropdownData = [
+                  ...dropdownData,
+                  {
+                    label: 'Update Profile',
+                    icon: <span className="ciergio-edit" />,
+                    function: () => {
+                      setSelectedMember(staff)
+                      handleEditMember()
+                    }
+                  }
+                ]
+              }
+
+              // DELETE
               if (accountType !== 'member' && profile._id !== user?._id) {
                 dropdownData = [
                   ...dropdownData,
@@ -464,37 +497,66 @@ function MyMembers() {
     { loading: addLoading, data: addData, error: addError }
   ] = useMutation(ADD_MEMBER)
 
-  const onSubmit = val => {
-    if (!isEmpty(val)) {
-      if (modalState.type === 'invite') {
-        let groupids = null
-        if (val?.groupids) groupids = val?.groupids.map(g => g.value)
+  const [updateUser, { loading: editLoading }] = useMutation(
+    UPDATE_USER_MUTATION,
+    {
+      onCompleted: () => {
+        refetchAccounts()
+        handleEditMember()
+        showToast('success', 'Profile updated successfully!')
+      },
+      onError: e => {
+        errorHandler(e)
+      }
+    }
+  )
 
-        inviteMember({
-          variables: {
-            companyId: companyId,
-            data: {
-              email: val?.email,
-              complexId: val?.complexId?.value,
-              companyGroupIds: groupids
+  const onSubmit = val => {
+    if (modalState.visible) {
+      if (!isEmpty(val)) {
+        if (modalState.type === 'invite') {
+          let groupids = null
+          if (val?.groupids) groupids = val?.groupids.map(g => g.value)
+
+          inviteMember({
+            variables: {
+              companyId: companyId,
+              data: {
+                email: val?.email,
+                complexId: val?.complexId?.value,
+                companyGroupIds: groupids
+              }
             }
+          })
+        }
+      }
+
+      if (modalState.type === 'add') {
+        let groupids = null
+        if (val?.companyGroupIds)
+          groupids = val?.companyGroupIds.map(g => g.value)
+
+        addMember({
+          variables: {
+            accountId: selectedMember._id,
+            companyGroupIds: groupids
           }
         })
       }
     }
 
-    if (modalState.type === 'add') {
-      console.log('val', val)
-      let groupids = null
-      if (val?.companyGroupIds)
-        groupids = val?.companyGroupIds.map(g => g.value)
-
-      addMember({
-        variables: {
-          accountId: selectedMember._id,
-          companyGroupIds: groupids
+    if (editMember) {
+      const updateData = {
+        userId: val?.id,
+        data: {
+          avatar: val?.logo ? val?.logo[0] : null,
+          firstName: val?.firstName,
+          lastName: val?.lastName,
+          birthDate: val?.birthDate,
+          gender: val?.gender
         }
-      })
+      }
+      updateUser({ variables: updateData })
     }
   }
 
@@ -633,11 +695,21 @@ function MyMembers() {
 
       <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
 
-      <ViewResidentModal
+      <ViewMemberModal
         showModal={viewMember}
         onShowModal={handleViewMember}
         resident={selectedMember}
       />
+
+      {/* {editMember && ( */}
+      <EditModal
+        data={selectedMember?.user}
+        isShown={editMember}
+        loading={editLoading}
+        onSave={e => onSubmit(e)}
+        onCancel={handleEditMember}
+      />
+      {/* )} */}
     </section>
   )
 }

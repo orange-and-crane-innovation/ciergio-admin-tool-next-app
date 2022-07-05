@@ -6,8 +6,13 @@ import * as yup from 'yup'
 import axios from 'axios'
 
 import FormInput from '@app/components/forms/form-input'
+import FormSelect from '@app/components/forms/form-select'
 import UploaderImage from '@app/components/uploader/image'
 import Modal from '@app/components/modal'
+import Datetime from 'react-datetime'
+import dayjs from 'dayjs'
+
+import 'react-datetime/css/react-datetime.css'
 
 import showToast from '@app/utils/toast'
 import { ACCOUNT_TYPES } from '@app/constants'
@@ -15,10 +20,15 @@ import { ACCOUNT_TYPES } from '@app/constants'
 const validationSchema = yup.object().shape({
   logo: yup.array().label('Image').nullable(),
   firstName: yup.string().label('First Name').nullable().trim().required(),
-  lastName: yup.string().label('Last Name').nullable().trim().required()
+  lastName: yup.string().label('Last Name').nullable().trim().required(),
+  birthDate: yup.string().label('Birth Date').nullable(),
+  gender: yup.string().label('Gender').nullable()
 })
 
 const Component = ({ data, loading, isShown, onSave, onCancel }) => {
+  const [selectedDate, setSelectedDate] = useState(
+    data?.birthDate ? dayjs(data?.birthDate).format('MMMM DD, YYYY') : null
+  )
   const [loadingUploader, setLoadingUploader] = useState(false)
   const [fileUploadError, setFileUploadError] = useState()
   const [imageUrls, setImageUrls] = useState([])
@@ -29,10 +39,12 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
   const { handleSubmit, control, errors, register, setValue } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      id: '',
-      logo: '',
-      firstName: '',
-      lastName: ''
+      id: data?._id,
+      logo: data?.avatar ? [data?.avatar] : [],
+      firstName: data?.firstName,
+      lastName: data?.lastName,
+      birthDate: selectedDate,
+      gender: data?.gender
     }
   })
 
@@ -44,9 +56,12 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
       setValue('logo', data?.avatar ? [data?.avatar] : [])
       setValue('firstName', data?.firstName)
       setValue('lastName', data?.lastName)
+      setSelectedDate(
+        data?.birthDate ? dayjs(data.birthDate).format('MMMM DD, YYYY') : null
+      )
       setImageUrls(data?.avatar ? [data?.avatar] : [])
     }
-  }, [isShown])
+  }, [isShown, data])
 
   const uploadApi = async payload => {
     const config = {
@@ -118,6 +133,32 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
     setValue('logo', images.length !== 0 ? images : null)
   }
 
+  const handleDateChange = e => {
+    setSelectedDate(e)
+  }
+
+  const validateDate = currentDate => {
+    if (currentDate) {
+      return currentDate.isSameOrBefore(dayjs(new Date()))
+    }
+    return true
+  }
+
+  const genderOptions = [
+    {
+      label: 'Male',
+      value: 'male'
+    },
+    {
+      label: 'Female',
+      value: 'female'
+    },
+    {
+      label: 'Prefer not to say',
+      value: 'not-to-say'
+    }
+  ]
+
   return (
     <Modal
       title="Edit Profile"
@@ -133,21 +174,17 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
       <div className="p-2 text-base font-body leading-7">
         <div className="mb-4 flex flex-col items-center md:flex-row">
           <div>
-            <div className="font-black mb-2">Avatar</div>
-            <div className="text-md mb-2">
-              This image will appear in your profile. We recommend using a logo
-              with a transparent background.
-            </div>
+            <div className="font-semibold mb-2">Profile Photo</div>
+            <UploaderImage
+              name="image"
+              images={imageUrls}
+              maxImages={1}
+              loading={loadingUploader}
+              onUploadImage={onUploadImage}
+              onRemoveImage={onRemoveImage}
+              circle
+            />
           </div>
-          <UploaderImage
-            name="image"
-            images={imageUrls}
-            maxImages={1}
-            loading={loadingUploader}
-            onUploadImage={onUploadImage}
-            onRemoveImage={onRemoveImage}
-            circle
-          />
         </div>
         <div className="text-danger-500 text-md font-bold">
           {errors?.logo?.message ?? fileUploadError ?? null}
@@ -181,6 +218,66 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
               value={value}
               error={errors?.lastName?.message ?? null}
               onChange={onChange}
+            />
+          )}
+        />
+
+        <Controller
+          name="birthDate"
+          control={control}
+          render={({ name, value, onChange }) => (
+            <Datetime
+              renderInput={(props, openCalendar) => (
+                <>
+                  <div className="font-semibold">Birth Date</div>
+                  <div className="relative">
+                    <FormInput
+                      {...props}
+                      inputProps={{
+                        style: { backgroundColor: 'white' }
+                      }}
+                      id={name}
+                      name={name}
+                      defaultValue={dayjs(selectedDate).format('MMM DD, YYYY')}
+                      error={errors?.[name]?.message ?? null}
+                      readOnly
+                    />
+                    <i
+                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                      onClick={openCalendar}
+                    />
+                  </div>
+                </>
+              )}
+              dateFormat="MMMM DD, YYYY"
+              timeFormat={false}
+              value={selectedDate}
+              isValidDate={validateDate}
+              closeOnSelect
+              onChange={e => {
+                onChange(e)
+                handleDateChange(e)
+              }}
+            />
+          )}
+        />
+
+        <div className="font-semibold mb-2">Gender</div>
+        <Controller
+          name="gender"
+          control={control}
+          render={({ value, onChange, name }) => (
+            <FormSelect
+              name={name}
+              value={
+                genderOptions
+                  ? genderOptions.filter(item => item.value === value)
+                  : null
+              }
+              onChange={e => onChange(e.value)}
+              options={genderOptions}
+              error={errors?.gender?.message || undefined}
+              placeholder="Select a gender"
             />
           )}
         />
