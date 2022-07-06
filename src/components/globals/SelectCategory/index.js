@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { useLazyQuery, gql } from '@apollo/client'
-import PropTypes from 'prop-types'
-
-import FormSelect from '@app/components/forms/form-select'
+import React, { useEffect, useState } from 'react'
+import { gql, useLazyQuery } from '@apollo/client'
 
 import { ACCOUNT_TYPES } from '@app/constants'
-
+import FormSelect from '@app/components/forms/form-select'
+import PropTypes from 'prop-types'
 import styles from './index.module.css'
 
 const GET_POST_CATEGORY_QUERY = gql`
@@ -63,7 +61,8 @@ const SelectCategoryComponent = ({
   disabled,
   placeholder,
   onChange,
-  onClear
+  onClear,
+  isPastoralWorksPage
 }) => {
   const [lists, setLists] = useState()
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -73,6 +72,13 @@ const SelectCategoryComponent = ({
   const isSystemPray = system === 'pray'
   const isSystemCircle = system === 'circle'
 
+  let categoryWhere = {
+    type: type
+  }
+  if (accountType !== ACCOUNT_TYPES.SUP.value) {
+    categoryWhere = { ...categoryWhere, companyId: company }
+  }
+
   const [
     getCategories,
     { loading: loadingCategory, data: dataCategory, error: errorCategory }
@@ -80,9 +86,7 @@ const SelectCategoryComponent = ({
     enabled: false,
     fetchPolicy: 'network-only',
     variables: {
-      where: {
-        type: type
-      },
+      where: categoryWhere,
       sort: {
         by: 'name',
         order: 'asc'
@@ -104,6 +108,7 @@ const SelectCategoryComponent = ({
     fetchPolicy: 'network-only',
     variables: {
       where: {
+        // companyId: company,
         settings: {
           accountType: 'company',
           accountId: company
@@ -118,15 +123,7 @@ const SelectCategoryComponent = ({
   })
 
   useEffect(() => {
-    if (
-      isSystemPray ||
-      isSystemCircle ||
-      accountType === ACCOUNT_TYPES.SUP.value
-    ) {
-      getCategories()
-    } else {
-      getAllowedCategories()
-    }
+    getCategories()
   }, [])
 
   useEffect(() => {
@@ -143,6 +140,7 @@ const SelectCategoryComponent = ({
           label: item.name
         }
       })
+
       setLists(dataLists)
     }
   }, [
@@ -183,7 +181,8 @@ SelectCategoryComponent.propTypes = {
   disabled: PropTypes.bool,
   placeholder: PropTypes.string,
   onChange: PropTypes.func,
-  onClear: PropTypes.func
+  onClear: PropTypes.func,
+  isPastoralWorksPage: PropTypes.bool
 }
 
 export default SelectCategoryComponent

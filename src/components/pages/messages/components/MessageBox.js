@@ -31,6 +31,7 @@ export default function MessageBox({
   loadingSend,
   currentUserid,
   onSubmitMessage,
+  name,
   // attachments,
   newMessage,
   onReadNewMessage,
@@ -76,12 +77,14 @@ export default function MessageBox({
     }
   }, [participant?.participants])
 
-  const name =
-    user?.firstName && user?.lastName
-      ? `${getAccountTypeName(accountType)} - ${user?.firstName} ${
-          user?.lastName
-        }`
-      : ''
+  let convoName = name
+  if (!convoName)
+  convoName =
+      user?.firstName && user?.lastName
+        ? `${getAccountTypeName(accountType)} - ${user?.firstName} ${
+            user?.lastName
+          }`
+        : ''
 
   // NOTE: temporarily removed to align with old UI
   // const handleChange = () => {
@@ -165,7 +168,9 @@ export default function MessageBox({
   return (
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
-        <h2 className="font-bold text text-base">{name || ''}</h2>
+        <h2 className="font-bold text text-base capitalize">
+          {convoName || '-'}
+        </h2>
         <Dropdown label={<FiMoreHorizontal />} items={dropdownData} />
       </div>
       <div className={styles.messageBoxList}>

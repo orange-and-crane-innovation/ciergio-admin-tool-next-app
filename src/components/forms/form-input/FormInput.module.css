@@ -4,6 +4,11 @@
   .FormInputButton {
     @apply absolute top-3 right-4;
   }
+
+
+  [hidden] {
+    display: none !important;
+  }
 }
 
 .FormInput {
@@ -33,7 +38,7 @@
     @apply block;
 
     & .formLabel {
-      @apply block mb-4;
+      @apply block mb-2 font-bold text-base;
     }
 
     & span {
@@ -92,3 +97,4 @@
     @apply cursor-not-allowed pointer-events-none;
   }
 }
+

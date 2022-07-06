@@ -7,7 +7,7 @@ export default function Categories() {
   const complexName = user?.accounts?.data[0]?.complex?.name
 
   return (
-    <RolesPermissions roleName="myDues" permission="myDues">
+    <RolesPermissions permissionGroup="dues" moduleName="myDues">
       <ManageCategories
         complexID={complexID}
         accountType="complex"

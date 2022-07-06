@@ -35,15 +35,15 @@ export default function MessagePreviewItem({
   }, [data?.participants])
 
   const user = useMemo(() => {
-    return account[0]?.user
+    return account?.[0]?.user
   }, [account])
 
   const accountType = useMemo(() => {
-    return account[0]?.accountType
+    return account?.[0]?.accountType
   }, [account])
 
   const unitName = useMemo(() => {
-    return account[0]?.unit?.name
+    return account?.[0]?.unit?.name
   }, [account])
 
   const name = `${user?.firstName} ${user?.lastName}`
@@ -59,6 +59,14 @@ export default function MessagePreviewItem({
 
   const previewTextState = isSeen ? 'font-normal' : 'font-bold'
   const defaultAvatarUri = `https://ui-avatars.com/api/?name=${name}&size=32`
+
+  let convoName = data.name
+  if (!convoName)
+    convoName = `${
+      [ACCOUNT_TYPES.UNIT.value, ACCOUNT_TYPES.RES.value].includes(accountType)
+        ? `Unit ${unitName}`
+        : getAccountTypeName(accountType)
+    } -  ${name}`
 
   return (
     <div
@@ -87,13 +95,7 @@ export default function MessagePreviewItem({
       </div>
       <div className=" pr-24 min-w-4xs truncate">
         <p className={`${previewTextState} capitalize truncate max-w-xs`}>
-          {`${
-            [ACCOUNT_TYPES.UNIT.value, ACCOUNT_TYPES.RES.value].includes(
-              accountType
-            )
-              ? `Unit ${unitName}`
-              : getAccountTypeName(accountType)
-          } -  ${name}`}
+          {convoName}
         </p>
         <p className={`${previewTextState} truncate max-w-2xs`}>
           {newestMessage ?? 'Start writing a message'}

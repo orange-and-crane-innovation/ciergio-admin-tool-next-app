@@ -8,21 +8,21 @@ function ContactUsPage() {
   const accountType = profile?.accounts?.data[0]?.accountType
   if (accountType === 'administrator') {
     return (
-      <RolesPermissions roleName="contactPage" permission="contactPage">
+      <RolesPermissions permissionGroup="contactPage" moduleName="contactPage">
         <ContactUs />
       </RolesPermissions>
     )
   }
   if (accountType === 'complex_admin') {
     return (
-      <RolesPermissions roleName="contactPage" permission="contactPage">
+      <RolesPermissions permissionGroup="contactPage" moduleName="contactPage">
         <Contacts />
       </RolesPermissions>
     )
   }
   if (accountType === 'company_admin') {
     return (
-      <RolesPermissions roleName="contactPage" permission="contactPage">
+      <RolesPermissions permissionGroup="contactPage" moduleName="contactPage">
         <Companies />
       </RolesPermissions>
     )

@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 export default function DonationsPage() {
   return (
-    <RolesPermissions roleName="payments">
+    <RolesPermissions permissionGroup="payments" moduleName="donations">
       <Donations />
     </RolesPermissions>
   )

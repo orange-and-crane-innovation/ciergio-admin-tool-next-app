@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function ReceptionistPickUpsPage() {
   return (
-    <RolesPermissions permission="guestAndDelivery">
+    <RolesPermissions permissionGroup="registry" moduleName="guestAndDelivery">
       <PickUps />
     </RolesPermissions>
   )

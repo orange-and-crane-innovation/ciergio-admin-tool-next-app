@@ -1,5 +1,31 @@
-import IMAGES from './images'
 import ACCOUNT_TYPES from './accountTypes'
 import HISTORY_MESSAGES from './historyMessages'
+import IMAGES from './images'
+import { Transactions } from '@app/components/pages/donations/Transactions'
 
-export { IMAGES, ACCOUNT_TYPES, HISTORY_MESSAGES }
+const ACCESSLEVEL = {
+  NONE: 'none',
+  ADMINISTER: 'administer',
+  EDIT: 'edit',
+  VIEW: 'none'
+}
+
+const TRANSACTIONSTATUS = {
+  ACCEPT: 'Paid'
+}
+
+const PAYMENTMETHODS = {
+  instapay: 'Instapay',
+  pesonet: 'Pesonet',
+  creditcard: 'Credit Card',
+  gcash: 'GCash'
+}
+
+export {
+  IMAGES,
+  ACCOUNT_TYPES,
+  HISTORY_MESSAGES,
+  ACCESSLEVEL,
+  TRANSACTIONSTATUS,
+  PAYMENTMETHODS
+}

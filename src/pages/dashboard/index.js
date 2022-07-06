@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function DashboardPage() {
   return (
-    <RolesPermissions permission="homePage">
+    <RolesPermissions moduleName="homePage">
       <Dashboard />
     </RolesPermissions>
   )

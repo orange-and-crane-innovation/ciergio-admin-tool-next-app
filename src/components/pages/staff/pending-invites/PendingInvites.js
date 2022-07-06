@@ -58,14 +58,14 @@ const bulkOptions = [
 const getAssignment = invite => {
   switch (invite.accountType) {
     case COMPANY_ADMIN:
-      return invite.company.name ?? ''
+      return invite?.company?.name ?? ''
     case COMPLEX_ADMIN:
-      return invite.complex.name ?? ''
+      return invite?.complex?.name ?? ''
     case BUILDING_ADMIN:
     case RECEPTIONIST:
     case UNIT_OWNER:
     case 'resident':
-      return invite.building.name ?? ''
+      return invite?.building?.name ?? ''
     default:
       console.log('Error: accountType not found')
   }
@@ -406,8 +406,8 @@ function PendingInvites() {
       case ACCOUNT_TYPES.SUP.value: {
         if (companies?.getCompanies?.data?.length > 0) {
           const options = companies.getCompanies.data.map(company => ({
-            label: company.name,
-            value: company._id
+            label: company?.name,
+            value: company?._id
           }))
 
           return options
@@ -417,8 +417,8 @@ function PendingInvites() {
       case ACCOUNT_TYPES.COMPYAD.value: {
         if (complexes?.getComplexes?.data?.length > 0) {
           const options = complexes.getComplexes.data.map(complex => ({
-            label: complex.name,
-            value: complex._id
+            label: complex?.name,
+            value: complex?._id
           }))
 
           return options
@@ -428,8 +428,8 @@ function PendingInvites() {
       case ACCOUNT_TYPES.COMPXAD.value: {
         if (buildings?.getBuildings?.data?.length > 0) {
           const options = buildings.getBuildings.data.map(building => ({
-            label: building.name,
-            value: building._id
+            label: building?.name,
+            value: building?._id
           }))
 
           return options
@@ -439,8 +439,8 @@ function PendingInvites() {
       default: {
         if (building?.getBuildings?.data?.length > 0) {
           const options = building.getBuildings.data.map(building => ({
-            label: building.name,
-            value: building._id
+            label: building?.name,
+            value: building?._id
           }))
 
           return options

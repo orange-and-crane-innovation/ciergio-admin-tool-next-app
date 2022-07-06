@@ -1,22 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/jsx-key */
-import React, { useState, useEffect } from 'react'
-import { gql, useQuery, useMutation } from '@apollo/client'
-import { FaPlusCircle, FaEllipsisH } from 'react-icons/fa'
-import { FiEdit2 } from 'react-icons/fi'
+import React, { useEffect, useState } from 'react'
+import { BsPencil, BsTrash } from 'react-icons/bs'
+import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
 
-import Card from '@app/components/card'
+import { gql, useMutation, useQuery } from '@apollo/client'
 import Button from '@app/components/button'
-import Table from '@app/components/table'
-import Pagination from '@app/components/pagination'
+import Card from '@app/components/card'
 import Dropdown from '@app/components/dropdown'
-import Pills from '@app/components/pills'
 import PageLoader from '@app/components/page-loader'
-
+import Pagination from '@app/components/pagination'
+import Pills from '@app/components/pills'
+import Table from '@app/components/table'
 import showToast from '@app/utils/toast'
 
-import CreateEditModal from './components/createEditModal'
-
+import CreateEditDeleteModal from './components/createEditDeleteModal'
 import styles from './index.module.css'
 
 const GET_POST_CATEGORY_QUERY = gql`
@@ -46,8 +44,12 @@ const GET_POST_CATEGORY_QUERY = gql`
 `
 
 const CREATE_POST_CATEGORY_MUTATION = gql`
-  mutation createPostCategory($name: String, $type: CategoryType) {
-    createPostCategory(name: $name, type: $type) {
+  mutation createPostCategory(
+    $name: String
+    $type: CategoryType
+    $companyId: String
+  ) {
+    createPostCategory(name: $name, type: $type, companyId: $companyId) {
       _id
       processId
       message
@@ -58,6 +60,26 @@ const CREATE_POST_CATEGORY_MUTATION = gql`
 const UPDATE_POST_CATEGORY_MUTATION = gql`
   mutation updatePostCategory($id: String, $data: category) {
     updatePostCategory(id: $id, data: $data) {
+      _id
+      processId
+      message
+    }
+  }
+`
+
+const DELETE_POST_CATEGORY_MUTATION = gql`
+  mutation deletePostCategory(
+    $_id: String
+    $accountType: CategoryAccountType
+    $accountId: String
+    $categoryIds: [String]
+  ) {
+    deletePostCategory(
+      accountType: $accountType
+      accountId: $accountId
+      _id: $_id
+      categoryIds: $categoryIds
+    ) {
       _id
       processId
       message
@@ -100,12 +122,22 @@ const CategoriesComponent = () => {
     }
   ]
 
+  const profile = JSON.parse(localStorage.getItem('profile'))
+  const accountType = profile?.accounts?.data[0]?.accountType
+  const companyID = profile?.accounts?.data[0]?.company?._id
+
+  let isSuperUser = accountType === 'administrator'
+
+  let getCategoryWhere = {
+    type: categoryType
+  }
+
+  if (!isSuperUser) getCategoryWhere.companyId = companyID
+
   const { loading, data, error, refetch } = useQuery(GET_POST_CATEGORY_QUERY, {
     enabled: false,
     variables: {
-      where: {
-        type: categoryType
-      },
+      where: getCategoryWhere,
       sort: {
         by: 'name',
         order: 'asc'
@@ -135,6 +167,16 @@ const CategoriesComponent = () => {
     }
   ] = useMutation(UPDATE_POST_CATEGORY_MUTATION)
 
+  const [
+    deletePostCategory,
+    {
+      loading: loadingDelete,
+      called: calledDelete,
+      data: dataDelete,
+      error: errorDelete
+    }
+  ] = useMutation(DELETE_POST_CATEGORY_MUTATION)
+
   useEffect(() => {
     refetch()
   }, [])
@@ -153,8 +195,13 @@ const CategoriesComponent = () => {
             const dropdownData = [
               {
                 label: 'Edit Category',
-                icon: <FiEdit2 />,
+                icon: <BsPencil />,
                 function: () => handleShowModal('edit', item)
+              },
+              {
+                label: 'Delete Category',
+                icon: <BsTrash />,
+                function: () => handleShowModal('delete', item)
               }
             ]
 
@@ -194,6 +241,19 @@ const CategoriesComponent = () => {
       }
     }
   }, [loadingUpdate, calledUpdate, dataUpdate, errorUpdate])
+
+  useEffect(() => {
+    if (!loadingDelete) {
+      if (errorDelete) {
+        errorHandler(errorDelete)
+      }
+      if (calledDelete && dataDelete) {
+        showToast('success', 'You have successfully deleted a category.')
+        onCancel()
+        refetch()
+      }
+    }
+  }, [loadingDelete, calledDelete, dataDelete, errorDelete])
 
   const errorHandler = data => {
     const errors = JSON.parse(JSON.stringify(data))
@@ -244,7 +304,9 @@ const CategoriesComponent = () => {
   const onSubmit = async (type, data) => {
     try {
       if (type === 'create') {
-        await createPostCategory({ variables: data })
+        await createPostCategory({
+          variables: isSuperUser ? data : { ...data, companyId: companyID }
+        })
       } else if (type === 'edit') {
         const updateData = {
           id: data.id,
@@ -253,6 +315,14 @@ const CategoriesComponent = () => {
           }
         }
         await updatePostCategory({ variables: updateData })
+      } else if (type === 'delete') {
+        const deleteData = {
+          // _id: data.id,
+          // accountType: data.type,
+          // accountId: data.id,
+          categoryIds: [data.id]
+        }
+        await deletePostCategory({ variables: deleteData })
       }
     } catch (e) {
       console.log(e)
@@ -274,6 +344,11 @@ const CategoriesComponent = () => {
       }
       case 'edit': {
         setModalTitle('Edit Category')
+        setModalData(data)
+        break
+      }
+      case 'delete': {
+        setModalTitle('Delete Category')
         setModalData(data)
         break
       }
@@ -338,7 +413,7 @@ const CategoriesComponent = () => {
       </div>
 
       {showModal && (
-        <CreateEditModal
+        <CreateEditDeleteModal
           processType={modalType}
           categoryType={categoryType}
           title={modalTitle}

@@ -656,7 +656,7 @@ function CreateNotification() {
               }
             />
             <Card
-              title={<h1 className="text-base font-bold ">Publish Details</h1>}
+              title={<h1 className="text-base font-bold ">Publish Detailssss</h1>}
               content={
                 <div className="flex flex-col items-start w-full border-t md:flex-row p-4">
                   <div className="w-full md:w-1/2">

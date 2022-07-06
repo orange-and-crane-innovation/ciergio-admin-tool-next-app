@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PastoralWorksPostViewComponent() {
   return (
-    <RolesPermissions roleName="pastoralWorks" permission="pastoralWorks">
+    <RolesPermissions permissionGroup="post" moduleName="pastoralWorks">
       <PostViewPage />
     </RolesPermissions>
   )

@@ -1,7 +1,7 @@
+import PropTypes from 'prop-types'
 /* eslint-disable react/prop-types */
 /* eslint-disable jsx-a11y/no-onchange */
 import React from 'react'
-import PropTypes from 'prop-types'
 import Select, { components } from 'react-select'
 
 import styles from './FormSelect.module.css'
@@ -27,13 +27,17 @@ const ValueContainer = ({ children, ...props }) => {
 
   if (!hasValue || !isMulti) {
     return (
-      <components.ValueContainer {...props}>
+      <components.ValueContainer {...props} className={styles.valueCont}>
         {children}
       </components.ValueContainer>
     )
   }
   return (
-    <components.ValueContainer {...props}>
+    <components.ValueContainer
+      {...props}
+      className={styles.valueCont}
+      css={{ zIndex: 100000 }}
+    >
       {!inputValue && content}
       {children[1]}
     </components.ValueContainer>
@@ -77,7 +81,8 @@ const InputSelect = ({
           option: (base, state) => ({
             ...base,
             backgroundColor: state.isSelected ? '#F56222' : base.backgroundColor
-          })
+          }),
+          menuPortal: base => ({ ...base, zIndex: 9999 })
         }}
         classNamePrefix={styles.FormSelect}
         id={id}

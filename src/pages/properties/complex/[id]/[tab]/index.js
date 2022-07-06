@@ -3,7 +3,7 @@ import { RolesPermissions } from '@app/components/rolespermissions'
 
 function ComplexSinglePropertiesPage() {
   return (
-    <RolesPermissions roleName="accounts">
+    <RolesPermissions permissionGroup="accounts" moduleName="myProperties">
       <ComplexDataComponent />
     </RolesPermissions>
   )

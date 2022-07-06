@@ -164,9 +164,19 @@ export const MutationResponse = `
 `,
   UserAccount = `
     _id
+    companyRoleId
     active
     accountType
     companyRoleId
+    companyRole {
+      _id
+      name
+      status
+      permissions {
+        group
+        accessLevel
+      }
+    }
     user {
       ${User}
     }

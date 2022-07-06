@@ -13,7 +13,8 @@
     "clean": "rm -rf .serverless .serverless_nextjs",
     "deploy-pray": "AWS_PROFILE=cgpray serverless",
     "deploy-circle": "AWS_PROFILE=cgcircle serverless",
-    "deploy-home": "AWS_PROFILE=cghome serverless"
+    "deploy-home": "AWS_PROFILE=cghome serverless",
+    "release": "yarn build && yarn deploy-pray"
   },
   "dependencies": {
     "@apollo/client": "3.3.3",
@@ -21,11 +22,13 @@
     "@hapi/iron": "6.0.0",
     "@hookform/resolvers": "1.3.0",
     "@reactchartjs/react-chart.js": "1.0.0-rc.3",
+    "@serverless/cli": "^1.6.0",
     "@sls-next/serverless-component": "3.6.0",
     "@tailwindcss/forms": "0.2.1",
     "apollo-hooks-extended": "1.0.1",
     "apollo-link-error": "1.1.13",
     "axios": "0.21.1",
+    "bufferutil": "^4.0.6",
     "chart.js": "2.9.4",
     "clsx": "1.1.1",
     "cookie": "0.4.1",
@@ -87,10 +90,12 @@
     "react-web-notification": "0.8.0",
     "rodal": "1.8.1",
     "save-svg-as-png": "1.4.17",
+    "serverless": "2.72.2",
     "subscriptions-transport-ws": "0.9.18",
     "toasted-notes": "3.2.0",
     "underscore": "1.12.0",
     "universal-cookie": "4.0.4",
+    "utf-8-validate": "^5.0.9",
     "yarn": "1.22.10",
     "yup": "0.32.9"
   },

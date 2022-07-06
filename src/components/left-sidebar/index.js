@@ -1,17 +1,13 @@
-import Item from './item'
-import Logo from './logo'
 import P from 'prop-types'
 import React from 'react'
+
 import { RolesPermissions } from '../rolespermissions'
-import Title from './title'
 import navigation from './dummy-nav'
-import rules from '@app/permissions/rules'
+import Item from './item'
+import Logo from './logo'
+import Title from './title'
 
 const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
-  // const rule = rules[systemType][userRole]
-  // const allowedRoutes = rule?.allowedRoutes || []
-  // const allowedNestedRoutes = rule?.allowedNestedRoutes || []
-
   return (
     <div className="left-sidebar left-sidebar-1 scrollableContainer">
       <Logo show={true} onToggle={onToggle} isCollapsed={isCollapsed} />
@@ -21,17 +17,11 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
             <Title>{menu.title}</Title>
             <ul>
               {menu.items.map((l0, a) => {
-                // const url = l0.url
-                // old checking of the routes is allowed
-                // if (allowedRoutes.indexOf(url) !== -1) {
-
-                // }
-
                 return (
                   <RolesPermissions
                     no={null}
-                    permission={l0?.permission}
-                    roleName={l0?.roleName}
+                    moduleName={l0?.moduleName}
+                    permissionGroup={l0?.permissionGroup}
                     key={a}
                   >
                     <li className="l0">
@@ -44,11 +34,6 @@ const LeftSidebar = ({ systemType, userRole, onToggle, isCollapsed }) => {
                       />
                       <ul>
                         {l0.items.map((l1, b) => {
-                          // old checking if the nested routes is allowed based on old constant rules
-                          // if (allowedNestedRoutes.indexOf(l1.url) !== -1) {
-
-                          // }
-
                           return (
                             <li key={b} className="l1">
                               <Item {...l1} />

@@ -11,7 +11,6 @@ import ReactSelect from 'react-select'
 import { ACCOUNT_TYPES } from '@app/constants'
 
 import { GET_BUILDINGS, GET_COMPLEXES, GET_COMPANY_ROLES } from '../queries'
-import { CREATE_STAFF_ROLES } from '../constants'
 import styles from '../staff.module.css'
 
 function InviteStaffModal({
@@ -64,7 +63,8 @@ function InviteStaffModal({
     if (companyId && accountType === ACCOUNT_TYPES.SUP.value) {
       getCompanyRoles({
         variables: {
-          id: companyId.value
+          id: companyId.value,
+          status: 'active'
         }
       })
     }
@@ -83,7 +83,8 @@ function InviteStaffModal({
 
         getCompanyRoles({
           variables: {
-            id: companyID
+            id: companyID,
+            status: 'active'
           }
         })
         break

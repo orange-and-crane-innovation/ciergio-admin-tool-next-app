@@ -27,7 +27,7 @@ function MaintenancePage() {
     }
   } else if (router?.query?.buildingId) {
     return (
-      <RolesPermissions roleName="issues" permission="maintenanceAndRepairs">
+      <RolesPermissions permissionGroup="issues" moduleName="maintenanceAndRepairs">
         <Maintenance />
       </RolesPermissions>
     )

@@ -23,8 +23,9 @@ const Component = ({
   valueDateTime
 }) => {
   const [selectedDate, setSelectedDate] = useState(valueDateTime)
-  const [selectedPublishType, setSelectedPublishType] =
-    useState(valuePublishType)
+  const [selectedPublishType, setSelectedPublishType] = useState(
+    valuePublishType
+  )
 
   useEffect(() => {
     setSelectedPublishType(valuePublishType)
@@ -108,7 +109,9 @@ const Component = ({
                               }
                             }}
                             name="date"
-                            value={moment(selectedDate).format('MMMM DD, YYYY')}
+                            defaultValue={moment(selectedDate).format(
+                              'MMMM DD, YYYY'
+                            )}
                             readOnly
                           />
                           <i
@@ -137,7 +140,7 @@ const Component = ({
                               }
                             }}
                             name="time"
-                            value={moment(selectedDate).format('h:mm A')}
+                            defaultValue={moment(selectedDate).format('h:mm A')}
                             readOnly
                           />
                           <FiClock

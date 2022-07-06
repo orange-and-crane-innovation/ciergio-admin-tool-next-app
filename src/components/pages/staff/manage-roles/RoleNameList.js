@@ -52,7 +52,7 @@ const EditModalContent = ({ control, errors, selected }) => {
       control={control}
       name="name"
       render={field => {
-        field.value = !field.value ? selected?.name : field.value
+        field.defaultValue = !field.value ? selected?.name : field.value
         return (
           <Input
             {...field}
@@ -175,7 +175,7 @@ const RoleNames = ({ roleNames, refetch }) => {
 
   return (
     <>
-      <div className="mt-10 flex flex-col gap-8">
+      <div className="mt-24 flex flex-col gap-8">
         {roleNames &&
           roleNames.map((role, idx) => (
             <RoleName handleModal={handleModal} key={role.id} role={role} />
@@ -221,7 +221,7 @@ const RoleNameList = ({ data, loading, refetch }) => {
 
   return (
     <div className="mt-10">
-      <span className="font-bold text-neutral-500">Roles</span>
+      <div className="font-bold text-neutral-500 pb-3">Roles</div>
       {roleNames && <RoleNames refetch={refetch} roleNames={roleNames} />}
     </div>
   )
