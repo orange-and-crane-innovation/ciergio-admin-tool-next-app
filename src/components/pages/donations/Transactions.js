@@ -195,7 +195,8 @@ function Transactions() {
             </span>
           </div>
         ),
-        width: ''
+        width: '',
+        hidden: !isAdmin
       },
       {
         name: (
@@ -456,11 +457,6 @@ function Transactions() {
                           {TRANSACTIONSTATUS[donation?.status]}
                         </span>
                       </>
-                    ),
-                    merchant: (
-                      <span className="whitespace-nowrap">
-                        {donation?.srcReference?.company?.name}
-                      </span>
                     ),
                     payor: (
                       <span className="whitespace-nowrap">
