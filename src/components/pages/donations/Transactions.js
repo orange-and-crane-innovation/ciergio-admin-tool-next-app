@@ -436,7 +436,7 @@ function Transactions() {
                     oci_fees: <>{ATTR.toCurrency(donation?.ociFee)}</>,
                     net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
                     type_payment: <>{donation.type || PAYMENTMETHODS[donation?.method]}</>,
-                    transactions_id: <>{donation?.transactionId}</>,
+                    transactions_id: <>{donation?.transactionId || donation?.gatewayTransactionId}</>,
                     ref_id: <>{donation?.senderReferenceCode}</>,
                     campaign: <>{donation?.campaign || '-'}</>
                   }
