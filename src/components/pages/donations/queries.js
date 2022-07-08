@@ -42,6 +42,7 @@ export const GET_TRANSACTIONS = gql`
       data {
         _id
         method
+        type
         name
         email
         amount

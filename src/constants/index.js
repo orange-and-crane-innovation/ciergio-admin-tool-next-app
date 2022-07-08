@@ -18,7 +18,8 @@ const PAYMENTMETHODS = {
   instapay: 'Instapay',
   pesonet: 'Pesonet',
   creditcard: 'Credit Card',
-  gcash: 'GCash'
+  gcash: 'GCash',
+  easyPaymentLink: 'Easy Payment Link'
 }
 
 export {
