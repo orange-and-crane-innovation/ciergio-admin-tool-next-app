@@ -26,9 +26,7 @@ const validationSchema = yup.object().shape({
 })
 
 const Component = ({ data, loading, isShown, onSave, onCancel }) => {
-  const [selectedDate, setSelectedDate] = useState(
-    data?.birthDate ? dayjs(data?.birthDate).format('MMMM DD, YYYY') : null
-  )
+  const [selectedDate, setSelectedDate] = useState('')
   const [loadingUploader, setLoadingUploader] = useState(false)
   const [fileUploadError, setFileUploadError] = useState()
   const [imageUrls, setImageUrls] = useState([])
@@ -43,7 +41,7 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
       logo: data?.avatar ? [data?.avatar] : [],
       firstName: data?.firstName,
       lastName: data?.lastName,
-      birthDate: selectedDate,
+      // birthDate: selectedDate ? selectedDate : '',
       gender: data?.gender
     }
   })
@@ -56,9 +54,14 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
       setValue('logo', data?.avatar ? [data?.avatar] : [])
       setValue('firstName', data?.firstName)
       setValue('lastName', data?.lastName)
-      setSelectedDate(
-        data?.birthDate ? dayjs(data.birthDate).format('MMMM DD, YYYY') : null
-      )
+      if(data.birthDate) {
+        setSelectedDate(dayjs(data.birthDate).format('MMMM DD, YYYY'))
+        setValue('birthDate', dayjs(data.birthDate).format('MMMM DD, YYYY'))
+      } else {
+        setSelectedDate('')
+        setValue('birthDate', '')
+      }
+      setValue('gender', data?.gender)
       setImageUrls(data?.avatar ? [data?.avatar] : [])
     }
   }, [isShown, data])
@@ -227,28 +230,31 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
           control={control}
           render={({ name, value, onChange }) => (
             <Datetime
-              renderInput={(props, openCalendar) => (
-                <>
-                  <div className="font-semibold">Birth Date</div>
-                  <div className="relative">
-                    <FormInput
-                      {...props}
-                      inputProps={{
-                        style: { backgroundColor: 'white' }
-                      }}
-                      id={name}
-                      name={name}
-                      defaultValue={dayjs(selectedDate).format('MMM DD, YYYY')}
-                      error={errors?.[name]?.message ?? null}
-                      readOnly
-                    />
-                    <i
-                      className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
-                      onClick={openCalendar}
-                    />
-                  </div>
-                </>
-              )}
+              renderInput={(props, openCalendar) => {
+                return (
+                  <>
+                    <div className="font-semibold">Birth Date</div>
+                    <div className="relative">
+                      <FormInput
+                        {...props}
+                        inputProps={{
+                          style: { backgroundColor: 'white' }
+                        }}
+                        id={name}
+                        name={name}
+                        value={value ? dayjs(value).format('MMM DD, YYYY') : ''}
+                        // defaultValue={dayjs(selectedDate).format('MMM DD, YYYY')}
+                        error={errors?.[name]?.message ?? null}
+                        readOnly
+                      />
+                      <i
+                        className="ciergio-calendar absolute top-3 right-4 cursor-pointer"
+                        onClick={openCalendar}
+                      />
+                    </div>
+                  </>
+                )
+              }}
               dateFormat="MMMM DD, YYYY"
               timeFormat={false}
               value={selectedDate}
