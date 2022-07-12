@@ -434,7 +434,9 @@ function AllStaff() {
     const { staffFirstName, staffLastName, staffType } = values
     const data = {
       firstName: staffFirstName,
-      lastName: staffLastName
+      lastName: staffLastName,
+
+      userAccountId: selectedStaff?._id
     }
 
     updateUser({

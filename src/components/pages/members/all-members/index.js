@@ -581,7 +581,9 @@ function MyMembers() {
           firstName: val?.firstName,
           lastName: val?.lastName,
           birthDate: val?.birthDate,
-          gender: val?.gender
+          gender: val?.gender,
+
+          userAccountId: selectedMember?._id
         }
       }
       updateUser({ variables: updateData })
