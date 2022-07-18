@@ -82,7 +82,7 @@ const navigation = [
             items: []
           },
           {
-            url: '/staff/roles-&-permissions',
+            url: '/staff/roles-permissions',
             title: 'Roles and Permissions',
             items: []
           },

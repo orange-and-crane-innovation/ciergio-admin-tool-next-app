@@ -18,6 +18,7 @@ import { GET_ACCOUNTS } from '@app/components/pages/staff/queries'
 import Can from '@app/permissions/can'
 import showToast from '@app/utils/toast'
 import errorHandler from '@app/utils/errorHandler'
+import useDebounce from '@app/utils/useDebounce'
 
 import ViewResidentModal from './../ViewResidentModal'
 
@@ -117,6 +118,7 @@ const Group = () => {
   const { groupID } = query
   const [modalState, setModalState] = useState(defaultModalState)
   const [searchText, setSearchText] = useState('')
+  const debouncedSearchText = useDebounce(searchText, 700)
 
   const [viewMember, setViewMember] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
@@ -127,8 +129,8 @@ const Group = () => {
   const where = {
     accountTypes: 'member',
     companyId: companyID,
-    companyGroupId: groupID
-    // search: debouncedSearchText
+    companyGroupId: groupID,
+    search: debouncedSearchText
   }
 
   const { loading: loadingGroup, data: group, error: errorGroup } = useQuery(

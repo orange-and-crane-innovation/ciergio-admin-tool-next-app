@@ -42,6 +42,7 @@ export const GET_TRANSACTIONS = gql`
       data {
         _id
         method
+        type
         name
         email
         amount
@@ -51,6 +52,7 @@ export const GET_TRANSACTIONS = gql`
         senderReferenceCode
         reconciliationId
         transactionId
+        gatewayTransactionId
         srcReference {
           company {
             id
@@ -124,6 +126,7 @@ export const GET_DONATIONS = gql`
         data {
           email
           name
+          type
           amount
           bankCharges
           ociFee
@@ -131,6 +134,7 @@ export const GET_DONATIONS = gql`
           senderReferenceCode
           reconciliationId
           transactionId
+          gatewayTransactionId
           campaign {
             _id
             title

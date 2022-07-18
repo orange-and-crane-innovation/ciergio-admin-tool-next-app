@@ -24,6 +24,7 @@ import Can from '@app/permissions/can'
 import errorHandler from '@app/utils/errorHandler'
 import showToast from '@app/utils/toast'
 import { yupResolver } from '@hookform/resolvers/yup'
+import useDebounce from '@app/utils/useDebounce'
 
 import ViewMemberModal from './../ViewResidentModal'
 
@@ -262,6 +263,7 @@ const capitalizeText = text => {
 function MyMembers() {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
+  const debouncedSearchText = useDebounce(searchText, 700)
   const [modalState, setModalState] = useState(defaultModalState)
   const [viewMember, setViewMember] = useState(false)
   const [editMember, setEditMember] = useState(false)
@@ -357,8 +359,8 @@ function MyMembers() {
 
   const where = {
     accountTypes: 'member',
-    companyId
-    // search: debouncedSearchText
+    companyId,
+    search: debouncedSearchText
   }
 
   const {
@@ -581,7 +583,9 @@ function MyMembers() {
           firstName: val?.firstName,
           lastName: val?.lastName,
           birthDate: val?.birthDate,
-          gender: val?.gender
+          gender: val?.gender,
+
+          userAccountId: selectedMember?._id
         }
       }
       updateUser({ variables: updateData })

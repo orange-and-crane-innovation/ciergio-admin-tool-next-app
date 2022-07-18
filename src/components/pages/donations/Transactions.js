@@ -195,7 +195,8 @@ function Transactions() {
             </span>
           </div>
         ),
-        width: ''
+        width: '',
+        hidden: !isAdmin
       },
       {
         name: (
@@ -434,8 +435,8 @@ function Transactions() {
                     bank_fees: <>{ATTR.toCurrency(donation?.bankCharges)}</>,
                     oci_fees: <>{ATTR.toCurrency(donation?.ociFee)}</>,
                     net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
-                    type_payment: <>{PAYMENTMETHODS[donation?.method]}</>,
-                    transactions_id: <>{donation?.transactionId}</>,
+                    type_payment: <>{donation.type || PAYMENTMETHODS[donation?.method]}</>,
+                    transactions_id: <>{donation?.transactionId || donation?.gatewayTransactionId}</>,
                     ref_id: <>{donation?.senderReferenceCode}</>,
                     campaign: <>{donation?.campaign || '-'}</>
                   }
@@ -456,11 +457,6 @@ function Transactions() {
                           {TRANSACTIONSTATUS[donation?.status]}
                         </span>
                       </>
-                    ),
-                    merchant: (
-                      <span className="whitespace-nowrap">
-                        {donation?.srcReference?.company?.name}
-                      </span>
                     ),
                     payor: (
                       <span className="whitespace-nowrap">
