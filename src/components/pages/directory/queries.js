@@ -105,6 +105,7 @@ export const GET_CONTACTS = gql`
         _id
         name
         logo
+        email
         contactNumber
         building {
           name
