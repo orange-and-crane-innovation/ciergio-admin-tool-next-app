@@ -466,9 +466,9 @@ function Transactions() {
                     amount: <>{ATTR.toCurrency(donation?.amount)}</>,
                     bank_fees: <>{ATTR.toCurrency(donation?.bankCharges)}</>,
                     net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
-                    type_payment: <>{PAYMENTMETHODS[donation?.method]}</>,
-                    transactions_id: <>{donation?.transactionId}</>,
-                    ref_id: <>{donation?.senderReferenceCode}</>,
+                    type_payment: <>{donation.type || PAYMENTMETHODS[donation?.method] || '-'}</>,
+                    transactions_id: <>{donation?.transactionId || donation?.gatewayTransactionId || '-'}</>,
+                    ref_id: <>{donation?.senderReferenceCode || '-'}</>,
                     campaign: <>{donation?.campaign || '-'}</>
                   }
             })
