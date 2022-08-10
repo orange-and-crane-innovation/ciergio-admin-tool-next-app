@@ -1,16 +1,17 @@
 import Link from 'next/link'
 import P from 'prop-types'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
+import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
 
-import FormInput from '@app/components/forms/form-input'
-import Button from '@app/components/button'
-import CiergioHomeIcon from '@app/assets/svg/ciergio-home.svg'
-import CiergioPrayIcon from '@app/assets/svg/ciergio-pray.svg'
 import CiergioCircleIcon from '@app/assets/svg/ciergio-circle.svg'
+import CiergioHomeIcon from '@app/assets/svg/ciergio-home.svg'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
 import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
+import CiergioPrayIcon from '@app/assets/svg/ciergio-pray.svg'
+import Button from '@app/components/button'
+import FormInput from '@app/components/forms/form-input'
+import { yupResolver } from '@hookform/resolvers/yup'
+
 import style from './Login.module.css'
 
 const validationSchema = yup.object().shape({
@@ -19,8 +20,8 @@ const validationSchema = yup.object().shape({
 })
 
 function Login({ onLoginSubmit, isSubmitting }) {
-  const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
-  let systemName, systemLogo
+  // const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
+  // let systemName, systemLogo
 
   const { handleSubmit, control, errors } = useForm({
     resolver: yupResolver(validationSchema),
@@ -30,22 +31,22 @@ function Login({ onLoginSubmit, isSubmitting }) {
     }
   })
 
-  switch (systemType) {
-    case 'home':
-      systemName = 'HOME'
-      systemLogo = <CiergioHomeIcon className={style.PlatformIcon} />
-      break
+  // switch (systemType) {
+  //   case 'home':
+  //     systemName = 'HOME'
+  //     systemLogo = <CiergioHomeIcon className={style.PlatformIcon} />
+  //     break
 
-    case 'pray':
-      systemName = 'PRAY'
-      systemLogo = <CiergioPrayIcon className={style.PlatformIcon} />
-      break
+  //   case 'pray':
+  //     systemName = 'PRAY'
+  //     systemLogo = <CiergioPrayIcon className={style.PlatformIcon} />
+  //     break
 
-    case 'circle':
-      systemName = 'CIRCLE'
-      systemLogo = <CiergioCircleIcon className={style.PlatformIcon} />
-      break
-  }
+  //   case 'circle':
+  //     systemName = 'CIRCLE'
+  //     systemLogo = <CiergioCircleIcon className={style.PlatformIcon} />
+  //     break
+  // }
 
   return (
     <main className={style.Login}>
@@ -55,12 +56,12 @@ function Login({ onLoginSubmit, isSubmitting }) {
         </div>
 
         <div className={style.LoginCard}>
-          {systemName && (
+          {/* {systemName && (
             <div className={style.PlatformIconContainer}>
               <span className={style.PlatformSubContainer}>{systemLogo}</span>
               <span>{systemName}</span>
             </div>
-          )}
+          )} */}
 
           <form
             className={style.LoginForm}
