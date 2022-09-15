@@ -1,13 +1,11 @@
-import { useMemo } from 'react'
-import P from 'prop-types'
+import { displayDays, toFriendlyDateTime } from '@app/utils/date'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+import P from 'prop-types'
 import Tooltip from '@app/components/tooltip'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
-
-import { displayDays, toFriendlyDateTime } from '@app/utils/date'
-import { ACCOUNT_TYPES } from '@app/constants'
-
 import styles from '../messages.module.css'
+import { useMemo } from 'react'
 
 export default function MessagePreviewItem({
   onClick,
@@ -95,7 +93,7 @@ export default function MessagePreviewItem({
       </div>
       <div className=" pr-24 min-w-4xs truncate">
         <p className={`${previewTextState} capitalize truncate max-w-xs`}>
-          {convoName}
+          {`${user?.firstName} ${user?.lastName}`}
         </p>
         <p className={`${previewTextState} truncate max-w-2xs`}>
           {newestMessage ?? 'Start writing a message'}

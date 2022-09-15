@@ -1,26 +1,22 @@
-/* eslint-disable no-useless-escape */
-import { useState, useMemo } from 'react'
-import P from 'prop-types'
-import { getDefaultKeyBinding } from 'draft-js'
-import ReactHtmlParser from 'react-html-parser'
-import { FiMoreHorizontal, FiUsers } from 'react-icons/fi'
+import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
 import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
+import { FiMoreHorizontal, FiUsers } from 'react-icons/fi'
+import { toFriendlyDateTime, toFriendlyShortDate } from '@app/utils/date'
+/* eslint-disable no-useless-escape */
+import { useMemo, useState } from 'react'
+
+import Dropdown from '@app/components/dropdown'
 import { FaSpinner } from 'react-icons/fa'
 import InfiniteScroll from 'react-infinite-scroll-component'
-
+import MessageInput from './MessageInput'
+import Modal from '@app/components/modal'
+import P from 'prop-types'
+import ParticipantsBox from './ParticipantsBox'
+import ReactHtmlParser from 'react-html-parser'
 import Spinner from '@app/components/spinner'
 import Tooltip from '@app/components/tooltip'
-import Dropdown from '@app/components/dropdown'
-import Modal from '@app/components/modal'
-
-import { toFriendlyShortDate, toFriendlyDateTime } from '@app/utils/date'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
-
-import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
-
-import MessageInput from './MessageInput'
-import ParticipantsBox from './ParticipantsBox'
-
+import { getDefaultKeyBinding } from 'draft-js'
 import styles from '../messages.module.css'
 
 export default function MessageBox({
@@ -77,9 +73,9 @@ export default function MessageBox({
     }
   }, [participant?.participants])
 
-  let convoName = name
+  let convoName = `${user?.firstName} ${user?.lastName} - ${name}`
   if (!convoName)
-  convoName =
+    convoName =
       user?.firstName && user?.lastName
         ? `${getAccountTypeName(accountType)} - ${user?.firstName} ${
             user?.lastName
@@ -146,7 +142,7 @@ export default function MessageBox({
 
     switch (type) {
       case 'participants': {
-        setModalTitle('Participants')
+        setModalTitle('Members')
         setModalContent(
           participant?.participants?.data?.map((item, index) => {
             return <ParticipantsBox key={index} data={item} />
@@ -159,7 +155,7 @@ export default function MessageBox({
 
   const dropdownData = [
     {
-      label: 'Participants',
+      label: 'Members',
       icon: <FiUsers />,
       function: () => handleShowModal('participants')
     }
@@ -169,7 +165,7 @@ export default function MessageBox({
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
         <h2 className="font-bold text text-base capitalize">
-          {convoName || '-'}
+          {`${convoName}` || '-'}
         </h2>
         <Dropdown label={<FiMoreHorizontal />} items={dropdownData} />
       </div>
@@ -475,6 +471,7 @@ export default function MessageBox({
 }
 
 MessageBox.propTypes = {
+  name: P.string,
   endMessageRef: P.any,
   participant: P.object,
   conversation: P.object,
