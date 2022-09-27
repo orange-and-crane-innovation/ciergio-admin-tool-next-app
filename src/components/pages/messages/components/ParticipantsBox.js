@@ -29,7 +29,7 @@ const ParticipantsBox = ({ data }) => {
       <div className="ml-4 flex flex-col flex-1">
         <span className="font-semibold">{`${data?.user?.firstName} ${data?.user?.lastName}`}</span>
         <span className="text-sm text-neutral-500">
-          {getAccountTypeName(data?.accountType)}
+          {getAccountTypeName(data)}
         </span>
       </div>
       <Dropdown label={<FiMoreHorizontal />} items={dropdownData} />

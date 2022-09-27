@@ -289,7 +289,7 @@ function AllStaff() {
   const [deleteUser, { loading: deletingUser }] = useMutation(DELETE_USER, {
     onCompleted: () => {
       const staff = selectedStaff?.user
-      const accountType = getAccountTypeName(selectedStaff?.accountType)
+      const accountType = getAccountTypeName(selectedStaff)
       showToast(
         'success',
         `You have successfully remove ${staff.firstName} ${staff.lastName} as ${accountType}`

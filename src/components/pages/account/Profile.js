@@ -1,21 +1,18 @@
+import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
+import { FiEdit2, FiLock, FiMail, FiUser } from 'react-icons/fi'
 /* eslint-disable react/jsx-key */
 import React, { useMemo, useState } from 'react'
-import { useQuery, useMutation } from '@apollo/client'
-import { FiMail, FiLock, FiUser, FiEdit2 } from 'react-icons/fi'
+import { useMutation, useQuery } from '@apollo/client'
 
 import Card from '@app/components/card'
+import EditModal from './components/EditModal'
 import PageHeader from '@app/components/page-header'
 import PageLoader from '@app/components/page-loader'
-
-import getAccountTypeName from '@app/utils/getAccountTypeName'
 import errorHandler from '@app/utils/errorHandler'
-import { IMAGES, ACCOUNT_TYPES } from '@app/constants'
-
-import EditModal from './components/EditModal'
-
-import styles from './Profile.module.css'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
 import gql from 'graphql-tag'
 import showToast from '@app/utils/toast'
+import styles from './Profile.module.css'
 
 export const GET_PROFILE = gql`
   query {
@@ -166,7 +163,7 @@ function Profile() {
               </span>
               <div className={styles.FlexCol}>
                 <span className={styles.ContentTitle}>Account Type</span>
-                <span>{getAccountTypeName(account[0].accountType)}</span>
+                <span>{getAccountTypeName(account[0])}</span>
               </div>
             </div>
             <hr />

@@ -65,11 +65,11 @@ export default function MessageBox({
     if (participant?.participants?.data?.length === 2) {
       return participant.participants.data.filter(
         item => item?.user?._id !== currentUserid
-      )[0]?.accountType
+      )[0]
     } else if (participant?.participants?.data?.length > 1) {
       return participant.participants.data.filter(item =>
         ['member', 'unit_owner', 'resident'].includes(item.accountType)
-      )[0]?.accountType
+      )[0]
     }
   }, [participant?.participants])
 
