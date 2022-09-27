@@ -100,7 +100,7 @@ const DefaultBadge = () => (
       borderRadius: 3
     }}
   >
-    DEFAULT
+    GLOBAL
   </div>
 )
 
