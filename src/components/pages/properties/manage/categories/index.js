@@ -38,6 +38,9 @@ const GET_POST_CATEGORY_QUERY = gql`
         name
         type
         status
+        company {
+          _id
+        }
       }
     }
   }
@@ -86,6 +89,20 @@ const DELETE_POST_CATEGORY_MUTATION = gql`
     }
   }
 `
+
+const DefaultBadge = () => (
+  <div
+    style={{
+      background: '#ddd',
+      float: 'right',
+      padding: '1px 5px',
+      fontSize: 10,
+      borderRadius: 3
+    }}
+  >
+    GLOBAL
+  </div>
+)
 
 const CategoriesComponent = () => {
   const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
@@ -204,10 +221,22 @@ const CategoriesComponent = () => {
                 function: () => handleShowModal('delete', item)
               }
             ]
-
+            const dropDown = (
+              <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+            )
+            let button = null
+            let isDefault = !item.company
+            if (!isSuperUser && item.company && item.company._id === companyID)
+              button = dropDown
+            if (isSuperUser) button = dropDown
             return {
-              name: item?.name,
-              button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+              name: (
+                <div>
+                  {item?.name}
+                  {isDefault ? <DefaultBadge /> : null}
+                </div>
+              ),
+              button
             }
           }) || null
       }
@@ -317,9 +346,6 @@ const CategoriesComponent = () => {
         await updatePostCategory({ variables: updateData })
       } else if (type === 'delete') {
         const deleteData = {
-          // _id: data.id,
-          // accountType: data.type,
-          // accountId: data.id,
           categoryIds: [data.id]
         }
         await deletePostCategory({ variables: deleteData })
@@ -368,7 +394,7 @@ const CategoriesComponent = () => {
 
   return (
     <div className={styles.PageContainer}>
-      <h1 className={styles.PageHeader}>Manage Global Categories</h1>
+      <h1 className={styles.PageHeader}>Manage Categories</h1>
       <div className="flex flex-col md:flex-row">
         <div className="w-full md:w-1/4 mr-4">
           <Pills
