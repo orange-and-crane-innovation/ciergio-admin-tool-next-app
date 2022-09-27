@@ -1,16 +1,15 @@
+import { GET_BUILDING, GET_STAFFS } from './queries'
+import { defaultColumns, unassignedColumns } from './columns'
 import { useMemo, useState } from 'react'
-import { useQuery } from '@apollo/client'
-import { useRouter } from 'next/router'
-import useDebounce from '@app/utils/useDebounce'
 
-import getAccountTypeName from '@app/utils/getAccountTypeName'
 import { ACCOUNT_TYPES } from '@app/constants'
-
-import Tickets from './components/Tickets'
 import Tabs from '@app/components/tabs'
 import TicketContent from './components/TicketTabContent'
-import { unassignedColumns, defaultColumns } from './columns'
-import { GET_STAFFS, GET_BUILDING } from './queries'
+import Tickets from './components/Tickets'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import useDebounce from '@app/utils/useDebounce'
+import { useQuery } from '@apollo/client'
+import { useRouter } from 'next/router'
 
 const tabs = [
   {
@@ -118,7 +117,7 @@ function Maintenance() {
             <span>
               {`${user.firstName} ${user.lastName} `}
               <span className="capitalize text-sm">
-                {getAccountTypeName(staff.accountType)}
+                {getAccountTypeName(staff)}
               </span>
             </span>
           ),

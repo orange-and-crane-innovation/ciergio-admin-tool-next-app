@@ -91,11 +91,7 @@ function AllResidents() {
     }
   })
 
-  const {
-    data: residents,
-    loading,
-    refetch
-  } = useQuery(GET_RESIDENTS, {
+  const { data: residents, loading, refetch } = useQuery(GET_RESIDENTS, {
     variables: {
       where: {
         accountTypes: selectedAccounts,

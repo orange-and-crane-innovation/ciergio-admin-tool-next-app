@@ -21,6 +21,15 @@ export const getConversations = gql`
             avatar
             lastName
           }
+          companyRole {
+            _id
+            name
+            status
+            permissions {
+              group
+              accessLevel
+            }
+          }
           status
           accountType
           active
@@ -37,6 +46,15 @@ export const getConversations = gql`
               firstName
               lastName
               avatar
+            }
+            companyRole {
+              _id
+              name
+              status
+              permissions {
+                group
+                accessLevel
+              }
             }
             unit {
               _id
@@ -56,6 +74,15 @@ export const getConversations = gql`
                 firstName
                 lastName
               }
+              companyRole {
+                _id
+                name
+                status
+                permissions {
+                  group
+                  accessLevel
+                }
+              }
             }
             message
             attachments {
@@ -71,6 +98,15 @@ export const getConversations = gql`
                   _id
                   firstName
                   lastName
+                }
+                companyRole {
+                  _id
+                  name
+                  status
+                  permissions {
+                    group
+                    accessLevel
+                  }
                 }
               }
             }
@@ -103,6 +139,15 @@ export const getMessages = gql`
             lastName
             avatar
           }
+          companyRole {
+            _id
+            name
+            status
+            permissions {
+              group
+              accessLevel
+            }
+          }
           accountType
           active
           status
@@ -126,6 +171,15 @@ export const getMessages = gql`
               user {
                 firstName
                 lastName
+              }
+              companyRole {
+                _id
+                name
+                status
+                permissions {
+                  group
+                  accessLevel
+                }
               }
             }
           }
@@ -161,6 +215,15 @@ export const getAccounts = gql`
           firstName
           lastName
           avatar
+        }
+        companyRole {
+          _id
+          name
+          status
+          permissions {
+            group
+            accessLevel
+          }
         }
         unit {
           _id
