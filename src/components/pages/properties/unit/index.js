@@ -212,7 +212,7 @@ const UnitDirectoryComponent = () => {
                   </div>
                   <div className="flex flex-col items-start">
                     <span className="text-neutral-500">
-                      {getAccountTypeName(item?.accountType)}
+                      {getAccountTypeName(item)}
                     </span>
                     <span>{`${item?.user?.firstName} ${item?.user?.lastName}`}</span>
                   </div>
@@ -249,7 +249,7 @@ const UnitDirectoryComponent = () => {
                     <span className="text-neutral-500">
                       {item?.status === 'pending'
                         ? 'Pending registration'
-                        : getAccountTypeName(item?.accountType)}
+                        : getAccountTypeName(item)}
                     </span>
                     <span>{`${item?.firstName} ${item?.lastName}`}</span>
                   </div>

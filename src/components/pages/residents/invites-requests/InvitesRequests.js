@@ -47,8 +47,9 @@ function InvitesRequests() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageLimit, setPageLimit] = useState(10)
   const [pageOffset, setPageOffset] = useState(0)
-  const [showResendBulkInviteModal, setShowResendBulkInviteModal] =
-    useState(false)
+  const [showResendBulkInviteModal, setShowResendBulkInviteModal] = useState(
+    false
+  )
   const [showCancelInviteModal, setShowCancelInviteModal] = useState(false)
   const debouncedText = useDebounce(searchText, 700)
 

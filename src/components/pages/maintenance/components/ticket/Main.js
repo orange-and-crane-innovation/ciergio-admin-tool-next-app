@@ -1,40 +1,38 @@
-import { useMemo, useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { useQuery, useMutation } from '@apollo/client'
-import { useForm } from 'react-hook-form'
-import Link from 'next/link'
-import { FaRegEnvelopeOpen, FaEllipsisH } from 'react-icons/fa'
-
-import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import Button from '@app/components/button'
-import Tabs from '@app/components/tabs'
-import LightBox from '@app/components/lightbox'
-import { Card } from '@app/components/globals'
-
-import dayjs from '@app/utils/date'
-import showToast from '@app/utils/toast'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
-import errorHandler from '@app/utils/errorHandler'
-import { ACCOUNT_TYPES } from '@app/constants'
-
 import {
-  GET_ISSUE_DETAILS,
-  GET_ISSUE_COMMENTS,
-  POST_ISSUE_COMMENT,
   FOLLOW_ISSUE,
-  UPDATE_ISSUE,
-  GET_STAFFS
+  GET_ISSUE_COMMENTS,
+  GET_ISSUE_DETAILS,
+  GET_STAFFS,
+  POST_ISSUE_COMMENT,
+  UPDATE_ISSUE
 } from '../../queries'
-import Comments from '../Comments'
-import TicketHistory from '../TicketHistory'
-import Dropdown from '@app/components/dropdown'
-import HoldTicketModal from '../HoldTicketModal'
-import CancelTicketModal from '../CancelTicketModal'
+import { FaEllipsisH, FaRegEnvelopeOpen } from 'react-icons/fa'
+import { useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery } from '@apollo/client'
+
+import { ACCOUNT_TYPES } from '@app/constants'
 import AddStaffModal from '../AddStaffModal'
-import EmptyStaff from '../EmptyStaff'
 import AssignedStaffs from '../AssignedStaffs'
+import Button from '@app/components/button'
+import CancelTicketModal from '../CancelTicketModal'
+import { Card } from '@app/components/globals'
+import Comments from '../Comments'
+import Dropdown from '@app/components/dropdown'
+import EmptyStaff from '../EmptyStaff'
+import HoldTicketModal from '../HoldTicketModal'
+import LightBox from '@app/components/lightbox'
+import Link from 'next/link'
+import Tabs from '@app/components/tabs'
+import TicketHistory from '../TicketHistory'
+import dayjs from '@app/utils/date'
+import errorHandler from '@app/utils/errorHandler'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import showToast from '@app/utils/toast'
+import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const validationSchema = yup.object().shape({
   reason: yup.mixed().label('Reason').nullable().required()
@@ -249,7 +247,7 @@ function Ticket() {
               <span>
                 {`${user.firstName} ${user.lastName} `}
                 <span className="capitalize text-sm">
-                  {getAccountTypeName(staff.accountType)}
+                  {getAccountTypeName(staff)}
                 </span>
               </span>
             ),
@@ -324,7 +322,7 @@ function Ticket() {
             <span>
               {`${user.firstName} ${user.lastName} `}
               <span className="capitalize text-sm">
-                {getAccountTypeName(staff.accountType)}
+                {getAccountTypeName(staff)}
               </span>
             </span>
           ),

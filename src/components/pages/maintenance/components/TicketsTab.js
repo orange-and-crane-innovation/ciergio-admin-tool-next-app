@@ -1,23 +1,21 @@
-import { useState, useMemo, useEffect } from 'react'
-import P from 'prop-types'
-import { useQuery, useMutation } from '@apollo/client'
-import { useRouter } from 'next/router'
-import Link from 'next/link'
-import { FiInbox } from 'react-icons/fi'
-import { FaEllipsisH } from 'react-icons/fa'
-
-import Dropdown from '@app/components/dropdown'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import NotifCard from '@app/components/globals/NotifCard'
-
-import { friendlyDateTimeFormat, displayDateCreated } from '@app/utils/date'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
-import errorHandler from '@app/utils/errorHandler'
-
-import EmptyStaff from './EmptyStaff'
-import AssignedStaffs from './AssignedStaffs'
 import { GET_ISSUES_BY_STATUS, UPDATE_ISSUE } from '../queries'
+import { displayDateCreated, friendlyDateTimeFormat } from '@app/utils/date'
+import { useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery } from '@apollo/client'
+
 import AddStaffModal from './AddStaffModal'
+import AssignedStaffs from './AssignedStaffs'
+import Dropdown from '@app/components/dropdown'
+import EmptyStaff from './EmptyStaff'
+import { FaEllipsisH } from 'react-icons/fa'
+import { FiInbox } from 'react-icons/fi'
+import Link from 'next/link'
+import NotifCard from '@app/components/globals/NotifCard'
+import P from 'prop-types'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import errorHandler from '@app/utils/errorHandler'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
+import { useRouter } from 'next/router'
 
 function TicketsTab({
   columns,
@@ -37,11 +35,7 @@ function TicketsTab({
   const [selectedStaff, setSelectedStaff] = useState([])
   const [selectedTicket, setSelectedTicket] = useState()
 
-  const {
-    data: issues,
-    loading,
-    refetch
-  } = useQuery(GET_ISSUES_BY_STATUS, {
+  const { data: issues, loading, refetch } = useQuery(GET_ISSUES_BY_STATUS, {
     variables: {
       where: {
         status: type,
@@ -108,7 +102,7 @@ function TicketsTab({
                     <span>
                       {`${user.firstName} ${user.lastName} `}
                       <span className="capitalize text-sm">
-                        {getAccountTypeName(staff.accountType)}
+                        {getAccountTypeName(staff)}
                       </span>
                     </span>
                   ),
