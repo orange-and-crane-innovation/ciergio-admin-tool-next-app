@@ -3,7 +3,7 @@ import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
 import { FiMoreHorizontal, FiUsers } from 'react-icons/fi'
 import { toFriendlyDateTime, toFriendlyShortDate } from '@app/utils/date'
 /* eslint-disable no-useless-escape */
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 import Dropdown from '@app/components/dropdown'
 import { FaSpinner } from 'react-icons/fa'
@@ -19,6 +19,13 @@ import getAccountTypeName from '@app/utils/getAccountTypeName'
 import { getDefaultKeyBinding } from 'draft-js'
 import styles from '../messages.module.css'
 
+const defaultRemoveModalState = {
+  type: 'delete',
+  visible: false,
+  okText: 'Yes, remove from chat',
+  title: 'Remove from chat? ',
+  participant: null
+}
 export default function MessageBox({
   endMessageRef,
   participant,
@@ -31,15 +38,20 @@ export default function MessageBox({
   // attachments,
   newMessage,
   onReadNewMessage,
-  onFetchMoreMessage
+  onFetchMoreMessage,
   // onUpload,
-  // onRemove
+  // onRemove,
+  removeParticipant,
+  parentFunc
 }) {
+  const profile = JSON.parse(localStorage.getItem('profile'))
   const [message, setMessage] = useState()
   const [disabledSendBtn, setDisabledSendBtn] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [modalTitle, setModalTitle] = useState()
-  const [modalContent, setModalContent] = useState()
+  const [removingParticipant, setRemovingParticipant] = useState(false)
+  const [showMembers, setShowMembersModal] = useState(false)
+  const [removeModalState, setRemoveModalState] = useState(
+    defaultRemoveModalState
+  )
 
   const messages = useMemo(() => {
     if (conversation?.data?.length > 0) {
@@ -137,29 +149,24 @@ export default function MessageBox({
     }
   }
 
-  const handleShowModal = type => {
-    setShowModal(prev => !prev)
-
-    switch (type) {
-      case 'participants': {
-        setModalTitle('Members')
-        setModalContent(
-          participant?.participants?.data?.map((item, index) => {
-            return <ParticipantsBox key={index} data={item} />
-          })
-        )
-        break
-      }
-    }
-  }
-
   const dropdownData = [
     {
       label: 'Members',
       icon: <FiUsers />,
-      function: () => handleShowModal('participants')
+      function: () => setShowMembersModal(prev => !prev)
     }
   ]
+
+  const closeRemoveModal = () => {
+    setRemoveModalState({
+      ...removeModalState,
+      visible: false
+    })
+  }
+
+  useEffect(() => {
+    parentFunc.current = closeRemoveModal
+  }, [])
 
   return (
     <div className={styles.messagesBoxContainer}>
@@ -459,12 +466,58 @@ export default function MessageBox({
       </div>
 
       <Modal
-        title={modalTitle}
-        visible={showModal}
-        onClose={handleShowModal}
+        title="Members"
+        visible={showMembers}
+        onClose={() => setShowMembersModal(prev => !prev)}
         footer={null}
       >
-        {modalContent}
+        {/* {modalContent} */}
+        {participant?.participants?.data?.map((item, index) => {
+          return (
+            <ParticipantsBox
+              key={index}
+              data={item}
+              sameUser={profile._id === item?.user?._id}
+              modalTrigger={() => {
+                setRemovingParticipant(false)
+                setRemoveModalState({
+                  ...removeModalState,
+                  visible: true,
+                  participant: item
+                })
+              }}
+            />
+          )
+        })}
+      </Modal>
+
+      <Modal
+        title={removeModalState.title}
+        onClose={closeRemoveModal}
+        okText={removeModalState.okText}
+        okButtonProps={{
+          danger: removeModalState.type === 'delete',
+          disabled: removingParticipant
+        }}
+        cancelButtonProps={{
+          disabled: removingParticipant
+        }}
+        visible={removeModalState.visible}
+        onOk={async () => {
+          setRemovingParticipant(true)
+          removeParticipant(removeModalState.participant._id)
+        }}
+        onCancel={closeRemoveModal}
+      >
+        <p>
+          Are you sure you want to remove{' '}
+          <strong>
+            {removeModalState?.participant?.user?.firstName}{' '}
+            {removeModalState?.participant?.user?.lastName}
+          </strong>{' '}
+          from the conversation? They will no longer be able to view the group
+          chat, or send and receive messages.
+        </p>
       </Modal>
     </div>
   )
@@ -485,5 +538,7 @@ MessageBox.propTypes = {
   attachments: P.array,
   newMessage: P.bool,
   onReadNewMessage: P.func,
-  onFetchMoreMessage: P.func
+  onFetchMoreMessage: P.func,
+  removeParticipant: P.func,
+  parentFunc: P.any
 }

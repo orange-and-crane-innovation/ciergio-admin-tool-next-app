@@ -6,7 +6,8 @@ import {
   getMessages,
   seenMessage,
   sendMessage,
-  updateConversation
+  updateConversation,
+  REMOVE_CONVERSATION_PARTICIPANT
 } from './queries'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
@@ -39,6 +40,7 @@ const convoOptions = [
 
 export default function Main() {
   const endMessage = useRef()
+  const messageBoxFunc = useRef(null)
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountType = profile?.accounts?.data[0]?.accountType
   const accountId = profile?.accounts?.data[0]?._id
@@ -61,6 +63,7 @@ export default function Main() {
   const [firstConvo, setFirstConvo] = useState()
   const [isFirst, setIsFirst] = useState(true)
   const [isSelected, setIsSelected] = useState(false)
+  const [reFetchParticipants, setReFetchParticipants] = useState(false)
   const maxAttachments = 5
   // const debouncedSearch = useDebounce(search, 500)
 
@@ -113,19 +116,23 @@ export default function Main() {
       skip: offsetConvo
     }
   })
+
   const [
     getConvoSelected,
     { data: dataSelectedConvo, loading: loadingSelectedConvo }
   ] = useLazyQuery(getConversations, {
     fetchPolicy: 'network-only'
   })
+
   const [
     fetchMessages,
     { data: messages, loading: loadingMessages, refetch: refetchMessages }
   ] = useLazyQuery(getMessages, {
     fetchPolicy: 'network-only'
   })
+
   const [updateConvo] = useMutation(updateConversation)
+
   const [sendNewMessage, { loading: loadingSendMessage }] = useMutation(
     sendMessage,
     {
@@ -143,6 +150,7 @@ export default function Main() {
       }
     }
   )
+
   const [seenNewMessage, { data: dataSeenMessage }] = useMutation(seenMessage)
 
   const [
@@ -155,6 +163,35 @@ export default function Main() {
       accountId
     }
   })
+
+  const [removeConversationParticipant] = useMutation(
+    REMOVE_CONVERSATION_PARTICIPANT,
+    {
+      onCompleted: () => {
+        refetchConversations({
+          skip: 0
+        })
+        // refetchMessages({
+        //   skip: 0
+        // })
+        setReFetchParticipants(true)
+      },
+      onError: e => {
+        errorHandler(e)
+      }
+    }
+  )
+
+  const removeParticipant = participantId => {
+    if (!convoID || !participantId) return
+
+    removeConversationParticipant({
+      variables: {
+        participantId: participantId,
+        conversationId: convoID
+      }
+    })
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -206,40 +243,73 @@ export default function Main() {
 
   useEffect(() => {
     if (convos?.getConversations) {
-      if (
-        conversations?.data &&
-        conversations?.data[0]?._id !==
-          convos?.getConversations?.data[0]?._id &&
-        !hasFetched
-      ) {
-        setConversations(prev => ({
-          ...prev,
-          data: uniqBy(
-            conversations?.data.concat(convos?.getConversations?.data),
-            '_id'
-          )
-        }))
+      if (!reFetchParticipants) {
+        if (
+          conversations?.data &&
+          conversations?.data[0]?._id !==
+            convos?.getConversations?.data[0]?._id &&
+          !hasFetched
+        ) {
+          setConversations(prev => ({
+            ...prev,
+            data: uniqBy(
+              conversations?.data.concat(convos?.getConversations?.data),
+              '_id'
+            )
+          }))
+        } else {
+          setConversations(convos.getConversations)
+        }
       } else {
-        setConversations(convos.getConversations)
+        console.log('convoID', convoID)
+        if (selectedConvo && convoID) {
+          const updatedConvo = convos.getConversations.data.filter(
+            i => i._id === convoID
+          )
+          console.log('updatedConvo[0]', updatedConvo[0])
+          if (updatedConvo[0]) {
+            console.log('UPDATING setSelectedConvo')
+            messageBoxFunc.current()
+            showToast(
+              'success',
+              `Successfully remove a participant from the group chat`
+            )
+            setSelectedConvo(updatedConvo[0])
+            setReFetchParticipants(false)
+          } else {
+            console.log('DO ANOTHER REFETCH')
+            refetchConversations({
+              skip: 0
+            })
+          }
+        }
       }
     }
   }, [convos?.getConversations, hasFetched])
 
   useEffect(() => {
     if (messages) {
-      if (
-        convoMessages?.data &&
-        convoMessages?.data[0]?.conversation?._id === selectedConvo._id &&
-        !hasFetched
-      ) {
-        setConvoMessages(prev => ({
-          ...prev,
-          data: [
-            ...new Set(convoMessages?.data.concat(messages?.getMessages?.data))
-          ]
-        }))
+      if (!reFetchParticipants) {
+        if (
+          selectedConvo &&
+          convoMessages?.data &&
+          convoMessages?.data[0]?.conversation?._id === selectedConvo._id &&
+          !hasFetched
+        ) {
+          if (messages?.getMessages?.data.length !== convoMessages?.data.length)
+            setConvoMessages(prev => ({
+              ...prev,
+              data: [
+                ...new Set(
+                  convoMessages?.data.concat(messages?.getMessages?.data)
+                )
+              ]
+            }))
+        } else {
+          setConvoMessages(messages?.getMessages)
+        }
       } else {
-        setConvoMessages(messages?.getMessages)
+        // setReFetchParticipants(false)
       }
     }
   }, [messages])
@@ -342,6 +412,7 @@ export default function Main() {
   }
 
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
+
   const handleCloseNewMessageModal = () => {
     setSearch('')
     setShowNewMessageModal(false)
@@ -619,6 +690,7 @@ export default function Main() {
       </div>
 
       <MessageBox
+        parentFunc={messageBoxFunc}
         endMessageRef={endMessage}
         participant={selectedConvo}
         name={selectedConvo?.name}
@@ -635,6 +707,7 @@ export default function Main() {
         newMessage={newMsg?.conversation?._id === selectedConvo?._id}
         onReadNewMessage={onReadNewMessage}
         onFetchMoreMessage={onFetchMoreMessage}
+        removeParticipant={removeParticipant}
       />
       <NewMessageModal
         visible={showNewMessageModal}

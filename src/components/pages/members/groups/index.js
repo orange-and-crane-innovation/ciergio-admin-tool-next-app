@@ -1,22 +1,24 @@
-import { debounce } from 'lodash'
-import isEmpty from 'lodash/isEmpty'
-import { useRouter } from 'next/router'
-import Props from 'prop-types'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
 import * as yup from 'yup'
 
+import { Controller, useForm } from 'react-hook-form'
+import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
+import React, { useEffect, useState } from 'react'
 import { gql, useMutation, useQuery } from '@apollo/client'
+
 import Button from '@app/components/button'
+import { Card } from '@app/components/globals'
 import Dropdown from '@app/components/dropdown'
 import Input from '@app/components/forms/form-input'
-import { Card } from '@app/components/globals'
-import SearchControl from '@app/components/globals/SearchControl'
 import Modal from '@app/components/modal'
+import Props from 'prop-types'
+import SearchControl from '@app/components/globals/SearchControl'
 import Table from '@app/components/table'
+import Toggle from '@app/components/toggle'
+import { debounce } from 'lodash'
 import errorHandler from '@app/utils/errorHandler'
+import isEmpty from 'lodash/isEmpty'
 import showToast from '@app/utils/toast'
+import { useRouter } from 'next/router'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 const SCHEMA = yup.object().shape({
@@ -85,7 +87,14 @@ const defaultModalState = {
   title: 'Create New Group'
 }
 
-const AddEditModalContent = ({ control, errors, selected }) => {
+const AddEditModalContent = ({
+  control,
+  errors,
+  selected,
+  isCreate,
+  gc,
+  toogle
+}) => {
   return (
     <Controller
       control={control}
@@ -94,12 +103,28 @@ const AddEditModalContent = ({ control, errors, selected }) => {
       render={field => {
         field.defaultValue = selected?.name ? selected?.name : ''
         return (
-          <Input
-            {...field}
-            label="Group name"
-            error={errors?.name?.message ?? null}
-            placeholder="Enter group name"
-          />
+          <>
+            <Input
+              {...field}
+              label="Group name"
+              error={errors?.name?.message ?? null}
+              placeholder="Enter group name"
+            />
+            {isCreate && (
+              <>
+                <br />
+                <div className="flex justify-start gap-4 items-center">
+                  <Toggle
+                    onChange={() => {
+                      toogle(old => !old)
+                    }}
+                    toggle={gc}
+                  />
+                  <span>Enable Group Chat</span>
+                </div>
+              </>
+            )}
+          </>
         )
       }}
     />
@@ -138,6 +163,7 @@ const Groups = () => {
   // const [searchText, setSearchText] = useState('')
   const [modalState, setModalState] = useState(defaultModalState)
   const [selectedGroup, setSelectedGroup] = useState(null)
+  const [shouldCreateGC, setShouldCreateGC] = useState(true)
 
   const { loading, data, error, refetch } = useQuery(GET_COMPANY_GROUPS, {
     enabled: false,
@@ -182,6 +208,7 @@ const Groups = () => {
         createCompanyGroup({
           variables: {
             companyId: companyID,
+            createGroupConversation: shouldCreateGC,
             data: {
               name: val?.name,
               status: 'active'
@@ -363,6 +390,9 @@ const Groups = () => {
                 control={control}
                 errors={errors}
                 selected={selectedGroup}
+                isCreate={modalState.type === 'add'}
+                gc={shouldCreateGC}
+                toogle={setShouldCreateGC}
               />
             )}
 
@@ -379,7 +409,10 @@ const Groups = () => {
 AddEditModalContent.propTypes = {
   selected: Props.object,
   control: Props.any,
-  errors: Props.object
+  errors: Props.object,
+  isCreate: Props.boolean,
+  gc: Props.boolean,
+  toogle: Props.func
 }
 
 DeleteModalContent.propTypes = {

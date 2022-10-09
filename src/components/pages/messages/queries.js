@@ -283,3 +283,19 @@ export const GET_UNREAD_MESSAGE_QUERY = gql`
     getUnreadConversationCount(where: { accountId: $accountId })
   }
 `
+
+export const REMOVE_CONVERSATION_PARTICIPANT = gql`
+  mutation removeConversationParticipant(
+    $participantId: String
+    $conversationId: String
+  ) {
+    removeConversationParticipant(
+      participantId: $participantId
+      conversationId: $conversationId
+    ) {
+      _id
+      processId
+      message
+    }
+  }
+`

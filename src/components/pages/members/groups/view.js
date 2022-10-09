@@ -19,6 +19,7 @@ import Can from '@app/permissions/can'
 import showToast from '@app/utils/toast'
 import errorHandler from '@app/utils/errorHandler'
 import useDebounce from '@app/utils/useDebounce'
+import Toggle from '@app/components/toggle'
 
 import ViewResidentModal from './../ViewResidentModal'
 
