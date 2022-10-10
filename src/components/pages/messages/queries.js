@@ -132,6 +132,11 @@ export const getMessages = gql`
         message
         status
         createdAt
+        attachments {
+          type
+          filename
+          url
+        }
         author {
           user {
             _id

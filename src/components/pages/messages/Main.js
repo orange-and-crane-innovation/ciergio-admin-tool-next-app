@@ -144,6 +144,8 @@ export default function Main() {
         })
         refetchMessages()
         setHasFetched(true)
+        setUploadedAttachments(null)
+        setAttachmentURLs([])
       },
       onError: e => {
         errorHandler(e)
@@ -487,7 +489,11 @@ export default function Main() {
       }
     }
 
-    const response = await axios.post('/', payload, config)
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_UPLOAD_API,
+      payload,
+      config
+    )
 
     if (response.data) {
       const data = response.data.map(item => {
@@ -499,8 +505,9 @@ export default function Main() {
         }
       })
 
-      setUploadedAttachments(old => [...old, ...data])
+      setUploadedAttachments(old => (old ? [...old, ...data] : [...data]))
     }
+    setIsUploadingAttachment(false)
   }
 
   const onRemoveAttachment = e => {
@@ -515,17 +522,17 @@ export default function Main() {
     const formData = new FormData()
     const fileList = []
 
+    setIsUploadingAttachment(true)
     if (files) {
       if (files.length > maxAttachments) {
+        setIsUploadingAttachment(false)
         showToast('info', `Maximum of ${maxAttachments} attachments only`)
       } else {
-        setIsUploadingAttachment(true)
         for (const file of files) {
           const reader = new FileReader()
 
           reader.onloadend = () => {
             setAttachmentURLs(imageUrls => [...imageUrls, reader.result])
-            setIsUploadingAttachment(false)
           }
           reader.readAsDataURL(file)
 
