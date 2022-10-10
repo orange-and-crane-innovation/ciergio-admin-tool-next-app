@@ -17,6 +17,7 @@ function Component({
   footer,
   children,
   okButtonProps,
+  cancelButtonProps,
   loading,
   modalProps,
   width
@@ -54,6 +55,7 @@ function Component({
               label={cancelText}
               onClick={onCancel}
               className="mr-4"
+              {...cancelButtonProps}
             />
             <Button primary label={okText} onClick={onOk} {...okButtonProps} />
           </div>
@@ -82,6 +84,7 @@ Component.propTypes = {
   onCancel: P.func,
   footer: P.bool,
   okButtonProps: P.object,
+  cancelButtonProps: P.object,
   loading: P.bool,
   modalProps: P.object,
   width: P.number

@@ -132,6 +132,11 @@ export const getMessages = gql`
         message
         status
         createdAt
+        attachments {
+          type
+          filename
+          url
+        }
         author {
           user {
             _id
@@ -281,5 +286,21 @@ export const seenMessage = gql`
 export const GET_UNREAD_MESSAGE_QUERY = gql`
   query($accountId: String) {
     getUnreadConversationCount(where: { accountId: $accountId })
+  }
+`
+
+export const REMOVE_CONVERSATION_PARTICIPANT = gql`
+  mutation removeConversationParticipant(
+    $participantId: String
+    $conversationId: String
+  ) {
+    removeConversationParticipant(
+      participantId: $participantId
+      conversationId: $conversationId
+    ) {
+      _id
+      processId
+      message
+    }
   }
 `
