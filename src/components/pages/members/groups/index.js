@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-
+import Link from 'next/link'
 import { Controller, useForm } from 'react-hook-form'
 import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
 import React, { useEffect, useState } from 'react'
@@ -316,7 +316,13 @@ const Groups = () => {
               ]
 
               return {
-                name: item?.name,
+                name: (
+                  <Link href={`/members/groups/${item?._id}`}>
+                    <a className="mx-2 hover:underline capitalize font-bold">
+                      {item?.name}
+                    </a>
+                  </Link>
+                ),
                 button: (
                   <Dropdown label={<FaEllipsisH />} items={dropdownData} />
                 )
