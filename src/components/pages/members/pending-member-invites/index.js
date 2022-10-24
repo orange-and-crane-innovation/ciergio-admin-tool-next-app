@@ -130,17 +130,6 @@ const InviteModalContent = ({
         control={control}
         name="groupids"
         render={({ name, onChange, value }) => (
-          // <FormSelect
-          //   styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-          //   menuPortalTarget={document.body}
-          //   options={groupOptions}
-          //   onChange={onChange}
-          //   value={value}
-          //   placeholder="Choose group"
-          //   valueholder="Group"
-          //   isMulti
-          //   onClear={() => control?.setValue('groupids', null)}
-          // />
           <ReactSelect
             styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
             menuPortalTarget={document.body}
@@ -184,8 +173,8 @@ const InviteModalContent = ({
 const defaultModalState = {
   type: 'invite',
   visible: false,
-  okText: 'Invite Member',
-  title: 'Invite Member'
+  okText: 'Invite a Member',
+  title: 'Invite a Member'
 }
 
 function PendingMemberInvites() {
@@ -419,18 +408,6 @@ function PendingMemberInvites() {
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
         <h1 className="font-bold text-base px-8 py-4">{`Registered Members`}</h1>
         <div className="flex items-center">
-          <Button
-            default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />
           <Button
             default
             leftIcon={<FaPlusCircle />}

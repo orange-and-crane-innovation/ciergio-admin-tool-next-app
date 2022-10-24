@@ -12,6 +12,7 @@ export const getConversations = gql`
       skip
       data {
         _id
+        type
         name
         author {
           _id

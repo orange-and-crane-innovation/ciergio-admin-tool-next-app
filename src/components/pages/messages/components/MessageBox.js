@@ -1,16 +1,16 @@
 import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
 import { BsCheckAll, BsFillCaretDownFill } from 'react-icons/bs'
 import {
-  FiPaperclip,
-  FiMoreHorizontal,
-  FiUsers,
-  FiX,
   FiFile,
-  FiImage
+  FiImage,
+  FiMoreHorizontal,
+  FiPaperclip,
+  FiUsers,
+  FiX
 } from 'react-icons/fi'
 import { toFriendlyDateTime, toFriendlyShortDate } from '@app/utils/date'
 /* eslint-disable no-useless-escape */
-import { useMemo, useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import Dropdown from '@app/components/dropdown'
 import { FaSpinner } from 'react-icons/fa'
@@ -50,7 +50,8 @@ export default function MessageBox({
   onUpload,
   onRemove,
   removeParticipant,
-  parentFunc
+  parentFunc,
+  selectedConvoType
 }) {
   const profile = JSON.parse(localStorage.getItem('profile'))
   const [message, setMessage] = useState()
@@ -98,13 +99,11 @@ export default function MessageBox({
     }
   }, [participant?.participants])
 
-  let convoName = `${user?.firstName} ${user?.lastName} - ${name}`
-  if (!convoName)
+  let convoName = name
+  if (!convoName || selectedConvoType === 'private')
     convoName =
       user?.firstName && user?.lastName
-        ? `${getAccountTypeName(accountType)} - ${user?.firstName} ${
-            user?.lastName
-          }`
+        ? `${user?.firstName} ${user?.lastName}`
         : ''
 
   // NOTE: temporarily removed to align with old UI
@@ -190,7 +189,7 @@ export default function MessageBox({
     <div className={styles.messagesBoxContainer}>
       <div className={styles.messageBoxHeader}>
         <h2 className="font-bold text text-base capitalize">
-          {`${convoName}` || '-'}
+          {convoName || '-'}
         </h2>
         <Dropdown label={<FiMoreHorizontal />} items={dropdownData} />
       </div>
@@ -461,7 +460,7 @@ export default function MessageBox({
 
           <div className="flex-auto p-2 flex items-center w-full">
             <MessageInput
-              editorClassName="pr-16"
+              editorClassName="pl-0 pr-16"
               placeholder="Write a message"
               onChange={handleEditorChange}
               onPressEnter={handlePressEnter}
@@ -595,5 +594,6 @@ MessageBox.propTypes = {
   onReadNewMessage: P.func,
   onFetchMoreMessage: P.func,
   removeParticipant: P.func,
-  parentFunc: P.any
+  parentFunc: P.any,
+  selectedConvoType: P.string
 }
