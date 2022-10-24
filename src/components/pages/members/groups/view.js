@@ -27,6 +27,8 @@ import errorHandler from '@app/utils/errorHandler'
 import useDebounce from '@app/utils/useDebounce'
 import Toggle from '@app/components/toggle'
 
+import { BiLoaderAlt } from 'react-icons/bi'
+
 import ViewResidentModal from './../ViewResidentModal'
 
 const SCHEMA_INVITE = yup.object().shape({
@@ -526,23 +528,27 @@ const Group = () => {
 
       <div className="flex items-center justify-end mt-12 w-full">
         <div className="flex justify-start gap-4 items-center w-4/12">
-          <Toggle
-            onChange={() => {
-              setGC(old => {
-                toggleGC({
-                  variables: {
-                    conversationId: old?._id,
-                    status: old?.status !== 'active'
+          {loadingConvo ? (
+            <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+          ) : (
+            <Toggle
+              onChange={() => {
+                setGC(old => {
+                  toggleGC({
+                    variables: {
+                      conversationId: old?._id,
+                      status: old?.status !== 'active'
+                    }
+                  })
+                  return {
+                    ...old,
+                    status: old?.status === 'active' ? 'inactive' : 'active'
                   }
                 })
-                return {
-                  ...old,
-                  status: old?.status === 'active' ? 'inactive' : 'active'
-                }
-              })
-            }}
-            toggle={gc?.status === 'active'}
-          />
+              }}
+              toggle={gc?.status === 'active'}
+            />
+          )}
           <span>Enable Group Chat</span>
         </div>
         <div className="flex items-center justify-between w-8/12 flex-row flex-row-reverse">
