@@ -439,7 +439,7 @@ const Group = () => {
   })
 
   useEffect(() => {
-    if (group?.getCompanyGroup?._id) {
+    if (group?.getCompanyGroup?._id && !convos) {
       fetchConvo()
     }
   }, [group])
@@ -449,7 +449,11 @@ const Group = () => {
       const convoFilter = convos?.getConversations?.data.find(item => item._id)
       setGC(convoFilter)
     } else {
-      if (group?.getCompanyGroup?._id && !loadingConvo)
+      if (
+        group?.getCompanyGroup?._id &&
+        !loadingConvo &&
+        convos?.getConversations?.count === 0
+      )
         fetchConvo({
           variables: {
             where: {
@@ -528,7 +532,7 @@ const Group = () => {
 
       <div className="flex items-center justify-end mt-12 w-full">
         <div className="flex justify-start gap-4 items-center w-4/12">
-          {loadingConvo ? (
+          {loadingGroup || loadingConvo ? (
             <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
           ) : (
             <Toggle
