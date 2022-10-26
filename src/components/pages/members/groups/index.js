@@ -51,8 +51,13 @@ const CREATE_COMPANY_GROUP = gql`
   mutation createCompanyGroup(
     $data: InputCreateCompanyGroup
     $companyId: String
+    $createGroupConversation: Boolean
   ) {
-    createCompanyGroup(data: $data, companyId: $companyId) {
+    createCompanyGroup(
+      data: $data
+      companyId: $companyId
+      createGroupConversation: $createGroupConversation
+    ) {
       _id
       message
     }

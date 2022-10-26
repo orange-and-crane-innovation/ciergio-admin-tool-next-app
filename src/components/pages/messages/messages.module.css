@@ -73,7 +73,7 @@
   }
 
   .messageBoxInput {
-    min-height: 80px;
+    min-height: 70px;
     @apply bg-white border border-neutral-300 box-border p-0 max-h-64 border-l-0 border-b-0;
     @apply relative flex items-center justify-items-center;
   }

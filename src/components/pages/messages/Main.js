@@ -46,7 +46,9 @@ export default function Main() {
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id
   const [showPendingMessages, setShowPendingMessages] = useState(false)
-  const [convoType, setConvoType] = useState('group')
+  const [convoType, setConvoType] = useState(
+    localStorage.getItem('convotype') ?? 'group'
+  )
   const [showNewMessageModal, setShowNewMessageModal] = useState(false)
   const [selectedConvo, setSelectedConvo] = useState(null)
   const [search, setSearch] = useState('')
@@ -110,7 +112,8 @@ export default function Main() {
         participants: [accountId],
         includeEmptyConversation: true,
         pending: showPendingMessages,
-        type: convoType
+        type: convoType,
+        active: true
       },
       limit: 15,
       skip: offsetConvo
@@ -204,16 +207,11 @@ export default function Main() {
         const isExist = index !== -1
 
         if (isExist) {
-          console.log('Exist')
           handleMessagePreviewClick(conversations?.data[index])
         } else {
-          console.log('Not Exist')
-
           if (dataSelectedConvo?.getConversations?.data?.length > 0) {
-            console.log('Old Convo')
             onCreateConvo(dataSelectedConvo?.getConversations?.data[0])
           } else {
-            console.log('New Convo')
             createNewConversation({
               variables: {
                 data: {
@@ -263,14 +261,11 @@ export default function Main() {
           setConversations(convos.getConversations)
         }
       } else {
-        console.log('convoID', convoID)
         if (selectedConvo && convoID) {
           const updatedConvo = convos.getConversations.data.filter(
             i => i._id === convoID
           )
-          console.log('updatedConvo[0]', updatedConvo[0])
           if (updatedConvo[0]) {
-            console.log('UPDATING setSelectedConvo')
             messageBoxFunc.current()
             showToast(
               'success',
@@ -279,7 +274,6 @@ export default function Main() {
             setSelectedConvo(updatedConvo[0])
             setReFetchParticipants(false)
           } else {
-            console.log('DO ANOTHER REFETCH')
             refetchConversations({
               skip: 0
             })
@@ -591,6 +585,7 @@ export default function Main() {
     setSelectedConvo(null)
     setIsFirst(true)
     setConvoType(e.value)
+    localStorage.setItem('convotype', e.value)
   }
 
   const onCreateConvo = (data, type) => {
@@ -686,6 +681,7 @@ export default function Main() {
           <ConversationBox
             conversations={conversations}
             loading={loadingConvo}
+            selectedConvoType={convoType}
             selectedConvo={selectedConvo?._id}
             currentUserId={profile?._id}
             currentAccountId={profile?.accounts?.data[0]._id}
@@ -695,7 +691,6 @@ export default function Main() {
           />
         </div>
       </div>
-
       <MessageBox
         parentFunc={messageBoxFunc}
         endMessageRef={endMessage}
@@ -715,6 +710,7 @@ export default function Main() {
         onReadNewMessage={onReadNewMessage}
         onFetchMoreMessage={onFetchMoreMessage}
         removeParticipant={removeParticipant}
+        selectedConvoType={convoType}
       />
       <NewMessageModal
         visible={showNewMessageModal}

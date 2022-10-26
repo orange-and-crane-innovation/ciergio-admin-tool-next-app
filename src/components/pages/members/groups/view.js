@@ -1,13 +1,19 @@
+import { getConversations } from '@app/components/pages/messages/queries'
 import { debounce } from 'lodash'
 import isEmpty from 'lodash/isEmpty'
 import { useRouter } from 'next/router'
 import Props from 'prop-types'
 import React, { useMemo, useState, useEffect } from 'react'
-import { FaEllipsisH, FaExclamationCircle } from 'react-icons/fa'
+import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
 import { FiDownload, FiUserX } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
+import { Controller, useForm } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+import Input from '@app/components/forms/form-input'
+import FormSelect from '@app/components/forms/form-select'
 
-import { gql, useMutation, useQuery } from '@apollo/client'
+import { gql, useMutation, useQuery, useLazyQuery } from '@apollo/client'
 import Button from '@app/components/button'
 import Dropdown from '@app/components/dropdown'
 import { Card } from '@app/components/globals'
@@ -21,7 +27,17 @@ import errorHandler from '@app/utils/errorHandler'
 import useDebounce from '@app/utils/useDebounce'
 import Toggle from '@app/components/toggle'
 
+import { BiLoaderAlt } from 'react-icons/bi'
+
 import ViewResidentModal from './../ViewResidentModal'
+
+const SCHEMA_INVITE = yup.object().shape({
+  email: yup
+    .string()
+    .email('Invalid email format')
+    .required('Member Email is required'),
+  complexId: yup.object().nullable(true).required('Complex is required')
+})
 
 const tableRowNames = [
   {
@@ -53,13 +69,25 @@ const GET_COMPANY_GROUP = gql`
   }
 `
 
-const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
+const GET_COMPLEXES_QUERY = gql`
+  query getComplexes($where: GetComplexesParams, $limit: Int, $skip: Int) {
+    getComplexes(where: $where, limit: $limit, skip: $skip) {
+      count
+      limit
+      skip
+      data {
+        _id
+        name
+      }
+    }
+  }
+`
+
+const INVITE_MEMBER = gql`
+  mutation inviteMember($data: InputInviteMember, $companyId: String) {
+    inviteMember(data: $data, companyId: $companyId) {
       _id
-      name
-      status
-      companyId
+      message
     }
   }
 `
@@ -79,6 +107,16 @@ const REMOVE_USER_FROM_GROUP = gql`
   }
 `
 
+const TOGGLE_GROUP_CHAT = gql`
+  mutation setConversationStatus($conversationId: String, $status: Boolean) {
+    setConversationStatus(conversationId: $conversationId, active: $status) {
+      _id
+      message
+      processId
+    }
+  }
+`
+
 const defaultModalState = {
   type: 'remove',
   visible: false,
@@ -88,7 +126,6 @@ const defaultModalState = {
 
 const DeleteModalContent = ({ selected, group }) => {
   const { user } = selected
-  console.log('selected', selected)
   return (
     <div className="w-full text-base leading-7">
       <div className="mb-4 px-4 pt-4">
@@ -111,6 +148,60 @@ const DeleteModalContent = ({ selected, group }) => {
   )
 }
 
+const InviteModalContent = ({ control, errors, complexOptions }) => {
+  return (
+    <>
+      <Controller
+        control={control}
+        name="email"
+        render={field => {
+          return (
+            <Input
+              {...field}
+              label="Member Email"
+              error={errors?.email?.message ?? null}
+              placeholder="Enter email address"
+              description={
+                <p className="mb-2">An invite will be sent to this email.</p>
+              }
+            />
+          )
+        }}
+      />
+
+      <br />
+
+      <p className="font-bold text-base mb-2">Complex</p>
+      <p className="mb-2">The user will be tag to this complex</p>
+      <Controller
+        control={control}
+        name="complexId"
+        render={({ name, onChange, value }) => (
+          <FormSelect
+            error={errors?.complexId?.message ?? null}
+            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            menuPortalTarget={document.body}
+            options={complexOptions}
+            onChange={onChange}
+            value={value}
+            placeholder="Choose a complex"
+            isClearable
+            onClear={() => {
+              control?.setValue('complexId', null)
+            }}
+          />
+        )}
+      />
+    </>
+  )
+}
+
+InviteModalContent.propTypes = {
+  complexOptions: Props.array,
+  control: Props.any,
+  errors: Props.object
+}
+
 const Group = () => {
   const profile = JSON.parse(localStorage.getItem('profile'))
   const companyID = profile.accounts.data[0].company._id
@@ -123,6 +214,8 @@ const Group = () => {
 
   const [viewMember, setViewMember] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
+  const [complexOptions, setComplexOptions] = useState()
+  const [gc, setGC] = useState(null)
 
   const [activePage, setActivePage] = useState(1)
   const [limitPage, setLimitPage] = useState(10)
@@ -146,18 +239,42 @@ const Group = () => {
     }
   )
 
-  const { loading: loadingGroups, data: groups, error: errorGroups } = useQuery(
-    GET_COMPANY_GROUPS,
-    {
-      enabled: false,
-      variables: {
-        where: {
-          companyId: companyID,
-          status: 'active'
-        }
-      }
+  const [
+    fetchConvo,
+    { data: convos, loading: loadingConvo, refetch: refetchConversations }
+  ] = useLazyQuery(getConversations, {
+    fetchPolicy: 'network-only',
+    variables: {
+      where: {
+        active: true,
+        companyGroupId: groupID,
+        type: 'group'
+      },
+      limit: 1,
+      skip: 0
     }
-  )
+  })
+
+  const {
+    loading: loadingComplexes,
+    data: complexes,
+    error: errorComplexes
+  } = useQuery(GET_COMPLEXES_QUERY, {
+    enabled: false,
+    variables: {
+      where: {
+        companyId: companyID,
+        status: 'active'
+      },
+      limit: 500,
+      skip: 0
+    }
+  })
+
+  const [
+    inviteMember,
+    { loading: inviteLoading, data: inviteData, error: inviteError }
+  ] = useMutation(INVITE_MEMBER)
 
   const { loading, data: accounts, error, refetch } = useQuery(GET_ACCOUNTS, {
     skip: where === undefined,
@@ -172,6 +289,11 @@ const Group = () => {
     unAssignCompanyGroup,
     { loading: removeLoading, data: removeData, error: removeError }
   ] = useMutation(REMOVE_USER_FROM_GROUP)
+
+  const [
+    toggleGC,
+    { loading: toggleGCLoading, data: toggleGCData, error: toggleGCError }
+  ] = useMutation(TOGGLE_GROUP_CHAT)
 
   const listData = useMemo(
     () => ({
@@ -296,8 +418,79 @@ const Group = () => {
           companyGroupIds: group?.getCompanyGroup?._id
         }
       })
+    } else {
+      if (modalState.type === 'invite') {
+        inviteMember({
+          variables: {
+            companyId: companyID,
+            data: {
+              email: val?.email,
+              complexId: val?.complexId?.value,
+              companyGroupIds: [groupID]
+            }
+          }
+        })
+      }
     }
   }
+
+  const { control: controlInvite, errors: errorsInvite } = useForm({
+    resolver: yupResolver(SCHEMA_INVITE)
+  })
+
+  useEffect(() => {
+    if (group?.getCompanyGroup?._id && !convos) {
+      fetchConvo()
+    }
+  }, [group])
+
+  useEffect(() => {
+    if (convos?.getConversations?.count > 0) {
+      const convoFilter = convos?.getConversations?.data.find(item => item._id)
+      setGC(convoFilter)
+    } else {
+      if (
+        group?.getCompanyGroup?._id &&
+        !loadingConvo &&
+        convos?.getConversations?.count === 0
+      )
+        fetchConvo({
+          variables: {
+            where: {
+              active: false,
+              companyGroupId: groupID,
+              type: 'group'
+            },
+            limit: 1,
+            skip: 0
+          }
+        })
+    }
+  }, [convos])
+
+  useEffect(() => {
+    if (complexes && complexes.getComplexes)
+      setComplexOptions(
+        complexes.getComplexes?.data?.map(c => {
+          return { label: c.name, value: c._id }
+        })
+      )
+  }, [complexes])
+
+  useEffect(() => {
+    if (!inviteLoading) {
+      if (inviteData && !inviteError) {
+        showToast('success', `Successfully invite a member`)
+        closeModal()
+        refetch()
+      }
+
+      if (!inviteData && inviteError) {
+        const err = inviteError
+        errorHandler(err)
+      }
+    }
+  }, [inviteLoading, inviteData, inviteError])
 
   useEffect(() => {
     if (!removeLoading) {
@@ -314,11 +507,54 @@ const Group = () => {
     }
   }, [removeLoading, removeData])
 
+  useEffect(() => {
+    if (!toggleGCLoading) {
+      if (toggleGCData && !toggleGCError) {
+        const enabled = gc?.status === 'active'
+        showToast(
+          'success',
+          `Successfully ${enabled ? 'enabled' : 'disabled'} group chat`
+        )
+        closeModal()
+        // refetch()
+      }
+
+      if (!toggleGCData && toggleGCError) {
+        const err = toggleGCError
+        errorHandler(err)
+      }
+    }
+  }, [toggleGCLoading, toggleGCData])
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">{group?.getCompanyGroup?.name}</h1>
 
       <div className="flex items-center justify-end mt-12 w-full">
+        <div className="flex justify-start gap-4 items-center w-4/12">
+          {loadingGroup || loadingConvo ? (
+            <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+          ) : (
+            <Toggle
+              onChange={() => {
+                setGC(old => {
+                  toggleGC({
+                    variables: {
+                      conversationId: old?._id,
+                      status: old?.status !== 'active'
+                    }
+                  })
+                  return {
+                    ...old,
+                    status: old?.status === 'active' ? 'inactive' : 'active'
+                  }
+                })
+              }}
+              toggle={gc?.status === 'active'}
+            />
+          )}
+          <span>Enable Group Chat</span>
+        </div>
         <div className="flex items-center justify-between w-8/12 flex-row flex-row-reverse">
           <SearchControl
             placeholder="Search"
@@ -334,28 +570,18 @@ const Group = () => {
         <div className="flex items-center">
           <Button
             default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            className="mr-4 mt-4"
-          />
-          {/* <Button
-            default
             leftIcon={<FaPlusCircle />}
             label="Invite a member"
             onClick={() =>
               setModalState({
-                ...defaultModalState,
-                visible: true
+                type: 'invite',
+                visible: true,
+                okText: 'Invite a Member',
+                title: 'Invite a Member'
               })
             }
             className="mr-4 mt-4"
-          /> */}
+          />
         </div>
       </div>
       <Card
@@ -380,14 +606,38 @@ const Group = () => {
         okText={modalState.okText}
         okButtonProps={{
           danger: modalState.type === 'delete',
-          disabled: loading || removeLoading
+          disabled:
+            loading ||
+            loadingGroup ||
+            loadingComplexes ||
+            inviteLoading ||
+            removeLoading
         }}
         visible={modalState.visible}
-        onOk={async () => onSubmit()}
+        onOk={async () => {
+          if (modalState.type === 'invite') {
+            await controlInvite.trigger()
+            if (isEmpty(errorsInvite)) {
+              onSubmit(controlInvite.getValues())
+            }
+          }
+          if (modalState.type === 'remove') {
+            onSubmit()
+          }
+        }}
         onCancel={closeModal}
       >
         {modalState.visible && (
           <>
+            {modalState.type === 'invite' && (
+              <InviteModalContent
+                control={controlInvite}
+                errors={errorsInvite}
+                // selected={selectedGroup}
+                // groupOptions={groupOptions}
+                complexOptions={complexOptions}
+              />
+            )}
             {modalState.type === 'remove' && (
               <DeleteModalContent selected={selectedMember} group={group} />
             )}
