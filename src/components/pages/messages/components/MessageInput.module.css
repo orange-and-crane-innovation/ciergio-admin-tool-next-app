@@ -2,14 +2,14 @@
   @apply flex flex-col w-full h-full;
 
   .MessageInputSubContainer {
-    @apply border rounded-md min-h-5xs overflow-auto pt-4;
+    @apply rounded-md min-h-5xs overflow-auto pt-4;
     a {
       @apply text-info-900 hover:underline;
     }
 
     &.MessageInputOverflowTwo {
       > :first-child {
-        @apply h-auto max-h-16;
+        @apply h-auto max-h-16 pr-0 pl-0;
         -webkit-transition: all 0.2s ease-out;
         transition: all 0.2s ease-out;
       }

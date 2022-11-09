@@ -248,8 +248,8 @@ const DeleteModalContent = ({ selected }) => {
 const defaultModalState = {
   type: 'invite',
   visible: false,
-  okText: 'Invite Member',
-  title: 'Invite Member'
+  okText: 'Invite a Member',
+  title: 'Invite a Member'
 }
 
 const capitalizeText = text => {
@@ -674,12 +674,14 @@ function MyMembers() {
             icon={<HiOutlinePrinter />}
             onClick={() => {}}
             className="mr-4 mt-4"
+            disabled
           />
           <Button
             default
             icon={<FiDownload />}
             onClick={() => {}}
             className="mr-4 mt-4"
+            disabled
           />
           <Button
             default

@@ -1,10 +1,8 @@
-import React from 'react'
-import P from 'prop-types'
 import InfiniteScroll from 'react-infinite-scroll-component'
-
-import Spinner from '@app/components/spinner'
-
 import MessagePreviewItem from './MessagePreviewItem'
+import P from 'prop-types'
+import React from 'react'
+import Spinner from '@app/components/spinner'
 
 const ConversationBox = ({
   conversations,
@@ -14,7 +12,8 @@ const ConversationBox = ({
   currentUserId,
   currentAccountId,
   onFetchMore,
-  onConvoSelect
+  onConvoSelect,
+  selectedConvoType
 }) => {
   return (
     <>
@@ -36,20 +35,23 @@ const ConversationBox = ({
             loader={<Spinner />}
             scrollableTarget="scrollableConvo"
           >
-            {conversations.data.map(convo => (
-              <MessagePreviewItem
-                key={convo._id}
-                onClick={onConvoSelect}
-                data={convo}
-                isSelected={
-                  selectedConvo ? selectedConvo === convo._id : convo.selected
-                }
-                convoId={convo._id}
-                currentUserid={currentUserId}
-                currentAccountId={currentAccountId}
-                newMessage={newMessage}
-              />
-            ))}
+            {conversations.data
+              // .filter(convoItem => convoItem.type === selectedConvoType)
+              .map(convo => (
+                <MessagePreviewItem
+                  key={convo._id}
+                  onClick={onConvoSelect}
+                  data={convo}
+                  isSelected={
+                    selectedConvo ? selectedConvo === convo._id : convo.selected
+                  }
+                  convoId={convo._id}
+                  currentUserid={currentUserId}
+                  currentAccountId={currentAccountId}
+                  newMessage={newMessage}
+                  selectedConvoType={selectedConvoType}
+                />
+              ))}
           </InfiniteScroll>
         </div>
       ) : loading ? (
@@ -66,6 +68,7 @@ const ConversationBox = ({
 ConversationBox.propTypes = {
   conversations: P.object,
   loading: P.bool,
+  selectedConvoType: P.string,
   selectedConvo: P.string,
   newMessage: P.object,
   currentUserId: P.string,

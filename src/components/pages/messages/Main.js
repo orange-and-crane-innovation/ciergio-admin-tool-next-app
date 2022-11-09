@@ -6,7 +6,8 @@ import {
   getMessages,
   seenMessage,
   sendMessage,
-  updateConversation
+  updateConversation,
+  REMOVE_CONVERSATION_PARTICIPANT
 } from './queries'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
@@ -39,12 +40,15 @@ const convoOptions = [
 
 export default function Main() {
   const endMessage = useRef()
+  const messageBoxFunc = useRef(null)
   const profile = JSON.parse(localStorage.getItem('profile'))
   const accountType = profile?.accounts?.data[0]?.accountType
   const accountId = profile?.accounts?.data[0]?._id
   const companyId = profile?.accounts?.data[0]?.company?._id
   const [showPendingMessages, setShowPendingMessages] = useState(false)
-  const [convoType, setConvoType] = useState('group')
+  const [convoType, setConvoType] = useState(
+    localStorage.getItem('convotype') ?? 'group'
+  )
   const [showNewMessageModal, setShowNewMessageModal] = useState(false)
   const [selectedConvo, setSelectedConvo] = useState(null)
   const [search, setSearch] = useState('')
@@ -61,6 +65,7 @@ export default function Main() {
   const [firstConvo, setFirstConvo] = useState()
   const [isFirst, setIsFirst] = useState(true)
   const [isSelected, setIsSelected] = useState(false)
+  const [reFetchParticipants, setReFetchParticipants] = useState(false)
   const maxAttachments = 5
   // const debouncedSearch = useDebounce(search, 500)
 
@@ -107,25 +112,30 @@ export default function Main() {
         participants: [accountId],
         includeEmptyConversation: true,
         pending: showPendingMessages,
-        type: convoType
+        type: convoType,
+        active: true
       },
       limit: 15,
       skip: offsetConvo
     }
   })
+
   const [
     getConvoSelected,
     { data: dataSelectedConvo, loading: loadingSelectedConvo }
   ] = useLazyQuery(getConversations, {
     fetchPolicy: 'network-only'
   })
+
   const [
     fetchMessages,
     { data: messages, loading: loadingMessages, refetch: refetchMessages }
   ] = useLazyQuery(getMessages, {
     fetchPolicy: 'network-only'
   })
+
   const [updateConvo] = useMutation(updateConversation)
+
   const [sendNewMessage, { loading: loadingSendMessage }] = useMutation(
     sendMessage,
     {
@@ -137,12 +147,15 @@ export default function Main() {
         })
         refetchMessages()
         setHasFetched(true)
+        setUploadedAttachments(null)
+        setAttachmentURLs([])
       },
       onError: e => {
         errorHandler(e)
       }
     }
   )
+
   const [seenNewMessage, { data: dataSeenMessage }] = useMutation(seenMessage)
 
   const [
@@ -156,6 +169,35 @@ export default function Main() {
     }
   })
 
+  const [removeConversationParticipant] = useMutation(
+    REMOVE_CONVERSATION_PARTICIPANT,
+    {
+      onCompleted: () => {
+        refetchConversations({
+          skip: 0
+        })
+        // refetchMessages({
+        //   skip: 0
+        // })
+        setReFetchParticipants(true)
+      },
+      onError: e => {
+        errorHandler(e)
+      }
+    }
+  )
+
+  const removeParticipant = participantId => {
+    if (!convoID || !participantId) return
+
+    removeConversationParticipant({
+      variables: {
+        participantId: participantId,
+        conversationId: convoID
+      }
+    })
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!loadingSelectedConvo && dataSelectedConvo && !isSelected) {
@@ -165,16 +207,11 @@ export default function Main() {
         const isExist = index !== -1
 
         if (isExist) {
-          console.log('Exist')
           handleMessagePreviewClick(conversations?.data[index])
         } else {
-          console.log('Not Exist')
-
           if (dataSelectedConvo?.getConversations?.data?.length > 0) {
-            console.log('Old Convo')
             onCreateConvo(dataSelectedConvo?.getConversations?.data[0])
           } else {
-            console.log('New Convo')
             createNewConversation({
               variables: {
                 data: {
@@ -206,40 +243,69 @@ export default function Main() {
 
   useEffect(() => {
     if (convos?.getConversations) {
-      if (
-        conversations?.data &&
-        conversations?.data[0]?._id !==
-          convos?.getConversations?.data[0]?._id &&
-        !hasFetched
-      ) {
-        setConversations(prev => ({
-          ...prev,
-          data: uniqBy(
-            conversations?.data.concat(convos?.getConversations?.data),
-            '_id'
-          )
-        }))
+      if (!reFetchParticipants) {
+        if (
+          conversations?.data &&
+          conversations?.data[0]?._id !==
+            convos?.getConversations?.data[0]?._id &&
+          !hasFetched
+        ) {
+          setConversations(prev => ({
+            ...prev,
+            data: uniqBy(
+              conversations?.data.concat(convos?.getConversations?.data),
+              '_id'
+            )
+          }))
+        } else {
+          setConversations(convos.getConversations)
+        }
       } else {
-        setConversations(convos.getConversations)
+        if (selectedConvo && convoID) {
+          const updatedConvo = convos.getConversations.data.filter(
+            i => i._id === convoID
+          )
+          if (updatedConvo[0]) {
+            messageBoxFunc.current()
+            showToast(
+              'success',
+              `Successfully remove a participant from the group chat`
+            )
+            setSelectedConvo(updatedConvo[0])
+            setReFetchParticipants(false)
+          } else {
+            refetchConversations({
+              skip: 0
+            })
+          }
+        }
       }
     }
   }, [convos?.getConversations, hasFetched])
 
   useEffect(() => {
     if (messages) {
-      if (
-        convoMessages?.data &&
-        convoMessages?.data[0]?.conversation?._id === selectedConvo._id &&
-        !hasFetched
-      ) {
-        setConvoMessages(prev => ({
-          ...prev,
-          data: [
-            ...new Set(convoMessages?.data.concat(messages?.getMessages?.data))
-          ]
-        }))
+      if (!reFetchParticipants) {
+        if (
+          selectedConvo &&
+          convoMessages?.data &&
+          convoMessages?.data[0]?.conversation?._id === selectedConvo._id &&
+          !hasFetched
+        ) {
+          if (messages?.getMessages?.data.length !== convoMessages?.data.length)
+            setConvoMessages(prev => ({
+              ...prev,
+              data: [
+                ...new Set(
+                  convoMessages?.data.concat(messages?.getMessages?.data)
+                )
+              ]
+            }))
+        } else {
+          setConvoMessages(messages?.getMessages)
+        }
       } else {
-        setConvoMessages(messages?.getMessages)
+        // setReFetchParticipants(false)
       }
     }
   }, [messages])
@@ -342,6 +408,7 @@ export default function Main() {
   }
 
   const handleNewMessageModal = () => setShowNewMessageModal(old => !old)
+
   const handleCloseNewMessageModal = () => {
     setSearch('')
     setShowNewMessageModal(false)
@@ -416,7 +483,11 @@ export default function Main() {
       }
     }
 
-    const response = await axios.post('/', payload, config)
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_UPLOAD_API,
+      payload,
+      config
+    )
 
     if (response.data) {
       const data = response.data.map(item => {
@@ -428,8 +499,9 @@ export default function Main() {
         }
       })
 
-      setUploadedAttachments(old => [...old, ...data])
+      setUploadedAttachments(old => (old ? [...old, ...data] : [...data]))
     }
+    setIsUploadingAttachment(false)
   }
 
   const onRemoveAttachment = e => {
@@ -444,17 +516,17 @@ export default function Main() {
     const formData = new FormData()
     const fileList = []
 
+    setIsUploadingAttachment(true)
     if (files) {
       if (files.length > maxAttachments) {
+        setIsUploadingAttachment(false)
         showToast('info', `Maximum of ${maxAttachments} attachments only`)
       } else {
-        setIsUploadingAttachment(true)
         for (const file of files) {
           const reader = new FileReader()
 
           reader.onloadend = () => {
             setAttachmentURLs(imageUrls => [...imageUrls, reader.result])
-            setIsUploadingAttachment(false)
           }
           reader.readAsDataURL(file)
 
@@ -513,6 +585,7 @@ export default function Main() {
     setSelectedConvo(null)
     setIsFirst(true)
     setConvoType(e.value)
+    localStorage.setItem('convotype', e.value)
   }
 
   const onCreateConvo = (data, type) => {
@@ -608,6 +681,7 @@ export default function Main() {
           <ConversationBox
             conversations={conversations}
             loading={loadingConvo}
+            selectedConvoType={convoType}
             selectedConvo={selectedConvo?._id}
             currentUserId={profile?._id}
             currentAccountId={profile?.accounts?.data[0]._id}
@@ -617,8 +691,8 @@ export default function Main() {
           />
         </div>
       </div>
-
       <MessageBox
+        parentFunc={messageBoxFunc}
         endMessageRef={endMessage}
         participant={selectedConvo}
         name={selectedConvo?.name}
@@ -635,6 +709,8 @@ export default function Main() {
         newMessage={newMsg?.conversation?._id === selectedConvo?._id}
         onReadNewMessage={onReadNewMessage}
         onFetchMoreMessage={onFetchMoreMessage}
+        removeParticipant={removeParticipant}
+        selectedConvoType={convoType}
       />
       <NewMessageModal
         visible={showNewMessageModal}

@@ -358,7 +358,6 @@ function AllStaff() {
     // eslint-disable-next-line no-constant-condition
     if (validate || true) {
       const values = getInviteStaffValues()
-      console.log(values)
       const {
         staffType: staff,
         email,
@@ -415,7 +414,6 @@ function AllStaff() {
           })
           break
         default:
-          // console.err(new Error('wrong staff type'))
           addStaff({
             variables: {
               data: staff
