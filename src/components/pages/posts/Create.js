@@ -134,7 +134,8 @@ const CreatePosts = () => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [errorSelectedDate, setErrorSelectedDate] = useState()
   const [toggleOfferings, setToggleOfferings] = useState()
-  const [toggleHideDate, setToggleHideDate] = useState()
+  const [toggleCreateDate, setToggleCreateDate] = useState(false)
+  const [toggleMetaData, setToggleMetaData] = useState(false)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const isSystemPray = systemType === 'pray'
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -609,7 +610,8 @@ const CreatePosts = () => {
       if (isSystemPray) {
         createData.offering = toggleOfferings
       }
-      createData.hideCreatedAt = toggleHideDate
+      createData.hideCreatedAt = toggleCreateDate
+      createData.showMetadata = toggleMetaData
 
       createPost({ variables: { data: createData } })
     }
@@ -778,8 +780,12 @@ const CreatePosts = () => {
     setToggleOfferings(e)
   }
 
-  const onToggleHideDate = e => {
-    setToggleHideDate(e)
+  const onToggleCreateDate = e => {
+    setToggleCreateDate(e)
+  }
+
+  const onToggleMetaData = e => {
+    setToggleMetaData(e)
   }
 
   return (
@@ -1277,12 +1283,24 @@ const CreatePosts = () => {
 
                     <span className="flex">
                       <span className={style.CreatePostSection}>
-                        Hide Publish Data: &nbsp;{' '}
+                        Hide created date: &nbsp;{' '}
                       </span>
                       <span className="mr-2">
                         <Toggle
-                          onChange={onToggleHideDate}
-                          toggle={toggleHideDate}
+                          onChange={onToggleCreateDate}
+                          toggle={toggleCreateDate}
+                        />
+                      </span>
+                    </span>
+
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>
+                        Show meta data: &nbsp;{' '}
+                      </span>
+                      <span className="mr-2">
+                        <Toggle
+                          onChange={onToggleMetaData}
+                          toggle={toggleMetaData}
                         />
                       </span>
                     </span>
