@@ -66,6 +66,7 @@ const GET_POST_QUERY = gql`
         updatedAt
         publishedAt
         hideCreatedAt
+        showMetadata
         author {
           user {
             firstName
@@ -134,6 +135,7 @@ const GET_POST_PRAY_QUERY = gql`
         updatedAt
         publishedAt
         hideCreatedAt
+        showMetadata
         author {
           user {
             firstName
@@ -1640,6 +1642,26 @@ const CreatePosts = () => {
                           : 'New'}
                       </strong>
                     </span>
+
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Publish: </span>
+                      <strong>
+                        {selectedPublishTimeType === 'later'
+                          ? ` Scheduled, ${dayjs(
+                              selectedPublishDateTime
+                            ).format('MMM DD, YYYY - hh:mm A')} `
+                          : ' Immediately'}
+                      </strong>
+                      {!isDailyReadingsPage && (
+                        <span
+                          className={style.CreatePostLink}
+                          onClick={handleShowPublishTimeModal}
+                        >
+                          Edit
+                        </span>
+                      )}
+                    </span>
+
                     <span className="flex flex-col">
                       <div>
                         <span className={style.CreatePostSection}>
@@ -1707,25 +1729,6 @@ const CreatePosts = () => {
                   </div>
 
                   <div className={style.CreatePostPublishSubContent}>
-                    <span className="flex">
-                      <span className={style.CreatePostSection}>Publish: </span>
-                      <strong>
-                        {selectedPublishTimeType === 'later'
-                          ? ` Scheduled, ${dayjs(
-                              selectedPublishDateTime
-                            ).format('MMM DD, YYYY - hh:mm A')} `
-                          : ' Immediately'}
-                      </strong>
-                      {!isDailyReadingsPage && (
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowPublishTimeModal}
-                        >
-                          Edit
-                        </span>
-                      )}
-                    </span>
-
                     <span className="flex">
                       <span className={style.CreatePostSection}>
                         Hide created date: &nbsp;{' '}
