@@ -3,44 +3,41 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-key */
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { gql, useMutation, useQuery } from '@apollo/client'
-import axios from 'axios'
-import { FaSpinner, FaTimes } from 'react-icons/fa'
-import { FiDownload, FiVideo, FiFilm } from 'react-icons/fi'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import dayjs from 'dayjs'
-import QRCode from 'react-qr-code'
-import Datetime from 'react-datetime'
 
+import { Controller, useForm } from 'react-hook-form'
+import { FaSpinner, FaTimes } from 'react-icons/fa'
+import { FiDownload, FiFilm, FiVideo } from 'react-icons/fi'
+import React, { useEffect, useState } from 'react'
+import { gql, useMutation, useQuery } from '@apollo/client'
+
+import { ACCOUNT_TYPES } from '@app/constants'
+import AudienceModal from './components/AudienceModal'
+import Button from '@app/components/button'
+import Can from '@app/permissions/can'
 import Card from '@app/components/card'
+import { DATE } from '@app/utils'
+import Datetime from 'react-datetime'
+import FileUpload from '@app/components/uploader/simple'
 import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
-import Button from '@app/components/button'
-import UploaderImage from '@app/components/uploader/image'
-import FileUpload from '@app/components/uploader/simple'
 import Modal from '@app/components/modal'
+import OfferingsCard from './components/OfferingsCard'
 import PageLoader from '@app/components/page-loader'
 import ProgressBar from '@app/components/progress-bar'
-import Toggle from '@app/components/toggle'
-
-import VideoPlayer from '@app/components/globals/VideoPlayer'
-import SelectCategory from '@app/components/globals/SelectCategory'
-
-import showToast from '@app/utils/toast'
-import { DATE } from '@app/utils'
-import { ACCOUNT_TYPES } from '@app/constants'
-
-import UpdateCard from './components/UpdateCard'
-import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
-import OfferingsCard from './components/OfferingsCard'
-
-import Can from '@app/permissions/can'
+import QRCode from 'react-qr-code'
+import SelectCategory from '@app/components/globals/SelectCategory'
+import Toggle from '@app/components/toggle'
+import UpdateCard from './components/UpdateCard'
+import UploaderImage from '@app/components/uploader/image'
+import VideoPlayer from '@app/components/globals/VideoPlayer'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import showToast from '@app/utils/toast'
 import style from './Create.module.css'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const saveSvgAsPng = require('save-svg-as-png')
 
@@ -69,6 +66,7 @@ const GET_POST_QUERY = gql`
         updatedAt
         publishedAt
         hideCreatedAt
+        showMetadata
         author {
           user {
             firstName
@@ -137,6 +135,7 @@ const GET_POST_PRAY_QUERY = gql`
         updatedAt
         publishedAt
         hideCreatedAt
+        showMetadata
         author {
           user {
             firstName
@@ -276,7 +275,8 @@ const CreatePosts = () => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [errorSelectedDate, setErrorSelectedDate] = useState()
   const [toggleOfferings, setToggleOfferings] = useState()
-  const [toggleHideDate, setToggleHideDate] = useState()
+  const [toggleCreateDate, setToggleCreateDate] = useState()
+  const [toggleMetaData, setToggleMetaData] = useState()
   const [isEdit, setIsEdit] = useState(true)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const isSystemPray = systemType === 'pray'
@@ -487,7 +487,8 @@ const CreatePosts = () => {
         setSelectedPublishDateTime(new Date(itemData?.publishedAt))
         setSelectedDate(itemData?.dailyReadingDate)
         setToggleOfferings(itemData?.offering)
-        setToggleHideDate(itemData?.hideCreatedAt)
+        setToggleCreateDate(itemData?.hideCreatedAt)
+        setToggleMetaData(itemData?.showMetadata)
       }
     }
   }, [loadingPost, dataPost, errorPost, setValue])
@@ -965,7 +966,8 @@ const CreatePosts = () => {
       if (isSystemPray) {
         updateData.data.offering = toggleOfferings
       }
-      updateData.data.hideCreatedAt = toggleHideDate
+      updateData.data.hideCreatedAt = toggleCreateDate
+      updateData.data.showMetadata = toggleMetaData
 
       updatePost({ variables: updateData })
     }
@@ -1207,8 +1209,12 @@ const CreatePosts = () => {
     setToggleOfferings(e)
   }
 
-  const onToggleHideDate = e => {
-    setToggleHideDate(e)
+  const onToggleCreateDate = e => {
+    setToggleCreateDate(e)
+  }
+
+  const onToggleMetaData = e => {
+    setToggleMetaData(e)
   }
 
   return (
@@ -1636,6 +1642,26 @@ const CreatePosts = () => {
                           : 'New'}
                       </strong>
                     </span>
+
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Publish: </span>
+                      <strong>
+                        {selectedPublishTimeType === 'later'
+                          ? ` Scheduled, ${dayjs(
+                              selectedPublishDateTime
+                            ).format('MMM DD, YYYY - hh:mm A')} `
+                          : ' Immediately'}
+                      </strong>
+                      {!isDailyReadingsPage && (
+                        <span
+                          className={style.CreatePostLink}
+                          onClick={handleShowPublishTimeModal}
+                        >
+                          Edit
+                        </span>
+                      )}
+                    </span>
+
                     <span className="flex flex-col">
                       <div>
                         <span className={style.CreatePostSection}>
@@ -1704,33 +1730,27 @@ const CreatePosts = () => {
 
                   <div className={style.CreatePostPublishSubContent}>
                     <span className="flex">
-                      <span className={style.CreatePostSection}>Publish: </span>
-                      <strong>
-                        {selectedPublishTimeType === 'later'
-                          ? ` Scheduled, ${dayjs(
-                              selectedPublishDateTime
-                            ).format('MMM DD, YYYY - hh:mm A')} `
-                          : ' Immediately'}
-                      </strong>
-                      {!isDailyReadingsPage && (
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowPublishTimeModal}
-                        >
-                          Edit
-                        </span>
-                      )}
+                      <span className={style.CreatePostSection}>
+                        Hide created date: &nbsp;{' '}
+                      </span>
+                      <span className="mr-2">
+                        <Toggle
+                          onChange={onToggleCreateDate}
+                          defaultChecked={toggleCreateDate}
+                          toggle={toggleCreateDate}
+                        />
+                      </span>
                     </span>
 
                     <span className="flex">
                       <span className={style.CreatePostSection}>
-                        Hide Publish Data: &nbsp;{' '}
+                        Show meta data: &nbsp;{' '}
                       </span>
                       <span className="mr-2">
                         <Toggle
-                          onChange={onToggleHideDate}
-                          defaultChecked={toggleHideDate}
-                          toggle={toggleHideDate}
+                          onChange={onToggleMetaData}
+                          defaultChecked={toggleMetaData}
+                          toggle={toggleMetaData}
                         />
                       </span>
                     </span>
