@@ -188,28 +188,6 @@ function InviteStaffModal({
           />
         </div>
         <div className="mb-4">
-          <p className="font-bold text-base text-gray-500 mb-2">
-            Role (optional)
-          </p>
-          <Controller
-            control={control}
-            name="staffType"
-            render={({ name, onChange, value }) => (
-              <ReactSelect
-                styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                menuPortalTarget={document.body}
-                options={[
-                  { name: 'Not Now', value: '' },
-                  ...companyRoleOptions
-                ]}
-                onChange={onChange}
-                value={value}
-                placeholder="Choose Role"
-              />
-            )}
-          />
-        </div>
-        <div>
           {accountType === 'company_admin' && (
             <>
               <Controller
@@ -245,6 +223,28 @@ function InviteStaffModal({
               )}
             />
           )}
+        </div>
+        <div className="mb-4">
+          <p className="font-bold text-base text-gray-500 mb-2">
+            Role (optional)
+          </p>
+          <Controller
+            control={control}
+            name="staffType"
+            render={({ name, onChange, value }) => (
+              <ReactSelect
+                styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                menuPortalTarget={document.body}
+                options={[
+                  { name: 'Not Now', value: '' },
+                  ...companyRoleOptions
+                ]}
+                onChange={onChange}
+                value={value}
+                placeholder="Choose Role"
+              />
+            )}
+          />
         </div>
         {accountType !== 'company_admin' &&
         accountType !== 'administrator' &&

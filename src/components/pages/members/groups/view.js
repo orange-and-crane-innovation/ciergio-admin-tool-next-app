@@ -426,7 +426,8 @@ const Group = () => {
             data: {
               email: val?.email,
               complexId: val?.complexId?.value,
-              companyGroupIds: [groupID]
+              companyGroupIds: [groupID],
+              accountType: "member"
             }
           }
         })
