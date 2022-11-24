@@ -367,7 +367,8 @@ function PendingMemberInvites() {
             data: {
               email: val?.email,
               complexId: val?.complexId?.value,
-              companyGroupIds: groupids
+              companyGroupIds: groupids,
+              accountType: 'member'
             }
           }
         })
