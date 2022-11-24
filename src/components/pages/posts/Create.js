@@ -29,6 +29,7 @@ import PublishTimeModal from './components/PublishTimeModal'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import Toggle from '@app/components/toggle'
 import UpdateCard from './components/UpdateCard'
+import Uploader from '@app/components/uploader'
 import UploaderImage from '@app/components/uploader/image'
 import VideoPlayer from '@app/components/globals/VideoPlayer'
 import axios from 'axios'
@@ -57,6 +58,7 @@ const validationSchema = yup.object().shape({
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
+  attachments: yup.array().label('Attachments').nullable(),
   category: yup.string().label('Category').nullable().required(),
   embeddedVideo: yup.array().label('File').nullable()
 })
@@ -83,6 +85,7 @@ const validationSchemaDailyReadings = yup.object().shape({
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
+  attachments: yup.array().label('Attachments').nullable(),
   embeddedVideo: yup.string().nullable()
 })
 
@@ -94,10 +97,14 @@ const CreatePosts = () => {
   const [uploadPercentage, setUploadPercentage] = useState(0)
   const [maxImages] = useState(10)
   const [maxFiles] = useState(1)
+  const [maxAttachments] = useState(20)
   const [fileMaxSize] = useState(104857600) // 100MB
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
   const [fileUploadedData, setFileUploadedData] = useState([])
+  const [uploadedAttachment, setUploadedAttachment] = useState([])
+  const [urlsAttachment, setUrlsAttachment] = useState([])
+  const [uploadErrorAttachment, setUploadErrorAttachment] = useState()
   const [selectedFiles, setSelectedFiles] = useState([])
   const [fileUrls, setFileUrls] = useState([])
   const [imageUploadError, setImageUploadError] = useState()
@@ -146,6 +153,8 @@ const CreatePosts = () => {
   const isDailyReadingsPage = pathname === '/daily-readings/create'
   const isBulletinPostsPage = pathname === '/posts/create'
   const isPastoralWorksPage = pathname === '/pastoral-works/create'
+
+  const AttachmentUploader = Uploader
 
   const typeOfPage = (
     dailyText = 'daily_reading',
@@ -200,11 +209,13 @@ const CreatePosts = () => {
       video: '',
       category: null,
       images: null,
+      attachments: null,
       embeddedVideo: null
     }
   })
 
   register({ name: 'images' })
+  register({ name: 'attachments' })
   register({ name: 'videos' })
 
   useEffect(() => {
@@ -296,7 +307,7 @@ const CreatePosts = () => {
     handleShowModal()
   }
 
-  const uploadApi = async payload => {
+  const uploadApi = async ({ payload, type }) => {
     const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -309,71 +320,136 @@ const CreatePosts = () => {
       .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, config)
       .then(function (response) {
         if (response.data) {
-          response.data.map(item => {
-            setImageUrls(prevArr => [...prevArr, item.location])
-            return setImageUploadedData(prevArr => [
-              ...prevArr,
-              {
-                url: item.location,
-                type: item.mimetype
-              }
-            ])
-          })
-          setImageUploadError(null)
+          if (type === 'attachments') {
+            response.data.map(item => {
+              setUrlsAttachment(prevArr => [...prevArr, item.location])
+              return setUploadedAttachment(prevArr => [
+                ...prevArr,
+                {
+                  url: item.location,
+                  type: item.mimetype
+                }
+              ])
+            })
+            setUploadErrorAttachment(null)
+          } else {
+            response.data.map(item => {
+              setImageUrls(prevArr => [...prevArr, item.location])
+              return setImageUploadedData(prevArr => [
+                ...prevArr,
+                {
+                  url: item.location,
+                  type: item.mimetype
+                }
+              ])
+            })
+            setImageUploadError(null)
+          }
         }
       })
       .catch(function (error) {
-        const errMsg = 'Failed to upload image. Please try again.'
-        console.log(error)
-        showToast('danger', errMsg)
-        setImageUploadError(errMsg)
-        setValue('images', null)
+        if (type === 'attachments') {
+          const errMsg = 'Failed to upload the attachment. Please try again.'
+          console.log(error)
+          showToast('danger', errMsg)
+          setUploadErrorAttachment(errMsg)
+          setValue('attachments', null)
+        } else {
+          const errMsg = 'Failed to upload image. Please try again.'
+          console.log(error)
+          showToast('danger', errMsg)
+          setImageUploadError(errMsg)
+          setValue('images', null)
+        }
       })
       .then(() => {
         setLoading(false)
       })
   }
 
-  const onUploadImage = e => {
+  const onInitUpload = ({ e, type }) => {
+    console.log('onInitUpload ', type, e)
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
     const fileList = []
 
     if (files) {
-      if (files.length + imageUrls?.length > maxImages) {
-        showToast('info', `Maximum of ${maxImages} files only`)
+      if (type === 'attachments') {
+        if (files.length + urlsAttachment?.length > maxAttachments) {
+          showToast('info', `Maximum of ${maxAttachments} files only`)
+        } else {
+          setLoading(true)
+          setUploadErrorAttachment(null)
+
+          if (errors?.attachements?.message) {
+            errors.attachements.message = null
+          }
+
+          for (const file of files) {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+
+            formData.append('files', file)
+            fileList.push(file)
+          }
+          setValue('attachements', fileList)
+
+          uploadApi({
+            payload: formData,
+            type
+          })
+        }
       } else {
-        setLoading(true)
-        setImageUploadError(null)
+        if (files.length + imageUrls?.length > maxImages) {
+          showToast('info', `Maximum of ${maxImages} files only`)
+        } else {
+          setLoading(true)
+          setImageUploadError(null)
 
-        if (errors?.images?.message) {
-          errors.images.message = null
+          if (errors?.images?.message) {
+            errors.images.message = null
+          }
+
+          for (const file of files) {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+
+            formData.append('files', file)
+            fileList.push(file)
+          }
+          setValue('images', fileList)
+
+          uploadApi({
+            payload: formData,
+            type
+          })
         }
-
-        for (const file of files) {
-          const reader = new FileReader()
-          reader.readAsDataURL(file)
-
-          formData.append('files', file)
-          fileList.push(file)
-        }
-        setValue('images', fileList)
-
-        uploadApi(formData)
       }
     }
   }
 
-  const onRemoveImage = e => {
-    const images = imageUrls.filter(image => {
-      return image !== e.currentTarget.dataset.id
-    })
-    const uploadedImages = imageUploadedData.filter(image => {
-      return image.url !== e.currentTarget.dataset.id
-    })
-    setImageUrls(images)
-    setImageUploadedData(uploadedImages)
-    setValue('images', images.length !== 0 ? images : null)
+  const onRemoveUploadedItem = ({ e, type }) => {
+    if (type === 'attachments') {
+      const ab = imageUrls.filter(b => {
+        return b !== e.currentTarget.dataset.id
+      })
+      const cd = uploadedAttachment.filter(d => {
+        return d.url !== e.currentTarget.dataset.id
+      })
+      setUrlsAttachment(ab)
+      setUploadedAttachment(cd)
+      setValue('attachments', ab.length !== 0 ? ab : null)
+    } else {
+      const images = imageUrls.filter(image => {
+        return image !== e.currentTarget.dataset.id
+      })
+      const uploadedImages = imageUploadedData.filter(image => {
+        return image.url !== e.currentTarget.dataset.id
+      })
+      setImageUrls(images)
+      setImageUploadedData(uploadedImages)
+      setValue('images', images.length !== 0 ? images : null)
+    }
   }
 
   const onVideoChange = e => {
@@ -543,6 +619,7 @@ const CreatePosts = () => {
             ? 'scheduled'
             : status,
         primaryMedia: imageUploadedData,
+        attachments: uploadedAttachment || null,
         type: typeOfPage('daily_reading', 'post', 'pastoral_works') || '',
         embeddedMediaFiles: videoUrl
           ? [
@@ -613,6 +690,7 @@ const CreatePosts = () => {
       createData.hideCreatedAt = toggleCreateDate
       createData.showMetadata = toggleMetaData
 
+      console.log('createData', createData)
       createPost({ variables: { data: createData } })
     }
   }
@@ -686,6 +764,7 @@ const CreatePosts = () => {
   const handleShowPublishTimeModal = () => {
     setShowPublishTimeModal(old => !old)
   }
+
   const onSelectPublishTimeType = data => {
     setSelectedPublishTimeType(data)
   }
@@ -725,6 +804,8 @@ const CreatePosts = () => {
     setLoading(false)
     setImageUrls([])
     setImageUploadedData([])
+    setUrlsAttachment([])
+    setUploadedAttachment([])
     setVideoUrl(null)
     setVideoError(null)
     setVideoLoading(false)
@@ -815,8 +896,13 @@ const CreatePosts = () => {
                   images={imageUrls}
                   loading={loading}
                   error={errors?.images?.message ?? imageUploadError ?? null}
-                  onUploadImage={onUploadImage}
-                  onRemoveImage={onRemoveImage}
+                  onUploadImage={e => {
+                    onInitUpload({
+                      e: e,
+                      type: 'feature'
+                    })
+                  }}
+                  onRemoveImage={onRemoveUploadedItem}
                 />
               </div>
             }
@@ -939,6 +1025,44 @@ const CreatePosts = () => {
                       onChange={onChange}
                     />
                   )}
+                />
+              </div>
+            }
+          />
+
+          {/* Attachment */}
+          <Card
+            header={
+              <span className={style.CardHeader}>Attachments (optional)</span>
+            }
+            content={
+              <div className={style.CreateContentContainer}>
+                <p>
+                  You may upload PDFs, DOCs, DOCXs or Images with max file size
+                  of {(fileMaxSize / 1024 / 1024).toFixed(1)}MB. Maximum of{' '}
+                  {maxAttachments} files only.
+                </p>
+                <br />
+                <AttachmentUploader
+                  name="attachment"
+                  multiple
+                  files={uploadedAttachment}
+                  fileUrls={urlsAttachment}
+                  loading={loading}
+                  error={
+                    errors?.attachments?.message ??
+                    uploadErrorAttachment ??
+                    null
+                  }
+                  maxFiles={maxAttachments}
+                  accept=".pdf, .doc, .docx, .png, .jpg, .jpeg"
+                  onUpload={e => {
+                    onInitUpload({
+                      e: e,
+                      type: 'attachments'
+                    })
+                  }}
+                  onRemove={onRemoveFile}
                 />
               </div>
             }
