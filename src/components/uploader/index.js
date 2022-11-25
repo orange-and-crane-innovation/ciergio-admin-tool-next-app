@@ -1,18 +1,20 @@
+import { FaRegTrashAlt, FaSpinner } from 'react-icons/fa'
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
-
-import { FaSpinner, FaRegTrashAlt } from 'react-icons/fa'
 
 import ImageAdd from '@app/assets/svg/image-add.svg'
-import ImageFile from '@app/assets/svg/file-plus.svg'
-import ImagePdf from '@app/assets/svg/file-pdf.svg'
 import ImageDoc from '@app/assets/svg/file-doc.svg'
+import ImageFile from '@app/assets/svg/file-plus.svg'
+import ImageGeneric from '@app/assets/svg/file-generic.svg'
+import ImagePdf from '@app/assets/svg/file-pdf.svg'
+import PropTypes from 'prop-types'
 import styles from './index.module.css'
 
 const Uploader = ({
   type,
+  name,
+  preview,
   loading,
   error,
   files,
@@ -38,7 +40,7 @@ const Uploader = ({
   }
 
   const handleChange = () => {
-    document.getElementById('file').click()
+    document.getElementById(name || 'file').click()
   }
 
   const handleDragOver = e => {
@@ -85,7 +87,7 @@ const Uploader = ({
               <div
                 className={styles.uploaderImage}
                 style={{
-                  backgroundImage: `url(${!loading && file})`
+                  backgroundImage: preview ? `url(${!loading && file})` : 'none'
                 }}
               >
                 {files[index] && files[index].type === 'application/pdf' ? (
@@ -96,7 +98,9 @@ const Uploader = ({
                     'application/msword'
                   ].includes(files[index].type) ? (
                   <ImageDoc />
-                ) : null}
+                ) : (
+                  <ImageGeneric />
+                )}
               </div>
               <button
                 type="button"
@@ -139,8 +143,8 @@ const Uploader = ({
               <input
                 className={styles.uploaderControl}
                 type="file"
-                id="file"
-                name="file"
+                id={name || 'file'}
+                name={name || 'file'}
                 multiple={multiple}
                 onChange={handleUpload}
                 accept={accept}
@@ -173,8 +177,8 @@ const Uploader = ({
             <input
               className={styles.uploaderControl}
               type="file"
-              id="file"
-              name="file"
+              id={name || 'file'}
+              name={name || 'file'}
               multiple={multiple}
               onChange={handleUpload}
               accept={accept}
@@ -210,6 +214,8 @@ const Uploader = ({
 
 Uploader.propTypes = {
   type: PropTypes.string,
+  name: PropTypes.string,
+  preview: PropTypes.bool,
   loading: PropTypes.bool,
   error: PropTypes.string,
   files: PropTypes.array,
