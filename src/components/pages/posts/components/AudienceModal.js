@@ -24,6 +24,7 @@ const Component = ({
   onSelectGroupExcept,
   onSave,
   onCancel,
+  onClose,
   valueAudienceType,
   valueCompanyExcept,
   valueCompanySpecific,
@@ -204,7 +205,7 @@ const Component = ({
     <Modal
       title="Who are the audience"
       visible={isShown}
-      onClose={onCancel}
+      onClose={onClose}
       onCancel={onCancel}
       onOk={onSave}
       okText="Save"

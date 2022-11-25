@@ -100,6 +100,10 @@ const GET_POST_QUERY = gql`
             _id
             name
           }
+          companyGroups {
+            _id
+            name
+          }
         }
         audienceExceptions {
           company {
@@ -111,6 +115,10 @@ const GET_POST_QUERY = gql`
             name
           }
           building {
+            _id
+            name
+          }
+          companyGroups {
             _id
             name
           }
@@ -169,6 +177,10 @@ const GET_POST_PRAY_QUERY = gql`
             _id
             name
           }
+          companyGroups {
+            _id
+            name
+          }
         }
         audienceExceptions {
           company {
@@ -180,6 +192,10 @@ const GET_POST_PRAY_QUERY = gql`
             name
           }
           building {
+            _id
+            name
+          }
+          companyGroups {
             _id
             name
           }
@@ -285,6 +301,8 @@ const CreatePosts = () => {
   const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = pathname === '/attractions-events/edit/[id]'
   const isQRCodePage = pathname === '/qr-code/edit/[id]'
+  const [selectedGroupSpecific, setSelectedGroupSpecific] = useState()
+  const [selectedGroupExcept, setSelectedGroupExcept] = useState()
 
   const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
   const isBulletinPostsPage = pathname === '/posts/edit/[id]'
@@ -452,6 +470,26 @@ const CreatePosts = () => {
         setSelectedComplexSpecific(
           itemData?.audienceExpanse?.complex?.length > 0
             ? itemData?.audienceExpanse?.complex.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedGroupExcept(
+          itemData?.audienceExceptions?.companyGroups?.length > 0
+            ? itemData?.audienceExceptions?.companyGroups.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedGroupSpecific(
+          itemData?.audienceExpanse?.companyGroups?.length > 0
+            ? itemData?.audienceExpanse?.companyGroups.map(item => {
                 return {
                   value: item._id,
                   label: item.name
@@ -958,6 +996,16 @@ const CreatePosts = () => {
           }
         }
       }
+      if (selectedGroupSpecific) {
+        updateData.data.audienceExpanse = {
+          companyGroupIds: selectedGroupSpecific.map(item => item.value)
+        }
+      }
+      if (selectedGroupExcept) {
+        updateData.data.audienceExceptions = {
+          companyGroupIds: selectedGroupExcept.map(item => item.value)
+        }
+      }
       if (isDailyReadingsPage) {
         updateData.data.dailyReadingDate = DATE.toFriendlyISO(
           DATE.addTime(DATE.setInitialTime(selectedDate), 'hours', 8)
@@ -1011,6 +1059,15 @@ const CreatePosts = () => {
 
   const onSelectBuildingSpecific = data => {
     setSelectedBuildingSpecific(data)
+  }
+
+  const onSelectGroupSpecific = data => {
+    console.log('AUDIENCEEEEEE', data)
+    setSelectedGroupSpecific(data)
+  }
+
+  const onSelectGroupExcept = data => {
+    setSelectedGroupExcept(data)
   }
 
   const handleShowAudienceModal = () => {
@@ -1709,8 +1766,16 @@ const CreatePosts = () => {
                                 {selectedComplexSpecific && (
                                   <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
                                 )}
+                              
+                                {selectedGroupExcept && (
+                                  <div>{`Groups (${selectedGroupExcept?.length}) `}</div>
+                                )}
+                                {selectedGroupSpecific && (
+                                  <div>{`Groups (${selectedGroupSpecific?.length}) `}</div>
+                                )}
                               </>
                             )}
+
 
                             {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
                               <>
@@ -1892,6 +1957,8 @@ const CreatePosts = () => {
           onSelectComplexSpecific={onSelectComplexSpecific}
           onSelectBuildingExcept={onSelectBuildingExcept}
           onSelectBuildingSpecific={onSelectBuildingSpecific}
+          onSelectGroupSpecific={onSelectGroupSpecific}
+          onSelectGroupExcept={onSelectGroupExcept}
           onSave={onSaveAudience}
           onCancel={onCancelAudience}
           onClose={onCancelAudience}
@@ -1903,6 +1970,8 @@ const CreatePosts = () => {
           valueComplexSpecific={selectedComplexSpecific}
           valueBuildingExcept={selectedBuildingExcept}
           valueBuildingSpecific={selectedBuildingSpecific}
+          valueGroupExcept={selectedGroupExcept}
+          valueGroupSpecific={selectedGroupSpecific}
         />
 
         <PublishTimeModal

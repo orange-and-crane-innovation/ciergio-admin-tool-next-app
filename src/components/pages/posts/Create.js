@@ -658,7 +658,6 @@ const CreatePosts = () => {
   }
 
   const onSelectGroupSpecific = data => {
-    console.log('AUDIENCEEEEEE', data)
     setSelectedGroupSpecific(data)
   }
 
@@ -747,6 +746,7 @@ const CreatePosts = () => {
       const companyID = user?.accounts?.data[0]?.company?._id
       setSelectedCompanySpecific([{ value: companyID }])
       setSelectedComplexSpecific(null)
+      setSelectedGroupSpecific(null)
       setSelectedBuildingSpecific(null)
     } else if (accountType === ACCOUNT_TYPES.COMPXAD.value) {
       const complexID = user?.accounts?.data[0]?.complex?._id
@@ -1256,6 +1256,12 @@ const CreatePosts = () => {
                                   {selectedComplexSpecific && (
                                     <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
                                   )}
+                                  {selectedGroupExcept && (
+                                    <div>{`Groups (${selectedGroupExcept?.length}) `}</div>
+                                  )}
+                                  {selectedGroupSpecific && (
+                                    <div>{`Groups (${selectedGroupSpecific?.length}) `}</div>
+                                  )}
                                 </>
                               )}
 
@@ -1383,7 +1389,7 @@ const CreatePosts = () => {
           onSelectGroupExcept={onSelectGroupExcept}
           onSave={onSaveAudience}
           onCancel={onCancelAudience}
-          onClose={onCancelAudience}
+          onClose={handleShowAudienceModal}
           isShown={showAudienceModal}
           valueAudienceType={selectedAudienceType}
           valueCompanyExcept={selectedCompanyExcept}
