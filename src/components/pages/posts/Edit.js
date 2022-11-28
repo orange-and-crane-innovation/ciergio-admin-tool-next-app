@@ -1936,7 +1936,6 @@ const CreatePosts = () => {
                                 {selectedComplexSpecific && (
                                   <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
                                 )}
-
                                 {selectedGroupExcept && (
                                   <div>{`Groups (${selectedGroupExcept?.length}) `}</div>
                                 )}
@@ -1945,6 +1944,7 @@ const CreatePosts = () => {
                                 )}
                               </>
                             )}
+
 
                             {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
                               <>
