@@ -27,7 +27,7 @@ import PublishTimeModal from './components/PublishTimeModal'
 import style from './Create.module.css'
 
 const CREATE_POST_MUTATION = gql`
-  mutation ($data: PostInput) {
+  mutation($data: PostInput) {
     createPost(data: $data) {
       _id
       processId
