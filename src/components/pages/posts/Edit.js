@@ -30,8 +30,8 @@ import QRCode from 'react-qr-code'
 import SelectCategory from '@app/components/globals/SelectCategory'
 import Toggle from '@app/components/toggle'
 import UpdateCard from './components/UpdateCard'
-import UploaderImage from '@app/components/uploader/image'
 import Uploader from '@app/components/uploader'
+import UploaderImage from '@app/components/uploader/image'
 import VideoPlayer from '@app/components/globals/VideoPlayer'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -269,6 +269,7 @@ const CreatePosts = () => {
   const [urlsAttachment, setUrlsAttachment] = useState([])
   const [uploadErrorAttachment, setUploadErrorAttachment] = useState()
   const [maxFiles] = useState(1)
+  const [fileMaxSizeAttachment] = useState(10485760) // 10MB
   const [fileMaxSize] = useState(104857600) // 100MB
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
@@ -754,9 +755,20 @@ const CreatePosts = () => {
     const fileList = []
 
     if (files) {
+      let maxSize = 0
+      for (const file of files) {
+        if (file.size > fileMaxSizeAttachment) {
+          maxSize++
+        }
+      }
       if (type === 'attachments') {
         if (files.length + urlsAttachment?.length > maxAttachments) {
           showToast('info', `Maximum of ${maxAttachments} files only`)
+        } else if (maxSize > 0) {
+          showToast(
+            'info',
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+          )
         } else {
           setLoading(true)
           setUploadErrorAttachment(null)
@@ -782,6 +794,11 @@ const CreatePosts = () => {
       } else {
         if (files.length + imageUrls?.length > maxImages) {
           showToast('info', `Maximum of ${maxImages} files only`)
+        } else if (maxSize > 0) {
+          showToast(
+            'info',
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+          )
         } else {
           setLoading(true)
           setImageUploadError(null)
@@ -1428,7 +1445,12 @@ const CreatePosts = () => {
                       type: 'feature'
                     })
                   }}
-                  onRemoveImage={onRemoveUploadedItem}
+                  onRemoveImage={e => {
+                    onRemoveUploadedItem({
+                      e: e,
+                      type: 'feature'
+                    })
+                  }}
                 />
               </div>
             }
@@ -1584,7 +1606,12 @@ const CreatePosts = () => {
                       type: 'attachments'
                     })
                   }}
-                  onRemove={onRemoveFile}
+                  onRemove={e => {
+                    onRemoveUploadedItem({
+                      e: e,
+                      type: 'attachments'
+                    })
+                  }}
                 />
               </div>
             }
@@ -1909,7 +1936,7 @@ const CreatePosts = () => {
                                 {selectedComplexSpecific && (
                                   <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
                                 )}
-                              
+
                                 {selectedGroupExcept && (
                                   <div>{`Groups (${selectedGroupExcept?.length}) `}</div>
                                 )}
@@ -1918,7 +1945,6 @@ const CreatePosts = () => {
                                 )}
                               </>
                             )}
-
 
                             {accountType !== ACCOUNT_TYPES.BUIGAD.value && (
                               <>

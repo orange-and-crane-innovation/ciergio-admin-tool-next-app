@@ -98,6 +98,7 @@ const CreatePosts = () => {
   const [maxImages] = useState(10)
   const [maxFiles] = useState(1)
   const [maxAttachments] = useState(20)
+  const [fileMaxSizeAttachment] = useState(10485760) // 10MB
   const [fileMaxSize] = useState(104857600) // 100MB
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
@@ -350,7 +351,7 @@ const CreatePosts = () => {
       .catch(function (error) {
         if (type === 'attachments') {
           const errMsg = 'Failed to upload the attachment. Please try again.'
-          console.log(error)
+          console.log('error', JSON.stringify(error))
           showToast('danger', errMsg)
           setUploadErrorAttachment(errMsg)
           setValue('attachments', null)
@@ -374,9 +375,21 @@ const CreatePosts = () => {
     const fileList = []
 
     if (files) {
+      let maxSize = 0
+      for (const file of files) {
+        if (file.size > fileMaxSizeAttachment) {
+          maxSize++
+        }
+      }
+      console.log('')
       if (type === 'attachments') {
         if (files.length + urlsAttachment?.length > maxAttachments) {
           showToast('info', `Maximum of ${maxAttachments} files only`)
+        } else if (maxSize > 0) {
+          showToast(
+            'info',
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+          )
         } else {
           setLoading(true)
           setUploadErrorAttachment(null)
@@ -402,6 +415,11 @@ const CreatePosts = () => {
       } else {
         if (files.length + imageUrls?.length > maxImages) {
           showToast('info', `Maximum of ${maxImages} files only`)
+        } else if (maxSize > 0) {
+          showToast(
+            'info',
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+          )
         } else {
           setLoading(true)
           setImageUploadError(null)
@@ -430,7 +448,7 @@ const CreatePosts = () => {
 
   const onRemoveUploadedItem = ({ e, type }) => {
     if (type === 'attachments') {
-      const ab = imageUrls.filter(b => {
+      const ab = urlsAttachment.filter(b => {
         return b !== e.currentTarget.dataset.id
       })
       const cd = uploadedAttachment.filter(d => {
@@ -902,7 +920,12 @@ const CreatePosts = () => {
                       type: 'feature'
                     })
                   }}
-                  onRemoveImage={onRemoveUploadedItem}
+                  onRemoveImage={e => {
+                    onRemoveUploadedItem({
+                      e: e,
+                      type: 'feature'
+                    })
+                  }}
                 />
               </div>
             }
@@ -1062,7 +1085,12 @@ const CreatePosts = () => {
                       type: 'attachments'
                     })
                   }}
-                  onRemove={onRemoveFile}
+                  onRemove={e => {
+                    onRemoveUploadedItem({
+                      e: e,
+                      type: 'attachments'
+                    })
+                  }}
                 />
               </div>
             }
