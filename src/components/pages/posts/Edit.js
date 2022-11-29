@@ -1583,8 +1583,8 @@ const CreatePosts = () => {
               <div className={style.CreateContentContainer}>
                 <p>
                   You may upload PDFs, DOCs, DOCXs or Images with max file size
-                  of {(fileMaxSize / 1024 / 1024).toFixed(1)}MB. Maximum of{' '}
-                  {maxAttachments} files only.
+                  of {(fileMaxSizeAttachment / 1024 / 1024).toFixed(1)}MB.
+                  Maximum of {maxAttachments} files only.
                 </p>
                 <br />
                 <AttachmentUploader

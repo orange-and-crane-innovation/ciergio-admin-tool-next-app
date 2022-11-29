@@ -545,7 +545,7 @@ function MyMembers() {
                 email: val?.email,
                 complexId: val?.complexId?.value,
                 companyGroupIds: groupids,
-                accountType: "member"
+                accountType: 'member'
               }
             }
           })
@@ -560,7 +560,7 @@ function MyMembers() {
         addMember({
           variables: {
             accountId: selectedMember._id,
-            companyGroupIds: groupids
+            companyGroupIds: groupids || []
           }
         })
       }
