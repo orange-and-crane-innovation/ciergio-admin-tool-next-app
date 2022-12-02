@@ -81,10 +81,12 @@ const GET_POST_QUERY = gql`
         primaryMedia {
           url
           type
+          filename
         }
         attachments {
           url
           type
+          filename
         }
         embeddedMediaFiles {
           url
@@ -708,7 +710,8 @@ const CreatePosts = () => {
                 ...prevArr,
                 {
                   url: item.location,
-                  type: item.mimetype
+                  type: item.mimetype,
+                  filename: item.originalName
                 }
               ])
             })
@@ -1003,6 +1006,15 @@ const CreatePosts = () => {
       data?.video === ''
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
+    } else if (
+      selectedFiles &&
+      selectedFiles.length > 0 &&
+      (!fileUrls || fileUrls.length === 0)
+    ) {
+      showToast(
+        'info',
+        `Your selected video file is not yet uploaded to our server, please check and try again.`
+      )
     } else {
       const updateData = {
         id: query.id,
@@ -1429,7 +1441,11 @@ const CreatePosts = () => {
           )}
 
           <Card
-            header={<span className={style.CardHeader}>Featured Media</span>}
+            header={
+              <span className={style.CardHeader}>
+                Featured Media (optional)
+              </span>
+            }
             content={
               <div className={style.CreateContentContainer}>
                 <UploaderImage
