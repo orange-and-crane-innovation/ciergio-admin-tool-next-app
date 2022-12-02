@@ -329,12 +329,14 @@ const CreatePosts = () => {
         if (response.data) {
           if (type === 'attachments') {
             response.data.map(item => {
+              console.log('ITEM', item)
               setUrlsAttachment(prevArr => [...prevArr, item.location])
               return setUploadedAttachment(prevArr => [
                 ...prevArr,
                 {
                   url: item.location,
-                  type: item.mimetype
+                  type: item.mimetype,
+                  filename: item.originalName
                 }
               ])
             })
@@ -357,13 +359,13 @@ const CreatePosts = () => {
       .catch(function (error) {
         if (type === 'attachments') {
           const errMsg = 'Failed to upload the attachment. Please try again.'
-          console.log('error', JSON.stringify(error))
+          console.log('error', error)
           showToast('danger', errMsg)
           setUploadErrorAttachment(errMsg)
           setValue('attachments', null)
         } else {
           const errMsg = 'Failed to upload image. Please try again.'
-          console.log(error)
+          console.log('error', error)
           showToast('danger', errMsg)
           setImageUploadError(errMsg)
           setValue('images', null)
@@ -387,7 +389,7 @@ const CreatePosts = () => {
           maxSize++
         }
       }
-      console.log('')
+
       if (type === 'attachments') {
         if (files.length + urlsAttachment?.length > maxAttachments) {
           showToast('info', `Maximum of ${maxAttachments} files only`)
@@ -405,6 +407,7 @@ const CreatePosts = () => {
           }
 
           for (const file of files) {
+            console.log('FILE', file)
             const reader = new FileReader()
             reader.readAsDataURL(file)
 
@@ -610,7 +613,7 @@ const CreatePosts = () => {
       })
       .catch(function (error) {
         const errMsg = 'Failed to upload file. Please try again.'
-        console.log(error)
+        console.log('error', error)
         showToast('danger', errMsg)
         setFileUploadError(errMsg)
         setValue('videos', null)
@@ -628,6 +631,15 @@ const CreatePosts = () => {
       data?.video === ''
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
+    } else if (
+      selectedFiles &&
+      selectedFiles.length > 0 &&
+      (!fileUrls || fileUrls.length === 0)
+    ) {
+      showToast(
+        'info',
+        `Your selected video file is not yet uploaded to our server, please check and try again.`
+      )
     } else {
       const createData = {
         categoryId: data.category,
