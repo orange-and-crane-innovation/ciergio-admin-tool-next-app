@@ -543,7 +543,7 @@ const CreatePosts = () => {
           }
           reader.readAsDataURL(file)
 
-          formData.append('videos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
         setValue('embeddedVideo', fileList)
