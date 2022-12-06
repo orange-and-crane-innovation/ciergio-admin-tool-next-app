@@ -318,7 +318,13 @@ const CreatePosts = () => {
     }
 
     await axios
-      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, config)
+      .post(
+        type === 'attachments'
+          ? process.env.NEXT_PUBLIC_UPLOAD_VIDEO_API
+          : process.env.NEXT_PUBLIC_UPLOAD_API,
+        payload,
+        config
+      )
       .then(function (response) {
         if (response.data) {
           if (type === 'attachments') {
