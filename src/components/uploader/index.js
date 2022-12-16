@@ -134,7 +134,7 @@ const Uploader = ({
 
   return (
     <>
-      <div className="flex">
+      <div className="flex flex-wrap gap-4">
         {uploadedFiles}
         {!error && maxFiles ? (
           fileUrls &&

@@ -691,6 +691,7 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async ({ payload, type }) => {
+    const payloadCount = payload.getAll('files').length
     const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -701,7 +702,7 @@ const CreatePosts = () => {
 
     await axios
       .post(
-        type === 'attachments'
+        type === 'attachments' || payloadCount >= 2
           ? process.env.NEXT_PUBLIC_UPLOAD_VIDEO_API
           : process.env.NEXT_PUBLIC_UPLOAD_API,
         payload,
@@ -776,7 +777,7 @@ const CreatePosts = () => {
         } else if (maxSize > 0) {
           showToast(
             'info',
-            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}MB only`
           )
         } else {
           setLoading(true)
@@ -806,7 +807,7 @@ const CreatePosts = () => {
         } else if (maxSize > 0) {
           showToast(
             'info',
-            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}MB only`
           )
         } else {
           setLoading(true)
@@ -915,7 +916,7 @@ const CreatePosts = () => {
       if (files.length + fileUrls?.length > maxFiles) {
         showToast('info', `Maximum of ${maxFiles} files only`)
       } else if (maxSize > 0) {
-        showToast('info', `Maximum size of ${fileMaxSize / 1024 / 1024}mb only`)
+        showToast('info', `Maximum size of ${fileMaxSize / 1024 / 1024}MB only`)
       } else {
         setFileUploadError(null)
 
@@ -1901,14 +1902,14 @@ const CreatePosts = () => {
                             ).format('MMM DD, YYYY - hh:mm A')} `
                           : ' Immediately'}
                       </strong>
-                      {!isDailyReadingsPage && (
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowPublishTimeModal}
-                        >
-                          Edit
-                        </span>
-                      )}
+                      {/* {!isDailyReadingsPage && ( */}
+                      <span
+                        className={style.CreatePostLink}
+                        onClick={handleShowPublishTimeModal}
+                      >
+                        Edit
+                      </span>
+                      {/* )} */}
                     </span>
 
                     <span className="flex flex-col">
