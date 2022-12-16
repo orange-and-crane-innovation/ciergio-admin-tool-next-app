@@ -81,10 +81,12 @@ const GET_POST_QUERY = gql`
         primaryMedia {
           url
           type
+          filename
         }
         attachments {
           url
           type
+          filename
         }
         embeddedMediaFiles {
           url
@@ -689,6 +691,7 @@ const CreatePosts = () => {
   }
 
   const uploadApi = async ({ payload, type }) => {
+    const payloadCount = payload.getAll('files').length
     const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -699,7 +702,7 @@ const CreatePosts = () => {
 
     await axios
       .post(
-        type === 'attachments'
+        type === 'attachments' || payloadCount >= 2
           ? process.env.NEXT_PUBLIC_UPLOAD_VIDEO_API
           : process.env.NEXT_PUBLIC_UPLOAD_API,
         payload,
@@ -714,7 +717,8 @@ const CreatePosts = () => {
                 ...prevArr,
                 {
                   url: item.location,
-                  type: item.mimetype
+                  type: item.mimetype,
+                  filename: item.originalName
                 }
               ])
             })
@@ -773,7 +777,7 @@ const CreatePosts = () => {
         } else if (maxSize > 0) {
           showToast(
             'info',
-            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}MB only`
           )
         } else {
           setLoading(true)
@@ -803,7 +807,7 @@ const CreatePosts = () => {
         } else if (maxSize > 0) {
           showToast(
             'info',
-            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}mb only`
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}MB only`
           )
         } else {
           setLoading(true)
@@ -912,7 +916,7 @@ const CreatePosts = () => {
       if (files.length + fileUrls?.length > maxFiles) {
         showToast('info', `Maximum of ${maxFiles} files only`)
       } else if (maxSize > 0) {
-        showToast('info', `Maximum size of ${fileMaxSize / 1024 / 1024}mb only`)
+        showToast('info', `Maximum size of ${fileMaxSize / 1024 / 1024}MB only`)
       } else {
         setFileUploadError(null)
 
@@ -1009,6 +1013,15 @@ const CreatePosts = () => {
       data?.video === ''
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
+    } else if (
+      selectedFiles &&
+      selectedFiles.length > 0 &&
+      (!fileUrls || fileUrls.length === 0)
+    ) {
+      showToast(
+        'info',
+        `Your selected video file is not yet uploaded to our server, please check and try again.`
+      )
     } else {
       const updateData = {
         id: query.id,
@@ -1435,7 +1448,11 @@ const CreatePosts = () => {
           )}
 
           <Card
-            header={<span className={style.CardHeader}>Featured Media</span>}
+            header={
+              <span className={style.CardHeader}>
+                Featured Media (optional)
+              </span>
+            }
             content={
               <div className={style.CreateContentContainer}>
                 <UploaderImage
@@ -1589,8 +1606,8 @@ const CreatePosts = () => {
               <div className={style.CreateContentContainer}>
                 <p>
                   You may upload PDFs, DOCs, DOCXs or Images with max file size
-                  of {(fileMaxSize / 1024 / 1024).toFixed(1)}MB. Maximum of{' '}
-                  {maxAttachments} files only.
+                  of {(fileMaxSizeAttachment / 1024 / 1024).toFixed(1)}MB.
+                  Maximum of {maxAttachments} files only.
                 </p>
                 <br />
                 <AttachmentUploader
@@ -1885,14 +1902,14 @@ const CreatePosts = () => {
                             ).format('MMM DD, YYYY - hh:mm A')} `
                           : ' Immediately'}
                       </strong>
-                      {!isDailyReadingsPage && (
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowPublishTimeModal}
-                        >
-                          Edit
-                        </span>
-                      )}
+                      {/* {!isDailyReadingsPage && ( */}
+                      <span
+                        className={style.CreatePostLink}
+                        onClick={handleShowPublishTimeModal}
+                      >
+                        Edit
+                      </span>
+                      {/* )} */}
                     </span>
 
                     <span className="flex flex-col">
