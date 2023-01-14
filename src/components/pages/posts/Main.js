@@ -1,14 +1,11 @@
-/* eslint-disable react/jsx-key */
-import React from 'react'
-import { useRouter } from 'next/router'
-
-import Tabs from '@app/components/tabs'
-
 import AllPostPage from './AllPosts'
 import MyPostPage from './MyPosts'
+/* eslint-disable react/jsx-key */
+import React from 'react'
+import Tabs from '@app/components/tabs'
 import TrashPage from './Trashed'
-
 import styles from './Main.module.css'
+import { useRouter } from 'next/router'
 
 const PostComponent = () => {
   const router = useRouter()
@@ -17,16 +14,19 @@ const PostComponent = () => {
   const isDailyReadingsPage = router.pathname === '/daily-readings'
   const isBulletinPostsPage = router.pathname === '/posts'
   const isPastoralWorksPage = router.pathname === '/pastoral-works'
+  const isWebsiteContentPage = router.pathname === '/website-content'
 
   const typeOfPage = (
     dailyText = 'Daily Readings',
     bulletinText = 'Bulletin Board',
-    pastoralText = 'Pastoral Works'
+    pastoralText = 'Pastoral Works',
+    websiteContentText = 'Website Content'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
-      (isPastoralWorksPage && pastoralText)
+      (isPastoralWorksPage && pastoralText) ||
+      (isWebsiteContentPage && websiteContentText)
     )
   }
 

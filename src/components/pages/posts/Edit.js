@@ -233,6 +233,21 @@ const validationSchema = yup.object().shape({
   embeddedVideo: yup.array().label('File').nullable()
 })
 
+const validationSchemaWebsiteContent = yup.object().shape({
+  title: yup
+    .string()
+    .label('Title')
+    .nullable()
+    .trim()
+    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .required(),
+  content: yup.mixed().label('Content').nullable().required(),
+  images: yup.array().label('Image').required(),
+  attachments: yup.array().label('Attachments').nullable(),
+  category: yup.string().label('Category').nullable(),
+  embeddedVideo: yup.array().label('File').nullable()
+})
+
 const validationSchemaDraft = yup.object().shape({
   title: yup
     .string()
@@ -325,18 +340,21 @@ const CreatePosts = () => {
   const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
   const isBulletinPostsPage = pathname === '/posts/edit/[id]'
   const isPastoralWorksPage = pathname === '/pastoral-works/edit/[id]'
+  const isWebsiteContentPage = pathname === '/website-content/edit/[id]'
 
   const AttachmentUploader = Uploader
 
   const typeOfPage = (
     dailyText = 'daily_reading',
     bulletinText = 'post',
-    pastoralText = 'pastoral_works'
+    pastoralText = 'pastoral_works',
+    websiteContentText = 'website_content'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
-      (isPastoralWorksPage && pastoralText)
+      (isPastoralWorksPage && pastoralText) ||
+      (isWebsiteContentPage && websiteContentText)
     )
   }
 
@@ -344,7 +362,7 @@ const CreatePosts = () => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
 
   const [
     updatePost,
@@ -378,13 +396,16 @@ const CreatePosts = () => {
     errors,
     register,
     setValue,
-    getValues
+    getValues,
+    clearErrors
   } = useForm({
     resolver: yupResolver(
       selectedStatus === 'draft'
         ? validationSchemaDraft
         : isDailyReadingsPage
         ? validationSchemaDailyReadings
+        : isWebsiteContentPage
+        ? validationSchemaWebsiteContent
         : validationSchema
     ),
     defaultValues: {
@@ -735,6 +756,7 @@ const CreatePosts = () => {
               ])
             })
             setImageUploadError(null)
+            clearErrors('images')
           }
         }
       })
@@ -1450,7 +1472,7 @@ const CreatePosts = () => {
           <Card
             header={
               <span className={style.CardHeader}>
-                Featured Media (optional)
+                {`Featured Media ${!isWebsiteContentPage ? '(optional)' : ''}`}
               </span>
             }
             content={
@@ -1461,7 +1483,11 @@ const CreatePosts = () => {
                   maxImages={maxImages}
                   images={imageUrls}
                   loading={loading}
-                  error={errors?.images?.message ?? imageUploadError ?? null}
+                  error={
+                    (errors?.images ? 'Featured Media is required' : '') ??
+                    imageUploadError ??
+                    null
+                  }
                   onUploadImage={e => {
                     onInitUpload({
                       e: e,
@@ -1539,7 +1565,8 @@ const CreatePosts = () => {
                   {typeOfPage(
                     'Daily Reading Title',
                     'Title',
-                    'Pastoral Work Title'
+                    'Pastoral Work Title',
+                    'Title'
                   )}
                 </h2>
                 <div className={style.CreatePostSubContent}>
@@ -1598,280 +1625,306 @@ const CreatePosts = () => {
           />
 
           {/* Attachment */}
-          <Card
-            header={
-              <span className={style.CardHeader}>Attachments (optional)</span>
-            }
-            content={
-              <div className={style.CreateContentContainer}>
-                <p>
-                  You may upload PDFs, DOCs, DOCXs or Images with max file size
-                  of {(fileMaxSizeAttachment / 1024 / 1024).toFixed(1)}MB.
-                  Maximum of {maxAttachments} files only.
-                </p>
-                <br />
-                <AttachmentUploader
-                  name="attachment"
-                  multiple
-                  files={uploadedAttachment}
-                  fileUrls={urlsAttachment}
-                  loading={loading}
-                  error={
-                    errors?.attachments?.message ??
-                    uploadErrorAttachment ??
-                    null
-                  }
-                  maxFiles={maxAttachments}
-                  accept=".pdf, .doc, .docx, .png, .jpg, .jpeg"
-                  onUpload={e => {
-                    onInitUpload({
-                      e: e,
-                      type: 'attachments'
-                    })
-                  }}
-                  onRemove={e => {
-                    onRemoveUploadedItem({
-                      e: e,
-                      type: 'attachments'
-                    })
-                  }}
-                />
-              </div>
-            }
-          />
+          {!isWebsiteContentPage && (
+            <>
+              <Card
+                header={
+                  <span className={style.CardHeader}>
+                    Attachments (optional)
+                  </span>
+                }
+                content={
+                  <div className={style.CreateContentContainer}>
+                    <p>
+                      You may upload PDFs, DOCs, DOCXs or Images with max file
+                      size of {(fileMaxSizeAttachment / 1024 / 1024).toFixed(1)}
+                      MB. Maximum of {maxAttachments} files only.
+                    </p>
+                    <br />
+                    <AttachmentUploader
+                      name="attachment"
+                      multiple
+                      files={uploadedAttachment}
+                      fileUrls={urlsAttachment}
+                      loading={loading}
+                      error={
+                        errors?.attachments?.message ??
+                        uploadErrorAttachment ??
+                        null
+                      }
+                      maxFiles={maxAttachments}
+                      accept=".pdf, .doc, .docx, .png, .jpg, .jpeg"
+                      onUpload={e => {
+                        onInitUpload({
+                          e: e,
+                          type: 'attachments'
+                        })
+                      }}
+                      onRemove={e => {
+                        onRemoveUploadedItem({
+                          e: e,
+                          type: 'attachments'
+                        })
+                      }}
+                    />
+                  </div>
+                }
+              />
 
-          <Card
-            header={<span className={style.CardHeader}>Embed Video</span>}
-            content={
-              <div className={style.CreateContentContainer}>
-                {fileUrls?.length === 0 && (
-                  <>
-                    <h2 className={style.CreatePostVideoHeader}>
-                      Include a video in your bulletin post by linking a YouTube
-                      video.
-                    </h2>
-                    <div className={style.CreatePostVideoContent}>
-                      <div className="flex items-start">
-                        <FiVideo className={style.CreateVideoIcon} />
-                        <div>
-                          <div className={style.CreatePostVideoInput}>
-                            Video Link
-                          </div>
-                          <div className={style.CreatePostVideoInputContent}>
-                            <div className="flex-grow">
-                              <Can
-                                perform="bulletin:embed"
-                                yes={
-                                  <Controller
-                                    name="video"
-                                    control={control}
-                                    render={({ name, value, onChange }) => (
-                                      <FormInput
-                                        name={name}
-                                        placeholder="Add Youtube link here"
-                                        value={videoUrl || ''}
-                                        error={errors?.video?.message ?? null}
-                                        onChange={e => {
-                                          onChange(e)
-                                          onVideoChange(e)
-                                        }}
+              <Card
+                header={<span className={style.CardHeader}>Embed Video</span>}
+                content={
+                  <div className={style.CreateContentContainer}>
+                    {fileUrls?.length === 0 && (
+                      <>
+                        <h2 className={style.CreatePostVideoHeader}>
+                          Include a video in your bulletin post by linking a
+                          YouTube video.
+                        </h2>
+                        <div className={style.CreatePostVideoContent}>
+                          <div className="flex items-start">
+                            <FiVideo className={style.CreateVideoIcon} />
+                            <div>
+                              <div className={style.CreatePostVideoInput}>
+                                Video Link
+                              </div>
+                              <div
+                                className={style.CreatePostVideoInputContent}
+                              >
+                                <div className="flex-grow">
+                                  <Can
+                                    perform="bulletin:embed"
+                                    yes={
+                                      <Controller
+                                        name="video"
+                                        control={control}
+                                        render={({ name, value, onChange }) => (
+                                          <FormInput
+                                            name={name}
+                                            placeholder="Add Youtube link here"
+                                            value={videoUrl || ''}
+                                            error={
+                                              errors?.video?.message ?? null
+                                            }
+                                            onChange={e => {
+                                              onChange(e)
+                                              onVideoChange(e)
+                                            }}
+                                          />
+                                        )}
                                       />
-                                    )}
+                                    }
                                   />
-                                }
-                              />
-                              {videoError && (
-                                <p className={style.TextError}>{videoError}</p>
-                              )}
-                            </div>
-                            <FaTimes
-                              className={`${style.CreatePostVideoButtonClose} ${
-                                videoUrl ? 'visible' : 'invisible'
-                              }  `}
-                              onClick={onVideoClear}
-                            />
-                            <FaSpinner
-                              className={`${
-                                style.CreatePostVideoLoading
-                              } icon-spin ${
-                                videoLoading ? 'visible' : 'invisible'
-                              }  `}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {!videoUrl && (
-                        <div className="flex items-start">
-                          <FiFilm className={style.CreateVideoIcon} />
-                          <div>
-                            <div className={style.CreatePostVideoInput}>
-                              <div>or select a video from your computer:</div>
-                              <div className="text-neutral-600 font-normal">
-                                MP4 is only accepted.
-                              </div>
-                              <div className="text-neutral-600 font-normal">
-                                Max file size:
-                                <strong> {fileMaxSize / 1024 / 1024}MB</strong>
-                              </div>
-                            </div>
-                            <Can
-                              perform="bulletin:embed"
-                              yes={
-                                <Controller
-                                  name="embeddedVideo"
-                                  control={control}
-                                  render={({ name, value, onChange }) => (
-                                    <FileUpload
-                                      label="Upload File"
-                                      accept=".mp4"
-                                      maxSize={fileMaxSize}
-                                      files={selectedFiles}
-                                      error={localVideoError}
-                                      onUpload={onAddFile}
-                                      onRemove={onRemoveFile}
-                                    />
+                                  {videoError && (
+                                    <p className={style.TextError}>
+                                      {videoError}
+                                    </p>
                                   )}
+                                </div>
+                                <FaTimes
+                                  className={`${
+                                    style.CreatePostVideoButtonClose
+                                  } ${videoUrl ? 'visible' : 'invisible'}  `}
+                                  onClick={onVideoClear}
                                 />
-                              }
-                            />
+                                <FaSpinner
+                                  className={`${
+                                    style.CreatePostVideoLoading
+                                  } icon-spin ${
+                                    videoLoading ? 'visible' : 'invisible'
+                                  }  `}
+                                />
+                              </div>
+                            </div>
                           </div>
+
+                          {!videoUrl && (
+                            <div className="flex items-start">
+                              <FiFilm className={style.CreateVideoIcon} />
+                              <div>
+                                <div className={style.CreatePostVideoInput}>
+                                  <div>
+                                    or select a video from your computer:
+                                  </div>
+                                  <div className="text-neutral-600 font-normal">
+                                    MP4 is only accepted.
+                                  </div>
+                                  <div className="text-neutral-600 font-normal">
+                                    Max file size:
+                                    <strong>
+                                      {' '}
+                                      {fileMaxSize / 1024 / 1024}MB
+                                    </strong>
+                                  </div>
+                                </div>
+                                <Can
+                                  perform="bulletin:embed"
+                                  yes={
+                                    <Controller
+                                      name="embeddedVideo"
+                                      control={control}
+                                      render={({ name, value, onChange }) => (
+                                        <FileUpload
+                                          label="Upload File"
+                                          accept=".mp4"
+                                          maxSize={fileMaxSize}
+                                          files={selectedFiles}
+                                          error={localVideoError}
+                                          onUpload={onAddFile}
+                                          onRemove={onRemoveFile}
+                                        />
+                                      )}
+                                    />
+                                  }
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
+                      </>
+                    )}
+
+                    <div className="w-full md:max-w-lg">
+                      {videoLocalUrl && !localVideoError && (
+                        <VideoPlayer
+                          url={videoLocalUrl}
+                          onError={onLocalVideoError}
+                          onReady={onLocalVideoReady}
+                        />
+                      )}
+
+                      {(fileUrls?.length > 0 || videoUrl) && !videoError && (
+                        <>
+                          <div className="flex items-start">
+                            <FiFilm className={style.CreateVideoIcon} />
+                            <div className={style.CreatePostVideoInput}>
+                              Preview Video
+                            </div>
+                          </div>
+
+                          <VideoPlayer
+                            url={videoUrl || fileUrls[0]}
+                            onError={onVideoError}
+                            onReady={onVideoReady}
+                          />
+
+                          <Button
+                            className="mt-4"
+                            default
+                            type="button"
+                            label="Replace Video"
+                            onClick={() => handleShowModal('remove-video')}
+                          />
+                        </>
                       )}
                     </div>
-                  </>
-                )}
-
-                <div className="w-full md:max-w-lg">
-                  {videoLocalUrl && !localVideoError && (
-                    <VideoPlayer
-                      url={videoLocalUrl}
-                      onError={onLocalVideoError}
-                      onReady={onLocalVideoReady}
-                    />
-                  )}
-
-                  {(fileUrls?.length > 0 || videoUrl) && !videoError && (
-                    <>
-                      <div className="flex items-start">
-                        <FiFilm className={style.CreateVideoIcon} />
-                        <div className={style.CreatePostVideoInput}>
-                          Preview Video
-                        </div>
-                      </div>
-
-                      <VideoPlayer
-                        url={videoUrl || fileUrls[0]}
-                        onError={onVideoError}
-                        onReady={onVideoReady}
-                      />
-
+                  </div>
+                }
+                footer={
+                  selectedFiles?.length > 0 &&
+                  fileUrls?.length === 0 &&
+                  !localVideoError && (
+                    <div className="flex items-center">
                       <Button
-                        className="mt-4"
-                        default
+                        className="mr-4 mb-0"
+                        primary
                         type="button"
-                        label="Replace Video"
-                        onClick={() => handleShowModal('remove-video')}
+                        label={
+                          fileLoading ? 'Uploading Video...' : 'Upload Video'
+                        }
+                        onClick={onUploadFile}
+                        disabled={fileLoading}
+                        style={{ marginBottom: 0 }}
                       />
-                    </>
-                  )}
-                </div>
-              </div>
-            }
-            footer={
-              selectedFiles?.length > 0 &&
-              fileUrls?.length === 0 &&
-              !localVideoError && (
-                <div className="flex items-center">
-                  <Button
-                    className="mr-4 mb-0"
-                    primary
-                    type="button"
-                    label={fileLoading ? 'Uploading Video...' : 'Upload Video'}
-                    onClick={onUploadFile}
-                    disabled={fileLoading}
-                    style={{ marginBottom: 0 }}
-                  />
-                  {fileLoading && (
-                    <>
-                      <FaSpinner className="mx-2 icon-spin" />
-                      {/* hidden for future use */}
-                      {/* <ProgressBar value={uploadPercentage} />  */}
-                    </>
-                  )}
-                  {fileUploadError && (
-                    <div className="my-4 text-danger-500 text-md font-bold">
-                      {fileUploadError}
-                    </div>
-                  )}
-                </div>
-              )
-            }
-          />
-
-          {isSystemPray && (
-            <Card
-              header={<span className={style.CardHeader}>Offerings</span>}
-              content={
-                <div className={style.CreateContentContainer}>
-                  <div className={style.CreatePostOfferingsContent}>
-                    <Toggle
-                      onChange={onToggleOfferings}
-                      defaultChecked={toggleOfferings}
-                      toggle={toggleOfferings}
-                    />
-                    <div className={style.CreatePostOfferingsSubContent}>
-                      <div className={style.CreatePostOfferingSubContent2}>
-                        <i
-                          className={`ciergio-donate-2 ${style.CreatePostOfferingsIcon}`}
-                        />
-                        <span>
-                          <p>
-                            <strong>Ask for Offerings in this Article</strong>
-                          </p>
-                          <p className={style.CreatePostOfferingText}>
-                            A Call to Action button to make an offering will be
-                            visible in the article.
-                            <br />
-                            The button will redirect the user to Offerings.
-                          </p>
-                        </span>
-                      </div>
-                      {toggleOfferings && <OfferingsCard />}
-                    </div>
-                  </div>
-                </div>
-              }
-            />
-          )}
-
-          {!isDailyReadingsPage && (
-            <Card
-              header={<span className={style.CardHeader}>Category</span>}
-              content={
-                <div className={style.CreateContentContainer}>
-                  <div className={style.CreatePostCardContent}>
-                    <Controller
-                      name="category"
-                      control={control}
-                      render={({ name, value, onChange }) => (
-                        <SelectCategory
-                          placeholder="Select a Category"
-                          type={typeOfPage('', 'post', 'pastoral_works')}
-                          onChange={e => {
-                            onChange(e.value)
-                            onCategorySelect(e)
-                          }}
-                          onClear={onClearCategory}
-                          error={errors?.category?.message ?? null}
-                          selected={selectedCategory}
-                        />
+                      {fileLoading && (
+                        <>
+                          <FaSpinner className="mx-2 icon-spin" />
+                          {/* hidden for future use */}
+                          {/* <ProgressBar value={uploadPercentage} />  */}
+                        </>
                       )}
-                    />
-                  </div>
-                </div>
-              }
-            />
+                      {fileUploadError && (
+                        <div className="my-4 text-danger-500 text-md font-bold">
+                          {fileUploadError}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+              />
+
+              {isSystemPray && (
+                <Card
+                  header={<span className={style.CardHeader}>Offerings</span>}
+                  content={
+                    <div className={style.CreateContentContainer}>
+                      <div className={style.CreatePostOfferingsContent}>
+                        <Toggle
+                          onChange={onToggleOfferings}
+                          defaultChecked={toggleOfferings}
+                          toggle={toggleOfferings}
+                        />
+                        <div className={style.CreatePostOfferingsSubContent}>
+                          <div className={style.CreatePostOfferingSubContent2}>
+                            <i
+                              className={`ciergio-donate-2 ${style.CreatePostOfferingsIcon}`}
+                            />
+                            <span>
+                              <p>
+                                <strong>
+                                  Ask for Offerings in this Article
+                                </strong>
+                              </p>
+                              <p className={style.CreatePostOfferingText}>
+                                A Call to Action button to make an offering will
+                                be visible in the article.
+                                <br />
+                                The button will redirect the user to Offerings.
+                              </p>
+                            </span>
+                          </div>
+                          {toggleOfferings && <OfferingsCard />}
+                        </div>
+                      </div>
+                    </div>
+                  }
+                />
+              )}
+
+              {!isDailyReadingsPage && (
+                <Card
+                  header={<span className={style.CardHeader}>Category</span>}
+                  content={
+                    <div className={style.CreateContentContainer}>
+                      <div className={style.CreatePostCardContent}>
+                        <Controller
+                          name="category"
+                          control={control}
+                          render={({ name, value, onChange }) => (
+                            <SelectCategory
+                              placeholder="Select a Category"
+                              type={typeOfPage(
+                                '',
+                                'post',
+                                'pastoral_works',
+                                'website_content'
+                              )}
+                              onChange={e => {
+                                onChange(e.value)
+                                onCategorySelect(e)
+                              }}
+                              onClear={onClearCategory}
+                              error={errors?.category?.message ?? null}
+                              selected={selectedCategory}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                  }
+                />
+              )}
+            </>
           )}
 
           <Card
@@ -2125,7 +2178,8 @@ const CreatePosts = () => {
                     : typeOfPage(
                         'Update Daily Reading',
                         'Update Post',
-                        'Update Pastoral Work'
+                        'Update Pastoral Work',
+                        'Update Website Content'
                       )
                 }
                 primary
