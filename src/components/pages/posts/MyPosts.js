@@ -213,6 +213,7 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
+  const isWebsiteContentPage = router.pathname === '/website-content'
 
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
@@ -220,6 +221,8 @@ const PostComponent = ({ typeOfPage }) => {
     ? 'qr-code'
     : isDailyReadingsPage
     ? 'daily-readings'
+    : isWebsiteContentPage
+    ? 'website-content'
     : 'posts'
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
 
@@ -270,7 +273,12 @@ const PostComponent = ({ typeOfPage }) => {
       'unpublished',
       'scheduled'
     ],
-    type: typeOfPage('daily_reading', 'post', 'pastoral_works'),
+    type: typeOfPage(
+      'daily_reading',
+      'post',
+      'pastoral_works',
+      'website_content'
+    ),
     mypost: true,
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
@@ -889,7 +897,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type={typeOfPage('', 'post', 'pastoral_works')}
+              type={typeOfPage('', 'post', 'pastoral_works', 'website_content')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -939,7 +947,8 @@ const PostComponent = ({ typeOfPage }) => {
                         : typeOfPage(
                             'Add Daily Reading',
                             'Create Post',
-                            'Add Pastoral Work'
+                            'Add Pastoral Work',
+                            'Add Website Content'
                           )
                     }
                     onClick={goToCreatePage}
@@ -955,6 +964,8 @@ const PostComponent = ({ typeOfPage }) => {
                         ? 'Generate QR Code'
                         : isDailyReadingsPage
                         ? 'Add Daily Reading'
+                        : isWebsiteContentPage
+                        ? 'Add Content Website'
                         : 'Create Post'
                     }
                     onClick={goToCreatePage}
@@ -978,12 +989,14 @@ const PostComponent = ({ typeOfPage }) => {
                     header={`You haven’t created a ${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} post yet`}
                     content={`${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }
@@ -992,7 +1005,7 @@ const PostComponent = ({ typeOfPage }) => {
           )
         }
       />
-      {!loading && posts && (
+      {!loading && posts && posts.count > posts.limit && (
         <Pagination
           items={posts}
           activePage={activePage}

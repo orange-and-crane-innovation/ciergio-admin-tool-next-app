@@ -113,6 +113,25 @@ const navigation = [
         ]
       },
       {
+        url: '/website-content',
+        icon: 'ciergio-list',
+        title: 'Website Content',
+        permissionGroup: 'post',
+        moduleName: 'bulletinBoard',
+        items: [
+          {
+            url: '/website-content',
+            title: 'View All Website Content',
+            items: []
+          },
+          {
+            url: '/website-content/create',
+            title: 'Create Website Content',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/posts',
         icon: 'ciergio-list',
         title: 'Bulletin Board',
