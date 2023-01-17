@@ -192,7 +192,7 @@ const PostComponent = ({ typeOfPage }) => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
 
   const headerName = isQRCodePage ? 'Active QR Codes' : typeOfPage()
 
@@ -242,7 +242,12 @@ const PostComponent = ({ typeOfPage }) => {
 
   const fetchFilter = {
     status: ['published'],
-    type: typeOfPage('daily_reading', 'post', 'pastoral_works'),
+    type: typeOfPage(
+      'daily_reading',
+      'post',
+      'pastoral_works',
+      'website_content'
+    ),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
@@ -332,7 +337,8 @@ const PostComponent = ({ typeOfPage }) => {
                 label: typeOfPage(
                   'Daily Reading Details',
                   'Article Details',
-                  'Pastoral Work Details'
+                  'Pastoral Work Details',
+                  'Website Content Details'
                 ),
                 icon: <FiFileText />,
                 function: () => handleShowModal('details', item._id)
@@ -1111,7 +1117,8 @@ const PostComponent = ({ typeOfPage }) => {
           label: typeOfPage(
             'Daily Reading Details',
             'Article Details',
-            'Pastoral Work Details'
+            'Pastoral Work Details',
+            'Website Content Details'
           ),
           icon: <FiFileText />,
           function: () => handleShowModal('details', item._id)
@@ -1466,7 +1473,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type={typeOfPage('', 'post', 'pastoral_works')}
+              type={typeOfPage('', 'post', 'pastoral_works', 'website_content')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -1539,7 +1546,8 @@ const PostComponent = ({ typeOfPage }) => {
                             : typeOfPage(
                                 'Add Daily Reading',
                                 'Create Post',
-                                'Add Pastoral Work'
+                                'Add Pastoral Work',
+                                'Add Website Content'
                               )
                         }
                         onClick={goToCreatePage}
@@ -1576,12 +1584,14 @@ const PostComponent = ({ typeOfPage }) => {
                     header={`You haven’t created a ${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} post yet`}
                     content={`${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }
@@ -1591,7 +1601,7 @@ const PostComponent = ({ typeOfPage }) => {
         }
       />
 
-      {!loading && posts && (
+      {!loading && posts && posts.count > posts.limit && (
         <Pagination
           items={posts}
           activePage={activePage}
