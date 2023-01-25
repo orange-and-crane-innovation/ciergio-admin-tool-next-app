@@ -19,6 +19,7 @@ import MessageInput from './MessageInput'
 import Modal from '@app/components/modal'
 import P from 'prop-types'
 import ParticipantsBox from './ParticipantsBox'
+import ViewersBox from './ViewersBox'
 import ReactHtmlParser from 'react-html-parser'
 import Spinner from '@app/components/spinner'
 import Tooltip from '@app/components/tooltip'
@@ -59,6 +60,7 @@ export default function MessageBox({
   const [disabledSendBtn, setDisabledSendBtn] = useState(true)
   const [removingParticipant, setRemovingParticipant] = useState(false)
   const [showMembers, setShowMembersModal] = useState(false)
+  const [viewers, setViewersModal] = useState(null)
   const [removeModalState, setRemoveModalState] = useState(
     defaultRemoveModalState
   )
@@ -297,70 +299,61 @@ export default function MessageBox({
                           </div>
                         ) : null}
                       </div>
+
                       {isLastMessage &&
                       (item.status === 'seen' || item.viewers.count > 0) ? (
-                        <div className="w-full flex items-center justify-end mt-2">
+                        <div className="w-full flex items-center justify-end mt-2 viewers">
                           {item.viewers.data.map((v, index) => {
                             if (index >= 4) {
                               moreViewers++
                             } else {
-                              const viewerName = `${v?.user?.firstName} ${v?.user?.lastName}`
-                              if (v?.user?._id !== currentUserid) {
-                                const img =
-                                  v?.user?.avatar && v?.user?.avatar !== ''
-                                    ? v?.user?.avatar
-                                    : accountType ===
-                                      ACCOUNT_TYPES.COMPYAD.value
-                                    ? IMAGES.COMPANY_AVATAR
-                                    : accountType ===
-                                      ACCOUNT_TYPES.COMPXAD.value
-                                    ? IMAGES.COMPLEX_AVATAR
-                                    : IMAGES.DEFAULT_AVATAR
+                              const img =
+                                v?.user?.avatar && v?.user?.avatar !== ''
+                                  ? v?.user?.avatar
+                                  : accountType === ACCOUNT_TYPES.COMPYAD.value
+                                  ? IMAGES.COMPANY_AVATAR
+                                  : accountType === ACCOUNT_TYPES.COMPXAD.value
+                                  ? IMAGES.COMPLEX_AVATAR
+                                  : IMAGES.DEFAULT_AVATAR
 
-                                return (
-                                  <span className="capitalize">
-                                    <Tooltip
-                                      key={v?._id}
-                                      text={viewerName.toLowerCase()}
-                                      effect="solid"
-                                    >
-                                      <img
-                                        src={
-                                          v?.user?.avatar &&
-                                          v?.user?.avatar !== ''
-                                            ? v?.user?.avatar
-                                            : img
-                                        }
-                                        alt="viewer-avatar"
-                                        className={styles.viewerAvatar}
-                                      />
-                                    </Tooltip>
-                                  </span>
-                                )
-                              }
+                              return (
+                                <div
+                                  className="capitalize cursor-pointer"
+                                  onClick={() =>
+                                    setViewersModal(item.viewers.data)
+                                  }
+                                >
+                                  <img
+                                    src={
+                                      v?.user?.avatar && v?.user?.avatar !== ''
+                                        ? v?.user?.avatar
+                                        : img
+                                    }
+                                    alt="viewer-avatar"
+                                    className={styles.viewerAvatar}
+                                  />
+                                </div>
+                              )
+                              // }
                             }
                             return null
                           })}
 
                           {moreViewers > 0 && (
-                            <span className="capitalize">
-                              <Tooltip
-                                text={`${moreViewers} more viewer${
-                                  moreViewers > 1 ? 's' : ''
+                            <div
+                              className="capitalize cursor-pointer"
+                              onClick={() => setViewersModal(item.viewers.data)}
+                            >
+                              <span
+                                className={`${styles.viewerBadge} ${
+                                  isCurrentUserMessage
+                                    ? styles.viewerBadgeRight
+                                    : styles.viewerBadgeLeft
                                 }`}
-                                effect="solid"
                               >
-                                <span
-                                  className={`${styles.viewerBadge} ${
-                                    isCurrentUserMessage
-                                      ? styles.viewerBadgeRight
-                                      : styles.viewerBadgeLeft
-                                  }`}
-                                >
-                                  +{moreViewers}
-                                </span>
-                              </Tooltip>
-                            </span>
+                                +{moreViewers}
+                              </span>
+                            </div>
                           )}
                         </div>
                       ) : null}
@@ -517,6 +510,18 @@ export default function MessageBox({
           </div>
         </div>
       </div>
+
+      <Modal
+        title="Message Viewers"
+        visible={viewers && viewers.length > 0}
+        onClose={() => setViewersModal(null)}
+        footer={null}
+      >
+        {/* {modalContent} */}
+        {viewers?.map((item, index) => {
+          return <ViewersBox key={index} data={item} />
+        })}
+      </Modal>
 
       <Modal
         title="Members"

@@ -200,6 +200,15 @@ export const getMessages = gql`
               lastName
               avatar
             }
+            companyRole {
+              _id
+              name
+              status
+              permissions {
+                group
+                accessLevel
+              }
+            }
           }
         }
       }
