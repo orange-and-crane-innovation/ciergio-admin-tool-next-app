@@ -437,9 +437,16 @@ const PostComponent = ({ typeOfPage }) => {
                       {` | `}
                       <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mx-2 hover:underline" target="_blank">
-                          View
+                          Preview
                         </a>
                       </Link>
+                      {` | `}
+                      <span
+                        className="mx-2 cursor-pointer hover:underline"
+                        onClick={() => handleShowModal('share', item._id)}
+                      >
+                        Share to Social Media
+                      </span>
                       {` | `}
                       <Can
                         perform={
@@ -468,7 +475,7 @@ const PostComponent = ({ typeOfPage }) => {
                         <div className="flex text-info-500 text-sm">
                           <Link href={`/${routeName}/view/${item._id}`}>
                             <a className="mr-2 hover:underline" target="_blank">
-                              View
+                              Preview
                             </a>
                           </Link>
                         </div>
@@ -1127,11 +1134,11 @@ const PostComponent = ({ typeOfPage }) => {
           label: 'Who View this Article',
           icon: <FiEye />,
           function: () => handleShowModal('views', item._id)
-        },
-        {
-          label: 'Share to Social Media',
-          icon: <FiShare2 />,
-          function: () => handleShowModal('share', item._id)
+          // },
+          // {
+          //   label: 'Share to Social Media',
+          //   icon: <FiShare2 />,
+          //   function: () => handleShowModal('share', item._id)
         }
       ]
 
@@ -1291,9 +1298,16 @@ const PostComponent = ({ typeOfPage }) => {
                     {` | `}
                     <Link href={`/${routeName}/view/${item._id}`}>
                       <a className="mx-2 hover:underline" target="_blank">
-                        View
+                        Preview
                       </a>
                     </Link>
+                    {` | `}
+                    <span
+                      className="mx-2 cursor-pointer hover:underline"
+                      onClick={() => handleShowModal('share', item._id)}
+                    >
+                      Share to Social Media
+                    </span>
                     <Can
                       perform={
                         isAttractionsEventsPage
@@ -1324,7 +1338,7 @@ const PostComponent = ({ typeOfPage }) => {
                       yes={
                         <Link href={`/${routeName}/view/${item._id}`}>
                           <a className="mr-2 hover:underline" target="_blank">
-                            View
+                            Preview
                           </a>
                         </Link>
                       }
