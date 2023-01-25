@@ -39,6 +39,8 @@ import style from './Create.module.css'
 import { useRouter } from 'next/router'
 import { yupResolver } from '@hookform/resolvers/yup'
 
+const inputMaxLength = 150
+
 const CREATE_POST_MUTATION = gql`
   mutation($data: PostInput) {
     createPost(data: $data) {
@@ -54,7 +56,11 @@ const validationSchema = yup.object().shape({
     .label('Title')
     .nullable()
     .trim()
-    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    )
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
@@ -69,7 +75,11 @@ const validationSchemaWebsiteContent = yup.object().shape({
     .label('Title')
     .nullable()
     .trim()
-    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    )
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
   images: yup.array().label('Image').required(),
@@ -84,7 +94,11 @@ const validationSchemaDraft = yup.object().shape({
     .string()
     .nullable()
     .trim()
-    .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    ),
   content: yup.mixed().nullable(),
   category: yup.string().nullable(),
   embeddedVideo: yup.string().nullable()
@@ -96,7 +110,11 @@ const validationSchemaDailyReadings = yup.object().shape({
     .label('Title')
     .nullable()
     .trim()
-    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    )
     .required(),
   content: yup.mixed().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
@@ -130,7 +148,7 @@ const CreatePosts = () => {
   const [videoError, setVideoError] = useState()
   const [localVideoError, setLocalVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
-  const [inputMaxLength] = useState(120)
+  // const [inputMaxLength] = useState(120)
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
