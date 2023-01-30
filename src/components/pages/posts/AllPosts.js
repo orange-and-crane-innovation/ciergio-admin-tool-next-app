@@ -445,7 +445,7 @@ const PostComponent = ({ typeOfPage }) => {
                         className="mx-2 cursor-pointer hover:underline"
                         onClick={() => handleShowModal('share', item._id)}
                       >
-                        Share to Social Media
+                        Share
                       </span>
                       {` | `}
                       <Can
@@ -785,7 +785,7 @@ const PostComponent = ({ typeOfPage }) => {
             break
           }
           case 'share': {
-            setModalTitle('Share To Social Media')
+            setModalTitle('Share to social media')
             setModalContent(
               <div className="grid grid-cols-3 gap-4 justify-items-center">
                 <div className="share-social-item">
@@ -1136,7 +1136,7 @@ const PostComponent = ({ typeOfPage }) => {
           function: () => handleShowModal('views', item._id)
           // },
           // {
-          //   label: 'Share to Social Media',
+          //   label: 'Share to social media',
           //   icon: <FiShare2 />,
           //   function: () => handleShowModal('share', item._id)
         }
@@ -1306,7 +1306,7 @@ const PostComponent = ({ typeOfPage }) => {
                       className="mx-2 cursor-pointer hover:underline"
                       onClick={() => handleShowModal('share', item._id)}
                     >
-                      Share to Social Media
+                      Share
                     </span>
                     <Can
                       perform={

@@ -1,10 +1,9 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { useRouter } from 'next/router'
-import QRCode from 'react-qr-code'
-import { FiDownload } from 'react-icons/fi'
-
 import Button from '@app/components/button'
+import { FiDownload } from 'react-icons/fi'
+import PropTypes from 'prop-types'
+import QRCode from 'react-qr-code'
+import React from 'react'
+import { useRouter } from 'next/router'
 
 const saveSvgAsPng = require('save-svg-as-png')
 
@@ -46,7 +45,9 @@ const Component = ({ type, title, data }) => {
             <strong>{`${typeName} "${title}"? `}</strong>
           </p>
           <br />
-          <p>The post will be automatically save as DRAFT.</p>
+          <p>
+            The post will be automatically save as <strong>DRAFT</strong>.
+          </p>
         </>
       ) : type === 'preview' ? (
         <>
