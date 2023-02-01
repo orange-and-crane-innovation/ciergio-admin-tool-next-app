@@ -1,23 +1,21 @@
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import P from 'prop-types'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import PasswordStrengthBar from 'react-password-strength-bar'
 
-import FormInput from '@app/components/forms/form-input'
-import Button from '@app/components/button'
-import PageLoader from '@app/components/page-loader'
-import Checkbox from '@app/components/forms/form-checkbox'
+import { Controller, useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
 
 import { ACCOUNT_TYPES } from '@app/constants'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
-
+import Button from '@app/components/button'
+import Checkbox from '@app/components/forms/form-checkbox'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
 import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
-
+import FormInput from '@app/components/forms/form-input'
+import Link from 'next/link'
+import P from 'prop-types'
+import PageLoader from '@app/components/page-loader'
+import PasswordStrengthBar from 'react-password-strength-bar'
+import getAccountTypeName from '@app/utils/getAccountTypeName'
 import style from './Join.module.css'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const validationSchema = yup.object().shape({
   email: yup.string().email().label('Email Address').required(),
@@ -33,8 +31,10 @@ const validationSchema = yup.object().shape({
       val => val.toString().length <= 16
     )
     .matches(
-      /^.*(?=.{8,})((?=.*[!@#$%^&*()\-_=+{};:,<.>]){1})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
-      'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and one special case Character'
+      // /^.*(?=.{8,})((?=.*[!@#$%^&*()\-_=+{};:,<.>]){1})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
+      // 'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and one special case Character',
+      /^.*(?=.{8,})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
+      'Must contain 8 characters, one uppercase, one lowercase and one number'
     )
 })
 

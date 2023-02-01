@@ -437,9 +437,16 @@ const PostComponent = ({ typeOfPage }) => {
                       {` | `}
                       <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mx-2 hover:underline" target="_blank">
-                          View
+                          Preview
                         </a>
                       </Link>
+                      {` | `}
+                      <span
+                        className="mx-2 cursor-pointer hover:underline"
+                        onClick={() => handleShowModal('share', item._id)}
+                      >
+                        Share
+                      </span>
                       {` | `}
                       <Can
                         perform={
@@ -468,7 +475,7 @@ const PostComponent = ({ typeOfPage }) => {
                         <div className="flex text-info-500 text-sm">
                           <Link href={`/${routeName}/view/${item._id}`}>
                             <a className="mr-2 hover:underline" target="_blank">
-                              View
+                              Preview
                             </a>
                           </Link>
                         </div>
@@ -778,7 +785,7 @@ const PostComponent = ({ typeOfPage }) => {
             break
           }
           case 'share': {
-            setModalTitle('Share To Social Media')
+            setModalTitle('Share to social media')
             setModalContent(
               <div className="grid grid-cols-3 gap-4 justify-items-center">
                 <div className="share-social-item">
@@ -1127,11 +1134,11 @@ const PostComponent = ({ typeOfPage }) => {
           label: 'Who View this Article',
           icon: <FiEye />,
           function: () => handleShowModal('views', item._id)
-        },
-        {
-          label: 'Share to Social Media',
-          icon: <FiShare2 />,
-          function: () => handleShowModal('share', item._id)
+          // },
+          // {
+          //   label: 'Share to social media',
+          //   icon: <FiShare2 />,
+          //   function: () => handleShowModal('share', item._id)
         }
       ]
 
@@ -1291,9 +1298,16 @@ const PostComponent = ({ typeOfPage }) => {
                     {` | `}
                     <Link href={`/${routeName}/view/${item._id}`}>
                       <a className="mx-2 hover:underline" target="_blank">
-                        View
+                        Preview
                       </a>
                     </Link>
+                    {` | `}
+                    <span
+                      className="mx-2 cursor-pointer hover:underline"
+                      onClick={() => handleShowModal('share', item._id)}
+                    >
+                      Share
+                    </span>
                     <Can
                       perform={
                         isAttractionsEventsPage
@@ -1324,7 +1338,7 @@ const PostComponent = ({ typeOfPage }) => {
                       yes={
                         <Link href={`/${routeName}/view/${item._id}`}>
                           <a className="mr-2 hover:underline" target="_blank">
-                            View
+                            Preview
                           </a>
                         </Link>
                       }
