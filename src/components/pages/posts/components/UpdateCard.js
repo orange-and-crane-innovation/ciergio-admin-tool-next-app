@@ -41,8 +41,8 @@ const Component = ({ type, title, data }) => {
       {type === 'draft' ? (
         <>
           <p>
-            {`Are you sure you want to `}
-            <strong>{`${typeName} "${title}"? `}</strong>
+            {`Are you sure you want to `} {typeName}
+            <strong>{` "${title}"? `}</strong>
           </p>
           <br />
           <p>

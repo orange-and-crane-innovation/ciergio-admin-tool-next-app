@@ -757,7 +757,7 @@ const CreatePosts = () => {
                 {
                   url: item.location,
                   type: item.mimetype,
-                  filename: item.originalName
+                  filename: item.originalname
                 }
               ])
             })
