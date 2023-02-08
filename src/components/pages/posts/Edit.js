@@ -305,7 +305,7 @@ const CreatePosts = () => {
   const [uploadErrorAttachment, setUploadErrorAttachment] = useState()
   const [maxFiles] = useState(1)
   const [fileMaxSizeAttachment] = useState(10485760) // 10MB
-  const [fileMaxSize] = useState(104857600) // 100MB
+  const [fileMaxSize] = useState(1048576000) // 100MB
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
   const [fileUploadedData, setFileUploadedData] = useState([])
