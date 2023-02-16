@@ -19,10 +19,10 @@ import MessageInput from './MessageInput'
 import Modal from '@app/components/modal'
 import P from 'prop-types'
 import ParticipantsBox from './ParticipantsBox'
-import ViewersBox from './ViewersBox'
 import ReactHtmlParser from 'react-html-parser'
 import Spinner from '@app/components/spinner'
 import Tooltip from '@app/components/tooltip'
+import ViewersBox from './ViewersBox'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
 import { getDefaultKeyBinding } from 'draft-js'
 import styles from '../messages.module.css'
@@ -233,7 +233,7 @@ export default function MessageBox({
                 const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
                 const isLastMessage = index === 0
                 const isSameAuthor =
-                  messages[index + 1]?.author.user._id !== author._id
+                  messages[index + 1]?.author?.user?._id !== author?._id
                 let moreViewers = 0
 
                 return (
