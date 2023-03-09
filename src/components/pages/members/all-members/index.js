@@ -1,34 +1,35 @@
-import { debounce } from 'lodash'
-import isEmpty from 'lodash/isEmpty'
-import { useRouter } from 'next/router'
-import Props from 'prop-types'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { FaEllipsisH, FaPlusCircle, FaExclamationCircle } from 'react-icons/fa'
-import { FiDownload } from 'react-icons/fi'
-import { HiOutlinePrinter } from 'react-icons/hi'
-import ReactSelect from 'react-select'
 import * as yup from 'yup'
 
+import { Controller, useForm } from 'react-hook-form'
+import { DELETE_USER, GET_ACCOUNTS } from '@app/components/pages/staff/queries'
+import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
+import React, { useEffect, useMemo, useState } from 'react'
 import { gql, useMutation, useQuery } from '@apollo/client'
+
 import Button from '@app/components/button'
-import Dropdown from '@app/components/dropdown'
-import Input from '@app/components/forms/form-input'
-import FormSelect from '@app/components/forms/form-select'
-import { Card } from '@app/components/globals'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import SearchControl from '@app/components/globals/SearchControl'
-import Modal from '@app/components/modal'
-import { GET_ACCOUNTS, DELETE_USER } from '@app/components/pages/staff/queries'
 import Can from '@app/permissions/can'
-import errorHandler from '@app/utils/errorHandler'
-import showToast from '@app/utils/toast'
-import { yupResolver } from '@hookform/resolvers/yup'
-import useDebounce from '@app/utils/useDebounce'
-
-import ViewMemberModal from './../ViewResidentModal'
-
+import { Card } from '@app/components/globals'
+import Dropdown from '@app/components/dropdown'
 import EditModal from './EditModal'
+import { FiDownload } from 'react-icons/fi'
+import FormSelect from '@app/components/forms/form-select'
+import { HiOutlinePrinter } from 'react-icons/hi'
+import { IMAGES } from '@app/constants'
+import Input from '@app/components/forms/form-input'
+import Modal from '@app/components/modal'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import Props from 'prop-types'
+import ReactSelect from 'react-select'
+import SearchControl from '@app/components/globals/SearchControl'
+import ViewMemberModal from './../ViewResidentModal'
+import { debounce } from 'lodash'
+import errorHandler from '@app/utils/errorHandler'
+import isEmpty from 'lodash/isEmpty'
+import ImageWithValidationFallback from '@app/components/image-with-fallback'
+import showToast from '@app/utils/toast'
+import useDebounce from '@app/utils/useDebounce'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const SCHEMA_INVITE = yup.object().shape({
   email: yup
@@ -482,12 +483,13 @@ function MyMembers() {
                 name: (
                   <div className="flex items-center space-x-6">
                     <div className="w-11 h-11 rounded-full overflow-auto">
-                      <img
+                      <ImageWithValidationFallback
                         className="h-full w-full object-contain object-center"
-                        src={
+                        url={
                           user?.avatar ||
                           `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
                         }
+                        fallback={IMAGES.DEFAULT_AVATAR}
                         alt="user-avatar"
                       />
                     </div>
