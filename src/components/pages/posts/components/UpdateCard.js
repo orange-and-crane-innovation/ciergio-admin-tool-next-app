@@ -46,7 +46,7 @@ const Component = ({ type, title, data }) => {
           </p>
           <br />
           <p>
-            The post will be automatically save as <strong>DRAFT</strong>.
+            The post will be automatically saved as <strong>DRAFT</strong>.
           </p>
         </>
       ) : type === 'preview' ? (
@@ -93,8 +93,8 @@ const Component = ({ type, title, data }) => {
       ) : (
         <>
           <p>
-            {`You are about to `}
-            <strong>{`${typeName} "${title}" `}</strong>
+            {`You are about to ${typeName} `}
+            <strong>{`"${title}" `}</strong>
             {`from the list.`}
           </p>
           <br />
