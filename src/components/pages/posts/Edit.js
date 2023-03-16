@@ -170,6 +170,7 @@ const GET_POST_PRAY_QUERY = gql`
         attachments {
           url
           type
+          filename
         }
         embeddedMediaFiles {
           url
@@ -483,7 +484,7 @@ const CreatePosts = () => {
         )
         setUploadedAttachment(
           itemData?.attachments?.map(item => {
-            return { url: item.url, type: item.type }
+            return { url: item.url, type: item.type, filename: item.filename }
           }) ?? []
         )
         setSelectedCategory(itemData?.category?._id)
