@@ -329,7 +329,7 @@ const HistoryComponent = ({ type, header }) => {
           )
         }
       />
-      {history && history.count > 10 && (
+      {history && history.count !== 0 && (
         <Pagination
           items={history}
           activePage={activePage}

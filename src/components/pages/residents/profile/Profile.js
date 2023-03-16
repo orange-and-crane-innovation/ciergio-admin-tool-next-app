@@ -130,7 +130,7 @@ function Profile() {
                 }
                 content={<Table rowNames={columns} items={historyData} />}
               />
-              {historyData && historyData.count > 10 && (
+              {historyData && historyData.count !== 0 && (
                 <Pagination
                   items={historyData}
                   activePage={activePage}

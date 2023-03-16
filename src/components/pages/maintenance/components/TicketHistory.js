@@ -1,14 +1,12 @@
-import { useMemo, useState, useEffect } from 'react'
-import P from 'prop-types'
-import { useQuery } from '@apollo/client'
+import { useEffect, useMemo, useState } from 'react'
 
-import Table from '@app/components/table'
-import Pagination from '@app/components/pagination'
 import { Card } from '@app/components/globals'
-
-import { friendlyDateTimeFormat } from '@app/utils/date'
-
 import { GET_ISSUE_HISTORY } from '../queries'
+import P from 'prop-types'
+import Pagination from '@app/components/pagination'
+import Table from '@app/components/table'
+import { friendlyDateTimeFormat } from '@app/utils/date'
+import { useQuery } from '@apollo/client'
 
 const columns = [
   {
@@ -79,7 +77,7 @@ function TicketHistory({ ticketId }) {
           <Table rowNames={columns} items={historyData} loading={loading} />
         }
       />
-      {!loading && historyData?.count > 10 && (
+      {!loading && historyData?.count !== 0 && (
         <div className="-mt-4">
           <Pagination
             items={historyData}
