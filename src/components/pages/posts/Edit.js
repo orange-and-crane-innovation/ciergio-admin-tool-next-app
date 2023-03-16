@@ -83,7 +83,6 @@ const GET_POST_QUERY = gql`
         primaryMedia {
           url
           type
-          filename
         }
         attachments {
           url
@@ -1108,10 +1107,12 @@ const CreatePosts = () => {
       if (selectedCompanySpecific) {
         if (selectedCompanySpecific[0]?.value) {
           updateData.data.audienceExpanse = {
+            ...updateData.data.audienceExpanse,
             companyIds: selectedCompanySpecific.map(item => item.value)
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             companyIds: selectedCompanySpecific
           }
         }
@@ -1123,6 +1124,7 @@ const CreatePosts = () => {
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             companyIds: selectedCompanyExcept
           }
         }
@@ -1130,10 +1132,12 @@ const CreatePosts = () => {
       if (selectedComplexSpecific) {
         if (selectedComplexSpecific[0]?.value) {
           updateData.data.audienceExpanse = {
+            ...updateData.data.audienceExpanse,
             complexIds: selectedComplexSpecific.map(item => item.value)
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedComplexSpecific
           }
         }
@@ -1145,6 +1149,7 @@ const CreatePosts = () => {
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedComplexExcept
           }
         }
@@ -1152,10 +1157,12 @@ const CreatePosts = () => {
       if (selectedBuildingSpecific) {
         if (selectedBuildingSpecific[0]?.value) {
           updateData.data.audienceExpanse = {
+            ...updateData.data.audienceExpanse,
             complexIds: selectedBuildingSpecific.map(item => item.value)
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedBuildingSpecific
           }
         }
@@ -1167,17 +1174,20 @@ const CreatePosts = () => {
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedBuildingExcept
           }
         }
       }
       if (selectedGroupSpecific) {
         updateData.data.audienceExpanse = {
+          ...updateData.data.audienceExpanse,
           companyGroupIds: selectedGroupSpecific.map(item => item.value)
         }
       }
       if (selectedGroupExcept) {
         updateData.data.audienceExceptions = {
+          ...updateData.data.audienceExceptions,
           companyGroupIds: selectedGroupExcept.map(item => item.value)
         }
       }
@@ -1238,7 +1248,6 @@ const CreatePosts = () => {
   }
 
   const onSelectGroupSpecific = data => {
-    console.log('AUDIENCEEEEEE', data)
     setSelectedGroupSpecific(data)
   }
 
