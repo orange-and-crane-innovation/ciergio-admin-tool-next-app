@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { useRouter } from 'next/router'
+import { ACCOUNT_TYPES } from '@app/constants'
 
 import showToast from '@app/utils/toast'
 
@@ -50,6 +51,7 @@ const CREATE_ACCOUNT_MUTATION = gql`
 function JoinPage() {
   const router = useRouter()
   const [profile, setProfile] = useState()
+  const [done, setDone] = useState(false)
 
   const { loading, data, error } = useQuery(VERIFY_CODE_QUERY, {
     onError: _e => {},
@@ -92,7 +94,11 @@ function JoinPage() {
         showToast('success', 'Successfully registered')
 
         const timer = setTimeout(() => {
-          router.replace('/auth/login')
+          if (profile?.accountType === ACCOUNT_TYPES.MEM.value) {
+            setDone(true)
+          } else {
+            router.replace('/auth/login')
+          }
           clearInterval(timer)
         }, 1000)
       }
@@ -151,6 +157,7 @@ function JoinPage() {
       onSubmit={onSubmit}
       isLoading={loading}
       isSubmitting={loadingCreate}
+      done={done}
       data={profile}
     />
   )

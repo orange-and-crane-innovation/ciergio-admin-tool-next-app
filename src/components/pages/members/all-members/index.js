@@ -482,7 +482,7 @@ function MyMembers() {
               return {
                 name: (
                   <div className="flex items-center space-x-6">
-                    <div className="w-11 h-11 rounded-full overflow-auto">
+                    <div className="w-11 h-11 rounded-full overflow-auto box-border">
                       <ImageWithValidationFallback
                         className="h-full w-full object-contain object-center"
                         url={
