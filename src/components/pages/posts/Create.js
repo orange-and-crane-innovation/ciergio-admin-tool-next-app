@@ -720,41 +720,49 @@ const CreatePosts = () => {
       }
       if (selectedCompanySpecific) {
         createData.audienceExpanse = {
+          ...createData.audienceExpanse,
           companyIds: selectedCompanySpecific.map(item => item.value)
         }
       }
       if (selectedCompanyExcept) {
         createData.audienceExceptions = {
+          ...createData.audienceExceptions,
           companyIds: selectedCompanyExcept.map(item => item.value)
         }
       }
       if (selectedComplexSpecific) {
         createData.audienceExpanse = {
+          ...createData.audienceExpanse,
           complexIds: selectedComplexSpecific.map(item => item.value)
         }
       }
       if (selectedComplexExcept) {
         createData.audienceExceptions = {
+          ...createData.audienceExceptions,
           complexIds: selectedComplexExcept.map(item => item.value)
         }
       }
       if (selectedBuildingSpecific) {
         createData.audienceExpanse = {
+          ...createData.audienceExpanse,
           buildingIds: selectedBuildingSpecific.map(item => item.value)
         }
       }
       if (selectedBuildingExcept) {
         createData.audienceExceptions = {
+          ...createData.audienceExceptions,
           buildingIds: selectedBuildingExcept.map(item => item.value)
         }
       }
       if (selectedGroupSpecific) {
         createData.audienceExpanse = {
+          ...createData.audienceExpanse,
           companyGroupIds: selectedGroupSpecific.map(item => item.value)
         }
       }
       if (selectedGroupExcept) {
         createData.audienceExceptions = {
+          ...createData.audienceExceptions,
           companyGroupIds: selectedGroupExcept.map(item => item.value)
         }
       }

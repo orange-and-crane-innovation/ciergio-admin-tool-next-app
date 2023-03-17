@@ -1,12 +1,11 @@
 import _, { isEmpty, sortBy } from 'lodash'
-import Props from 'prop-types'
 import { useEffect, useState } from 'react'
 
-import { useMutation } from '@apollo/client'
+import Props from 'prop-types'
 import Select from '@app/components/forms/form-select'
-import showToast from '@app/utils/toast'
-
 import { UPDATE_COMPANY_ROLES } from './api/_query'
+import showToast from '@app/utils/toast'
+import { useMutation } from '@apollo/client'
 
 const ACCESSLEVEL = [
   {
@@ -69,7 +68,7 @@ const Headers = ({ headers }) => {
   )
 }
 
-const Row = ({ value, classes, onChange }) => {
+const Row = ({ value, classes, onChange, disabled }) => {
   const selectVal = ACCESSLEVEL.find(a => a.value === value?.accessLevel)
   return (
     <>
@@ -78,11 +77,14 @@ const Row = ({ value, classes, onChange }) => {
         className={`${classes} border-b-2 min-w-3xs flex-1 shrink basis-0 p-1 min-h-4xs max-h-4xs`}
       >
         <Select
+          disabled={disabled}
           options={ACCESSLEVEL}
           defaultValue={selectVal || ACCESSLEVEL[ACCESSLEVEL.length - 1]}
           value={selectVal || ACCESSLEVEL[ACCESSLEVEL.length - 1]}
           onChange={val =>
-            onChange({ ...val, id: value?.id, group: value?.group })
+            disabled
+              ? () => {}
+              : onChange({ ...val, id: value?.id, group: value?.group })
           }
         />
       </div>
@@ -91,6 +93,9 @@ const Row = ({ value, classes, onChange }) => {
 }
 
 const Rows = ({ roles, headers }) => {
+  const user = JSON.parse(localStorage.getItem('profile'))
+  const companyRoleID = user?.accounts?.data[0]?.companyRole?._id
+  const companyRoleName = user?.accounts?.data[0]?.companyRole?.name
   const keys = sortBy(Object.keys(headers), key => key)
   const [state, setState] = useState([])
   const [tempData, setTempData] = useState([])
@@ -184,6 +189,8 @@ const Rows = ({ roles, headers }) => {
       ) : (
         state &&
         state.map((role, idx) => {
+          const isDisabled =
+            companyRoleID === role.id && companyRoleName === role.name
           return (
             <div key={idx} className="w-full flex flex-row">
               {keys.map((keyID, ridx) => {
@@ -207,6 +214,7 @@ const Rows = ({ roles, headers }) => {
                     value={valueFound}
                     classes={(ridx + 1) % 2 === 0 && 'bg-gray-300'}
                     onChange={onChange}
+                    disabled={isDisabled}
                   />
                 )
               })}
@@ -290,7 +298,8 @@ Headers.propTypes = {
 Row.propTypes = {
   value: Props.string,
   classes: Props.string,
-  onChange: Props.func
+  onChange: Props.func,
+  disabled: Props.bool
 }
 
 Rows.propTypes = {

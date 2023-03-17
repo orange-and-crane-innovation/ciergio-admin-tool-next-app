@@ -955,7 +955,7 @@ const PostComponent = ({ typeOfPage }) => {
           )
         }
       />
-      {!loading && posts && posts.count > posts.limit && (
+      {!loading && posts && posts.count !== 0 && (
         <Pagination
           items={posts}
           activePage={activePage}

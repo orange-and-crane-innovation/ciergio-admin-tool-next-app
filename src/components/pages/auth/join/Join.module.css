@@ -84,6 +84,7 @@
 
     & .PageError {
       @apply p-4;
+      @apply mb-0 !important;
       @apply text-white;
       @apply bg-danger-500;
     }
