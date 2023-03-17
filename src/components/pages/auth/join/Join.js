@@ -259,7 +259,7 @@ function Join({ onSubmit, isLoading, isSubmitting, done, data }) {
                 ) : (
                   <p className={`${style.PageError} text-center mb-1.5`}>
                     An error occurred while rendering the QR code, please
-                    contact your distributor.
+                    contact your administrator.
                   </p>
                 )}
                 <ImageWithValidationFallback
