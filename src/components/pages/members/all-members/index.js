@@ -15,6 +15,7 @@ import { FiDownload } from 'react-icons/fi'
 import FormSelect from '@app/components/forms/form-select'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { IMAGES } from '@app/constants'
+import ImageWithValidationFallback from '@app/components/image-with-fallback'
 import Input from '@app/components/forms/form-input'
 import Modal from '@app/components/modal'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -25,7 +26,6 @@ import ViewMemberModal from './../ViewResidentModal'
 import { debounce } from 'lodash'
 import errorHandler from '@app/utils/errorHandler'
 import isEmpty from 'lodash/isEmpty'
-import ImageWithValidationFallback from '@app/components/image-with-fallback'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
 import { useRouter } from 'next/router'
@@ -496,7 +496,7 @@ function MyMembers() {
                     <span>{`${user?.firstName} ${user?.lastName}`}</span>
                   </div>
                 ),
-                email: <>{user.email}</>,
+                email: <>{user?.email}</>,
                 group: <span className="capitalize">{groups || '-'}</span>,
                 dropdown: (
                   <Can

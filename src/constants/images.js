@@ -24,14 +24,15 @@ const images = {
   APP_QR: {
     Mary_The_Queen_Parish_San_Juan_City_Philippines_:
       'https://s3.ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/MTQ_App_Unified.png',
-    Military_Ordinariate_Philippines:
-      'https://s3.ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/MTQ_App_Unified.png',
     Parish_of_the_Holy_Sacrifice_Quezon_City_Philippines_:
       'https://s3.ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/UP_Parish_Unified.png',
     Parish_of_the_Holy_Sacrifice:
       'https://s3.ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/UP_Parish_Unified.png',
+    Military_Ordinariate_Philippines:
+      'https://s3.ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/M_O_P_App_Unified.png',
     Military_Ordinariate_of_the_Philippines:
-      'https://s3.ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/M_O_P_App_Unified.png'
+      'https://s3.ap-southeast-1.amazonaws.com/ciergio-online.assets/web-assets/M_O_P_App_Unified.png',
+    OCI_APP: ''
   }
 }
 

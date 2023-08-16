@@ -1,6 +1,6 @@
 import * as yup from 'yup'
 
-import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
+import { ACCOUNT_TYPES, APP_DOWNLOAD_LINK, IMAGES } from '@app/constants'
 import { Controller, useForm } from 'react-hook-form'
 import { useEffect, useState } from 'react'
 
@@ -9,6 +9,8 @@ import Checkbox from '@app/components/forms/form-checkbox'
 import CiergioLogo from '@app/assets/svg/ciergio-logo.svg'
 import CiergioMiniLogo from '@app/assets/svg/ciergio-mini.svg'
 import FormInput from '@app/components/forms/form-input'
+import ImageAppStore from '@app/assets/svg/app-store-badge.svg'
+import ImageGooglePlay from '@app/assets/svg/google-play-badge.svg'
 import ImageWithValidationFallback from '@app/components/image-with-fallback'
 import Link from 'next/link'
 import P from 'prop-types'
@@ -108,7 +110,16 @@ function Join({ onSubmit, isLoading, isSubmitting, done, data }) {
     : ''
 
   const qrURL =
-    IMAGES.APP_QR[data?.company?.name.replace(/[^\w]+/g, '_')] || null
+    IMAGES.APP_QR[data?.company?.name.replace(/[^\w]+/g, '_')] ?? null
+
+  const dlAndroid =
+    APP_DOWNLOAD_LINK.ANDROID[data?.company?.name.replace(/[^\w]+/g, '_')] ??
+    null
+
+  const dliOS =
+    APP_DOWNLOAD_LINK.ANDROID[data?.company?.name.replace(/[^\w]+/g, '_')] ??
+    null
+
   return (
     <main className={style.Join}>
       <div className={style.JoinWrapper}>
@@ -116,7 +127,7 @@ function Join({ onSubmit, isLoading, isSubmitting, done, data }) {
           <CiergioLogo className={style.Logo} />
         </div>
 
-        <div className={`${style.JoinCard + ' flex justify-center'}`}>
+        <div className={`${style.JoinCard + ' flex justify-center flex-wrap'}`}>
           {!loaded || isLoading ? (
             <PageLoader />
           ) : data ? (
@@ -247,28 +258,49 @@ function Join({ onSubmit, isLoading, isSubmitting, done, data }) {
                 />
               </form>
             ) : (
-              <div
-                className={`w-96 overflow-auto box-border justify-self-center justify-center${
-                  !qrURL ? ' h-96 min-w-full' : ' h-auto'
-                }`}
-              >
-                {qrURL ? (
-                  <p className="text-center mb-1.5">
-                    Scan the QR Code below using your phone to download the app
-                  </p>
-                ) : (
-                  <p className={`${style.PageError} text-center mb-1.5`}>
-                    An error occurred while rendering the QR code, please
-                    contact your administrator.
-                  </p>
-                )}
-                <ImageWithValidationFallback
-                  className="h-full w-full object-contain object-center"
-                  url={qrURL}
-                  fallback={null}
-                  alt="user-avatar"
-                />
-              </div>
+              <>
+                <div
+                  className={`w-96 overflow-auto box-border justify-self-center justify-center${
+                    !qrURL ? ' h-96 min-w-full' : ' h-auto'
+                  }`}
+                >
+                  {qrURL ? (
+                    <p className={style.ScanQRText}>
+                      Scan the QR Code below using your phone to download the
+                      app
+                    </p>
+                  ) : (
+                    <p className={`${style.PageError} text-center mb-1.5`}>
+                      An error occurred while rendering the QR code, please
+                      contact your administrator.
+                    </p>
+                  )}
+                  <ImageWithValidationFallback
+                    className="h-full w-full object-contain object-center"
+                    url={qrURL}
+                    fallback={null}
+                    alt="user-avatar"
+                  />
+                </div>
+
+                <p className={style.DLLinkText}>
+                  Or use the following link below
+                </p>
+
+                <div className={style.Download_app}>
+                  <div className={style.Download_app_Item}>
+                    <a href={dlAndroid}>
+                      <ImageGooglePlay />
+                    </a>
+                  </div>
+
+                  <div className={style.Download_app_Item}>
+                    <a href={dliOS}>
+                      <ImageAppStore />
+                    </a>
+                  </div>
+                </div>
+              </>
             )
           ) : (
             <p className={style.PageError}>
