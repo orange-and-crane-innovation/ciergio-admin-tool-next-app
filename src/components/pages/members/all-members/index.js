@@ -401,10 +401,13 @@ function MyMembers() {
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
               const { user, accountType, companyGroups } = staff
-              const groups = companyGroups
-                ?.map(i => i.name)
-                .toString()
-                .replaceAll(',', ', ')
+              const groups =
+                companyGroups.length > 0
+                  ? companyGroups
+                      ?.map(i => i.name)
+                      .toString()
+                      .replaceAll(',', ', ')
+                  : undefined
 
               // VIEW
               let dropdownData = [
@@ -416,6 +419,7 @@ function MyMembers() {
                   function: () => {
                     const viewItem = {
                       _id: user?._id,
+                      accountId: staff?._id,
                       full_name: `${user?.firstName} ${user?.lastName}`,
                       first_name: user?.firstName,
                       last_name: user?.lastName,
@@ -423,7 +427,8 @@ function MyMembers() {
                       gender: user?.gender,
                       email: user?.email,
                       avatar: user?.avatar,
-                      groups: companyGroups
+                      groups: groups ?? '-',
+                      date_reg: user?.createdAt
                     }
                     setSelectedMember(viewItem)
                     setViewMember(true)
