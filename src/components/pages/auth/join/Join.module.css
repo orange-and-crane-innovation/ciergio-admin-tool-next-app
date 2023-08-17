@@ -88,5 +88,29 @@
       @apply text-white;
       @apply bg-danger-500;
     }
+  
+    & .ScanQRText {
+      @apply text-center w-full;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+    }
+
+    & .DLLinkText {
+      @apply text-center w-full;
+      @apply my-3 !important;
+    }
+
+    & .Download_app {
+      @apply flex gap-4 justify-center justify-items-center items-center w-full;
+
+      & .Download_app_Item {
+        @apply flex flex-none w-1/2 justify-center justify-items-center items-center h-20;
+  
+        a {
+          position: relative;
+          display: block;
+        }
+      }
+    }
   }
 }

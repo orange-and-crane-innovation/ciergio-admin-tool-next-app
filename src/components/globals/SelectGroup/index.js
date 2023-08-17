@@ -7,12 +7,17 @@ import FormSelect from '@app/components/forms/form-select'
 import styles from './index.module.css'
 
 const GET_GROUP_QUERY = gql`
-  query getCompanyGroups($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      companyId
-      status
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -38,7 +43,9 @@ const SelectGroupComponent = ({
       where: {
         status: type,
         companyId: companyId
-      }
+      },
+      limit: 1000,
+      skip: 0
     }
   })
 
@@ -48,7 +55,7 @@ const SelectGroupComponent = ({
       getCompanyGroups?.getCompanyGroups
     )
     if (!loadingGroups && getCompanyGroups) {
-      const dataLists = getCompanyGroups?.getCompanyGroups?.map(
+      const dataLists = getCompanyGroups?.getCompanyGroups?.data?.map(
         (item, index) => {
           return {
             value: item._id,

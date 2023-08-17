@@ -59,12 +59,17 @@ const columns = [
 ]
 
 const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      status
-      companyId
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -206,7 +211,9 @@ function PendingMemberInvites() {
         where: {
           companyId: companyId,
           status: 'active'
-        }
+        },
+        limit: 1000,
+        skip: 0
       }
     }
   )
@@ -230,7 +237,7 @@ function PendingMemberInvites() {
   useEffect(() => {
     if (groups && groups.getCompanyGroups)
       setGroupOptions(
-        groups.getCompanyGroups?.map(g => {
+        groups.getCompanyGroups?.data?.map(g => {
           return { label: g.name, value: g._id }
         })
       )

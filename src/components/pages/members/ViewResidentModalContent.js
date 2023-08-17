@@ -1,12 +1,16 @@
 import React from 'react'
 import P from 'prop-types'
 import { friendlyDateTimeFormat } from '@app/utils/date'
+import { GET_ACCOUNT_LATEST_ACTIVITY } from '@app/components/pages/staff/queries'
+import { useQuery } from '@apollo/client'
 
 function ViewResidentModalContent({ resident }) {
-  const groups = resident?.groups
-    ?.map(i => i.name)
-    .toString()
-    .replaceAll(',', ', ')
+  const { data } = useQuery(GET_ACCOUNT_LATEST_ACTIVITY, {
+    variables: {
+      accountId: resident?.accountId
+    }
+  })
+  const accountData = data?.getLatestAccountActivity
 
   return (
     <div className="p-4 flex flex-col">
@@ -23,8 +27,8 @@ function ViewResidentModalContent({ resident }) {
         </div>
       </div>
       <div className="w-full flex justify-start">
-        <InfoBlock label="First Name" text={resident?.first_name} />
-        <InfoBlock label="Last Name" text={resident?.last_name} />
+        <InfoBlock label="First Name" text={resident?.first_name ?? '-'} />
+        <InfoBlock label="Last Name" text={resident?.last_name ?? '-'} />
       </div>
       <div className="w-full flex justify-start">
         <InfoBlock
@@ -32,32 +36,53 @@ function ViewResidentModalContent({ resident }) {
           text={
             resident?.birthday
               ? friendlyDateTimeFormat(resident?.birthday, 'LL')
-              : '--'
+              : '-'
           }
         />
         <InfoBlock
           label="Gender"
-          text={resident?.gender || '--'}
+          text={resident?.gender ?? '-'}
           transformText="capitalize"
         />
       </div>
 
       <div className="w-full flex justify-start">
-        <InfoBlock label="Email Address" text={resident?.email} />
+        <InfoBlock label="Email Address" text={resident?.email ?? '-'} />
       </div>
 
       <div className="w-full flex justify-start">
-        <InfoBlock label="Group(s)" text={groups} />
+        <InfoBlock label="Group(s)" text={resident?.groups ?? '-'} />
       </div>
 
       <br />
 
       <div className="w-full flex justify-start">
-        <InfoBlock label="Date Registered" text={resident?.date_reg} />
-        <InfoBlock label="Device Used" text={resident?.device_used} />
+        <InfoBlock
+          label="Date Registered"
+          text={
+            resident?.date_reg
+              ? friendlyDateTimeFormat(resident?.date_reg, 'LL')
+              : '-'
+          }
+        />
+        <InfoBlock
+          label="Device Used"
+          text={
+            accountData?.deviceInfo
+              ? `${accountData?.deviceInfo?.oSName} v${accountData?.deviceInfo?.oSVersion} - ${accountData?.deviceInfo?.brand} ${accountData?.deviceInfo?.model}`
+              : '-'
+          }
+        />
       </div>
       <div className="w-full flex justify-start">
-        <InfoBlock label="Last Activity" text={resident?.last_active} />
+        <InfoBlock
+          label="Last Activity"
+          text={
+            accountData?.activityDate
+              ? friendlyDateTimeFormat(accountData?.activityDate, 'LL')
+              : '-'
+          }
+        />
       </div>
     </div>
   )

@@ -32,6 +32,7 @@ export const GET_ACCOUNTS = gql`
           email
           birthDate
           gender
+          createdAt
         }
         company {
           name
@@ -63,6 +64,7 @@ export const GET_ACCOUNT = gql`
           avatar
           jobTitle
           email
+          createdAt
         }
         company {
           name
@@ -319,6 +321,23 @@ export const CANCEL_INVITE = gql`
       slave
       vpc
       registrationCode
+    }
+  }
+`
+
+export const GET_ACCOUNT_LATEST_ACTIVITY = gql`
+  query getLatestAccountActivity($accountId: String!) {
+    getLatestAccountActivity(accountId: $accountId) {
+      _id
+      action
+      activityDate
+      deviceInfo {
+        oSName
+        oSVersion
+        type
+        brand
+        model
+      }
     }
   }
 `

@@ -15,6 +15,7 @@ import { FiDownload } from 'react-icons/fi'
 import FormSelect from '@app/components/forms/form-select'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { IMAGES } from '@app/constants'
+import ImageWithValidationFallback from '@app/components/image-with-fallback'
 import Input from '@app/components/forms/form-input'
 import Modal from '@app/components/modal'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -25,7 +26,6 @@ import ViewMemberModal from './../ViewResidentModal'
 import { debounce } from 'lodash'
 import errorHandler from '@app/utils/errorHandler'
 import isEmpty from 'lodash/isEmpty'
-import ImageWithValidationFallback from '@app/components/image-with-fallback'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
 import { useRouter } from 'next/router'
@@ -63,12 +63,17 @@ const columns = [
 ]
 
 const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      status
-      companyId
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -288,7 +293,9 @@ function MyMembers() {
         where: {
           companyId: companyId,
           status: 'active'
-        }
+        },
+        limit: 1000,
+        skip: 0
       }
     }
   )
@@ -310,9 +317,9 @@ function MyMembers() {
   })
 
   useEffect(() => {
-    if (groups && groups.getCompanyGroups)
+    if (groups && groups?.getCompanyGroups)
       setGroupOptions(
-        groups.getCompanyGroups?.map(g => {
+        groups?.getCompanyGroups?.data?.map(g => {
           return { label: capitalizeText(g.name), value: g._id }
         })
       )
@@ -401,10 +408,13 @@ function MyMembers() {
         accounts?.getAccounts?.data?.length > 0
           ? accounts.getAccounts.data.map(staff => {
               const { user, accountType, companyGroups } = staff
-              const groups = companyGroups
-                ?.map(i => i.name)
-                .toString()
-                .replaceAll(',', ', ')
+              const groups =
+                companyGroups.length > 0
+                  ? companyGroups
+                      ?.map(i => i.name)
+                      .toString()
+                      .replaceAll(',', ', ')
+                  : undefined
 
               // VIEW
               let dropdownData = [
@@ -416,6 +426,7 @@ function MyMembers() {
                   function: () => {
                     const viewItem = {
                       _id: user?._id,
+                      accountId: staff?._id,
                       full_name: `${user?.firstName} ${user?.lastName}`,
                       first_name: user?.firstName,
                       last_name: user?.lastName,
@@ -423,7 +434,8 @@ function MyMembers() {
                       gender: user?.gender,
                       email: user?.email,
                       avatar: user?.avatar,
-                      groups: companyGroups
+                      groups: groups ?? '-',
+                      date_reg: user?.createdAt
                     }
                     setSelectedMember(viewItem)
                     setViewMember(true)
@@ -496,7 +508,7 @@ function MyMembers() {
                     <span>{`${user?.firstName} ${user?.lastName}`}</span>
                   </div>
                 ),
-                email: <>{user.email}</>,
+                email: <>{user?.email}</>,
                 group: <span className="capitalize">{groups || '-'}</span>,
                 dropdown: (
                   <Can
