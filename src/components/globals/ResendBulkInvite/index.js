@@ -1,6 +1,5 @@
 import Modal from '@app/components/modal'
 import P from 'prop-types'
-import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 function ResendBulkInvite({
   open,
@@ -11,12 +10,13 @@ function ResendBulkInvite({
   loading,
   module
 }) {
+  const roleType =
+    data?.companyRole?.name || data?.companyRole?.[0]?.name || 'Unknown'
   const description =
     module === 'staff' ? (
       <span>
         Are you sure you want to resend invite for{' '}
-        {<strong>{data?.email}</strong>} as{' '}
-        {getAccountTypeName(data?.accountType)}?
+        {<strong>{data?.email}</strong>} as {roleType}?
       </span>
     ) : (
       `You are about to "Resend Invite (${bulkInvitesLength}) item" from the list, do you want

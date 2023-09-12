@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useLazyQuery } from '@apollo/client'
 import useDebounce from '@app/utils/useDebounce'
 import isEmpty from 'lodash/isEmpty'
 import { FaEllipsisH } from 'react-icons/fa'
+import { HiOutlinePrinter } from 'react-icons/hi'
 
 import Dropdown from '@app/components/dropdown'
 import Checkbox from '@app/components/forms/form-checkbox'
@@ -19,6 +20,7 @@ import showToast from '@app/utils/toast'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
 
 import { ACCOUNT_TYPES } from '@app/constants'
+import Button from '@app/components/button'
 
 import Empty from '../Empty'
 import CancelInviteModal from './CancelInviteModal'
@@ -48,6 +50,12 @@ import {
   BUILDING_ROLES
 } from '../constants'
 
+import { PendingStaffPrintView } from '@app/components/print'
+import { BiLoaderAlt } from 'react-icons/bi'
+import { DATE } from '@app/utils'
+import { useReactToPrint } from 'react-to-print'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
+
 const bulkOptions = [
   {
     label: 'Resend Invite',
@@ -55,17 +63,17 @@ const bulkOptions = [
   }
 ]
 
-const getAssignment = invite => {
+export const getAssignment = invite => {
   switch (invite.accountType) {
     case COMPANY_ADMIN:
-      return invite?.company?.name ?? ''
+      return invite?.company?.name ?? '-'
     case COMPLEX_ADMIN:
-      return invite?.complex?.name ?? ''
+      return invite?.complex?.name ?? '-'
     case BUILDING_ADMIN:
     case RECEPTIONIST:
     case UNIT_OWNER:
     case 'resident':
-      return invite?.building?.name ?? ''
+      return invite?.building?.name ?? '-'
     default:
       console.log('Error: accountType not found')
   }
@@ -320,11 +328,11 @@ function PendingInvites() {
         width: '5%'
       },
       {
-        name: 'Invites',
+        name: 'Email',
         width: ''
       },
       {
-        name: 'Account Type',
+        name: 'Role',
         width: ''
       },
       {
@@ -343,14 +351,25 @@ function PendingInvites() {
     [onCheckAll]
   )
 
+  const PRINT_DOWNLOAD_TITLE = 'Pending Invites - Staff'
+
+  const printRef = useRef()
+  const [loadingPrint, setLoadingPrint] = useState(false)
+  const [csvData] = useState([
+    [PRINT_DOWNLOAD_TITLE],
+    ['As of', DATE.toFriendlyDate(new Date())],
+    [''],
+    ['#', 'Email', 'Role', 'Assignment', 'Date Sent']
+  ])
+
   const staffData = useMemo(() => {
     return {
       count: invites?.getPendingRegistration?.count || 0,
       limit: invites?.getPendingRegistration?.limit || 0,
       data:
         invites?.getPendingRegistration?.data?.length > 0
-          ? invites.getPendingRegistration.data.map(invite => {
-              const roleType = getAccountTypeName(invite?.accountType)
+          ? invites.getPendingRegistration.data.map((invite, i) => {
+              const roleType = invite?.companyRole?.[0]?.name || '-'
               const dropdownData = [
                 {
                   label: 'Resend Invite',
@@ -372,6 +391,14 @@ function PendingInvites() {
                   }
                 }
               ]
+
+              csvData.push([
+                i + 1,
+                `${invite?.email}`,
+                `${roleType}`,
+                `${getAssignment(invite)}`,
+                `${friendlyDateTimeFormat(invite.createdAt, 'LL')}`
+              ])
 
               return {
                 checkbox: (
@@ -457,9 +484,22 @@ function PendingInvites() {
     building?.getBuildings
   ])
 
+  const onPrintPreview = useReactToPrint({
+    documentTitle: PRINT_DOWNLOAD_TITLE,
+    content: () => printRef.current,
+    onBeforeGetContent: () => {
+      setLoadingPrint(true)
+    },
+    onAfterPrint: () => {
+      setLoadingPrint(false)
+    },
+    removeAfterPrint: true
+  })
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">Pending Staff Invites</h1>
+
       <div className="flex items-center justify-between mt-6 flex-col md:flex-row">
         <SelectBulk
           placeholder="Bulk Action"
@@ -513,13 +553,39 @@ function PendingInvites() {
           </div>
         </div>
       </div>
+
+      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
+        <h1 className="font-bold text-base px-8 py-4">
+          {PRINT_DOWNLOAD_TITLE} ({staffData.count})
+        </h1>
+        <div className="flex items-center">
+          <Button
+            key="print"
+            default
+            icon={
+              loadingPrint ? (
+                <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+              ) : (
+                <HiOutlinePrinter />
+              )
+            }
+            onClick={onPrintPreview}
+            className="mr-4 mt-4"
+            disabled={loadingInvites || staffData.count === 0 || loadingPrint}
+          />
+          <DownloadCSV
+            key="download"
+            data={csvData}
+            title={PRINT_DOWNLOAD_TITLE}
+            fileName={`${DATE.getCurrentDate()} - ${PRINT_DOWNLOAD_TITLE}`}
+            disabled={loadingInvites || staffData.count === 0}
+            className="mr-4 mt-4"
+            noBottomMargin={false}
+          />
+        </div>
+      </div>
+
       <Card
-        noPadding
-        title={
-          <h1 className="font-bold text-base px-8 py-4">{`Pending Invites (${
-            invites?.getPendingRegistration?.count || 0
-          })`}</h1>
-        }
         content={
           <PrimaryDataTable
             columns={columns}
@@ -534,6 +600,7 @@ function PendingInvites() {
           />
         }
       />
+
       <ResendInviteModal
         onCancel={() => handleClearModal('resend')}
         onOk={onBulkSubmit}
@@ -543,6 +610,7 @@ function PendingInvites() {
         module={selectedModule}
         bulkInvitesLength={selectedData?.length}
       />
+
       <CancelInviteModal
         onCancel={() => handleClearModal('cancel')}
         onOk={handleCancelInvite}
@@ -550,6 +618,14 @@ function PendingInvites() {
         open={showCancelInviteModal}
         loading={cancellingInvite}
       />
+
+      <div className="hidden">
+        <PendingStaffPrintView
+          ref={printRef}
+          title={PRINT_DOWNLOAD_TITLE}
+          data={staffData?.data}
+        />
+      </div>
     </section>
   )
 }

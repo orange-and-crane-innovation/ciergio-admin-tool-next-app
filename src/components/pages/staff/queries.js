@@ -161,6 +161,11 @@ export const GET_PENDING_INVITES = gql`
         email
         createdAt
         accountType
+        companyRole {
+          _id
+          name
+          status
+        }
         company {
           _id
           name
