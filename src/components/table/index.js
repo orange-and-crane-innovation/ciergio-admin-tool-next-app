@@ -52,7 +52,11 @@ const Table = ({
               items.data.map((item, index) => {
                 listItem = Object.entries(item).map(
                   ([key, value], rowIndex) => {
-                    if (value !== false && key !== 'id') {
+                    if (
+                      value !== false &&
+                      key !== 'id' &&
+                      !rowNames[rowIndex].hidden
+                    ) {
                       return <td key={rowIndex}>{value}</td>
                     }
                     return null

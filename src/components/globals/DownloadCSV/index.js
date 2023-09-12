@@ -11,6 +11,7 @@ function DownloadCSV({
   label,
   variant,
   disabled,
+  noBottomMargin = true,
   ...rest
 }) {
   return (
@@ -22,17 +23,17 @@ function DownloadCSV({
             variant
             {...rest}
             label={label}
-            noBottomMargin
+            noBottomMargin={noBottomMargin}
           />
         </CSVLink>
       ) : (
         <Button
-          disabled={disabled}
+          disabled={true}
           icon={<FiDownload />}
           variant
           {...rest}
           label={label}
-          noBottomMargin
+          noBottomMargin={noBottomMargin}
         />
       )}
     </>
@@ -46,6 +47,7 @@ DownloadCSV.propTypes = {
   title: P.string,
   label: P.string,
   disabled: P.bool,
+  noBottomMargin: P.bool,
   variant: P.oneOf(['primary', 'success', 'danger', 'warning', 'info', 'link'])
 }
 
