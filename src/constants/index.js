@@ -11,7 +11,8 @@ const ACCESSLEVEL = {
 }
 
 const TRANSACTIONSTATUS = {
-  ACCEPT: 'Paid'
+  ACCEPT: 'Paid',
+  REQUESTING: 'Pending'
 }
 
 const PAYMENTMETHODS = {

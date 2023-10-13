@@ -12,6 +12,7 @@ export const GET_TRANSACTIONS = gql`
     $sort: Int
     $offset: Int
     $sortBy: String
+    $orderType: String
   ) {
     getDonationsWeb(
       where: {
@@ -19,6 +20,7 @@ export const GET_TRANSACTIONS = gql`
         date: $date
         method: $paymentMethod
         campaignId: $campaignId
+        orderType: $orderType
       }
       search: $search
       limit: $limit
@@ -53,6 +55,7 @@ export const GET_TRANSACTIONS = gql`
         reconciliationId
         transactionId
         gatewayTransactionId
+        paymentLink
         srcReference {
           company {
             id
