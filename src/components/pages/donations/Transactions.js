@@ -25,9 +25,11 @@ import { ATTR, DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
 
 import { GET_PAYMENT_METHODS, GET_TRANSACTIONS } from './queries'
+import CreatePaymentModal from './CreatePaymentModal'
 
 function Transactions() {
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState('1')
   const [sort, setSort] = useState(-1)
   const [sortby, setSortBy] = useState('createdAt')
   const [searchText, setSearchText] = useState('')
@@ -57,6 +59,9 @@ function Transactions() {
   const [getDonations, { data: donations, loading, error }] = useLazyQuery(
     GET_TRANSACTIONS
   )
+  // const [getDonations, { data: paymentLinks, loading, error }] = useLazyQuery(
+  //   GET_TRANSACTIONS
+  // )
 
   const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS)
 
@@ -107,6 +112,9 @@ function Transactions() {
     if (sortby) {
       where.variables.sortBy = sortby
     }
+    if (activeTab === '3') {
+      where.variables.orderType = 'payment_link'
+    }
 
     getDonations(where)
   }, [
@@ -117,7 +125,8 @@ function Transactions() {
     searchText,
     selectedCompany,
     selectedPaymentType,
-    appliedDate
+    appliedDate,
+    activeTab
   ])
 
   const tableRowNames = useMemo(
@@ -376,7 +385,7 @@ function Transactions() {
               setSortBy('campaign')
             }}
           >
-            <span>Campaign </span>
+            <span>{activeTab === '3' ? 'Payment Link' : 'Campaign'} </span>
             <span role="button" tabIndex={0} onKeyDown={() => {}}>
               {sortby === 'campaign' ? (
                 sort === -1 ? (
@@ -417,7 +426,11 @@ function Transactions() {
                     status: (
                       <>
                         <span
-                          className={`bg-success-500 border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
+                          className={`${
+                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
+                              ? 'bg-success-500'
+                              : 'bg-info-500'
+                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
                         >
                           {TRANSACTIONSTATUS[donation?.status]}
                         </span>
@@ -437,8 +450,15 @@ function Transactions() {
                     bank_fees: <>{ATTR.toCurrency(donation?.bankCharges)}</>,
                     oci_fees: <>{ATTR.toCurrency(donation?.ociFee)}</>,
                     net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
-                    type_payment: <>{donation.type || PAYMENTMETHODS[donation?.method]}</>,
-                    transactions_id: <>{donation?.transactionId || donation?.gatewayTransactionId}</>,
+                    type_payment: (
+                      <>{donation.type || PAYMENTMETHODS[donation?.method]}</>
+                    ),
+                    transactions_id: (
+                      <>
+                        {donation?.transactionId ||
+                          donation?.gatewayTransactionId}
+                      </>
+                    ),
                     ref_id: <>{donation?.senderReferenceCode}</>,
                     campaign: <>{donation?.campaign || '-'}</>
                   }
@@ -454,7 +474,11 @@ function Transactions() {
                     status: (
                       <>
                         <span
-                          className={`bg-success-500 border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
+                          className={`${
+                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
+                              ? 'bg-success-500'
+                              : 'bg-info-500'
+                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
                         >
                           {TRANSACTIONSTATUS[donation?.status]}
                         </span>
@@ -466,10 +490,139 @@ function Transactions() {
                       </span>
                     ),
                     amount: <>{ATTR.toCurrency(donation?.amount)}</>,
-                    type_payment: <>{donation.type || PAYMENTMETHODS[donation?.method] || '-'}</>,
-                    transactions_id: <>{donation?.transactionId || donation?.gatewayTransactionId || '-'}</>,
+                    type_payment: (
+                      <>
+                        {donation.type ||
+                          PAYMENTMETHODS[donation?.method] ||
+                          '-'}
+                      </>
+                    ),
+                    transactions_id: (
+                      <>
+                        {donation?.transactionId ||
+                          donation?.gatewayTransactionId ||
+                          '-'}
+                      </>
+                    ),
                     ref_id: <>{donation?.senderReferenceCode || '-'}</>,
                     campaign: <>{donation?.campaign || '-'}</>
+                  }
+            })
+          : []
+    }),
+    [donations]
+  )
+
+  const paymentListData = useMemo(
+    () => ({
+      count: DONATIONS?.overallCount || 0,
+      limit: DONATIONS?.limit || 0,
+      offset: DONATIONS?.offset || 0,
+      data:
+        DONATIONS?.data?.length > 0
+          ? DONATIONS?.data?.map((donation, index) => {
+              return isAdmin
+                ? {
+                    date: (
+                      <span className="whitespace-nowrap">
+                        {DATE.friendlyDateTimeFormat(
+                          `${donation.createdAt}`,
+                          'MMM DD, YYYY - HH:mm A'
+                        )}
+                      </span>
+                    ),
+                    status: (
+                      <>
+                        <span
+                          className={`${
+                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
+                              ? 'bg-success-500'
+                              : 'bg-info-500'
+                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
+                        >
+                          {TRANSACTIONSTATUS[donation?.status]}
+                        </span>
+                      </>
+                    ),
+                    merchant: (
+                      <span className="whitespace-nowrap">
+                        {donation?.srcReference?.company?.name}
+                      </span>
+                    ),
+                    payor: (
+                      <span className="whitespace-nowrap">
+                        {donation?.name}
+                      </span>
+                    ),
+                    amount: <>{ATTR.toCurrency(donation?.amount)}</>,
+                    bank_fees: <>{ATTR.toCurrency(donation?.bankCharges)}</>,
+                    oci_fees: <>{ATTR.toCurrency(donation?.ociFee)}</>,
+                    net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
+                    type_payment: (
+                      <>{donation.type || PAYMENTMETHODS[donation?.method]}</>
+                    ),
+                    transactions_id: (
+                      <>
+                        {donation?.transactionId ||
+                          donation?.gatewayTransactionId}
+                      </>
+                    ),
+                    ref_id: <>{donation?.senderReferenceCode}</>,
+                    campaign: <>{donation?.campaign || '-'}</>
+                  }
+                : {
+                    date: (
+                      <span className="whitespace-nowrap">
+                        {DATE.friendlyDateTimeFormat(
+                          `${donation.createdAt}`,
+                          'MMM DD, YYYY - HH:mm A'
+                        )}
+                      </span>
+                    ),
+                    status: (
+                      <>
+                        <span
+                          className={`${
+                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
+                              ? 'bg-success-500'
+                              : 'bg-info-500'
+                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
+                        >
+                          {TRANSACTIONSTATUS[donation?.status]}
+                        </span>
+                      </>
+                    ),
+                    payor: (
+                      <span className="whitespace-nowrap">
+                        {donation?.name}
+                      </span>
+                    ),
+                    amount: <>{ATTR.toCurrency(donation?.amount)}</>,
+                    type_payment: (
+                      <>
+                        {donation.type ||
+                          PAYMENTMETHODS[donation?.method] ||
+                          '-'}
+                      </>
+                    ),
+                    transactions_id: (
+                      <>
+                        {donation?.transactionId ||
+                          donation?.gatewayTransactionId ||
+                          '-'}
+                      </>
+                    ),
+                    ref_id: <>{donation?.senderReferenceCode || '-'}</>,
+                    campaign: (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(donation?.paymentLink)
+                          showToast('success', 'Payment copied to clipboard')
+                        }}
+                      >
+                        Get Link
+                      </button>
+                    )
                   }
             })
           : []
@@ -584,18 +737,33 @@ function Transactions() {
     }
   }
 
+  const [showCreateModalModal, setShowCreateModalModal] = useState(false)
+
+  const handlePaymentLinkModal = e => {
+    setShowCreateModalModal(e)
+  }
+
+  const handleTabId = id => {
+    setActiveTab(id)
+  }
+
   return (
     <div className="content-wrap">
+      <CreatePaymentModal
+        open={showCreateModalModal}
+        handleDisplay={handlePaymentLinkModal}
+      />
       <h3 className="content-title">
         {pathname === '/offerings' || pathname === '/offerings/[id]'
           ? 'Offerings Monitor'
           : 'Transactions Monitor'}
       </h3>
       {/* <p className="text-base mb-6">via Credit/Debit Card</p> */}
-      <Tabs defaultTab="1">
+      <Tabs defaultTab="1" identifyTab={handleTabId}>
         <Tabs.TabLabels>
           <Tabs.TabLabel id="1">Transaction History</Tabs.TabLabel>
           <Tabs.TabLabel id="2">Manage QR Codes</Tabs.TabLabel>
+          <Tabs.TabLabel id="3">Pending Payments</Tabs.TabLabel>
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
@@ -721,6 +889,149 @@ function Transactions() {
               content={
                 <PrimaryDataTable
                   data={tableListData}
+                  columns={tableRowNames}
+                  loading={loading}
+                  currentPage={activePage}
+                  pageLimit={pageLimit}
+                  setCurrentPage={setActivePage}
+                  setPageOffset={setPageOffset}
+                  setPageLimit={setPageLimit}
+                  className="overflow-x-auto"
+                />
+              }
+            />
+          </Tabs.TabPanel>
+
+          {/* PAYMENT LINK */}
+          <Tabs.TabPanel id="3">
+            <div className="flex items-center justify-between flex-col lg:flex-row">
+              <div className="flex items-center justify-start w-full flex-col md:flex-row">
+                <div className="w-full md:w-64 md:mr-2">
+                  <FormSelect
+                    id="date"
+                    name="date"
+                    options={dateOptions}
+                    placeholder="Payment Method"
+                    value={dateOptions.filter(
+                      item => item.value === selectedDate
+                    )}
+                    onChange={onDateChange}
+                    onClear={onClearDate}
+                  />
+                </div>
+
+                <div className="w-full">
+                  <DateRange
+                    placeholder="Filter date"
+                    isShown={selectedDate === 'selected'}
+                    onDateChange={onDateRangeChange}
+                    onDateApply={onDateApply}
+                    onDateClear={onDateClear}
+                    hasApplyButton
+                    hasClear
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end w-full flex-col md:flex-row">
+                {isAdmin && (
+                  <SelectCompany
+                    name="companyId"
+                    type="active"
+                    placeholder="Filter Company"
+                    userType={accountType}
+                    onChange={onCompanyChange}
+                    onClear={onClearCompany}
+                    selected={selectedCompany}
+                  />
+                )}
+
+                <span className="mx-2 w-full md:max-w-xs">
+                  <FormSelect
+                    id="paymentType"
+                    name="paymentType"
+                    options={paymentOptions || []}
+                    placeholder="Payment Method"
+                    value={paymentOptions?.filter(
+                      item => item.value === selectedPaymentType
+                    )}
+                    onChange={onPaymentChange}
+                    onClear={onClearPayment}
+                    isClearable
+                  />
+                </span>
+
+                <SearchControl
+                  placeholder="Search All"
+                  searchText={searchText}
+                  onSearch={onSearch}
+                  onClearSearch={onClearSearch}
+                />
+              </div>
+            </div>
+
+            {postID && DONATIONS?.campaign?.title && (
+              <h3 className="pt-4 pb-6 font-semibold text-lg flex items-center">
+                <span>{`Filtered to "${DONATIONS?.campaign?.title}" donations`}</span>
+                <Button
+                  label="Clear Filter"
+                  leftIcon={<FaTimes />}
+                  link
+                  noBottomMargin
+                  onClick={onClearFilterPost}
+                />
+              </h3>
+            )}
+
+            {/* <div className="p-4 mb-4 bg-secondary-50 border border-secondary-200 flex items-start justify-start text-base rounded-md flex-col md:flex-row">
+              <span className="mr-4">
+                No of transactions:{' '}
+                <span className="text-info-900 font-semibold">
+                  {DONATIONS?.overallCount ?? 0}
+                </span>
+              </span>
+              <span className="mr-4">
+                Total Amount:{' '}
+                <span className="text-info-900 font-semibold">
+                  PHP {ATTR.toCurrency(DONATIONS?.overallTotal ?? 0, true)}
+                </span>
+              </span>
+              <span className="mr-4">
+                Receivable Amount:{' '}
+                <span className="text-info-900 font-semibold">
+                  PHP {ATTR.toCurrency(DONATIONS?.overallTotalNet ?? 0, true)}
+                </span>
+              </span>
+            </div> */}
+
+            <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
+              <h1 className="font-bold text-base px-8 py-4">{`Recent Transactions `}</h1>
+              <div className="flex items-center">
+                <Button
+                  default
+                  icon={<HiOutlinePrinter />}
+                  onClick={() => {}}
+                  className="mr-4 mt-4"
+                />
+                <Button
+                  default
+                  icon={<FiDownload />}
+                  onClick={() => {}}
+                  className="mr-4 mt-4"
+                />
+                <Button
+                  info
+                  icon={<>New Payment Link</>}
+                  onClick={() => setShowCreateModalModal(true)}
+                  className="mr-4 mt-4"
+                />
+              </div>
+            </div>
+
+            <Card
+              content={
+                <PrimaryDataTable
+                  data={paymentListData}
                   columns={tableRowNames}
                   loading={loading}
                   currentPage={activePage}
