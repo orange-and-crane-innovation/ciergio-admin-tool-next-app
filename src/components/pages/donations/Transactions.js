@@ -385,7 +385,10 @@ function Transactions() {
               setSortBy('campaign')
             }}
           >
-            <span>{activeTab === '3' ? 'Payment Link' : 'Campaign'} </span>
+            <span>
+              {activeTab === '3' ? 'Payment Link' : 'Campaign'}{' '}
+              {activeTab === '3'}
+            </span>
             <span role="button" tabIndex={0} onKeyDown={() => {}}>
               {sortby === 'campaign' ? (
                 sort === -1 ? (
@@ -402,7 +405,7 @@ function Transactions() {
         width: ''
       }
     ],
-    [sort]
+    [sort, activeTab]
   )
 
   const tableListData = useMemo(
@@ -614,14 +617,13 @@ function Transactions() {
                     ),
                     ref_id: <>{donation?.senderReferenceCode || '-'}</>,
                     campaign: (
-                      <button
+                      <Button
                         onClick={() => {
                           navigator.clipboard.writeText(donation?.paymentLink)
                           showToast('success', 'Payment copied to clipboard')
                         }}
-                      >
-                        Get Link
-                      </button>
+                        label="Copy Link"
+                      />
                     )
                   }
             })
