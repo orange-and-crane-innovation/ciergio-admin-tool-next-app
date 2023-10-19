@@ -603,7 +603,7 @@ function Transactions() {
                     amount: <>{ATTR.toCurrency(donation?.amount)}</>,
                     type_payment: (
                       <>
-                        {donation.type ||
+                        {donation?.type ||
                           PAYMENTMETHODS[donation?.method] ||
                           '-'}
                       </>
