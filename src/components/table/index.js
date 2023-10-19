@@ -15,6 +15,8 @@ const Table = ({
   emptyText,
   className
 }) => {
+  console.log('ROWS', rowNames)
+  console.log('ITEMS', items)
   if (loading) {
     return (
       <div className="w-full h-96 flex items-center justify-center">
