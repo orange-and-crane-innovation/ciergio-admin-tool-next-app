@@ -386,8 +386,8 @@ function Transactions() {
             }}
           >
             <span>
-              {activeTab === '3' ? 'Payment Link' : 'Campaign'}{' '}
-              {activeTab === '3'}
+              {activeTab === '3' ? 'Payment Link' : 'Campaign'}
+              {/* {activeTab === '3'} */}
             </span>
             <span role="button" tabIndex={0} onKeyDown={() => {}}>
               {sortby === 'campaign' ? (
@@ -416,100 +416,57 @@ function Transactions() {
       data:
         DONATIONS?.data?.length > 0
           ? DONATIONS?.data?.map((donation, index) => {
-              return isAdmin
-                ? {
-                    date: (
-                      <span className="whitespace-nowrap">
-                        {DATE.friendlyDateTimeFormat(
-                          `${donation.createdAt}`,
-                          'MMM DD, YYYY - HH:mm A'
-                        )}
-                      </span>
-                    ),
-                    status: (
-                      <>
-                        <span
-                          className={`${
-                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
-                              ? 'bg-success-500'
-                              : 'bg-info-500'
-                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
-                        >
-                          {TRANSACTIONSTATUS[donation?.status]}
-                        </span>
-                      </>
-                    ),
-                    merchant: (
-                      <span className="whitespace-nowrap">
-                        {donation?.srcReference?.company?.name}
-                      </span>
-                    ),
-                    payor: (
-                      <span className="whitespace-nowrap">
-                        {donation?.name}
-                      </span>
-                    ),
-                    amount: <>{ATTR.toCurrency(donation?.amount)}</>,
-                    bank_fees: <>{ATTR.toCurrency(donation?.bankCharges)}</>,
-                    oci_fees: <>{ATTR.toCurrency(donation?.ociFee)}</>,
-                    net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
-                    type_payment: (
-                      <>{donation.type || PAYMENTMETHODS[donation?.method]}</>
-                    ),
-                    transactions_id: (
-                      <>
-                        {donation?.transactionId ||
-                          donation?.gatewayTransactionId}
-                      </>
-                    ),
-                    ref_id: <>{donation?.senderReferenceCode}</>,
-                    campaign: <>{donation?.campaign || '-'}</>
-                  }
-                : {
-                    date: (
-                      <span className="whitespace-nowrap">
-                        {DATE.friendlyDateTimeFormat(
-                          `${donation.createdAt}`,
-                          'MMM DD, YYYY - HH:mm A'
-                        )}
-                      </span>
-                    ),
-                    status: (
-                      <>
-                        <span
-                          className={`${
-                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
-                              ? 'bg-success-500'
-                              : 'bg-info-500'
-                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
-                        >
-                          {TRANSACTIONSTATUS[donation?.status]}
-                        </span>
-                      </>
-                    ),
-                    payor: (
-                      <span className="whitespace-nowrap">
-                        {donation?.name}
-                      </span>
-                    ),
-                    amount: <>{ATTR.toCurrency(donation?.amount)}</>,
-                    type_payment: (
-                      <>
-                        {donation.type ||
-                          PAYMENTMETHODS[donation?.method] ||
-                          '-'}
-                      </>
-                    ),
-                    transactions_id: (
-                      <>
-                        {donation?.transactionId ||
-                          donation?.gatewayTransactionId ||
-                          '-'}
-                      </>
-                    ),
-                    ref_id: <>{donation?.senderReferenceCode || '-'}</>,
-                    campaign: <>{donation?.campaign || '-'}</>
-                  }
+              return {
+                date: (
+                  <span className="whitespace-nowrap">
+                    {DATE.friendlyDateTimeFormat(
+                      `${donation.createdAt}`,
+                      'MMM DD, YYYY - HH:mm A'
+                    )}
+                  </span>
+                ),
+                status: (
+                  <>
+                    <span
+                      className={`${
+                        TRANSACTIONSTATUS[donation?.status] === 'Paid'
+                          ? 'bg-success-500'
+                          : 'bg-info-500'
+                      } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
+                    >
+                      {TRANSACTIONSTATUS[donation?.status] || '-'}
+                    </span>
+                  </>
+                ),
+                merchant: (
+                  <span className="whitespace-nowrap">
+                    {donation?.srcReference?.company?.name || '-'}
+                  </span>
+                ),
+                payor: (
+                  <span className="whitespace-nowrap">
+                    {donation?.name || '-'}
+                  </span>
+                ),
+                amount: <>{ATTR.toCurrency(donation?.amount || 0)}</>,
+                bank_fees: <>{ATTR.toCurrency(donation?.bankCharges || 0)}</>,
+                oci_fees: <>{ATTR.toCurrency(donation?.ociFee || 0)}</>,
+                net_amount: <>{ATTR.toCurrency(donation?.netAmount || 0)}</>,
+                type_payment: (
+                  <>
+                    {donation.type || PAYMENTMETHODS[donation?.method] || '-'}
+                  </>
+                ),
+                transactions_id: (
+                  <>
+                    {donation?.transactionId ||
+                      donation?.gatewayTransactionId ||
+                      '-'}
+                  </>
+                ),
+                ref_id: <>{donation?.senderReferenceCode || '-'}</>,
+                campaign: <>{donation?.campaign || '-'}</>
+              }
             })
           : []
     }),
@@ -524,108 +481,59 @@ function Transactions() {
       data:
         DONATIONS?.data?.length > 0
           ? DONATIONS?.data?.map((donation, index) => {
-              return isAdmin
-                ? {
-                    date: (
-                      <span className="whitespace-nowrap">
-                        {DATE.friendlyDateTimeFormat(
-                          `${donation.createdAt}`,
-                          'MMM DD, YYYY - HH:mm A'
-                        )}
-                      </span>
-                    ),
-                    status: (
-                      <>
-                        <span
-                          className={`${
-                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
-                              ? 'bg-success-500'
-                              : 'bg-info-500'
-                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
-                        >
-                          {TRANSACTIONSTATUS[donation?.status]}
-                        </span>
-                      </>
-                    ),
-                    merchant: (
-                      <span className="whitespace-nowrap">
-                        {donation?.srcReference?.company?.name}
-                      </span>
-                    ),
-                    payor: (
-                      <span className="whitespace-nowrap">
-                        {donation?.name}
-                      </span>
-                    ),
-                    amount: <>{ATTR.toCurrency(donation?.amount)}</>,
-                    bank_fees: <>{ATTR.toCurrency(donation?.bankCharges)}</>,
-                    oci_fees: <>{ATTR.toCurrency(donation?.ociFee)}</>,
-                    net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
-                    type_payment: (
-                      <>{donation.type || PAYMENTMETHODS[donation?.method]}</>
-                    ),
-                    transactions_id: (
-                      <>
-                        {donation?.transactionId ||
-                          donation?.gatewayTransactionId}
-                      </>
-                    ),
-                    ref_id: <>{donation?.senderReferenceCode}</>,
-                    campaign: <>{donation?.campaign || '-'}</>
-                  }
-                : {
-                    date: (
-                      <span className="whitespace-nowrap">
-                        {DATE.friendlyDateTimeFormat(
-                          `${donation.createdAt}`,
-                          'MMM DD, YYYY - HH:mm A'
-                        )}
-                      </span>
-                    ),
-                    status: (
-                      <>
-                        <span
-                          className={`${
-                            TRANSACTIONSTATUS[donation?.status] === 'Paid'
-                              ? 'bg-success-500'
-                              : 'bg-info-500'
-                          } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
-                        >
-                          {TRANSACTIONSTATUS[donation?.status]}
-                        </span>
-                      </>
-                    ),
-                    payor: (
-                      <span className="whitespace-nowrap">
-                        {donation?.name}
-                      </span>
-                    ),
-                    amount: <>{ATTR.toCurrency(donation?.amount)}</>,
-                    type_payment: (
-                      <>
-                        {donation?.type ||
-                          PAYMENTMETHODS[donation?.method] ||
-                          '-'}
-                      </>
-                    ),
-                    transactions_id: (
-                      <>
-                        {donation?.transactionId ||
-                          donation?.gatewayTransactionId ||
-                          '-'}
-                      </>
-                    ),
-                    ref_id: <>{donation?.senderReferenceCode || '-'}</>,
-                    campaign: (
-                      <Button
-                        onClick={() => {
-                          navigator.clipboard.writeText(donation?.paymentLink)
-                          showToast('success', 'Payment copied to clipboard')
-                        }}
-                        label="Copy Link"
-                      />
-                    )
-                  }
+              return {
+                date: (
+                  <span className="whitespace-nowrap">
+                    {DATE.friendlyDateTimeFormat(
+                      `${donation.createdAt}`,
+                      'MMM DD, YYYY - HH:mm A'
+                    )}
+                  </span>
+                ),
+                status: (
+                  <>
+                    <span
+                      className={`${
+                        TRANSACTIONSTATUS[donation?.status] === 'Paid'
+                          ? 'bg-success-500'
+                          : 'bg-info-500'
+                      } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
+                    >
+                      {TRANSACTIONSTATUS[donation?.status]}
+                    </span>
+                  </>
+                ),
+                merchant: (
+                  <span className="whitespace-nowrap">
+                    {donation?.srcReference?.company?.name}
+                  </span>
+                ),
+                payor: (
+                  <span className="whitespace-nowrap">{donation?.name}</span>
+                ),
+                amount: <>{ATTR.toCurrency(donation?.amount)}</>,
+                bank_fees: <>{ATTR.toCurrency(donation?.bankCharges)}</>,
+                oci_fees: <>{ATTR.toCurrency(donation?.ociFee)}</>,
+                net_amount: <>{ATTR.toCurrency(donation?.netAmount)}</>,
+                type_payment: (
+                  <>{donation.type || PAYMENTMETHODS[donation?.method]}</>
+                ),
+                transactions_id: (
+                  <>
+                    {donation?.transactionId || donation?.gatewayTransactionId}
+                  </>
+                ),
+                ref_id: <>{donation?.senderReferenceCode}</>,
+                campaign: (
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(donation?.paymentLink)
+                      showToast('success', 'Payment copied to clipboard')
+                    }}
+                    label="Copy Link"
+                  />
+                )
+              }
             })
           : []
     }),
