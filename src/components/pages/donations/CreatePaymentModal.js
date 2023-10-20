@@ -84,7 +84,9 @@ function CreatePaymentModal({ open, handleDisplay }) {
       title="New Payment Link"
       okText="Create Payment"
       visible={open}
-      // onClose={onCancel}
+      onClose={() => {
+        handleDisplay(false)
+      }}
       onCancel={() => {
         handleDisplay(false)
       }}
@@ -115,7 +117,7 @@ function CreatePaymentModal({ open, handleDisplay }) {
                     onChange={onChange}
                     defaultValue={value}
                     placeholder="Enter amount"
-                    error={errors?.firstName?.message}
+                    error={errors?.amount?.message}
                   />
                 )
               }}
@@ -174,7 +176,7 @@ function CreatePaymentModal({ open, handleDisplay }) {
                     onChange={onChange}
                     defaultValue={value}
                     placeholder="Enter email"
-                    error={errors?.lastName?.message}
+                    error={errors?.email?.message}
                   />
                 )
               }}
@@ -194,7 +196,7 @@ function CreatePaymentModal({ open, handleDisplay }) {
                     onChange={onChange}
                     defaultValue={value}
                     placeholder="Enter mobile number"
-                    error={errors?.lastName?.message}
+                    error={errors?.mobile?.message}
                   />
                 )
               }}
