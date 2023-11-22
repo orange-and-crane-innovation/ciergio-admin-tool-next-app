@@ -1,23 +1,26 @@
-import { debounce } from 'lodash'
-import isEmpty from 'lodash/isEmpty'
-import { useRouter } from 'next/router'
-import Props from 'prop-types'
-import React, { useEffect, useMemo, useState } from 'react'
+import * as yup from 'yup'
+import Link from 'next/link'
 import { Controller, useForm } from 'react-hook-form'
 import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
-import * as yup from 'yup'
-
+import React, { useEffect, useState, useMemo } from 'react'
 import { gql, useMutation, useQuery } from '@apollo/client'
+
 import Button from '@app/components/button'
+import { Card } from '@app/components/globals'
 import Dropdown from '@app/components/dropdown'
 import Input from '@app/components/forms/form-input'
-import { Card } from '@app/components/globals'
-import SearchControl from '@app/components/globals/SearchControl'
 import Modal from '@app/components/modal'
+import Props from 'prop-types'
+import SearchControl from '@app/components/globals/SearchControl'
 import Table from '@app/components/table'
+import Toggle from '@app/components/toggle'
+import { debounce } from 'lodash'
 import errorHandler from '@app/utils/errorHandler'
+import isEmpty from 'lodash/isEmpty'
 import showToast from '@app/utils/toast'
+import { useRouter } from 'next/router'
 import { yupResolver } from '@hookform/resolvers/yup'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 
 const SCHEMA = yup.object().shape({
   name: yup.string().label('Group name').required()
@@ -35,12 +38,17 @@ const tableRowNames = [
 ]
 
 const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      status
-      companyId
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -49,8 +57,13 @@ const CREATE_COMPANY_GROUP = gql`
   mutation createCompanyGroup(
     $data: InputCreateCompanyGroup
     $companyId: String
+    $createGroupConversation: Boolean
   ) {
-    createCompanyGroup(data: $data, companyId: $companyId) {
+    createCompanyGroup(
+      data: $data
+      companyId: $companyId
+      createGroupConversation: $createGroupConversation
+    ) {
       _id
       message
     }
@@ -85,7 +98,14 @@ const defaultModalState = {
   title: 'Create New Group'
 }
 
-const AddEditModalContent = ({ control, errors, selected }) => {
+const AddEditModalContent = ({
+  control,
+  errors,
+  selected,
+  isCreate,
+  gc,
+  toogle
+}) => {
   return (
     <Controller
       control={control}
@@ -94,12 +114,28 @@ const AddEditModalContent = ({ control, errors, selected }) => {
       render={field => {
         field.defaultValue = selected?.name ? selected?.name : ''
         return (
-          <Input
-            {...field}
-            label="Group name"
-            error={errors?.name?.message ?? null}
-            placeholder="Enter group name"
-          />
+          <>
+            <Input
+              {...field}
+              label="Group name"
+              error={errors?.name?.message ?? null}
+              placeholder="Enter group name"
+            />
+            {isCreate && (
+              <>
+                <br />
+                <div className="flex justify-start gap-4 items-center">
+                  <Toggle
+                    onChange={() => {
+                      toogle(old => !old)
+                    }}
+                    toggle={gc}
+                  />
+                  <span>Enable Group Chat</span>
+                </div>
+              </>
+            )}
+          </>
         )
       }}
     />
@@ -134,10 +170,14 @@ const Groups = () => {
   const router = useRouter()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const companyID = profile.accounts.data[0].company._id
-  const [groups, setGroups] = useState()
   // const [searchText, setSearchText] = useState('')
   const [modalState, setModalState] = useState(defaultModalState)
   const [selectedGroup, setSelectedGroup] = useState(null)
+  const [shouldCreateGC, setShouldCreateGC] = useState(true)
+
+  const [activePage, setActivePage] = useState(1)
+  const [limitPage, setLimitPage] = useState(10)
+  const [skipCount, setSkipCount] = useState(0)
 
   const { loading, data, error, refetch } = useQuery(GET_COMPANY_GROUPS, {
     enabled: false,
@@ -145,7 +185,9 @@ const Groups = () => {
       where: {
         companyId: companyID,
         status: 'active'
-      }
+      },
+      limit: limitPage,
+      skip: skipCount === 0 ? 0 : skipCount
     }
   })
 
@@ -182,6 +224,7 @@ const Groups = () => {
         createCompanyGroup({
           variables: {
             companyId: companyID,
+            createGroupConversation: shouldCreateGC,
             data: {
               name: val?.name,
               status: 'active'
@@ -253,53 +296,59 @@ const Groups = () => {
     if (!loading)
       if (error) {
         errorHandler(error)
-      } else if (data) {
-        const tableData = {
-          data:
-            data?.getCompanyGroups?.map(item => {
-              const dropdownData = [
-                {
-                  label: 'View',
-                  function: () => router.push(`/members/groups/${item?._id}`)
-                },
-                {
-                  label: 'Edit',
-                  function: () => {
-                    setModalState({
-                      type: 'edit',
-                      visible: true,
-                      okText: 'Update',
-                      title: 'Edit Group'
-                    })
-                    setSelectedGroup(item)
-                  }
-                },
-                {
-                  label: 'Delete',
-                  function: () => {
-                    setModalState({
-                      type: 'delete',
-                      visible: true,
-                      okText: 'Yes, delete group',
-                      title: 'Delete Group'
-                    })
-                    setSelectedGroup(item)
-                  }
-                }
-              ]
-
-              return {
-                name: item?.name,
-                button: (
-                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-                )
-              }
-            }) || null
-        }
-
-        setGroups(tableData)
       }
   }, [loading, data, error])
+
+  const groups = useMemo(
+    () => ({
+      count: data?.getCompanyGroups?.count || 0,
+      limit: data?.getCompanyGroups?.limit || 0,
+      offset: data?.getCompanyGroups?.offset || 0,
+      data:
+        data?.getCompanyGroups?.data?.map(item => {
+          const dropdownData = [
+            {
+              label: 'View',
+              function: () => router.push(`/members/groups/${item?._id}`)
+            },
+            {
+              label: 'Edit',
+              function: () => {
+                setModalState({
+                  type: 'edit',
+                  visible: true,
+                  okText: 'Update',
+                  title: 'Edit Group'
+                })
+                setSelectedGroup(item)
+              }
+            },
+            {
+              label: 'Delete',
+              function: () => {
+                setModalState({
+                  type: 'delete',
+                  visible: true,
+                  okText: 'Yes, delete group',
+                  title: 'Delete Group'
+                })
+                setSelectedGroup(item)
+              }
+            }
+          ]
+
+          return {
+            name: (
+              <Link href={`/members/groups/${item?._id}`}>
+                <a className="mx-2 hover:underline capitalize">{item?.name}</a>
+              </Link>
+            ),
+            button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          }
+        }) || null
+    }),
+    [loading, data, error]
+  )
 
   return (
     <section className="content-wrap">
@@ -335,7 +384,16 @@ const Groups = () => {
       </div>
       <Card
         content={
-          <Table rowNames={tableRowNames} items={groups} loading={loading} />
+          <PrimaryDataTable
+            data={groups}
+            columns={tableRowNames}
+            loading={loading}
+            currentPage={activePage}
+            pageLimit={limitPage}
+            setCurrentPage={setActivePage}
+            setPageOffset={setSkipCount}
+            setPageLimit={setLimitPage}
+          />
         }
       />
 
@@ -363,6 +421,9 @@ const Groups = () => {
                 control={control}
                 errors={errors}
                 selected={selectedGroup}
+                isCreate={modalState.type === 'add'}
+                gc={shouldCreateGC}
+                toogle={setShouldCreateGC}
               />
             )}
 
@@ -379,7 +440,10 @@ const Groups = () => {
 AddEditModalContent.propTypes = {
   selected: Props.object,
   control: Props.any,
-  errors: Props.object
+  errors: Props.object,
+  isCreate: Props.boolean,
+  gc: Props.boolean,
+  toogle: Props.func
 }
 
 DeleteModalContent.propTypes = {

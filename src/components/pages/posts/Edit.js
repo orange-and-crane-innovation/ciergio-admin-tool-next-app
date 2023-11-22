@@ -3,46 +3,46 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-key */
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { gql, useMutation, useQuery } from '@apollo/client'
-import axios from 'axios'
-import { FaSpinner, FaTimes } from 'react-icons/fa'
-import { FiDownload, FiVideo, FiFilm } from 'react-icons/fi'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import dayjs from 'dayjs'
-import QRCode from 'react-qr-code'
-import Datetime from 'react-datetime'
 
+import { Controller, useForm } from 'react-hook-form'
+import { FaSpinner, FaTimes } from 'react-icons/fa'
+import { FiDownload, FiFilm, FiVideo } from 'react-icons/fi'
+import React, { useEffect, useState } from 'react'
+import { gql, useMutation, useQuery } from '@apollo/client'
+
+import { ACCOUNT_TYPES } from '@app/constants'
+import AudienceModal from './components/AudienceModal'
+import Button from '@app/components/button'
+import Can from '@app/permissions/can'
 import Card from '@app/components/card'
+import { DATE } from '@app/utils'
+import Datetime from 'react-datetime'
+import FileUpload from '@app/components/uploader/simple'
 import FormInput from '@app/components/forms/form-input'
 import FormTextArea from '@app/components/forms/form-textarea'
-import Button from '@app/components/button'
-import UploaderImage from '@app/components/uploader/image'
-import FileUpload from '@app/components/uploader/simple'
 import Modal from '@app/components/modal'
+import OfferingsCard from './components/OfferingsCard'
 import PageLoader from '@app/components/page-loader'
 import ProgressBar from '@app/components/progress-bar'
-import Toggle from '@app/components/toggle'
-
-import VideoPlayer from '@app/components/globals/VideoPlayer'
-import SelectCategory from '@app/components/globals/SelectCategory'
-
-import showToast from '@app/utils/toast'
-import { DATE } from '@app/utils'
-import { ACCOUNT_TYPES } from '@app/constants'
-
-import UpdateCard from './components/UpdateCard'
-import AudienceModal from './components/AudienceModal'
 import PublishTimeModal from './components/PublishTimeModal'
-import OfferingsCard from './components/OfferingsCard'
-
-import Can from '@app/permissions/can'
+import QRCode from 'react-qr-code'
+import SelectCategory from '@app/components/globals/SelectCategory'
+import Toggle from '@app/components/toggle'
+import UpdateCard from './components/UpdateCard'
+import Uploader from '@app/components/uploader'
+import UploaderImage from '@app/components/uploader/image'
+import VideoPlayer from '@app/components/globals/VideoPlayer'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import showToast from '@app/utils/toast'
 import style from './Create.module.css'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const saveSvgAsPng = require('save-svg-as-png')
+
+const inputMaxLength = 150
 
 const UPDATE_POST_MUTATION = gql`
   mutation($id: String, $data: PostInput) {
@@ -69,6 +69,7 @@ const GET_POST_QUERY = gql`
         updatedAt
         publishedAt
         hideCreatedAt
+        showMetadata
         author {
           user {
             firstName
@@ -82,6 +83,11 @@ const GET_POST_QUERY = gql`
         primaryMedia {
           url
           type
+        }
+        attachments {
+          url
+          type
+          filename
         }
         embeddedMediaFiles {
           url
@@ -102,6 +108,10 @@ const GET_POST_QUERY = gql`
             _id
             name
           }
+          companyGroups {
+            _id
+            name
+          }
         }
         audienceExceptions {
           company {
@@ -113,6 +123,10 @@ const GET_POST_QUERY = gql`
             name
           }
           building {
+            _id
+            name
+          }
+          companyGroups {
             _id
             name
           }
@@ -137,6 +151,7 @@ const GET_POST_PRAY_QUERY = gql`
         updatedAt
         publishedAt
         hideCreatedAt
+        showMetadata
         author {
           user {
             firstName
@@ -150,6 +165,11 @@ const GET_POST_PRAY_QUERY = gql`
         primaryMedia {
           url
           type
+        }
+        attachments {
+          url
+          type
+          filename
         }
         embeddedMediaFiles {
           url
@@ -170,6 +190,10 @@ const GET_POST_PRAY_QUERY = gql`
             _id
             name
           }
+          companyGroups {
+            _id
+            name
+          }
         }
         audienceExceptions {
           company {
@@ -181,6 +205,10 @@ const GET_POST_PRAY_QUERY = gql`
             name
           }
           building {
+            _id
+            name
+          }
+          companyGroups {
             _id
             name
           }
@@ -198,11 +226,35 @@ const validationSchema = yup.object().shape({
     .label('Title')
     .nullable()
     .trim()
-    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    )
     .required(),
   content: yup.string().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
+  attachments: yup.array().label('Attachments').nullable(),
   category: yup.string().label('Category').nullable().required(),
+  embeddedVideo: yup.array().label('File').nullable()
+})
+
+const validationSchemaWebsiteContent = yup.object().shape({
+  title: yup
+    .string()
+    .label('Title')
+    .nullable()
+    .trim()
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    )
+    .required(),
+  content: yup.mixed().label('Content').nullable().required(),
+  images: yup.array().label('Image').required(),
+  attachments: yup.array().label('Attachments').nullable(),
+  category: yup.string().label('Category').nullable(),
   embeddedVideo: yup.array().label('File').nullable()
 })
 
@@ -211,7 +263,11 @@ const validationSchemaDraft = yup.object().shape({
     .string()
     .nullable()
     .trim()
-    .test('len', 'Must be up to 120 characters only', val => val.length <= 120),
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    ),
   content: yup.string().nullable(),
   category: yup.string().nullable(),
   embeddedVideo: yup.string().nullable()
@@ -223,10 +279,15 @@ const validationSchemaDailyReadings = yup.object().shape({
     .label('Title')
     .nullable()
     .trim()
-    .test('len', 'Must be up to 120 characters only', val => val.length <= 120)
+    .test(
+      'len',
+      `Must be up to ${inputMaxLength} characters only`,
+      val => val.length <= inputMaxLength
+    )
     .required(),
   content: yup.string().label('Content').nullable().required(),
   images: yup.array().label('Image').nullable(),
+  attachments: yup.array().label('Attachments').nullable(),
   embeddedVideo: yup.string().nullable()
 })
 
@@ -238,8 +299,13 @@ const CreatePosts = () => {
   const [fileFormData, setFileFormData] = useState(false)
   const [uploadPercentage, setUploadPercentage] = useState(0)
   const [maxImages] = useState(10)
+  const [maxAttachments] = useState(20)
+  const [uploadedAttachment, setUploadedAttachment] = useState([])
+  const [urlsAttachment, setUrlsAttachment] = useState([])
+  const [uploadErrorAttachment, setUploadErrorAttachment] = useState()
   const [maxFiles] = useState(1)
-  const [fileMaxSize] = useState(104857600) // 100MB
+  const [fileMaxSizeAttachment] = useState(10485760) // 10MB
+  const [fileMaxSize] = useState(1048576000) // 100MB
   const [imageUrls, setImageUrls] = useState([])
   const [imageUploadedData, setImageUploadedData] = useState([])
   const [fileUploadedData, setFileUploadedData] = useState([])
@@ -252,7 +318,7 @@ const CreatePosts = () => {
   const [videoError, setVideoError] = useState()
   const [localVideoError, setLocalVideoError] = useState()
   const [videoLoading, setVideoLoading] = useState(false)
-  const [inputMaxLength] = useState(120)
+  // const [inputMaxLength] = useState(120)
   const [textCount, setTextCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState()
@@ -276,7 +342,8 @@ const CreatePosts = () => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [errorSelectedDate, setErrorSelectedDate] = useState()
   const [toggleOfferings, setToggleOfferings] = useState()
-  const [toggleHideDate, setToggleHideDate] = useState()
+  const [toggleCreateDate, setToggleCreateDate] = useState()
+  const [toggleMetaData, setToggleMetaData] = useState()
   const [isEdit, setIsEdit] = useState(true)
   const systemType = process.env.NEXT_PUBLIC_SYSTEM_TYPE
   const isSystemPray = systemType === 'pray'
@@ -285,20 +352,27 @@ const CreatePosts = () => {
   const companyID = user?.accounts?.data[0]?.company?._id
   const isAttractionsEventsPage = pathname === '/attractions-events/edit/[id]'
   const isQRCodePage = pathname === '/qr-code/edit/[id]'
+  const [selectedGroupSpecific, setSelectedGroupSpecific] = useState()
+  const [selectedGroupExcept, setSelectedGroupExcept] = useState()
 
   const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
   const isBulletinPostsPage = pathname === '/posts/edit/[id]'
   const isPastoralWorksPage = pathname === '/pastoral-works/edit/[id]'
+  const isWebsiteContentPage = pathname === '/website-content/edit/[id]'
+
+  const AttachmentUploader = Uploader
 
   const typeOfPage = (
     dailyText = 'daily_reading',
     bulletinText = 'post',
-    pastoralText = 'pastoral_works'
+    pastoralText = 'pastoral_works',
+    websiteContentText = 'website_content'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
-      (isPastoralWorksPage && pastoralText)
+      (isPastoralWorksPage && pastoralText) ||
+      (isWebsiteContentPage && websiteContentText)
     )
   }
 
@@ -306,7 +380,7 @@ const CreatePosts = () => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
 
   const [
     updatePost,
@@ -340,13 +414,16 @@ const CreatePosts = () => {
     errors,
     register,
     setValue,
-    getValues
+    getValues,
+    clearErrors
   } = useForm({
     resolver: yupResolver(
       selectedStatus === 'draft'
         ? validationSchemaDraft
         : isDailyReadingsPage
         ? validationSchemaDailyReadings
+        : isWebsiteContentPage
+        ? validationSchemaWebsiteContent
         : validationSchema
     ),
     defaultValues: {
@@ -355,11 +432,13 @@ const CreatePosts = () => {
       video: '',
       category: null,
       images: null,
+      attachments: null,
       embeddedVideo: null
     }
   })
 
   register({ name: 'images' })
+  register({ name: 'attachments' })
   register({ name: 'embeddedVideo' })
 
   useEffect(() => {
@@ -384,6 +463,12 @@ const CreatePosts = () => {
           }) ?? []
         )
         setValue(
+          'attachments',
+          itemData?.attachments?.map(item => {
+            return item.url
+          }) ?? []
+        )
+        setValue(
           'video',
           (itemData?.embeddedMediaFiles &&
             itemData?.embeddedMediaFiles[0]?.platform &&
@@ -396,6 +481,11 @@ const CreatePosts = () => {
             return { url: item.url, type: item.type }
           }) ?? []
         )
+        setUploadedAttachment(
+          itemData?.attachments?.map(item => {
+            return { url: item.url, type: item.type, filename: item.filename }
+          }) ?? []
+        )
         setSelectedCategory(itemData?.category?._id)
         setVideoUrl(
           (itemData?.embeddedMediaFiles &&
@@ -404,6 +494,7 @@ const CreatePosts = () => {
             ''
         )
         setImageUrls(itemData?.primaryMedia?.map(item => item.url) ?? [])
+        setUrlsAttachment(itemData?.attachments?.map(item => item.url) ?? [])
         setFileUrls(
           itemData?.embeddedMediaFiles &&
             !itemData?.embeddedMediaFiles[0]?.platform
@@ -459,6 +550,26 @@ const CreatePosts = () => {
               })
             : null
         )
+        setSelectedGroupExcept(
+          itemData?.audienceExceptions?.companyGroups?.length > 0
+            ? itemData?.audienceExceptions?.companyGroups.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
+        setSelectedGroupSpecific(
+          itemData?.audienceExpanse?.companyGroups?.length > 0
+            ? itemData?.audienceExpanse?.companyGroups.map(item => {
+                return {
+                  value: item._id,
+                  label: item.name
+                }
+              })
+            : null
+        )
         setSelectedBuildingExcept(
           itemData?.audienceExceptions?.building?.length > 0
             ? itemData?.audienceExceptions?.building.map(item => {
@@ -487,7 +598,8 @@ const CreatePosts = () => {
         setSelectedPublishDateTime(new Date(itemData?.publishedAt))
         setSelectedDate(itemData?.dailyReadingDate)
         setToggleOfferings(itemData?.offering)
-        setToggleHideDate(itemData?.hideCreatedAt)
+        setToggleCreateDate(itemData?.hideCreatedAt)
+        setToggleMetaData(itemData?.showMetadata)
       }
     }
   }, [loadingPost, dataPost, errorPost, setValue])
@@ -617,7 +729,8 @@ const CreatePosts = () => {
     handleShowModal()
   }
 
-  const uploadApi = async payload => {
+  const uploadApi = async ({ payload, type }) => {
+    const payloadCount = payload.getAll('files').length
     const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -627,74 +740,163 @@ const CreatePosts = () => {
     }
 
     await axios
-      .post(process.env.NEXT_PUBLIC_UPLOAD_API, payload, config)
+      .post(
+        type === 'attachments' || payloadCount >= 2
+          ? process.env.NEXT_PUBLIC_UPLOAD_VIDEO_API
+          : process.env.NEXT_PUBLIC_UPLOAD_API,
+        payload,
+        config
+      )
       .then(function (response) {
         if (response.data) {
-          response.data.map(item => {
-            setImageUrls(prevArr => [...prevArr, item.location])
-            return setImageUploadedData(prevArr => [
-              ...prevArr,
-              {
-                url: item.location,
-                type: item.mimetype
-              }
-            ])
-          })
-          setImageUploadError(null)
+          if (type === 'attachments') {
+            response.data.map(item => {
+              setUrlsAttachment(prevArr => [...prevArr, item.location])
+              return setUploadedAttachment(prevArr => [
+                ...prevArr,
+                {
+                  url: item.location,
+                  type: item.mimetype,
+                  filename: item.originalname
+                }
+              ])
+            })
+            setUploadErrorAttachment(null)
+          } else {
+            response.data.map(item => {
+              setImageUrls(prevArr => [...prevArr, item.location])
+              return setImageUploadedData(prevArr => [
+                ...prevArr,
+                {
+                  url: item.location,
+                  type: item.mimetype
+                }
+              ])
+            })
+            setImageUploadError(null)
+            clearErrors('images')
+          }
         }
       })
       .catch(function (error) {
-        const errMsg = 'Failed to upload image. Please try again.'
-        console.log(error)
-        showToast('danger', errMsg)
-        setImageUploadError(errMsg)
-        setValue('images', null)
+        if (type === 'attachments') {
+          const errMsg = 'Failed to upload the attachment. Please try again.'
+          console.log(error)
+          showToast('danger', errMsg)
+          setUploadErrorAttachment(errMsg)
+          setValue('attachments', null)
+        } else {
+          const errMsg = 'Failed to upload image. Please try again.'
+          console.log(error)
+          showToast('danger', errMsg)
+          setImageUploadError(errMsg)
+          setValue('images', null)
+        }
       })
       .then(() => {
         setLoading(false)
       })
   }
 
-  const onUploadImage = e => {
+  const onInitUpload = ({ e, type }) => {
+    console.log('onInitUpload ', type, e)
     const files = e.target.files ? e.target.files : e.dataTransfer.files
     const formData = new FormData()
     const fileList = []
 
     if (files) {
-      if (files.length + imageUrls?.length > maxImages) {
-        showToast('info', `Maximum of ${maxImages} files only`)
+      let maxSize = 0
+      for (const file of files) {
+        if (file.size > fileMaxSizeAttachment) {
+          maxSize++
+        }
+      }
+      if (type === 'attachments') {
+        if (files.length + urlsAttachment?.length > maxAttachments) {
+          showToast('info', `Maximum of ${maxAttachments} files only`)
+        } else if (maxSize > 0) {
+          showToast(
+            'info',
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}MB only`
+          )
+        } else {
+          setLoading(true)
+          setUploadErrorAttachment(null)
+
+          if (errors?.attachements?.message) {
+            errors.attachements.message = null
+          }
+
+          for (const file of files) {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+
+            formData.append('files', file)
+            fileList.push(file)
+          }
+          setValue('attachements', fileList)
+
+          uploadApi({
+            payload: formData,
+            type
+          })
+        }
       } else {
-        setLoading(true)
-        setImageUploadError(null)
+        if (files.length + imageUrls?.length > maxImages) {
+          showToast('info', `Maximum of ${maxImages} files only`)
+        } else if (maxSize > 0) {
+          showToast(
+            'info',
+            `Maximum size of ${fileMaxSizeAttachment / 1024 / 1024}MB only`
+          )
+        } else {
+          setLoading(true)
+          setImageUploadError(null)
 
-        if (errors?.images?.message) {
-          errors.images.message = null
+          if (errors?.images?.message) {
+            errors.images.message = null
+          }
+
+          for (const file of files) {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+
+            formData.append('files', file)
+            fileList.push(file)
+          }
+          setValue('images', fileList)
+
+          uploadApi({
+            payload: formData,
+            type
+          })
         }
-
-        for (const file of files) {
-          const reader = new FileReader()
-          reader.readAsDataURL(file)
-
-          formData.append('files', file)
-          fileList.push(file)
-        }
-        setValue('images', fileList)
-
-        uploadApi(formData)
       }
     }
   }
 
-  const onRemoveImage = e => {
-    const images = imageUrls.filter(image => {
-      return image !== e.currentTarget.dataset.id
-    })
-    const uploadedImages = imageUploadedData.filter(image => {
-      return image.url !== e.currentTarget.dataset.id
-    })
-    setImageUrls(images)
-    setImageUploadedData(uploadedImages)
-    setValue('images', images.length !== 0 ? images : null)
+  const onRemoveUploadedItem = ({ e, type }) => {
+    if (type === 'attachments') {
+      const ab = imageUrls.filter(b => {
+        return b !== e.currentTarget.dataset.id
+      })
+      const cd = uploadedAttachment.filter(d => {
+        return d.url !== e.currentTarget.dataset.id
+      })
+      setUrlsAttachment(ab)
+      setUploadedAttachment(cd)
+      setValue('attachments', ab.length !== 0 ? ab : null)
+    } else {
+      const images = imageUrls.filter(image => {
+        return image !== e.currentTarget.dataset.id
+      })
+      const uploadedImages = imageUploadedData.filter(image => {
+        return image.url !== e.currentTarget.dataset.id
+      })
+      setImageUrls(images)
+      setImageUploadedData(uploadedImages)
+      setValue('images', images.length !== 0 ? images : null)
+    }
   }
 
   const onVideoChange = e => {
@@ -754,7 +956,7 @@ const CreatePosts = () => {
       if (files.length + fileUrls?.length > maxFiles) {
         showToast('info', `Maximum of ${maxFiles} files only`)
       } else if (maxSize > 0) {
-        showToast('info', `Maximum size of ${fileMaxSize / 1024 / 1024}mb only`)
+        showToast('info', `Maximum size of ${fileMaxSize / 1024 / 1024}MB only`)
       } else {
         setFileUploadError(null)
 
@@ -769,7 +971,7 @@ const CreatePosts = () => {
           }
           reader.readAsDataURL(file)
 
-          formData.append('videos', file)
+          formData.append('files', file)
           fileList.push(file)
         }
         setValue('embeddedVideo', fileList)
@@ -851,6 +1053,15 @@ const CreatePosts = () => {
       data?.video === ''
     ) {
       showToast('info', `Ooops, it seems like there's no data to be saved.`)
+    } else if (
+      selectedFiles &&
+      selectedFiles.length > 0 &&
+      (!fileUrls || fileUrls.length === 0)
+    ) {
+      showToast(
+        'info',
+        `Your selected video file is not yet uploaded to our server, please check and try again.`
+      )
     } else {
       const updateData = {
         id: query.id,
@@ -864,6 +1075,8 @@ const CreatePosts = () => {
           audienceType: selectedAudienceType,
           primaryMedia:
             imageUploadedData?.length > 0 ? imageUploadedData : null,
+          attachments:
+            uploadedAttachment?.length > 0 ? uploadedAttachment : null,
           embeddedMediaFiles: videoUrl
             ? [
                 {
@@ -894,10 +1107,12 @@ const CreatePosts = () => {
       if (selectedCompanySpecific) {
         if (selectedCompanySpecific[0]?.value) {
           updateData.data.audienceExpanse = {
+            ...updateData.data.audienceExpanse,
             companyIds: selectedCompanySpecific.map(item => item.value)
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             companyIds: selectedCompanySpecific
           }
         }
@@ -909,6 +1124,7 @@ const CreatePosts = () => {
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             companyIds: selectedCompanyExcept
           }
         }
@@ -916,10 +1132,12 @@ const CreatePosts = () => {
       if (selectedComplexSpecific) {
         if (selectedComplexSpecific[0]?.value) {
           updateData.data.audienceExpanse = {
+            ...updateData.data.audienceExpanse,
             complexIds: selectedComplexSpecific.map(item => item.value)
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedComplexSpecific
           }
         }
@@ -931,6 +1149,7 @@ const CreatePosts = () => {
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedComplexExcept
           }
         }
@@ -938,10 +1157,12 @@ const CreatePosts = () => {
       if (selectedBuildingSpecific) {
         if (selectedBuildingSpecific[0]?.value) {
           updateData.data.audienceExpanse = {
+            ...updateData.data.audienceExpanse,
             complexIds: selectedBuildingSpecific.map(item => item.value)
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedBuildingSpecific
           }
         }
@@ -953,8 +1174,21 @@ const CreatePosts = () => {
           }
         } else {
           updateData.data.audienceExceptions = {
+            ...updateData.data.audienceExceptions,
             complexIds: selectedBuildingExcept
           }
+        }
+      }
+      if (selectedGroupSpecific) {
+        updateData.data.audienceExpanse = {
+          ...updateData.data.audienceExpanse,
+          companyGroupIds: selectedGroupSpecific.map(item => item.value)
+        }
+      }
+      if (selectedGroupExcept) {
+        updateData.data.audienceExceptions = {
+          ...updateData.data.audienceExceptions,
+          companyGroupIds: selectedGroupExcept.map(item => item.value)
         }
       }
       if (isDailyReadingsPage) {
@@ -965,8 +1199,10 @@ const CreatePosts = () => {
       if (isSystemPray) {
         updateData.data.offering = toggleOfferings
       }
-      updateData.data.hideCreatedAt = toggleHideDate
+      updateData.data.hideCreatedAt = toggleCreateDate
+      updateData.data.showMetadata = toggleMetaData
 
+      console.log('updateData', updateData)
       updatePost({ variables: updateData })
     }
   }
@@ -1009,6 +1245,14 @@ const CreatePosts = () => {
 
   const onSelectBuildingSpecific = data => {
     setSelectedBuildingSpecific(data)
+  }
+
+  const onSelectGroupSpecific = data => {
+    setSelectedGroupSpecific(data)
+  }
+
+  const onSelectGroupExcept = data => {
+    setSelectedGroupExcept(data)
   }
 
   const handleShowAudienceModal = () => {
@@ -1087,6 +1331,7 @@ const CreatePosts = () => {
   const handleShowPublishTimeModal = () => {
     setShowPublishTimeModal(old => !old)
   }
+
   const onSelectPublishTimeType = data => {
     setSelectedPublishTimeType(data)
   }
@@ -1207,8 +1452,12 @@ const CreatePosts = () => {
     setToggleOfferings(e)
   }
 
-  const onToggleHideDate = e => {
-    setToggleHideDate(e)
+  const onToggleCreateDate = e => {
+    setToggleCreateDate(e)
+  }
+
+  const onToggleMetaData = e => {
+    setToggleMetaData(e)
   }
 
   return (
@@ -1249,7 +1498,11 @@ const CreatePosts = () => {
           )}
 
           <Card
-            header={<span className={style.CardHeader}>Featured Media</span>}
+            header={
+              <span className={style.CardHeader}>
+                {`Featured Media ${!isWebsiteContentPage ? '(optional)' : ''}`}
+              </span>
+            }
             content={
               <div className={style.CreateContentContainer}>
                 <UploaderImage
@@ -1258,9 +1511,23 @@ const CreatePosts = () => {
                   maxImages={maxImages}
                   images={imageUrls}
                   loading={loading}
-                  error={errors?.images?.message ?? imageUploadError ?? null}
-                  onUploadImage={onUploadImage}
-                  onRemoveImage={onRemoveImage}
+                  error={
+                    (errors?.images ? 'Featured Media is required' : '') ??
+                    imageUploadError ??
+                    null
+                  }
+                  onUploadImage={e => {
+                    onInitUpload({
+                      e: e,
+                      type: 'feature'
+                    })
+                  }}
+                  onRemoveImage={e => {
+                    onRemoveUploadedItem({
+                      e: e,
+                      type: 'feature'
+                    })
+                  }}
                 />
               </div>
             }
@@ -1326,7 +1593,8 @@ const CreatePosts = () => {
                   {typeOfPage(
                     'Daily Reading Title',
                     'Title',
-                    'Pastoral Work Title'
+                    'Pastoral Work Title',
+                    'Title'
                   )}
                 </h2>
                 <div className={style.CreatePostSubContent}>
@@ -1384,238 +1652,307 @@ const CreatePosts = () => {
             }
           />
 
-          <Card
-            header={<span className={style.CardHeader}>Embed Video</span>}
-            content={
-              <div className={style.CreateContentContainer}>
-                {fileUrls?.length === 0 && (
-                  <>
-                    <h2 className={style.CreatePostVideoHeader}>
-                      Include a video in your bulletin post by linking a YouTube
-                      video.
-                    </h2>
-                    <div className={style.CreatePostVideoContent}>
-                      <div className="flex items-start">
-                        <FiVideo className={style.CreateVideoIcon} />
-                        <div>
-                          <div className={style.CreatePostVideoInput}>
-                            Video Link
-                          </div>
-                          <div className={style.CreatePostVideoInputContent}>
-                            <div className="flex-grow">
-                              <Can
-                                perform="bulletin:embed"
-                                yes={
-                                  <Controller
-                                    name="video"
-                                    control={control}
-                                    render={({ name, value, onChange }) => (
-                                      <FormInput
-                                        name={name}
-                                        placeholder="Add Youtube link here"
-                                        value={videoUrl || ''}
-                                        error={errors?.video?.message ?? null}
-                                        onChange={e => {
-                                          onChange(e)
-                                          onVideoChange(e)
-                                        }}
+          {/* Attachment */}
+          {!isWebsiteContentPage && (
+            <>
+              <Card
+                header={
+                  <span className={style.CardHeader}>
+                    Attachments (optional)
+                  </span>
+                }
+                content={
+                  <div className={style.CreateContentContainer}>
+                    <p>
+                      You may upload PDFs, DOCs, DOCXs or Images with max file
+                      size of {(fileMaxSizeAttachment / 1024 / 1024).toFixed(1)}
+                      MB. Maximum of {maxAttachments} files only.
+                    </p>
+                    <br />
+                    <AttachmentUploader
+                      name="attachment"
+                      multiple
+                      files={uploadedAttachment}
+                      fileUrls={urlsAttachment}
+                      loading={loading}
+                      error={
+                        errors?.attachments?.message ??
+                        uploadErrorAttachment ??
+                        null
+                      }
+                      maxFiles={maxAttachments}
+                      accept=".pdf, .doc, .docx, .png, .jpg, .jpeg"
+                      onUpload={e => {
+                        onInitUpload({
+                          e: e,
+                          type: 'attachments'
+                        })
+                      }}
+                      onRemove={e => {
+                        onRemoveUploadedItem({
+                          e: e,
+                          type: 'attachments'
+                        })
+                      }}
+                    />
+                  </div>
+                }
+              />
+
+              <Card
+                header={<span className={style.CardHeader}>Embed Video</span>}
+                content={
+                  <div className={style.CreateContentContainer}>
+                    {fileUrls?.length === 0 && (
+                      <>
+                        <h2 className={style.CreatePostVideoHeader}>
+                          Include a video in your bulletin post by linking a
+                          YouTube video.
+                        </h2>
+                        <div className={style.CreatePostVideoContent}>
+                          <div className="flex items-start">
+                            <FiVideo className={style.CreateVideoIcon} />
+                            <div>
+                              <div className={style.CreatePostVideoInput}>
+                                Video Link
+                              </div>
+                              <div
+                                className={style.CreatePostVideoInputContent}
+                              >
+                                <div className="flex-grow">
+                                  <Can
+                                    perform="bulletin:embed"
+                                    yes={
+                                      <Controller
+                                        name="video"
+                                        control={control}
+                                        render={({ name, value, onChange }) => (
+                                          <FormInput
+                                            name={name}
+                                            placeholder="Add Youtube link here"
+                                            value={videoUrl || ''}
+                                            error={
+                                              errors?.video?.message ?? null
+                                            }
+                                            onChange={e => {
+                                              onChange(e)
+                                              onVideoChange(e)
+                                            }}
+                                          />
+                                        )}
                                       />
-                                    )}
+                                    }
                                   />
-                                }
-                              />
-                              {videoError && (
-                                <p className={style.TextError}>{videoError}</p>
-                              )}
-                            </div>
-                            <FaTimes
-                              className={`${style.CreatePostVideoButtonClose} ${
-                                videoUrl ? 'visible' : 'invisible'
-                              }  `}
-                              onClick={onVideoClear}
-                            />
-                            <FaSpinner
-                              className={`${
-                                style.CreatePostVideoLoading
-                              } icon-spin ${
-                                videoLoading ? 'visible' : 'invisible'
-                              }  `}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {!videoUrl && (
-                        <div className="flex items-start">
-                          <FiFilm className={style.CreateVideoIcon} />
-                          <div>
-                            <div className={style.CreatePostVideoInput}>
-                              <div>or select a video from your computer:</div>
-                              <div className="text-neutral-600 font-normal">
-                                MP4 is only accepted.
-                              </div>
-                              <div className="text-neutral-600 font-normal">
-                                Max file size:
-                                <strong> {fileMaxSize / 1024 / 1024}MB</strong>
-                              </div>
-                            </div>
-                            <Can
-                              perform="bulletin:embed"
-                              yes={
-                                <Controller
-                                  name="embeddedVideo"
-                                  control={control}
-                                  render={({ name, value, onChange }) => (
-                                    <FileUpload
-                                      label="Upload File"
-                                      accept=".mp4"
-                                      maxSize={fileMaxSize}
-                                      files={selectedFiles}
-                                      error={localVideoError}
-                                      onUpload={onAddFile}
-                                      onRemove={onRemoveFile}
-                                    />
+                                  {videoError && (
+                                    <p className={style.TextError}>
+                                      {videoError}
+                                    </p>
                                   )}
+                                </div>
+                                <FaTimes
+                                  className={`${
+                                    style.CreatePostVideoButtonClose
+                                  } ${videoUrl ? 'visible' : 'invisible'}  `}
+                                  onClick={onVideoClear}
                                 />
-                              }
-                            />
+                                <FaSpinner
+                                  className={`${
+                                    style.CreatePostVideoLoading
+                                  } icon-spin ${
+                                    videoLoading ? 'visible' : 'invisible'
+                                  }  `}
+                                />
+                              </div>
+                            </div>
                           </div>
+
+                          {!videoUrl && (
+                            <div className="flex items-start">
+                              <FiFilm className={style.CreateVideoIcon} />
+                              <div>
+                                <div className={style.CreatePostVideoInput}>
+                                  <div>
+                                    or select a video from your computer:
+                                  </div>
+                                  <div className="text-neutral-600 font-normal">
+                                    MP4 is only accepted.
+                                  </div>
+                                  <div className="text-neutral-600 font-normal">
+                                    Max file size:
+                                    <strong>
+                                      {' '}
+                                      {fileMaxSize / 1024 / 1024}MB
+                                    </strong>
+                                  </div>
+                                </div>
+                                <Can
+                                  perform="bulletin:embed"
+                                  yes={
+                                    <Controller
+                                      name="embeddedVideo"
+                                      control={control}
+                                      render={({ name, value, onChange }) => (
+                                        <FileUpload
+                                          label="Upload File"
+                                          accept=".mp4"
+                                          maxSize={fileMaxSize}
+                                          files={selectedFiles}
+                                          error={localVideoError}
+                                          onUpload={onAddFile}
+                                          onRemove={onRemoveFile}
+                                        />
+                                      )}
+                                    />
+                                  }
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
+                      </>
+                    )}
+
+                    <div className="w-full md:max-w-lg">
+                      {videoLocalUrl && !localVideoError && (
+                        <VideoPlayer
+                          url={videoLocalUrl}
+                          onError={onLocalVideoError}
+                          onReady={onLocalVideoReady}
+                        />
+                      )}
+
+                      {(fileUrls?.length > 0 || videoUrl) && !videoError && (
+                        <>
+                          <div className="flex items-start">
+                            <FiFilm className={style.CreateVideoIcon} />
+                            <div className={style.CreatePostVideoInput}>
+                              Preview Video
+                            </div>
+                          </div>
+
+                          <VideoPlayer
+                            url={videoUrl || fileUrls[0]}
+                            onError={onVideoError}
+                            onReady={onVideoReady}
+                          />
+
+                          <Button
+                            className="mt-4"
+                            default
+                            type="button"
+                            label="Replace Video"
+                            onClick={() => handleShowModal('remove-video')}
+                          />
+                        </>
                       )}
                     </div>
-                  </>
-                )}
-
-                <div className="w-full md:max-w-lg">
-                  {videoLocalUrl && !localVideoError && (
-                    <VideoPlayer
-                      url={videoLocalUrl}
-                      onError={onLocalVideoError}
-                      onReady={onLocalVideoReady}
-                    />
-                  )}
-
-                  {(fileUrls?.length > 0 || videoUrl) && !videoError && (
-                    <>
-                      <div className="flex items-start">
-                        <FiFilm className={style.CreateVideoIcon} />
-                        <div className={style.CreatePostVideoInput}>
-                          Preview Video
-                        </div>
-                      </div>
-
-                      <VideoPlayer
-                        url={videoUrl || fileUrls[0]}
-                        onError={onVideoError}
-                        onReady={onVideoReady}
-                      />
-
+                  </div>
+                }
+                footer={
+                  selectedFiles?.length > 0 &&
+                  fileUrls?.length === 0 &&
+                  !localVideoError && (
+                    <div className="flex items-center">
                       <Button
-                        className="mt-4"
-                        default
+                        className="mr-4 mb-0"
+                        primary
                         type="button"
-                        label="Replace Video"
-                        onClick={() => handleShowModal('remove-video')}
+                        label={
+                          fileLoading ? 'Uploading Video...' : 'Upload Video'
+                        }
+                        onClick={onUploadFile}
+                        disabled={fileLoading}
+                        style={{ marginBottom: 0 }}
                       />
-                    </>
-                  )}
-                </div>
-              </div>
-            }
-            footer={
-              selectedFiles?.length > 0 &&
-              fileUrls?.length === 0 &&
-              !localVideoError && (
-                <div className="flex items-center">
-                  <Button
-                    className="mr-4 mb-0"
-                    primary
-                    type="button"
-                    label={fileLoading ? 'Uploading Video...' : 'Upload Video'}
-                    onClick={onUploadFile}
-                    disabled={fileLoading}
-                    style={{ marginBottom: 0 }}
-                  />
-                  {fileLoading && (
-                    <>
-                      <FaSpinner className="mx-2 icon-spin" />
-                      {/* hidden for future use */}
-                      {/* <ProgressBar value={uploadPercentage} />  */}
-                    </>
-                  )}
-                  {fileUploadError && (
-                    <div className="my-4 text-danger-500 text-md font-bold">
-                      {fileUploadError}
-                    </div>
-                  )}
-                </div>
-              )
-            }
-          />
-
-          {isSystemPray && (
-            <Card
-              header={<span className={style.CardHeader}>Offerings</span>}
-              content={
-                <div className={style.CreateContentContainer}>
-                  <div className={style.CreatePostOfferingsContent}>
-                    <Toggle
-                      onChange={onToggleOfferings}
-                      defaultChecked={toggleOfferings}
-                      toggle={toggleOfferings}
-                    />
-                    <div className={style.CreatePostOfferingsSubContent}>
-                      <div className={style.CreatePostOfferingSubContent2}>
-                        <i
-                          className={`ciergio-donate-2 ${style.CreatePostOfferingsIcon}`}
-                        />
-                        <span>
-                          <p>
-                            <strong>Ask for Offerings in this Article</strong>
-                          </p>
-                          <p className={style.CreatePostOfferingText}>
-                            A Call to Action button to make an offering will be
-                            visible in the article.
-                            <br />
-                            The button will redirect the user to Offerings.
-                          </p>
-                        </span>
-                      </div>
-                      {toggleOfferings && <OfferingsCard />}
-                    </div>
-                  </div>
-                </div>
-              }
-            />
-          )}
-
-          {!isDailyReadingsPage && (
-            <Card
-              header={<span className={style.CardHeader}>Category</span>}
-              content={
-                <div className={style.CreateContentContainer}>
-                  <div className={style.CreatePostCardContent}>
-                    <Controller
-                      name="category"
-                      control={control}
-                      render={({ name, value, onChange }) => (
-                        <SelectCategory
-                          placeholder="Select a Category"
-                          type={typeOfPage('', 'post', 'pastoral_works')}
-                          onChange={e => {
-                            onChange(e.value)
-                            onCategorySelect(e)
-                          }}
-                          onClear={onClearCategory}
-                          error={errors?.category?.message ?? null}
-                          selected={selectedCategory}
-                        />
+                      {fileLoading && (
+                        <>
+                          <FaSpinner className="mx-2 icon-spin" />
+                          {/* hidden for future use */}
+                          {/* <ProgressBar value={uploadPercentage} />  */}
+                        </>
                       )}
-                    />
-                  </div>
-                </div>
-              }
-            />
+                      {fileUploadError && (
+                        <div className="my-4 text-danger-500 text-md font-bold">
+                          {fileUploadError}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+              />
+
+              {isSystemPray && (
+                <Card
+                  header={<span className={style.CardHeader}>Offerings</span>}
+                  content={
+                    <div className={style.CreateContentContainer}>
+                      <div className={style.CreatePostOfferingsContent}>
+                        <Toggle
+                          onChange={onToggleOfferings}
+                          defaultChecked={toggleOfferings}
+                          toggle={toggleOfferings}
+                        />
+                        <div className={style.CreatePostOfferingsSubContent}>
+                          <div className={style.CreatePostOfferingSubContent2}>
+                            <i
+                              className={`ciergio-donate-2 ${style.CreatePostOfferingsIcon}`}
+                            />
+                            <span>
+                              <p>
+                                <strong>
+                                  Ask for Offerings in this Article
+                                </strong>
+                              </p>
+                              <p className={style.CreatePostOfferingText}>
+                                A Call to Action button to make an offering will
+                                be visible in the article.
+                                <br />
+                                The button will redirect the user to Offerings.
+                              </p>
+                            </span>
+                          </div>
+                          {toggleOfferings && <OfferingsCard />}
+                        </div>
+                      </div>
+                    </div>
+                  }
+                />
+              )}
+
+              {!isDailyReadingsPage && (
+                <Card
+                  header={<span className={style.CardHeader}>Category</span>}
+                  content={
+                    <div className={style.CreateContentContainer}>
+                      <div className={style.CreatePostCardContent}>
+                        <Controller
+                          name="category"
+                          control={control}
+                          render={({ name, value, onChange }) => (
+                            <SelectCategory
+                              placeholder="Select a Category"
+                              type={typeOfPage(
+                                '',
+                                'post',
+                                'pastoral_works',
+                                'website_content'
+                              )}
+                              onChange={e => {
+                                onChange(e.value)
+                                onCategorySelect(e)
+                              }}
+                              onClear={onClearCategory}
+                              error={errors?.category?.message ?? null}
+                              selected={selectedCategory}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                  }
+                />
+              )}
+            </>
           )}
 
           <Card
@@ -1636,6 +1973,26 @@ const CreatePosts = () => {
                           : 'New'}
                       </strong>
                     </span>
+
+                    <span className="flex">
+                      <span className={style.CreatePostSection}>Publish: </span>
+                      <strong>
+                        {selectedPublishTimeType === 'later'
+                          ? ` Scheduled, ${dayjs(
+                              selectedPublishDateTime
+                            ).format('MMM DD, YYYY - hh:mm A')} `
+                          : ' Immediately'}
+                      </strong>
+                      {/* {!isDailyReadingsPage && ( */}
+                      <span
+                        className={style.CreatePostLink}
+                        onClick={handleShowPublishTimeModal}
+                      >
+                        Edit
+                      </span>
+                      {/* )} */}
+                    </span>
+
                     <span className="flex flex-col">
                       <div>
                         <span className={style.CreatePostSection}>
@@ -1683,6 +2040,12 @@ const CreatePosts = () => {
                                 {selectedComplexSpecific && (
                                   <div>{`Complexes (${selectedComplexSpecific?.length}) `}</div>
                                 )}
+                                {selectedGroupExcept && (
+                                  <div>{`Groups (${selectedGroupExcept?.length}) `}</div>
+                                )}
+                                {selectedGroupSpecific && (
+                                  <div>{`Groups (${selectedGroupSpecific?.length}) `}</div>
+                                )}
                               </>
                             )}
 
@@ -1704,33 +2067,27 @@ const CreatePosts = () => {
 
                   <div className={style.CreatePostPublishSubContent}>
                     <span className="flex">
-                      <span className={style.CreatePostSection}>Publish: </span>
-                      <strong>
-                        {selectedPublishTimeType === 'later'
-                          ? ` Scheduled, ${dayjs(
-                              selectedPublishDateTime
-                            ).format('MMM DD, YYYY - hh:mm A')} `
-                          : ' Immediately'}
-                      </strong>
-                      {!isDailyReadingsPage && (
-                        <span
-                          className={style.CreatePostLink}
-                          onClick={handleShowPublishTimeModal}
-                        >
-                          Edit
-                        </span>
-                      )}
+                      <span className={style.CreatePostSection}>
+                        Hide created date: &nbsp;{' '}
+                      </span>
+                      <span className="mr-2">
+                        <Toggle
+                          onChange={onToggleCreateDate}
+                          defaultChecked={toggleCreateDate}
+                          toggle={toggleCreateDate}
+                        />
+                      </span>
                     </span>
 
                     <span className="flex">
                       <span className={style.CreatePostSection}>
-                        Hide Publish Data: &nbsp;{' '}
+                        Show meta data: &nbsp;{' '}
                       </span>
                       <span className="mr-2">
                         <Toggle
-                          onChange={onToggleHideDate}
-                          defaultChecked={toggleHideDate}
-                          toggle={toggleHideDate}
+                          onChange={onToggleMetaData}
+                          defaultChecked={toggleMetaData}
+                          toggle={toggleMetaData}
                         />
                       </span>
                     </span>
@@ -1849,7 +2206,8 @@ const CreatePosts = () => {
                     : typeOfPage(
                         'Update Daily Reading',
                         'Update Post',
-                        'Update Pastoral Work'
+                        'Update Pastoral Work',
+                        'Update Website Content'
                       )
                 }
                 primary
@@ -1872,6 +2230,8 @@ const CreatePosts = () => {
           onSelectComplexSpecific={onSelectComplexSpecific}
           onSelectBuildingExcept={onSelectBuildingExcept}
           onSelectBuildingSpecific={onSelectBuildingSpecific}
+          onSelectGroupSpecific={onSelectGroupSpecific}
+          onSelectGroupExcept={onSelectGroupExcept}
           onSave={onSaveAudience}
           onCancel={onCancelAudience}
           onClose={onCancelAudience}
@@ -1883,6 +2243,8 @@ const CreatePosts = () => {
           valueComplexSpecific={selectedComplexSpecific}
           valueBuildingExcept={selectedBuildingExcept}
           valueBuildingSpecific={selectedBuildingSpecific}
+          valueGroupExcept={selectedGroupExcept}
+          valueGroupSpecific={selectedGroupSpecific}
         />
 
         <PublishTimeModal

@@ -1,6 +1,6 @@
 import P from 'prop-types'
-import Table from '@app/components/table'
 import Pagination from '@app/components/pagination'
+import Table from '@app/components/table'
 
 function PrimaryDataTable({
   columns,
@@ -13,7 +13,8 @@ function PrimaryDataTable({
   setPageLimit,
   emptyText,
   customize,
-  customBody
+  customBody,
+  className = ''
 }) {
   const onPageClick = e => {
     setCurrentPage(e)
@@ -35,6 +36,7 @@ function PrimaryDataTable({
           custom={customize}
           customBody={customBody}
           emptyText={emptyText}
+          className={className}
         />
       ) : (
         <Table
@@ -42,10 +44,11 @@ function PrimaryDataTable({
           items={data}
           loading={loading}
           emptyText={emptyText}
+          className={className}
         />
       )}
 
-      {!loading && data?.count > 10 && (
+      {!loading && data?.count !== 0 && (
         <div className="px-8">
           <Pagination
             items={data}
@@ -70,7 +73,8 @@ PrimaryDataTable.propTypes = {
   setPageLimit: P.func,
   emptyText: P.oneOfType([P.element, P.node, P.string]),
   customize: P.bool,
-  customBody: P.object
+  customBody: P.object,
+  className: P.string
 }
 
 export default PrimaryDataTable

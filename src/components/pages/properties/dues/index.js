@@ -171,7 +171,7 @@ const DuesComponent = ({ unit, header }) => {
           )
         }
       />
-      {dues && dues.count > 10 && (
+      {dues && dues.count !== 0 && (
         <Pagination
           items={dues}
           activePage={activePage}

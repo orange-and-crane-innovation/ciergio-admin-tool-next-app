@@ -219,6 +219,7 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
+  const isWebsiteContentPage = router.pathname === '/website-content'
 
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
@@ -226,6 +227,8 @@ const PostComponent = ({ typeOfPage }) => {
     ? 'qr-code'
     : isDailyReadingsPage
     ? 'daily-readings'
+    : isWebsiteContentPage
+    ? 'website-content'
     : 'posts'
   const donationsRouteName = isSystemPray ? 'offerings' : 'donations'
 
@@ -271,7 +274,12 @@ const PostComponent = ({ typeOfPage }) => {
 
   const fetchFilter = {
     status: ['trashed'],
-    type: typeOfPage('daily_reading', 'post', 'pastoral_works'),
+    type: typeOfPage(
+      'daily_reading',
+      'post',
+      'pastoral_works',
+      'website_content'
+    ),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
@@ -354,7 +362,7 @@ const PostComponent = ({ typeOfPage }) => {
                 function: () => handleShowModal('details', item._id)
               },
               {
-                label: 'Who View this Article',
+                label: 'Who viewed this article',
                 icon: <FiEye />,
                 function: () => handleShowModal('views', item._id)
               }
@@ -730,7 +738,7 @@ const PostComponent = ({ typeOfPage }) => {
           break
         }
         case 'views': {
-          setModalTitle('Who Viewed this Article')
+          setModalTitle('Who viewed this article')
           setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
           setModalFooter(null)
           break
@@ -891,7 +899,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type={typeOfPage('', 'post', 'pastoral_works')}
+              type={typeOfPage('', 'post', 'pastoral_works', 'website_content')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -931,12 +939,14 @@ const PostComponent = ({ typeOfPage }) => {
                     header={`You haven’t created a ${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} post yet`}
                     content={`${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }
@@ -945,7 +955,7 @@ const PostComponent = ({ typeOfPage }) => {
           )
         }
       />
-      {!loading && posts && (
+      {!loading && posts && posts.count !== 0 && (
         <Pagination
           items={posts}
           activePage={activePage}

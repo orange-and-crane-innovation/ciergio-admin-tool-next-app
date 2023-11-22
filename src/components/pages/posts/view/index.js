@@ -1,22 +1,18 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { gql, useLazyQuery } from '@apollo/client'
-import PropTypes from 'prop-types'
-import ReactHtmlParser from 'react-html-parser'
-
 import { FiFileText, FiXCircle } from 'react-icons/fi'
-
-import PageLoader from '@app/components/page-loader'
-import ImageSlider from '@app/components/globals/ImageSlider'
-import VideoPlayer from '@app/components/globals/VideoPlayer'
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from 'react'
+import { gql, useLazyQuery } from '@apollo/client'
 
 import { DATE } from '@app/utils'
-import showToast from '@app/utils/toast'
-
+import ImageSlider from '@app/components/globals/ImageSlider'
 import NotifCard from '../components/NotifCard'
-
+import PageLoader from '@app/components/page-loader'
+import PropTypes from 'prop-types'
+import ReactHtmlParser from 'react-html-parser'
+import VideoPlayer from '@app/components/globals/VideoPlayer'
+import showToast from '@app/utils/toast'
 import styles from './index.module.css'
+import { useRouter } from 'next/router'
 
 const GET_POST_QUERY = gql`
   query getAllPost($where: AllPostInput) {
@@ -32,6 +28,7 @@ const GET_POST_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        showMetadata
         author {
           user {
             firstName
@@ -68,6 +65,7 @@ const GET_POST_DAILY_READINGS_QUERY = gql`
         createdAt
         updatedAt
         publishedAt
+        showMetadata
         author {
           user {
             firstName
@@ -97,6 +95,7 @@ export const GET_POST_FROM_EMAIL_QUERY = gql`
       content
       title
       createdAt
+      showMetadata
       primaryMedia {
         url
       }
@@ -127,6 +126,7 @@ export const GET_PUBLIC_POST_QUERY = gql`
         content
         title
         createdAt
+        showMetadata
         primaryMedia {
           url
         }
@@ -249,7 +249,7 @@ const Component = () => {
               </div>
             )}
 
-            {!isDailyReadingsPage && (
+            {post.showMetadata && !isDailyReadingsPage && (
               <div className="mb-12">
                 <strong>By {post.author}</strong> / {post.date}
               </div>

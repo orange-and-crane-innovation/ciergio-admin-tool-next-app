@@ -19,12 +19,13 @@ export const MEMBER = ACCOUNT_TYPES.MEM.value
 
 export const columns = [
   {
-    name: '',
+    name: 'Name',
     width: ''
   },
   {
-    name: 'Name',
-    width: ''
+    name: 'Email',
+    width: '',
+    hidden: true
   },
   {
     name: 'Role',

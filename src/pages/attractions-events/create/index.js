@@ -1,4 +1,4 @@
-import CreatePosts from '@app/components/pages/posts/create'
+import CreatePosts from '@app/components/pages/posts/Create'
 import Page from '@app/permissions/page'
 
 function CreateBulletinPage() {

@@ -166,7 +166,7 @@ const OverviewComponent = ({
                   ) : null
                 }
               />
-              {propertyData && propertyData?.length > 10 && (
+              {propertyData && propertyData?.length !== 0 && (
                 <Pagination
                   items={propertyData}
                   activePage={activePage}

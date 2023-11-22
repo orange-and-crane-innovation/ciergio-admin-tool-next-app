@@ -1,32 +1,39 @@
-import { debounce } from 'lodash'
-import isEmpty from 'lodash/isEmpty'
-import { useRouter } from 'next/router'
-import Props from 'prop-types'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
-import { FiDownload } from 'react-icons/fi'
-import { HiOutlinePrinter } from 'react-icons/hi'
-import ReactSelect from 'react-select'
 import * as yup from 'yup'
 
+import { Controller, useForm } from 'react-hook-form'
+import { DELETE_USER, GET_ACCOUNTS } from '@app/components/pages/staff/queries'
+import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { gql, useMutation, useQuery } from '@apollo/client'
-import Button from '@app/components/button'
-import Dropdown from '@app/components/dropdown'
-import Input from '@app/components/forms/form-input'
-import FormSelect from '@app/components/forms/form-select'
-import { Card } from '@app/components/globals'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import SearchControl from '@app/components/globals/SearchControl'
-import Modal from '@app/components/modal'
-import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
-import { GET_ACCOUNTS } from '@app/components/pages/staff/queries'
-import Can from '@app/permissions/can'
-import errorHandler from '@app/utils/errorHandler'
-import showToast from '@app/utils/toast'
-import { yupResolver } from '@hookform/resolvers/yup'
 
-import ViewResidentModal from './../ViewResidentModal'
+import { AllMembersPrintView } from '@app/components/print'
+import { BiLoaderAlt } from 'react-icons/bi'
+import Button from '@app/components/button'
+import Can from '@app/permissions/can'
+import { Card } from '@app/components/globals'
+import Dropdown from '@app/components/dropdown'
+import EditModal from './EditModal'
+import FormSelect from '@app/components/forms/form-select'
+import { HiOutlinePrinter } from 'react-icons/hi'
+import { IMAGES } from '@app/constants'
+import ImageWithValidationFallback from '@app/components/image-with-fallback'
+import Input from '@app/components/forms/form-input'
+import Modal from '@app/components/modal'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import Props from 'prop-types'
+import ReactSelect from 'react-select'
+import SearchControl from '@app/components/globals/SearchControl'
+import ViewMemberModal from './../ViewResidentModal'
+import { debounce } from 'lodash'
+import errorHandler from '@app/utils/errorHandler'
+import isEmpty from 'lodash/isEmpty'
+import { DATE } from '@app/utils'
+import showToast from '@app/utils/toast'
+import useDebounce from '@app/utils/useDebounce'
+import { useReactToPrint } from 'react-to-print'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
 
 const SCHEMA_INVITE = yup.object().shape({
   email: yup
@@ -36,9 +43,9 @@ const SCHEMA_INVITE = yup.object().shape({
   complexId: yup.object().nullable(true).required('Complex is required')
 })
 
-const SCHEMA_ADD = yup.object().shape({
-  // companyGroupIds: yup.array().required('Group is required')
-})
+const SCHEMA_ADD = yup.object().shape({})
+
+const SCHEMA_DELETE = yup.object().shape({})
 
 const columns = [
   {
@@ -60,12 +67,17 @@ const columns = [
 ]
 
 const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      status
-      companyId
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -101,6 +113,16 @@ const ADD_MEMBER = gql`
     ) {
       _id
       message
+    }
+  }
+`
+
+const UPDATE_USER_MUTATION = gql`
+  mutation updateUser($userId: String, $data: InputUpdateUser) {
+    updateUser(userId: $userId, data: $data) {
+      processId
+      message
+      slave
     }
   }
 `
@@ -207,11 +229,37 @@ const AddModalContent = ({ control, errors, groupOptions }) => {
   )
 }
 
+const DeleteModalContent = ({ selected }) => {
+  return (
+    <div className="w-full text-base leading-7">
+      <div className="mb-4 px-4 pt-4">
+        <p>
+          <span className="font-bold">
+            <FaExclamationCircle className="inline-flex text-danger-700" />{' '}
+            {`Warning: `}
+          </span>
+          {`You’re about to remove `}
+          <span className="font-bold">{`${selected?.firstName} ${selected?.lastName}`}</span>
+          .
+        </p>
+      </div>
+      <div className="-mx-4 mb-4 p-4 bg-blue-100">
+        <ul className="list-disc px-12">
+          <li className="mb-2">{`${selected?.firstName}'s Profile will be removed from the members list.`}</li>
+          <li className="mb-2">{`${selected?.firstName} will not be able to access the app.`}</li>
+          <li className="mb-2">{`Messages, comments, and notes created by this user will still be viewable.`}</li>
+        </ul>
+      </div>
+      <p className="px-4 pt-2 pb-4">{`Are you sure you want to remove ${selected?.firstName} ${selected?.lastName}?`}</p>
+    </div>
+  )
+}
+
 const defaultModalState = {
   type: 'invite',
   visible: false,
-  okText: 'Invite Member',
-  title: 'Invite Member'
+  okText: 'Invite a Member',
+  title: 'Invite a Member'
 }
 
 const capitalizeText = text => {
@@ -225,12 +273,11 @@ const capitalizeText = text => {
 function MyMembers() {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
+  const debouncedSearchText = useDebounce(searchText, 700)
   const [modalState, setModalState] = useState(defaultModalState)
-
-  const [showModal, setShowModal] = useState(false)
   const [viewMember, setViewMember] = useState(false)
+  const [editMember, setEditMember] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
-  const [selectedStaff, setSelectedStaff] = useState(null)
   const [groupOptions, setGroupOptions] = useState()
   const [complexOptions, setComplexOptions] = useState()
 
@@ -250,7 +297,9 @@ function MyMembers() {
         where: {
           companyId: companyId,
           status: 'active'
-        }
+        },
+        limit: 1000,
+        skip: 0
       }
     }
   )
@@ -272,9 +321,9 @@ function MyMembers() {
   })
 
   useEffect(() => {
-    if (groups && groups.getCompanyGroups)
+    if (groups && groups?.getCompanyGroups)
       setGroupOptions(
-        groups.getCompanyGroups?.map(g => {
+        groups?.getCompanyGroups?.data?.map(g => {
           return { label: capitalizeText(g.name), value: g._id }
         })
       )
@@ -304,9 +353,13 @@ function MyMembers() {
     resolver: yupResolver(SCHEMA_ADD)
   })
 
-  const handleShowModal = () => setShowModal(old => !old)
+  const { control: controlDelete, errors: errorsDelete } = useForm({
+    resolver: yupResolver(SCHEMA_DELETE)
+  })
 
   const handleViewMember = () => setViewMember(old => !old)
+
+  const handleEditMember = () => setEditMember(old => !old)
 
   const onSearch = debounce(e => {
     setSearchText(e.target.value !== '' ? e.target.value : null)
@@ -318,8 +371,8 @@ function MyMembers() {
 
   const where = {
     accountTypes: 'member',
-    companyId
-    // search: debouncedSearchText
+    companyId,
+    search: debouncedSearchText
   }
 
   const {
@@ -338,7 +391,7 @@ function MyMembers() {
   useEffect(() => {
     if (controlAdd && selectedMember && modalState.type === 'add') {
       const defaultValue =
-        selectedMember && selectedMember.companyGroups[0]
+        selectedMember && selectedMember?.companyGroups?.[0]
           ? selectedMember.companyGroups?.map(g => {
               return {
                 label: capitalizeText(g.name),
@@ -350,6 +403,17 @@ function MyMembers() {
     }
   }, [controlAdd, selectedMember, modalState])
 
+  const PRINT_DOWNLOAD_TITLE = 'Registered Members'
+
+  const printRef = useRef()
+  const [loadingPrint, setLoadingPrint] = useState(false)
+  const [csvData] = useState([
+    [PRINT_DOWNLOAD_TITLE],
+    ['As of', DATE.toFriendlyDate(new Date())],
+    [''],
+    ['#', 'Name', 'Email', 'Group(s)']
+  ])
+
   const tableListData = useMemo(
     () => ({
       count: accounts?.getAccounts?.count || 0,
@@ -357,13 +421,17 @@ function MyMembers() {
       offset: accounts?.getAccounts?.offset || 0,
       data:
         accounts?.getAccounts?.data?.length > 0
-          ? accounts.getAccounts.data.map(staff => {
+          ? accounts.getAccounts.data.map((staff, i) => {
               const { user, accountType, companyGroups } = staff
-              const groups = companyGroups
-                ?.map(i => i.name)
-                .toString()
-                .replaceAll(',', ', ')
+              const groups =
+                companyGroups.length > 0
+                  ? companyGroups
+                      ?.map(i => i.name)
+                      .toString()
+                      .replaceAll(',', ', ')
+                  : undefined
 
+              // VIEW
               let dropdownData = [
                 {
                   label: `${
@@ -373,6 +441,7 @@ function MyMembers() {
                   function: () => {
                     const viewItem = {
                       _id: user?._id,
+                      accountId: staff?._id,
                       full_name: `${user?.firstName} ${user?.lastName}`,
                       first_name: user?.firstName,
                       last_name: user?.lastName,
@@ -380,7 +449,8 @@ function MyMembers() {
                       gender: user?.gender,
                       email: user?.email,
                       avatar: user?.avatar,
-                      groups: companyGroups
+                      groups: groups ?? '-',
+                      date_reg: user?.createdAt
                     }
                     setSelectedMember(viewItem)
                     setViewMember(true)
@@ -388,6 +458,7 @@ function MyMembers() {
                 }
               ]
 
+              // UPDATE - GROUP
               if (profile._id !== user?._id) {
                 dropdownData = [
                   ...dropdownData,
@@ -407,37 +478,59 @@ function MyMembers() {
                 ]
               }
 
-              if (accountType !== 'member' && profile._id !== user?._id) {
+              // UPDATE & DELETE - PROFILE
+              if (accountType === 'member' && profile._id !== user?._id) {
                 dropdownData = [
                   ...dropdownData,
+                  {
+                    label: 'Update Profile',
+                    icon: <span className="ciergio-edit" />,
+                    function: () => {
+                      setSelectedMember(staff)
+                      handleEditMember()
+                    }
+                  },
                   {
                     label: 'Remove Member',
                     icon: <span className="ciergio-trash" />,
                     function: () => {
-                      setSelectedStaff(staff)
-                      handleShowModal('delete')
+                      setSelectedMember(staff)
+                      setModalState({
+                        type: 'delete',
+                        visible: true,
+                        okText: 'Yes, remove member',
+                        title: 'Remove Member'
+                      })
                     }
                   }
                 ]
               }
 
+              csvData.push([
+                i + 1,
+                `${user?.firstName} ${user?.lastName}`,
+                user?.email,
+                `${groups || '-'}`
+              ])
+
               return {
                 name: (
-                  <div className="flex items-center space-x-6">
-                    <div className="w-11 h-11 rounded-full overflow-auto">
-                      <img
+                  <div className="flex items-center space-x-4">
+                    <div className="w-11 h-11 rounded-full overflow-auto box-border">
+                      <ImageWithValidationFallback
                         className="h-full w-full object-contain object-center"
-                        src={
+                        url={
                           user?.avatar ||
                           `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
                         }
+                        fallback={IMAGES.DEFAULT_AVATAR}
                         alt="user-avatar"
                       />
                     </div>
                     <span>{`${user?.firstName} ${user?.lastName}`}</span>
                   </div>
                 ),
-                email: <>{user.email}</>,
+                email: <>{user?.email}</>,
                 group: <span className="capitalize">{groups || '-'}</span>,
                 dropdown: (
                   <Can
@@ -464,59 +557,148 @@ function MyMembers() {
     { loading: addLoading, data: addData, error: addError }
   ] = useMutation(ADD_MEMBER)
 
-  const onSubmit = val => {
-    if (!isEmpty(val)) {
-      if (modalState.type === 'invite') {
-        let groupids = null
-        if (val?.groupids) groupids = val?.groupids.map(g => g.value)
+  const [
+    updateUser,
+    { loading: editLoading, data: editData, error: editError }
+  ] = useMutation(UPDATE_USER_MUTATION)
 
-        inviteMember({
+  const [
+    deleteUser,
+    { loading: deleteLoading, data: deleteData, error: deleteError }
+  ] = useMutation(DELETE_USER)
+
+  const onSubmit = val => {
+    if (modalState.visible) {
+      if (!isEmpty(val)) {
+        if (modalState.type === 'invite') {
+          let groupids = null
+          if (val?.groupids) groupids = val?.groupids.map(g => g.value)
+
+          inviteMember({
+            variables: {
+              companyId: companyId,
+              data: {
+                email: val?.email,
+                complexId: val?.complexId?.value,
+                companyGroupIds: groupids,
+                accountType: 'member'
+              }
+            }
+          })
+        }
+      }
+
+      if (modalState.type === 'add') {
+        let groupids = null
+        if (val?.companyGroupIds)
+          groupids = val?.companyGroupIds.map(g => g.value)
+
+        addMember({
           variables: {
-            companyId: companyId,
+            accountId: selectedMember._id,
+            companyGroupIds: groupids || []
+          }
+        })
+      }
+
+      if (modalState.type === 'delete') {
+        deleteUser({
+          variables: {
             data: {
-              email: val?.email,
-              complexId: val?.complexId?.value,
-              companyGroupIds: groupids
+              accountId: selectedMember?._id
             }
           }
         })
       }
     }
 
-    if (modalState.type === 'add') {
-      console.log('val', val)
-      let groupids = null
-      if (val?.companyGroupIds)
-        groupids = val?.companyGroupIds.map(g => g.value)
+    if (editMember) {
+      const updateData = {
+        userId: val?.id,
+        data: {
+          avatar: val?.logo ? val?.logo[0] : null,
+          firstName: val?.firstName,
+          lastName: val?.lastName,
+          birthDate: val?.birthDate,
+          gender: val?.gender,
 
-      addMember({
-        variables: {
-          accountId: selectedMember._id,
-          companyGroupIds: groupids
+          userAccountId: selectedMember?._id
         }
-      })
+      }
+      updateUser({ variables: updateData })
     }
   }
 
   useEffect(() => {
-    if (!inviteLoading || !addLoading) {
+    if (!inviteLoading) {
       if (inviteData && !inviteError) {
         showToast('success', `Successfully invite a member`)
         closeModal()
         refetchAccounts()
       }
+
+      if (!inviteData && inviteError) {
+        errorHandler(inviteError)
+      }
+    }
+  }, [inviteLoading, inviteData, inviteError])
+
+  useEffect(() => {
+    if (!addLoading) {
       if (addData && !addError) {
         showToast('success', `Successfully updated a member group(s)`)
         closeModal()
         refetchAccounts()
       }
 
-      if ((!inviteData && inviteError) || (!addData && addError)) {
-        const err = inviteError || addError
-        errorHandler(err)
+      if (!addData && addError) {
+        errorHandler(addError)
       }
     }
-  }, [inviteLoading, inviteData, inviteError, addLoading, addData, addError])
+  }, [addLoading, addData, addError])
+
+  useEffect(() => {
+    if (!editLoading) {
+      if (editData && !editError) {
+        refetchAccounts()
+        handleEditMember()
+        showToast('success', 'Profile updated successfully!')
+      }
+
+      if (!editData && editError) {
+        errorHandler(editError)
+      }
+    }
+  }, [editLoading, editData, editError])
+
+  useEffect(() => {
+    if (!deleteLoading) {
+      if (deleteData && !deleteError) {
+        showToast(
+          'success',
+          `You have successfully remove ${selectedMember?.user?.firstName} ${selectedMember?.user?.lastName}`
+        )
+        closeModal()
+        refetchAccounts()
+      }
+
+      if (!deleteData && deleteError) {
+        errorHandler(deleteError)
+      }
+    }
+  }, [deleteLoading, deleteData, deleteError])
+
+  const onPrintPreview = useReactToPrint({
+    documentTitle: PRINT_DOWNLOAD_TITLE,
+    content: () => printRef.current,
+    onBeforeGetContent: () => {
+      setLoadingPrint(true)
+    },
+    onAfterPrint: () => {
+      setLoadingPrint(false)
+    },
+    removeAfterPrint: true
+  })
 
   return (
     <section className="content-wrap">
@@ -534,19 +716,32 @@ function MyMembers() {
       </div>
 
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Registered Members`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">
+          {PRINT_DOWNLOAD_TITLE} ({tableListData.count})
+        </h1>
         <div className="flex items-center">
           <Button
             default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
+            icon={
+              loadingPrint ? (
+                <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+              ) : (
+                <HiOutlinePrinter />
+              )
+            }
+            onClick={onPrintPreview}
             className="mr-4 mt-4"
+            disabled={
+              loadingAccounts || tableListData.count === 0 || loadingPrint
+            }
           />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
+          <DownloadCSV
+            data={csvData}
+            title={PRINT_DOWNLOAD_TITLE}
+            fileName={`${DATE.getCurrentDate()} - ${PRINT_DOWNLOAD_TITLE}`}
+            disabled={loadingAccounts || tableListData.count === 0}
             className="mr-4 mt-4"
+            noBottomMargin={false}
           />
           <Button
             default
@@ -559,10 +754,13 @@ function MyMembers() {
               })
             }
             className="mr-4 mt-4"
+            disabled={loadingAccounts || tableListData.count === 0}
           />
         </div>
       </div>
+
       <Card
+        className="border-t-none"
         content={
           <PrimaryDataTable
             data={tableListData}
@@ -584,7 +782,11 @@ function MyMembers() {
         okButtonProps={{
           danger: modalState.type === 'delete',
           disabled:
-            loadingGroups || loadingComplexes || inviteLoading || addLoading
+            loadingGroups ||
+            loadingComplexes ||
+            inviteLoading ||
+            addLoading ||
+            deleteLoading
         }}
         visible={modalState.visible}
         onOk={async () => {
@@ -598,6 +800,12 @@ function MyMembers() {
             await controlAdd.trigger()
             if (isEmpty(errorsAdd)) {
               onSubmit(controlAdd.getValues())
+            }
+          }
+          if (modalState.type === 'delete') {
+            await controlDelete.trigger()
+            if (isEmpty(errorsDelete)) {
+              onSubmit(controlDelete.getValues())
             }
           }
         }}
@@ -624,20 +832,34 @@ function MyMembers() {
               />
             )}
 
-            {/* {modalState.type === 'delete' && (
-              <DeleteModalContent selected={selectedGroup} control={control} />
-            )} */}
+            {modalState.type === 'delete' && (
+              <DeleteModalContent selected={selectedMember?.user} />
+            )}
           </>
         )}
       </Modal>
 
-      <AddResidentModal showModal={showModal} onShowModal={handleShowModal} />
-
-      <ViewResidentModal
+      <ViewMemberModal
         showModal={viewMember}
         onShowModal={handleViewMember}
         resident={selectedMember}
       />
+
+      <EditModal
+        data={selectedMember?.user}
+        isShown={editMember}
+        loading={editLoading}
+        onSave={e => onSubmit(e)}
+        onCancel={handleEditMember}
+      />
+
+      <div className="hidden">
+        <AllMembersPrintView
+          ref={printRef}
+          title={PRINT_DOWNLOAD_TITLE}
+          data={tableListData?.data}
+        />
+      </div>
     </section>
   )
 }
@@ -653,6 +875,10 @@ AddModalContent.propTypes = {
   groupOptions: Props.array,
   control: Props.any,
   errors: Props.object
+}
+
+DeleteModalContent.propTypes = {
+  selected: Props.object
 }
 
 export default MyMembers

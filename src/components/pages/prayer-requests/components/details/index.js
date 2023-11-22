@@ -5,11 +5,7 @@ import Link from 'next/link'
 import Tabs from '@app/components/tabs'
 import Table from '@app/components/table'
 import { Card } from '@app/components/globals'
-import {
-  toFriendlyDate,
-  friendlyDateTimeFormat,
-  toFriendlyTime
-} from '@app/utils/date'
+import { toFriendlyDate, toFriendlyDateTime } from '@app/utils/date'
 import isEmpty from 'lodash/isEmpty'
 import {
   GET_PRAYER_REQUEST_DETAILS,
@@ -85,10 +81,7 @@ export default function PrayerRequestDetails() {
           ? prHistory?.data.map(h => {
               const { firstName, lastName } = h.by.user
               return {
-                dateCreated: friendlyDateTimeFormat(
-                  h.createdAt,
-                  'MMMM DD YYYY - HH:MM A'
-                ),
+                dateCreated: toFriendlyDateTime(h.createdAt),
                 user: `${firstName} ${lastName}`,
                 activity: h.activity
               }

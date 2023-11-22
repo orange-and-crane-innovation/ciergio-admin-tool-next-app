@@ -57,13 +57,13 @@
   }
 
   .messageAttachmentsContainer {
-    @apply bg-white p-4 m-0 h-12 overflow-y-scroll flex items-center;
+    @apply bg-white p-4 m-0 h-auto overflow-y-scroll flex items-center gap-4 flex-none;
   }
 
   .messageAttachment {
     max-width: 220px;
     width: fit-content;
-    @apply flex p-2 bg-neutral-200 rounded mt-2 mr-4;
+    @apply flex p-2 bg-neutral-200 rounded;
   }
 
   .messageAttachmentName {
@@ -73,9 +73,9 @@
   }
 
   .messageBoxInput {
-    min-height: 80px;
-    @apply bg-white border border-neutral-300 box-border p-0 max-h-64;
-    @apply relative grid grid-cols-12;
+    min-height: 70px;
+    @apply bg-white border border-neutral-300 box-border p-0 max-h-64 border-l-0 border-b-0;
+    @apply relative flex items-center justify-items-center;
   }
 
   .messageDateStamp {

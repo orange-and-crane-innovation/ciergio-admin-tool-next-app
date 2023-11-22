@@ -122,7 +122,9 @@ const Component = ({ data, loading, isShown, onSave, onCancel }) => {
     <Modal
       title="Edit Profile"
       visible={isShown}
-      loading={loading}
+      okButtonProps={{
+        disabled: loading
+      }}
       onClose={onCancel}
       okText="Save"
       onOk={handleSubmit(onSave)}

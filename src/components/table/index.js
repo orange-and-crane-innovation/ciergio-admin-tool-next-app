@@ -12,8 +12,11 @@ const Table = ({
   items,
   onRowClick,
   loading,
-  emptyText
+  emptyText,
+  className
 }) => {
+  console.log('ROWS', rowNames)
+  console.log('ITEMS', items)
   if (loading) {
     return (
       <div className="w-full h-96 flex items-center justify-center">
@@ -23,7 +26,9 @@ const Table = ({
   }
   let listItem = []
   return (
-    <div className={`scrollableContainer ${styles.tableContainer}`}>
+    <div
+      className={`scrollableContainer ${styles.tableContainer} ${className}`}
+    >
       <table id="table" className={styles.tableControl}>
         <thead className={styles.tableHeader}>
           <tr>
@@ -49,7 +54,11 @@ const Table = ({
               items.data.map((item, index) => {
                 listItem = Object.entries(item).map(
                   ([key, value], rowIndex) => {
-                    if (value !== false && key !== 'id') {
+                    if (
+                      value !== false &&
+                      key !== 'id' &&
+                      !rowNames[rowIndex].hidden
+                    ) {
                       return <td key={rowIndex}>{value}</td>
                     }
                     return null
@@ -97,7 +106,8 @@ Table.propTypes = {
   items: PropTypes.object,
   onRowClick: PropTypes.func,
   loading: PropTypes.bool,
-  emptyText: PropTypes.node || PropTypes.string
+  emptyText: PropTypes.node || PropTypes.string,
+  className: PropTypes.string
 }
 
 export default Table

@@ -41,6 +41,7 @@ const Layouts = ({ children }) => {
     [
       '/auth/manage',
       '/posts/view/[id]',
+      '/website-content/view/[id]',
       '/attractions-events/view/[id]',
       '/qr-code/view/[id]',
       '/daily-readings/view/[id]'

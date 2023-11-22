@@ -1,4 +1,4 @@
-import CreatePosts from '@app/components/pages/posts/create'
+import CreatePosts from '@app/components/pages/posts/Create'
 import { RolesPermissions } from '@app/components/rolespermissions'
 
 function PastoralWorksCreateBulletinPage() {

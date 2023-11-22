@@ -12,6 +12,7 @@ export const getConversations = gql`
       skip
       data {
         _id
+        type
         name
         author {
           _id
@@ -20,6 +21,15 @@ export const getConversations = gql`
             firstName
             avatar
             lastName
+          }
+          companyRole {
+            _id
+            name
+            status
+            permissions {
+              group
+              accessLevel
+            }
           }
           status
           accountType
@@ -37,6 +47,15 @@ export const getConversations = gql`
               firstName
               lastName
               avatar
+            }
+            companyRole {
+              _id
+              name
+              status
+              permissions {
+                group
+                accessLevel
+              }
             }
             unit {
               _id
@@ -56,6 +75,15 @@ export const getConversations = gql`
                 firstName
                 lastName
               }
+              companyRole {
+                _id
+                name
+                status
+                permissions {
+                  group
+                  accessLevel
+                }
+              }
             }
             message
             attachments {
@@ -71,6 +99,15 @@ export const getConversations = gql`
                   _id
                   firstName
                   lastName
+                }
+                companyRole {
+                  _id
+                  name
+                  status
+                  permissions {
+                    group
+                    accessLevel
+                  }
                 }
               }
             }
@@ -96,12 +133,26 @@ export const getMessages = gql`
         message
         status
         createdAt
+        attachments {
+          type
+          filename
+          url
+        }
         author {
           user {
             _id
             firstName
             lastName
             avatar
+          }
+          companyRole {
+            _id
+            name
+            status
+            permissions {
+              group
+              accessLevel
+            }
           }
           accountType
           active
@@ -127,6 +178,15 @@ export const getMessages = gql`
                 firstName
                 lastName
               }
+              companyRole {
+                _id
+                name
+                status
+                permissions {
+                  group
+                  accessLevel
+                }
+              }
             }
           }
         }
@@ -139,6 +199,15 @@ export const getMessages = gql`
               firstName
               lastName
               avatar
+            }
+            companyRole {
+              _id
+              name
+              status
+              permissions {
+                group
+                accessLevel
+              }
             }
           }
         }
@@ -161,6 +230,15 @@ export const getAccounts = gql`
           firstName
           lastName
           avatar
+        }
+        companyRole {
+          _id
+          name
+          status
+          permissions {
+            group
+            accessLevel
+          }
         }
         unit {
           _id
@@ -218,5 +296,21 @@ export const seenMessage = gql`
 export const GET_UNREAD_MESSAGE_QUERY = gql`
   query($accountId: String) {
     getUnreadConversationCount(where: { accountId: $accountId })
+  }
+`
+
+export const REMOVE_CONVERSATION_PARTICIPANT = gql`
+  mutation removeConversationParticipant(
+    $participantId: String
+    $conversationId: String
+  ) {
+    removeConversationParticipant(
+      participantId: $participantId
+      conversationId: $conversationId
+    ) {
+      _id
+      processId
+      message
+    }
   }
 `

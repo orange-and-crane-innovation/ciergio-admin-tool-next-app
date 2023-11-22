@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
-import { FiDownload } from 'react-icons/fi'
 import { HiOutlinePrinter } from 'react-icons/hi'
 
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
@@ -13,7 +12,7 @@ import FormSelect from '@app/components/forms/form-select'
 import { Card } from '@app/components/globals'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 import SearchComponent from '@app/components/globals/SearchControl'
-import { ACCOUNT_TYPES } from '@app/constants'
+import { ACCOUNT_TYPES, IMAGES } from '@app/constants'
 import { initializeApollo } from '@app/lib/apollo/client'
 import Can from '@app/permissions/can'
 import errorHandler from '@app/utils/errorHandler'
@@ -21,6 +20,13 @@ import getAccountTypeName from '@app/utils/getAccountTypeName'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
 import { yupResolver } from '@hookform/resolvers/yup'
+
+import { AllStaffPrintView } from '@app/components/print'
+import { BiLoaderAlt } from 'react-icons/bi'
+import { DATE } from '@app/utils'
+import { useReactToPrint } from 'react-to-print'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
+import { getAssignment } from '../pending-invites/PendingInvites'
 
 import {
   ALL_ROLES,
@@ -57,6 +63,7 @@ import {
   editStaffValidationSchema,
   inviteStaffValidationSchema
 } from './schema'
+import ImageWithValidationFallback from '@app/components/image-with-fallback'
 
 function AllStaff() {
   const router = useRouter()
@@ -289,7 +296,7 @@ function AllStaff() {
   const [deleteUser, { loading: deletingUser }] = useMutation(DELETE_USER, {
     onCompleted: () => {
       const staff = selectedStaff?.user
-      const accountType = getAccountTypeName(selectedStaff?.accountType)
+      const accountType = getAccountTypeName(selectedStaff)
       showToast(
         'success',
         `You have successfully remove ${staff.firstName} ${staff.lastName} as ${accountType}`
@@ -358,7 +365,6 @@ function AllStaff() {
     // eslint-disable-next-line no-constant-condition
     if (validate || true) {
       const values = getInviteStaffValues()
-      console.log(values)
       const {
         staffType: staff,
         email,
@@ -415,7 +421,6 @@ function AllStaff() {
           })
           break
         default:
-          // console.err(new Error('wrong staff type'))
           addStaff({
             variables: {
               data: staff
@@ -434,7 +439,9 @@ function AllStaff() {
     const { staffFirstName, staffLastName, staffType } = values
     const data = {
       firstName: staffFirstName,
-      lastName: staffLastName
+      lastName: staffLastName,
+
+      userAccountId: selectedStaff?._id
     }
 
     updateUser({
@@ -515,6 +522,17 @@ function AllStaff() {
     building?.getBuildings
   ])
 
+  const PRINT_DOWNLOAD_TITLE = 'List of Staff'
+
+  const printRef = useRef()
+  const [loadingPrint, setLoadingPrint] = useState(false)
+  const [csvData] = useState([
+    [PRINT_DOWNLOAD_TITLE],
+    ['As of', DATE.toFriendlyDate(new Date())],
+    [''],
+    ['#', 'Name', 'Email', 'Role', 'Assignment']
+  ])
+
   const staffData = useMemo(
     () => ({
       count: accounts?.getAccounts?.count || 0,
@@ -522,9 +540,9 @@ function AllStaff() {
       offset: accounts?.getAccounts?.offset || 0,
       data:
         accounts?.getAccounts?.data?.length > 0
-          ? accounts.getAccounts.data.map(staff => {
-              const { user, company, complex, building, accountType } = staff
-              const roleType = staff?.companyRole?.name || ''
+          ? accounts.getAccounts.data.map((staff, i) => {
+              const { user, accountType } = staff
+              const roleType = staff?.companyRole?.name || '-'
               let dropdownData = [
                 {
                   label: `${
@@ -567,31 +585,41 @@ function AllStaff() {
                 ]
               }
 
+              csvData.push([
+                i + 1,
+                `${user?.firstName} ${user?.lastName}`,
+                `${user?.email}`,
+                `${roleType}`,
+                `${getAssignment(staff)}`
+              ])
+
               return {
-                avatar: (
-                  <div className="w-11 h-11 rounded-full overflow-auto">
-                    <img
-                      className="h-full w-full object-contain object-center"
-                      src={
-                        user?.avatar ||
-                        `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
-                      }
-                      alt="user-avatar"
-                    />
+                name: (
+                  <div className="flex items-center space-x-4">
+                    <div className="w-11 h-11 rounded-full overflow-auto box-border">
+                      <ImageWithValidationFallback
+                        className="h-full w-full object-contain object-center"
+                        url={
+                          user?.avatar ||
+                          `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&rounded=true&size=44`
+                        }
+                        fallback={IMAGES.DEFAULT_AVATAR}
+                        alt="user-avatar"
+                      />
+                    </div>
+                    <span>
+                      <Link href={`/staff/view/${user?._id}`}>
+                        <a className="mx-2 hover:underline capitalize">
+                          {`${user?.firstName} ${user?.lastName}`}
+                        </a>
+                      </Link>
+                    </span>
                   </div>
                 ),
-                name: (
-                  <Link href={`/staff/view/${user?._id}`}>
-                    <a className="mx-2 hover:underline capitalize font-bold">
-                      {`${user?.firstName} ${user?.lastName}`}
-                    </a>
-                  </Link>
-                ),
+                email: <span>{user?.email || '-'}</span>,
                 role: <span className="capitalize">{roleType}</span>,
                 assignment: (
-                  <span className="capitalize">
-                    {building?.name || complex?.name || company?.name || ''}
-                  </span>
+                  <span className="capitalize">{getAssignment(staff)}</span>
                 ),
                 dropdown: (
                   <Can
@@ -625,17 +653,30 @@ function AllStaff() {
     }
   }, [selectedStaff?.user])
 
+  const onPrintPreview = useReactToPrint({
+    documentTitle: PRINT_DOWNLOAD_TITLE,
+    content: () => printRef.current,
+    onBeforeGetContent: () => {
+      setLoadingPrint(true)
+    },
+    onAfterPrint: () => {
+      setLoadingPrint(false)
+    },
+    removeAfterPrint: true
+  })
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">Manage Staff</h1>
+
       <div className="flex items-center justify-end mt-12 mx-4 mb-4 w-full">
-        <div className="flex items-left justify-between w-7/12 flex-row">
+        {/* <div className="flex items-left justify-between w-7/12 flex-row">
           <div className="w-full max-w-xs mr-2">
-            <h1 className="font-bold text-base">{`Total Members: ${
+            <h1 className="font-bold text-base">{`Total Staff: ${
               accounts?.getAccounts?.count || 0
             }`}</h1>
           </div>
-        </div>
+        </div> */}
         <div className="flex items-center justify-between w-7/12 flex-row">
           <div className="w-full max-w-xs mr-2">
             <FormSelect
@@ -676,32 +717,49 @@ function AllStaff() {
           </div>
         </div>
       </div>
-      <Card
-        noPadding
-        title={<h1 className="font-bold text-base">Members</h1>}
-        actions={[
+
+      <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
+        <h1 className="font-bold text-base px-8 py-4">
+          {PRINT_DOWNLOAD_TITLE} ({staffData.count})
+        </h1>
+        <div className="flex items-center">
           <Button
             key="print"
             default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
-            disabled
-          />,
-          <Button
+            icon={
+              loadingPrint ? (
+                <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+              ) : (
+                <HiOutlinePrinter />
+              )
+            }
+            onClick={onPrintPreview}
+            className="mr-4 mt-4"
+            disabled={loadingAccounts || staffData.count === 0 || loadingPrint}
+          />
+          <DownloadCSV
             key="download"
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
-            disabled
-          />,
+            data={csvData}
+            title={PRINT_DOWNLOAD_TITLE}
+            fileName={`${DATE.getCurrentDate()} - ${PRINT_DOWNLOAD_TITLE}`}
+            disabled={loadingAccounts || staffData.count === 0}
+            className="mr-4 mt-4"
+            noBottomMargin={false}
+          />
           <Button
             key="create"
             default
             leftIcon={<FaPlusCircle />}
             label="Invite Staff"
             onClick={() => handleShowModal('create')}
+            disabled={loadingAccounts || staffData.count === 0}
+            className="mr-4 mt-4"
           />
-        ]}
+        </div>
+      </div>
+
+      <Card
+        className="border-t-none"
         content={
           <PrimaryDataTable
             data={staffData}
@@ -715,6 +773,7 @@ function AllStaff() {
           />
         }
       />
+
       <InviteStaffModal
         open={showInviteModal}
         loading={sendingInvite}
@@ -728,6 +787,7 @@ function AllStaff() {
           register: registerInviteStaff
         }}
       />
+
       {showEditModal && (
         <EditStaffModal
           form={{
@@ -741,6 +801,7 @@ function AllStaff() {
           selectedStaff={selectedStaff}
         />
       )}
+
       <RemoveStaffModal
         open={showDeleteModal}
         onCancel={() => handleClearModal('delete')}
@@ -748,6 +809,14 @@ function AllStaff() {
         loading={deletingUser}
         user={removeUser}
       />
+
+      <div className="hidden">
+        <AllStaffPrintView
+          ref={printRef}
+          title={PRINT_DOWNLOAD_TITLE}
+          data={staffData?.data}
+        />
+      </div>
     </section>
   )
 }

@@ -116,7 +116,7 @@ function Profile() {
               <h4 className="text-neutral-dark">
                 <span className="text-3xl font-bold block">{fullName}</span>
                 <small className="block mt-4 capitalize text-base">
-                  {getAccountTypeName(resident?.accountType)}
+                  {getAccountTypeName(resident)}
                 </small>
               </h4>
             </div>
@@ -130,7 +130,7 @@ function Profile() {
                 }
                 content={<Table rowNames={columns} items={historyData} />}
               />
-              {historyData && historyData.count > 10 && (
+              {historyData && historyData.count !== 0 && (
                 <Pagination
                   items={historyData}
                   activePage={activePage}

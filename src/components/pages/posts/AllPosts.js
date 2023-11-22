@@ -192,7 +192,7 @@ const PostComponent = ({ typeOfPage }) => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works')
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
 
   const headerName = isQRCodePage ? 'Active QR Codes' : typeOfPage()
 
@@ -242,7 +242,12 @@ const PostComponent = ({ typeOfPage }) => {
 
   const fetchFilter = {
     status: ['published'],
-    type: typeOfPage('daily_reading', 'post', 'pastoral_works'),
+    type: typeOfPage(
+      'daily_reading',
+      'post',
+      'pastoral_works',
+      'website_content'
+    ),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
       allpost: searchText
@@ -332,13 +337,14 @@ const PostComponent = ({ typeOfPage }) => {
                 label: typeOfPage(
                   'Daily Reading Details',
                   'Article Details',
-                  'Pastoral Work Details'
+                  'Pastoral Work Details',
+                  'Website Content Details'
                 ),
                 icon: <FiFileText />,
                 function: () => handleShowModal('details', item._id)
               },
               {
-                label: 'Who View this Article',
+                label: 'Who viewed this article',
                 icon: <FiEye />,
                 function: () => handleShowModal('views', item._id)
               }
@@ -431,9 +437,16 @@ const PostComponent = ({ typeOfPage }) => {
                       {` | `}
                       <Link href={`/${routeName}/view/${item._id}`}>
                         <a className="mx-2 hover:underline" target="_blank">
-                          View
+                          Preview
                         </a>
                       </Link>
+                      {` | `}
+                      <span
+                        className="mx-2 cursor-pointer hover:underline"
+                        onClick={() => handleShowModal('share', item._id)}
+                      >
+                        Share
+                      </span>
                       {` | `}
                       <Can
                         perform={
@@ -462,7 +475,7 @@ const PostComponent = ({ typeOfPage }) => {
                         <div className="flex text-info-500 text-sm">
                           <Link href={`/${routeName}/view/${item._id}`}>
                             <a className="mr-2 hover:underline" target="_blank">
-                              View
+                              Preview
                             </a>
                           </Link>
                         </div>
@@ -736,7 +749,7 @@ const PostComponent = ({ typeOfPage }) => {
             break
           }
           case 'views': {
-            setModalTitle('Who Viewed this Article')
+            setModalTitle('Who viewed this article')
             setModalContent(
               <ViewsCard data={selected[0].views?.unique?.users} />
             )
@@ -772,7 +785,7 @@ const PostComponent = ({ typeOfPage }) => {
             break
           }
           case 'share': {
-            setModalTitle('Share To Social Media')
+            setModalTitle('Share to social media')
             setModalContent(
               <div className="grid grid-cols-3 gap-4 justify-items-center">
                 <div className="share-social-item">
@@ -1111,20 +1124,21 @@ const PostComponent = ({ typeOfPage }) => {
           label: typeOfPage(
             'Daily Reading Details',
             'Article Details',
-            'Pastoral Work Details'
+            'Pastoral Work Details',
+            'Website Content Details'
           ),
           icon: <FiFileText />,
           function: () => handleShowModal('details', item._id)
         },
         {
-          label: 'Who View this Article',
+          label: 'Who viewed this article',
           icon: <FiEye />,
           function: () => handleShowModal('views', item._id)
-        },
-        {
-          label: 'Share to Social Media',
-          icon: <FiShare2 />,
-          function: () => handleShowModal('share', item._id)
+          // },
+          // {
+          //   label: 'Share to social media',
+          //   icon: <FiShare2 />,
+          //   function: () => handleShowModal('share', item._id)
         }
       ]
 
@@ -1284,9 +1298,16 @@ const PostComponent = ({ typeOfPage }) => {
                     {` | `}
                     <Link href={`/${routeName}/view/${item._id}`}>
                       <a className="mx-2 hover:underline" target="_blank">
-                        View
+                        Preview
                       </a>
                     </Link>
+                    {` | `}
+                    <span
+                      className="mx-2 cursor-pointer hover:underline"
+                      onClick={() => handleShowModal('share', item._id)}
+                    >
+                      Share
+                    </span>
                     <Can
                       perform={
                         isAttractionsEventsPage
@@ -1317,7 +1338,7 @@ const PostComponent = ({ typeOfPage }) => {
                       yes={
                         <Link href={`/${routeName}/view/${item._id}`}>
                           <a className="mr-2 hover:underline" target="_blank">
-                            View
+                            Preview
                           </a>
                         </Link>
                       }
@@ -1466,7 +1487,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type={typeOfPage('', 'post', 'pastoral_works')}
+              type={typeOfPage('', 'post', 'pastoral_works', 'website_content')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -1539,7 +1560,8 @@ const PostComponent = ({ typeOfPage }) => {
                             : typeOfPage(
                                 'Add Daily Reading',
                                 'Create Post',
-                                'Add Pastoral Work'
+                                'Add Pastoral Work',
+                                'Add Website Content'
                               )
                         }
                         onClick={goToCreatePage}
@@ -1576,12 +1598,14 @@ const PostComponent = ({ typeOfPage }) => {
                     header={`You haven’t created a ${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} post yet`}
                     content={`${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
-                      'Pastoral Work'
+                      'Pastoral Work',
+                      'Website Content'
                     )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }
@@ -1591,7 +1615,7 @@ const PostComponent = ({ typeOfPage }) => {
         }
       />
 
-      {!loading && posts && (
+      {!loading && posts && posts.count !== 0 && (
         <Pagination
           items={posts}
           activePage={activePage}

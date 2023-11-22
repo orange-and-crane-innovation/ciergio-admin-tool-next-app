@@ -204,6 +204,7 @@ function Contact({ id }) {
         category: selectedContact?.category?._id,
         name: selectedContact.name,
         contactNumber: selectedContact.contactNumber,
+        email: selectedContact.email,
         address: selectedContact?.address?.formattedAddress || ''
       })
     }
@@ -215,7 +216,8 @@ function Contact({ id }) {
       category: null,
       name: '',
       contactNumber: '',
-      address: null
+      address: null,
+      email: ''
     })
     setFileUploadedData([])
     setImageUrls([])
@@ -225,7 +227,7 @@ function Contact({ id }) {
 
   const handleCreateContact = async () => {
     const values = getValues()
-    const { category, name, contactNumber, address } = values
+    const { category, name, contactNumber, address, email } = values
     const validated = await trigger()
     const phoneNumber = parsePhoneNumberFromString(contactNumber, 'PH')
     if (validated && !phoneNumber.isValid()) {
@@ -253,6 +255,7 @@ function Contact({ id }) {
       name,
       logo: fileUploadedData[0]?.url,
       contactNumber,
+      email,
       categoryId: category?.value ?? selectedContact?.category?._id
     }
 
@@ -393,9 +396,10 @@ function Contact({ id }) {
               <div className="flex items-center justify-start">
                 <div>
                   <p>{contact.name}</p>
-                  <p className="text-gray-600">
+                  <p className="text-blue-600">
                     {formatNumber(contact.contactNumber)}
                   </p>
+                  <p className="text-gray-600">{contact.email}</p>
                 </div>
               </div>
             ),

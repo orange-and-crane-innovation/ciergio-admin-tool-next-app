@@ -1,13 +1,11 @@
-import { useMemo } from 'react'
-import P from 'prop-types'
+import { displayDays, toFriendlyDateTime } from '@app/utils/date'
 
+import { ACCOUNT_TYPES } from '@app/constants'
+import P from 'prop-types'
 import Tooltip from '@app/components/tooltip'
 import getAccountTypeName from '@app/utils/getAccountTypeName'
-
-import { displayDays, toFriendlyDateTime } from '@app/utils/date'
-import { ACCOUNT_TYPES } from '@app/constants'
-
 import styles from '../messages.module.css'
+import { useMemo } from 'react'
 
 export default function MessagePreviewItem({
   onClick,
@@ -16,7 +14,8 @@ export default function MessagePreviewItem({
   currentUserid,
   currentAccountId,
   convoId,
-  newMessage
+  newMessage,
+  selectedConvoType
 }) {
   const account = useMemo(() => {
     if (data?.participants?.data?.length === 2) {
@@ -51,7 +50,9 @@ export default function MessagePreviewItem({
     newMessage && convoId === newMessage?.conversation?._id
       ? newMessage
       : data?.messages?.data[0]
-  const newestMessage = messages?.message
+  const newestMessage = messages
+    ? `${messages?.author?.user?.firstName}: ${messages?.message}`
+    : 'Start writing a message'
   const isSeen =
     messages?.viewers?.data?.findIndex(
       viewer => viewer?.user?._id === currentUserid
@@ -61,12 +62,7 @@ export default function MessagePreviewItem({
   const defaultAvatarUri = `https://ui-avatars.com/api/?name=${name}&size=32`
 
   let convoName = data.name
-  if (!convoName)
-    convoName = `${
-      [ACCOUNT_TYPES.UNIT.value, ACCOUNT_TYPES.RES.value].includes(accountType)
-        ? `Unit ${unitName}`
-        : getAccountTypeName(accountType)
-    } -  ${name}`
+  if (!convoName || selectedConvoType === 'private') convoName = name
 
   return (
     <div
@@ -94,11 +90,15 @@ export default function MessagePreviewItem({
         </div>
       </div>
       <div className=" pr-24 min-w-4xs truncate">
-        <p className={`${previewTextState} capitalize truncate max-w-xs`}>
+        <p
+          className={`${previewTextState} capitalize truncate max-w-xs text-lg`}
+        >
           {convoName}
         </p>
-        <p className={`${previewTextState} truncate max-w-2xs`}>
-          {newestMessage ?? 'Start writing a message'}
+        <p
+          className={`${previewTextState} truncate max-w-xs text-ellipsis text-sm`}
+        >
+          {newestMessage}
         </p>
       </div>
       <div className="absolute right-6 text-neutral-500">
@@ -119,6 +119,7 @@ MessagePreviewItem.propTypes = {
   onClick: P.func,
   data: P.object,
   isSelected: P.bool,
+  selectedConvoType: P.string,
   currentUserid: P.string,
   currentAccountId: P.string,
   convoId: P.string,

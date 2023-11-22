@@ -1,35 +1,38 @@
-import { debounce } from 'lodash'
-import isEmpty from 'lodash/isEmpty'
-import { useRouter } from 'next/router'
-import Props from 'prop-types'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { FaEllipsisH, FaPlusCircle } from 'react-icons/fa'
-import { FiDownload } from 'react-icons/fi'
-import { HiOutlinePrinter } from 'react-icons/hi'
-import ReactSelect from 'react-select'
-import FormSelect from '@app/components/forms/form-select'
 import * as yup from 'yup'
-import useDebounce from '@app/utils/useDebounce'
 
-import { friendlyDateTimeFormat } from '@app/utils/date'
-
+import { Controller, useForm } from 'react-hook-form'
+import { FaPlusCircle } from 'react-icons/fa'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { gql, useMutation, useQuery } from '@apollo/client'
-import Button from '@app/components/button'
-import Dropdown from '@app/components/dropdown'
-import Input from '@app/components/forms/form-input'
-import { Card } from '@app/components/globals'
-import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
-import SearchControl from '@app/components/globals/SearchControl'
-import Modal from '@app/components/modal'
-import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
-import { GET_PENDING_INVITES } from '@app/components/pages/staff/queries'
-import Can from '@app/permissions/can'
-import errorHandler from '@app/utils/errorHandler'
-import showToast from '@app/utils/toast'
-import { yupResolver } from '@hookform/resolvers/yup'
 
+import AddResidentModal from '@app/components/pages/residents/components/AddResidentModal'
+import { PendingMemberInvitesPrintView } from '@app/components/print'
+import { BiLoaderAlt } from 'react-icons/bi'
+import Button from '@app/components/button'
+import Can from '@app/permissions/can'
+import { Card } from '@app/components/globals'
+import Dropdown from '@app/components/dropdown'
+import FormSelect from '@app/components/forms/form-select'
+import { GET_PENDING_INVITES } from '@app/components/pages/staff/queries'
+import { HiOutlinePrinter } from 'react-icons/hi'
+import Input from '@app/components/forms/form-input'
+import Modal from '@app/components/modal'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
+import Props from 'prop-types'
+import ReactSelect from 'react-select'
+import SearchControl from '@app/components/globals/SearchControl'
 import ViewResidentModal from './../ViewResidentModal'
+import { debounce } from 'lodash'
+import errorHandler from '@app/utils/errorHandler'
+import { friendlyDateTimeFormat } from '@app/utils/date'
+import isEmpty from 'lodash/isEmpty'
+import { DATE } from '@app/utils'
+import showToast from '@app/utils/toast'
+import useDebounce from '@app/utils/useDebounce'
+import { useReactToPrint } from 'react-to-print'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
 
 const SCHEMA = yup.object().shape({
   email: yup
@@ -59,12 +62,17 @@ const columns = [
 ]
 
 const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      status
-      companyId
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -130,17 +138,6 @@ const InviteModalContent = ({
         control={control}
         name="groupids"
         render={({ name, onChange, value }) => (
-          // <FormSelect
-          //   styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-          //   menuPortalTarget={document.body}
-          //   options={groupOptions}
-          //   onChange={onChange}
-          //   value={value}
-          //   placeholder="Choose group"
-          //   valueholder="Group"
-          //   isMulti
-          //   onClear={() => control?.setValue('groupids', null)}
-          // />
           <ReactSelect
             styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
             menuPortalTarget={document.body}
@@ -184,8 +181,8 @@ const InviteModalContent = ({
 const defaultModalState = {
   type: 'invite',
   visible: false,
-  okText: 'Invite Member',
-  title: 'Invite Member'
+  okText: 'Invite a Member',
+  title: 'Invite a Member'
 }
 
 function PendingMemberInvites() {
@@ -217,7 +214,9 @@ function PendingMemberInvites() {
         where: {
           companyId: companyId,
           status: 'active'
-        }
+        },
+        limit: 1000,
+        skip: 0
       }
     }
   )
@@ -241,7 +240,7 @@ function PendingMemberInvites() {
   useEffect(() => {
     if (groups && groups.getCompanyGroups)
       setGroupOptions(
-        groups.getCompanyGroups?.map(g => {
+        groups.getCompanyGroups?.data?.map(g => {
           return { label: g.name, value: g._id }
         })
       )
@@ -298,6 +297,17 @@ function PendingMemberInvites() {
     }
   })
 
+  const PRINT_DOWNLOAD_TITLE = 'Pending Invites - Member'
+
+  const printRef = useRef()
+  const [loadingPrint, setLoadingPrint] = useState(false)
+  const [csvData] = useState([
+    [PRINT_DOWNLOAD_TITLE],
+    ['As of', DATE.toFriendlyDate(new Date())],
+    [''],
+    ['#', 'Email', 'Group(s)', 'Date sent']
+  ])
+
   const tableListData = useMemo(
     () => ({
       count: accounts?.getPendingRegistration?.count || 0,
@@ -305,7 +315,7 @@ function PendingMemberInvites() {
       offset: accounts?.getPendingRegistration?.offset || 0,
       data:
         accounts?.getPendingRegistration?.data?.length > 0
-          ? accounts.getPendingRegistration.data.map(staff => {
+          ? accounts.getPendingRegistration.data.map((staff, i) => {
               const { _id, accountType, companyGroups, email } = staff
               let dropdownData = []
 
@@ -336,14 +346,18 @@ function PendingMemberInvites() {
                   }
                 ]
               }
+              const group = companyGroups[0] ? companyGroups[0].name : '-'
+
+              csvData.push([
+                i + 1,
+                email,
+                group,
+                friendlyDateTimeFormat(staff.createdAt, 'LL')
+              ])
 
               return {
                 email: <>{email}</>,
-                group: (
-                  <span className="capitalize">
-                    {companyGroups[0] ? companyGroups[0].name : '-'}
-                  </span>
-                ),
+                group: <span className="capitalize">{group}</span>,
                 datesent: <>{friendlyDateTimeFormat(staff.createdAt, 'LL')}</>,
                 dropdown: (
                   // <Can
@@ -378,7 +392,8 @@ function PendingMemberInvites() {
             data: {
               email: val?.email,
               complexId: val?.complexId?.value,
-              companyGroupIds: groupids
+              companyGroupIds: groupids,
+              accountType: 'member'
             }
           }
         })
@@ -401,9 +416,21 @@ function PendingMemberInvites() {
     }
   }, [inviteLoading, inviteData, inviteError])
 
+  const onPrintPreview = useReactToPrint({
+    documentTitle: PRINT_DOWNLOAD_TITLE,
+    content: () => printRef.current,
+    onBeforeGetContent: () => {
+      setLoadingPrint(true)
+    },
+    onAfterPrint: () => {
+      setLoadingPrint(false)
+    },
+    removeAfterPrint: true
+  })
+
   return (
     <section className="content-wrap">
-      <h1 className="content-title">Pending Member Invites</h1>
+      <h1 className="content-title">{PRINT_DOWNLOAD_TITLE}</h1>
 
       <div className="flex items-center justify-end mt-12 w-full">
         <div className="flex items-center justify-between w-8/12 flex-row flex-row-reverse">
@@ -417,19 +444,32 @@ function PendingMemberInvites() {
       </div>
 
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Registered Members`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">
+          {PRINT_DOWNLOAD_TITLE} ({tableListData.count})
+        </h1>
         <div className="flex items-center">
           <Button
             default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
+            icon={
+              loadingPrint ? (
+                <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+              ) : (
+                <HiOutlinePrinter />
+              )
+            }
+            onClick={onPrintPreview}
             className="mr-4 mt-4"
+            disabled={
+              loadingAccounts || tableListData.count === 0 || loadingPrint
+            }
           />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
+          <DownloadCSV
+            data={csvData}
+            title={PRINT_DOWNLOAD_TITLE}
+            fileName={`${DATE.getCurrentDate()} - ${PRINT_DOWNLOAD_TITLE}`}
+            disabled={loadingAccounts || tableListData.count === 0}
             className="mr-4 mt-4"
+            noBottomMargin={false}
           />
           <Button
             default
@@ -442,10 +482,13 @@ function PendingMemberInvites() {
               })
             }
             className="mr-4 mt-4"
+            disabled={loadingAccounts || tableListData.count === 0}
           />
         </div>
       </div>
+
       <Card
+        className="border-t-none"
         content={
           <PrimaryDataTable
             data={tableListData}
@@ -504,6 +547,14 @@ function PendingMemberInvites() {
         onShowModal={handleViewMember}
         resident={selectedMember}
       />
+
+      <div className="hidden">
+        <PendingMemberInvitesPrintView
+          ref={printRef}
+          title={PRINT_DOWNLOAD_TITLE}
+          data={tableListData?.data}
+        />
+      </div>
     </section>
   )
 }

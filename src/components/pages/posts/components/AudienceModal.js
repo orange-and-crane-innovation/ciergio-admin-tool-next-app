@@ -24,6 +24,7 @@ const Component = ({
   onSelectGroupExcept,
   onSave,
   onCancel,
+  onClose,
   valueAudienceType,
   valueCompanyExcept,
   valueCompanySpecific,
@@ -102,6 +103,7 @@ const Component = ({
 
   const handleClearCompanyExcept = () => {
     setSelectedCompanyExcept(null)
+    onSelectCompanyExcept(null)
   }
 
   const handleSelectCompanySpecific = data => {
@@ -113,6 +115,7 @@ const Component = ({
 
   const handleClearCompanySpecific = () => {
     setSelectedCompanySpecific(null)
+    onSelectCompanySpecific(null)
   }
 
   const handleSelectComplexExcept = data => {
@@ -124,6 +127,7 @@ const Component = ({
 
   const handleClearComplexExcept = () => {
     setSelectedComplexExcept(null)
+    onSelectComplexExcept(null)
   }
 
   const handleSelectComplexSpecific = data => {
@@ -135,6 +139,7 @@ const Component = ({
 
   const handleClearComplexSpecific = () => {
     setSelectedComplexSpecific(null)
+    onSelectComplexSpecific(null)
   }
 
   const handleSelectBuildingExcept = data => {
@@ -146,6 +151,7 @@ const Component = ({
 
   const handleClearBuildingExcept = () => {
     setSelectedBuildingExcept(null)
+    onSelectBuildingExcept(null)
   }
 
   const handleSelectBuildingSpecific = data => {
@@ -157,6 +163,7 @@ const Component = ({
 
   const handleClearBuildingSpecific = () => {
     setSelectedBuildingSpecific(null)
+    onSelectBuildingSpecific(null)
   }
 
   const handleSelectGroupSpecific = data => {
@@ -168,6 +175,7 @@ const Component = ({
 
   const handleClearGroupSpecific = () => {
     setSelectedGroupSpecific(null)
+    onSelectGroupSpecific(null)
   }
 
   const handleSelectGroupExcept = data => {
@@ -179,6 +187,7 @@ const Component = ({
 
   const handleClearGroupExcept = () => {
     setSelectedGroupExcept(null)
+    onSelectGroupExcept(null)
   }
 
   switch (accountType) {
@@ -204,7 +213,7 @@ const Component = ({
     <Modal
       title="Who are the audience"
       visible={isShown}
-      onClose={onCancel}
+      onClose={onClose}
       onCancel={onCancel}
       onOk={onSave}
       okText="Save"
@@ -326,6 +335,7 @@ const Component = ({
                     type="active"
                     userType={accountType}
                     placeholder="Select Group(s)"
+                    companyId={user?.accounts?.data[0]?.company?._id}
                     onChange={handleSelectGroupExcept}
                     onClear={handleClearGroupExcept}
                     selected={selectedGroupExcept}

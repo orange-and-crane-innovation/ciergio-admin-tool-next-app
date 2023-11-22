@@ -144,6 +144,10 @@ select:active {
 /* LIST GROUP */
 .card {
   @apply bg-white rounded-md border border-gray-200 mb-5;
+
+  &.border-t-none {
+    @apply rounded-t-none;
+  }
 }
 .card .header {
   @apply p-5 grid grid-cols-3 w-full border-b;

@@ -150,8 +150,9 @@ function ContactModal({
             control={control}
             render={({ name, value, onChange }) => (
               <PhoneNumberInput
-                label="Contact Number"
+                label="Contact Number (optional) "
                 labelClassName="mb-2 font-bold text-neutral-500 block"
+                placeholder="Enter contact number"
                 value={value}
                 onPhoneChange={onChange}
                 name={name}
@@ -160,6 +161,25 @@ function ContactModal({
               />
             )}
           />
+          <div>
+            <span className="font-bold text-neutral-500">Email (optional)</span>
+            <Controller
+              name="email"
+              control={control}
+              render={({ name, value, onChange }) => (
+                <FormInput
+                  inputClassName="mt-2"
+                  placeholder="Enter email address"
+                  onChange={onChange}
+                  name={name}
+                  value={value}
+                  error={errors?.name?.message}
+                  defaultValue={selected?.email}
+                />
+              )}
+            />
+          </div>
+
           <Controller
             name="address"
             control={control}

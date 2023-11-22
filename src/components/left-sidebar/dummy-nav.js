@@ -82,7 +82,7 @@ const navigation = [
             items: []
           },
           {
-            url: '/staff/roles-&-permissions',
+            url: '/staff/roles-permissions',
             title: 'Roles and Permissions',
             items: []
           },
@@ -108,6 +108,25 @@ const navigation = [
           {
             url: '/residents/invites-requests',
             title: 'Invites & Requests',
+            items: []
+          }
+        ]
+      },
+      {
+        url: '/website-content',
+        icon: 'ciergio-list',
+        title: 'Website Content',
+        permissionGroup: 'post',
+        moduleName: 'bulletinBoard',
+        items: [
+          {
+            url: '/website-content',
+            title: 'View All Website Content',
+            items: []
+          },
+          {
+            url: '/website-content/create',
+            title: 'Create Website Content',
             items: []
           }
         ]

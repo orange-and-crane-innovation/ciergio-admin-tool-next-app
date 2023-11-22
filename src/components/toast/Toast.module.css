@@ -2,7 +2,7 @@
   @apply relative px-6 py-4;
   @apply border-0 rounded;
   @apply text-white;
-  @apply flex items-center;
+  @apply flex items-center text-left;
 
   &.success {
     @apply bg-success-500;

@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
-
-import ReactPagination from 'react-js-pagination'
 import {
-  FaAngleLeft,
-  FaAngleRight,
   FaAngleDoubleLeft,
-  FaAngleDoubleRight
+  FaAngleDoubleRight,
+  FaAngleLeft,
+  FaAngleRight
 } from 'react-icons/fa'
+import React, { useEffect, useState } from 'react'
 
 import FormSelect from '@app/components/forms/form-select'
-
+import PropTypes from 'prop-types'
+import ReactPagination from 'react-js-pagination'
 import styles from './pagination.module.css'
 
 const Pagination = ({ items, activePage, onPageClick, onLimitChange }) => {
@@ -43,6 +41,10 @@ const Pagination = ({ items, activePage, onPageClick, onLimitChange }) => {
     {
       label: 'Show 100',
       value: 100
+    },
+    {
+      label: 'Show All',
+      value: items.count
     }
   ]
 
