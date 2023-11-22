@@ -362,7 +362,7 @@ const PostComponent = ({ typeOfPage }) => {
                 function: () => handleShowModal('details', item._id)
               },
               {
-                label: 'Who View this Article',
+                label: 'Who viewed this article',
                 icon: <FiEye />,
                 function: () => handleShowModal('views', item._id)
               }
@@ -738,7 +738,7 @@ const PostComponent = ({ typeOfPage }) => {
           break
         }
         case 'views': {
-          setModalTitle('Who Viewed this Article')
+          setModalTitle('Who viewed this article')
           setModalContent(<ViewsCard data={selected[0].views?.unique?.users} />)
           setModalFooter(null)
           break
@@ -955,7 +955,7 @@ const PostComponent = ({ typeOfPage }) => {
           )
         }
       />
-      {!loading && posts && posts.count > posts.limit && (
+      {!loading && posts && posts.count !== 0 && (
         <Pagination
           items={posts}
           activePage={activePage}

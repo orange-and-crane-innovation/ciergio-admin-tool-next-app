@@ -1,0 +1,27 @@
+.PrintContainer {
+  @apply m-8;
+
+  & .PrintTitle {
+    @apply py-4;
+  }
+
+  & .PrintTable {
+    @apply w-full;
+
+    & thead {
+      @apply bg-neutral-200;
+    }
+
+    & tbody {
+      & tr {
+        @apply text-center;
+        @apply border-b;
+      }
+    }
+
+    & th,
+    & td {
+      @apply p-2 text-left;
+    }
+  }
+}

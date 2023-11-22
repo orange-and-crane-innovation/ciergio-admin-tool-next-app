@@ -1,7 +1,6 @@
-import React from 'react'
+import { BiLoaderAlt } from 'react-icons/bi'
 import PropTypes from 'prop-types'
-import { FaSpinner } from 'react-icons/fa'
-
+import React from 'react'
 import styles from './pageloader.module.css'
 
 const PageLoader = ({ message, fullPage }) => {
@@ -11,7 +10,7 @@ const PageLoader = ({ message, fullPage }) => {
 
   return (
     <div className={loaderClass}>
-      <FaSpinner className="icon-spin" />
+      <BiLoaderAlt className="animate-spin text-4xl text-primary-500" />
       {message}
     </div>
   )

@@ -2,7 +2,7 @@ import * as yup from 'yup'
 import Link from 'next/link'
 import { Controller, useForm } from 'react-hook-form'
 import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { gql, useMutation, useQuery } from '@apollo/client'
 
 import Button from '@app/components/button'
@@ -20,6 +20,7 @@ import isEmpty from 'lodash/isEmpty'
 import showToast from '@app/utils/toast'
 import { useRouter } from 'next/router'
 import { yupResolver } from '@hookform/resolvers/yup'
+import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
 
 const SCHEMA = yup.object().shape({
   name: yup.string().label('Group name').required()
@@ -37,12 +38,17 @@ const tableRowNames = [
 ]
 
 const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      status
-      companyId
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -164,11 +170,14 @@ const Groups = () => {
   const router = useRouter()
   const profile = JSON.parse(localStorage.getItem('profile'))
   const companyID = profile.accounts.data[0].company._id
-  const [groups, setGroups] = useState()
   // const [searchText, setSearchText] = useState('')
   const [modalState, setModalState] = useState(defaultModalState)
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [shouldCreateGC, setShouldCreateGC] = useState(true)
+
+  const [activePage, setActivePage] = useState(1)
+  const [limitPage, setLimitPage] = useState(10)
+  const [skipCount, setSkipCount] = useState(0)
 
   const { loading, data, error, refetch } = useQuery(GET_COMPANY_GROUPS, {
     enabled: false,
@@ -176,7 +185,9 @@ const Groups = () => {
       where: {
         companyId: companyID,
         status: 'active'
-      }
+      },
+      limit: limitPage,
+      skip: skipCount === 0 ? 0 : skipCount
     }
   })
 
@@ -285,59 +296,59 @@ const Groups = () => {
     if (!loading)
       if (error) {
         errorHandler(error)
-      } else if (data) {
-        const tableData = {
-          data:
-            data?.getCompanyGroups?.map(item => {
-              const dropdownData = [
-                {
-                  label: 'View',
-                  function: () => router.push(`/members/groups/${item?._id}`)
-                },
-                {
-                  label: 'Edit',
-                  function: () => {
-                    setModalState({
-                      type: 'edit',
-                      visible: true,
-                      okText: 'Update',
-                      title: 'Edit Group'
-                    })
-                    setSelectedGroup(item)
-                  }
-                },
-                {
-                  label: 'Delete',
-                  function: () => {
-                    setModalState({
-                      type: 'delete',
-                      visible: true,
-                      okText: 'Yes, delete group',
-                      title: 'Delete Group'
-                    })
-                    setSelectedGroup(item)
-                  }
-                }
-              ]
-
-              return {
-                name: (
-                  <Link href={`/members/groups/${item?._id}`}>
-                    <a className="mx-2 hover:underline capitalize font-bold">
-                      {item?.name}
-                    </a>
-                  </Link>
-                ),
-                button: (
-                  <Dropdown label={<FaEllipsisH />} items={dropdownData} />
-                )
-              }
-            }) || null
-        }
-
-        setGroups(tableData)
       }
   }, [loading, data, error])
+
+  const groups = useMemo(
+    () => ({
+      count: data?.getCompanyGroups?.count || 0,
+      limit: data?.getCompanyGroups?.limit || 0,
+      offset: data?.getCompanyGroups?.offset || 0,
+      data:
+        data?.getCompanyGroups?.data?.map(item => {
+          const dropdownData = [
+            {
+              label: 'View',
+              function: () => router.push(`/members/groups/${item?._id}`)
+            },
+            {
+              label: 'Edit',
+              function: () => {
+                setModalState({
+                  type: 'edit',
+                  visible: true,
+                  okText: 'Update',
+                  title: 'Edit Group'
+                })
+                setSelectedGroup(item)
+              }
+            },
+            {
+              label: 'Delete',
+              function: () => {
+                setModalState({
+                  type: 'delete',
+                  visible: true,
+                  okText: 'Yes, delete group',
+                  title: 'Delete Group'
+                })
+                setSelectedGroup(item)
+              }
+            }
+          ]
+
+          return {
+            name: (
+              <Link href={`/members/groups/${item?._id}`}>
+                <a className="mx-2 hover:underline capitalize">{item?.name}</a>
+              </Link>
+            ),
+            button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
+          }
+        }) || null
+    }),
+    [loading, data, error]
+  )
 
   return (
     <section className="content-wrap">
@@ -373,7 +384,16 @@ const Groups = () => {
       </div>
       <Card
         content={
-          <Table rowNames={tableRowNames} items={groups} loading={loading} />
+          <PrimaryDataTable
+            data={groups}
+            columns={tableRowNames}
+            loading={loading}
+            currentPage={activePage}
+            pageLimit={limitPage}
+            setCurrentPage={setActivePage}
+            setPageOffset={setSkipCount}
+            setPageLimit={setLimitPage}
+          />
         }
       />
 

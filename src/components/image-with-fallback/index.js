@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import Props from 'prop-types'
 
 ImageWithValidationFallback.propTypes = {
@@ -30,9 +31,17 @@ export default function ImageWithValidationFallback({
         src={isValid ? url : fallback}
         alt={altText}
         className={classNames}
+        style={{ display: !isValid && !fallback ? 'none' : 'flex' }}
+      />
+      <div
+        className="w-full h-full bg-slate-400"
+        style={{
+          display: !isValid && !fallback ? 'flex' : 'none',
+          backgroundColor: 'rgb(148 163 184)'
+        }}
       />
       <img
-        src={url}
+        src={url || ''}
         alt={altText}
         style={{ display: 'none' }}
         onLoad={handleImageLoad}

@@ -1,5 +1,4 @@
 import P from 'prop-types'
-
 import Pagination from '@app/components/pagination'
 import Table from '@app/components/table'
 
@@ -49,7 +48,7 @@ function PrimaryDataTable({
         />
       )}
 
-      {!loading && data?.count > 10 && (
+      {!loading && data?.count !== 0 && (
         <div className="px-8">
           <Pagination
             items={data}

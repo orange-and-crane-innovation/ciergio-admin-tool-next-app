@@ -596,7 +596,7 @@ function LogBook({
           )
         }
       />
-      {!loading && tableData?.length > 10 && (
+      {!loading && tableData?.length !== 0 && (
         <Pagination
           items={tableData}
           activePage={activePage}

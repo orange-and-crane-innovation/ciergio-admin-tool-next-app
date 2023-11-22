@@ -3,18 +3,20 @@ import * as yup from 'yup'
 import { Controller, useForm } from 'react-hook-form'
 import { DELETE_USER, GET_ACCOUNTS } from '@app/components/pages/staff/queries'
 import { FaEllipsisH, FaExclamationCircle, FaPlusCircle } from 'react-icons/fa'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { gql, useMutation, useQuery } from '@apollo/client'
 
+import { AllMembersPrintView } from '@app/components/print'
+import { BiLoaderAlt } from 'react-icons/bi'
 import Button from '@app/components/button'
 import Can from '@app/permissions/can'
 import { Card } from '@app/components/globals'
 import Dropdown from '@app/components/dropdown'
 import EditModal from './EditModal'
-import { FiDownload } from 'react-icons/fi'
 import FormSelect from '@app/components/forms/form-select'
 import { HiOutlinePrinter } from 'react-icons/hi'
 import { IMAGES } from '@app/constants'
+import ImageWithValidationFallback from '@app/components/image-with-fallback'
 import Input from '@app/components/forms/form-input'
 import Modal from '@app/components/modal'
 import PrimaryDataTable from '@app/components/globals/PrimaryDataTable'
@@ -25,11 +27,13 @@ import ViewMemberModal from './../ViewResidentModal'
 import { debounce } from 'lodash'
 import errorHandler from '@app/utils/errorHandler'
 import isEmpty from 'lodash/isEmpty'
-import ImageWithValidationFallback from '@app/components/image-with-fallback'
+import { DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
 import useDebounce from '@app/utils/useDebounce'
+import { useReactToPrint } from 'react-to-print'
 import { useRouter } from 'next/router'
 import { yupResolver } from '@hookform/resolvers/yup'
+import DownloadCSV from '@app/components/globals/DownloadCSV'
 
 const SCHEMA_INVITE = yup.object().shape({
   email: yup
@@ -63,12 +67,17 @@ const columns = [
 ]
 
 const GET_COMPANY_GROUPS = gql`
-  query($where: getCompanyGroupsParams) {
-    getCompanyGroups(where: $where) {
-      _id
-      name
-      status
-      companyId
+  query($where: getCompanyGroupsParams, $skip: Int, $limit: Int) {
+    getCompanyGroups(where: $where, skip: $skip, limit: $limit) {
+      data {
+        _id
+        name
+        status
+        companyId
+      }
+      limit
+      skip
+      count
     }
   }
 `
@@ -288,7 +297,9 @@ function MyMembers() {
         where: {
           companyId: companyId,
           status: 'active'
-        }
+        },
+        limit: 1000,
+        skip: 0
       }
     }
   )
@@ -310,9 +321,9 @@ function MyMembers() {
   })
 
   useEffect(() => {
-    if (groups && groups.getCompanyGroups)
+    if (groups && groups?.getCompanyGroups)
       setGroupOptions(
-        groups.getCompanyGroups?.map(g => {
+        groups?.getCompanyGroups?.data?.map(g => {
           return { label: capitalizeText(g.name), value: g._id }
         })
       )
@@ -392,6 +403,17 @@ function MyMembers() {
     }
   }, [controlAdd, selectedMember, modalState])
 
+  const PRINT_DOWNLOAD_TITLE = 'Registered Members'
+
+  const printRef = useRef()
+  const [loadingPrint, setLoadingPrint] = useState(false)
+  const [csvData] = useState([
+    [PRINT_DOWNLOAD_TITLE],
+    ['As of', DATE.toFriendlyDate(new Date())],
+    [''],
+    ['#', 'Name', 'Email', 'Group(s)']
+  ])
+
   const tableListData = useMemo(
     () => ({
       count: accounts?.getAccounts?.count || 0,
@@ -399,12 +421,15 @@ function MyMembers() {
       offset: accounts?.getAccounts?.offset || 0,
       data:
         accounts?.getAccounts?.data?.length > 0
-          ? accounts.getAccounts.data.map(staff => {
+          ? accounts.getAccounts.data.map((staff, i) => {
               const { user, accountType, companyGroups } = staff
-              const groups = companyGroups
-                ?.map(i => i.name)
-                .toString()
-                .replaceAll(',', ', ')
+              const groups =
+                companyGroups.length > 0
+                  ? companyGroups
+                      ?.map(i => i.name)
+                      .toString()
+                      .replaceAll(',', ', ')
+                  : undefined
 
               // VIEW
               let dropdownData = [
@@ -416,6 +441,7 @@ function MyMembers() {
                   function: () => {
                     const viewItem = {
                       _id: user?._id,
+                      accountId: staff?._id,
                       full_name: `${user?.firstName} ${user?.lastName}`,
                       first_name: user?.firstName,
                       last_name: user?.lastName,
@@ -423,7 +449,8 @@ function MyMembers() {
                       gender: user?.gender,
                       email: user?.email,
                       avatar: user?.avatar,
-                      groups: companyGroups
+                      groups: groups ?? '-',
+                      date_reg: user?.createdAt
                     }
                     setSelectedMember(viewItem)
                     setViewMember(true)
@@ -479,10 +506,17 @@ function MyMembers() {
                 ]
               }
 
+              csvData.push([
+                i + 1,
+                `${user?.firstName} ${user?.lastName}`,
+                user?.email,
+                `${groups || '-'}`
+              ])
+
               return {
                 name: (
-                  <div className="flex items-center space-x-6">
-                    <div className="w-11 h-11 rounded-full overflow-auto">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-11 h-11 rounded-full overflow-auto box-border">
                       <ImageWithValidationFallback
                         className="h-full w-full object-contain object-center"
                         url={
@@ -496,7 +530,7 @@ function MyMembers() {
                     <span>{`${user?.firstName} ${user?.lastName}`}</span>
                   </div>
                 ),
-                email: <>{user.email}</>,
+                email: <>{user?.email}</>,
                 group: <span className="capitalize">{groups || '-'}</span>,
                 dropdown: (
                   <Can
@@ -654,6 +688,18 @@ function MyMembers() {
     }
   }, [deleteLoading, deleteData, deleteError])
 
+  const onPrintPreview = useReactToPrint({
+    documentTitle: PRINT_DOWNLOAD_TITLE,
+    content: () => printRef.current,
+    onBeforeGetContent: () => {
+      setLoadingPrint(true)
+    },
+    onAfterPrint: () => {
+      setLoadingPrint(false)
+    },
+    removeAfterPrint: true
+  })
+
   return (
     <section className="content-wrap">
       <h1 className="content-title">All Members</h1>
@@ -670,21 +716,32 @@ function MyMembers() {
       </div>
 
       <div className="flex items-center justify-between bg-white border-t border-l border-r rounded-t">
-        <h1 className="font-bold text-base px-8 py-4">{`Registered Members`}</h1>
+        <h1 className="font-bold text-base px-8 py-4">
+          {PRINT_DOWNLOAD_TITLE} ({tableListData.count})
+        </h1>
         <div className="flex items-center">
           <Button
             default
-            icon={<HiOutlinePrinter />}
-            onClick={() => {}}
+            icon={
+              loadingPrint ? (
+                <BiLoaderAlt className="animate-spin text-4xl text-gray-500" />
+              ) : (
+                <HiOutlinePrinter />
+              )
+            }
+            onClick={onPrintPreview}
             className="mr-4 mt-4"
-            disabled
+            disabled={
+              loadingAccounts || tableListData.count === 0 || loadingPrint
+            }
           />
-          <Button
-            default
-            icon={<FiDownload />}
-            onClick={() => {}}
+          <DownloadCSV
+            data={csvData}
+            title={PRINT_DOWNLOAD_TITLE}
+            fileName={`${DATE.getCurrentDate()} - ${PRINT_DOWNLOAD_TITLE}`}
+            disabled={loadingAccounts || tableListData.count === 0}
             className="mr-4 mt-4"
-            disabled
+            noBottomMargin={false}
           />
           <Button
             default
@@ -697,10 +754,13 @@ function MyMembers() {
               })
             }
             className="mr-4 mt-4"
+            disabled={loadingAccounts || tableListData.count === 0}
           />
         </div>
       </div>
+
       <Card
+        className="border-t-none"
         content={
           <PrimaryDataTable
             data={tableListData}
@@ -792,6 +852,14 @@ function MyMembers() {
         onSave={e => onSubmit(e)}
         onCancel={handleEditMember}
       />
+
+      <div className="hidden">
+        <AllMembersPrintView
+          ref={printRef}
+          title={PRINT_DOWNLOAD_TITLE}
+          data={tableListData?.data}
+        />
+      </div>
     </section>
   )
 }

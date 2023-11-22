@@ -39,7 +39,6 @@ export default function MessageBox({
   participant,
   conversation,
   loading,
-  loadingSend,
   currentUserid,
   onSubmitMessage,
   name,
@@ -86,18 +85,6 @@ export default function MessageBox({
       return participant.participants.data.filter(item =>
         ['member', 'unit_owner', 'resident'].includes(item.accountType)
       )[0]?.user
-    }
-  }, [participant?.participants])
-
-  const accountType = useMemo(() => {
-    if (participant?.participants?.data?.length === 2) {
-      return participant.participants.data.filter(
-        item => item?.user?._id !== currentUserid
-      )[0]
-    } else if (participant?.participants?.data?.length > 1) {
-      return participant.participants.data.filter(item =>
-        ['member', 'unit_owner', 'resident'].includes(item.accountType)
-      )[0]
     }
   }, [participant?.participants])
 
@@ -226,9 +213,9 @@ export default function MessageBox({
               {messages?.map((item, index) => {
                 const author = item?.author?.user
                 const authorName = `${author?.firstName} ${author?.lastName}`
-                const accountType = getAccountTypeName(
-                  item?.author?.accountType
-                )
+                const accountType =
+                  item?.author?.companyRole?.name ??
+                  getAccountTypeName(item?.author?.accountType)
                 const isCurrentUserMessage = author?._id === currentUserid
                 const defaultAvatarUri = `https://ui-avatars.com/api/?name=${authorName}&size=32`
                 const isLastMessage = index === 0
@@ -251,7 +238,9 @@ export default function MessageBox({
                             : 'flex-row-reverse justify-end '
                         }`}
                       >
-                        <span className="block">{`${accountType} - ${authorName}`}</span>
+                        <span className="flex justify-end items-center gap-1">
+                          {authorName} <small>({accountType})</small>
+                        </span>
                         <img
                           src={
                             author?.avatar && author?.avatar !== ''

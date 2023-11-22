@@ -12,12 +12,16 @@ const PrintContent = React.forwardRef(
           <br />
 
           {subHeaders &&
-            subHeaders.map((subheader, index) => (
+            subHeaders?.map((subheader, index) => (
               <div key={index} className={styles.subHeaderContainer}>
                 <bold className={styles.subHeadersTitle}>
                   {subheader.title}:&nbsp;
                 </bold>
-                <p className={styles.subHeadersContent}>{subheader.content}</p>
+                {subheader.content && (
+                  <p className={styles.subHeadersContent}>
+                    {subheader.content}
+                  </p>
+                )}
               </div>
             ))}
           <br />
@@ -25,15 +29,15 @@ const PrintContent = React.forwardRef(
           <div>
             <table className={styles.printTable}>
               <tr className={styles.printTableHeader}>
-                {tableHeader.map((header, index) => {
+                {tableHeader?.map((header, index) => {
                   return <td key={index}>{header}</td>
                 })}
               </tr>
 
-              {tableData.map((tr, trIndex) => {
+              {tableData?.map((tr, trIndex) => {
                 return (
                   <tr key={trIndex} className={styles.printTableData}>
-                    {tr.map((td, tdIndex) => (
+                    {tr?.map((td, tdIndex) => (
                       <td key={tdIndex}>{td}</td>
                     ))}
                   </tr>

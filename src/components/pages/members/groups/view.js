@@ -361,7 +361,7 @@ const Group = () => {
 
               return {
                 name: (
-                  <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-4">
                     <div className="w-11 h-11 rounded-full overflow-auto">
                       <img
                         className="h-full w-full object-contain object-center"

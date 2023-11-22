@@ -233,4 +233,21 @@ export const addTime = (data, type, value) => {
   return date
 }
 
+export const getCurrentDate = () => {
+  const currentDate = new Date()
+  let month = currentDate.getMonth() + 1 // Add 1 because getMonth() returns zero-based index
+  let day = currentDate.getDate()
+  const year = currentDate.getFullYear()
+
+  if (month < 10) {
+    month = '0' + month
+  }
+  if (day < 10) {
+    day = '0' + day
+  }
+
+  const formattedDate = month + '.' + day + '.' + year
+  return formattedDate
+}
+
 export default dayjs

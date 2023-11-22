@@ -15,6 +15,8 @@ const Table = ({
   emptyText,
   className
 }) => {
+  console.log('ROWS', rowNames)
+  console.log('ITEMS', items)
   if (loading) {
     return (
       <div className="w-full h-96 flex items-center justify-center">
@@ -52,7 +54,11 @@ const Table = ({
               items.data.map((item, index) => {
                 listItem = Object.entries(item).map(
                   ([key, value], rowIndex) => {
-                    if (value !== false && key !== 'id') {
+                    if (
+                      value !== false &&
+                      key !== 'id' &&
+                      !rowNames[rowIndex].hidden
+                    ) {
                       return <td key={rowIndex}>{value}</td>
                     }
                     return null
