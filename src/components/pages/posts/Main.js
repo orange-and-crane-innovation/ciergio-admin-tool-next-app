@@ -14,18 +14,21 @@ const PostComponent = () => {
   const isDailyReadingsPage = router.pathname === '/daily-readings'
   const isBulletinPostsPage = router.pathname === '/posts'
   const isPastoralWorksPage = router.pathname === '/pastoral-works'
+  const isEPrayers = router.pathname === '/e-prayers'
   const isWebsiteContentPage = router.pathname === '/website-content'
 
   const typeOfPage = (
     dailyText = 'Daily Readings',
     bulletinText = 'Bulletin Board',
     pastoralText = 'Pastoral Works',
+    ePrayersText = 'E-Prayers',
     websiteContentText = 'Website Content'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
       (isPastoralWorksPage && pastoralText) ||
+      (isEPrayers && ePrayersText) ||
       (isWebsiteContentPage && websiteContentText)
     )
   }

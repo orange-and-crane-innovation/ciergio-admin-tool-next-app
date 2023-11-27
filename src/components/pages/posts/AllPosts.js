@@ -187,12 +187,13 @@ const PostComponent = ({ typeOfPage }) => {
   const isAttractionsEventsPage = router.pathname === '/attractions-events'
   const isQRCodePage = router.pathname === '/qr-code'
   const isPastoralWorksPage = router.pathname === '/pastoral-works'
+  const isEPrayersPage = router.pathname === '/e-prayers'
   const isDailyReadingsPage = router.pathname === '/daily-readings'
   const routeName = isAttractionsEventsPage
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'e-prayers', 'website-content')
 
   const headerName = isQRCodePage ? 'Active QR Codes' : typeOfPage()
 
@@ -1487,7 +1488,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type={typeOfPage('', 'post', 'pastoral_works', 'website_content')}
+              type={typeOfPage('', 'post', 'pastoral_works', 'e_prayers', 'website_content')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
