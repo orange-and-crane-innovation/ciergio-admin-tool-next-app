@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form'
 import { createPaymentValidationSchema } from './schema'
 import axios from 'axios'
 
-function CreatePaymentModal({ open, handleDisplay }) {
+function CreatePaymentModal({ open, handleDisplay, refetch }) {
   const profile = JSON.parse(localStorage.getItem('profile'))
   const companyID = profile?.accounts?.data[0]?.company?._id
   const {
@@ -33,7 +33,7 @@ function CreatePaymentModal({ open, handleDisplay }) {
     }
   })
 
-  const uploadApi = async payload => {
+  const paymentApi = async payload => {
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_OCI_PAYMENT_API}/altpaynet/epl/checkout`,
       payload,
@@ -47,6 +47,7 @@ function CreatePaymentModal({ open, handleDisplay }) {
 
     if (response) {
       handleDisplay(false)
+      refetch()
     }
   }
 
@@ -73,7 +74,7 @@ function CreatePaymentModal({ open, handleDisplay }) {
         }
       }
       console.log('values', payload)
-      uploadApi(payload)
+      paymentApi(payload)
     } else {
       console.log('validation failed')
     }

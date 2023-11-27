@@ -56,14 +56,20 @@ function Transactions() {
   const isAdmin = accountType === ACCOUNT_TYPES.SUP.value
   const postID = router?.query?.id
 
-  const [getDonations, { data: donations, loading, error }] = useLazyQuery(
-    GET_TRANSACTIONS
-  )
+  const [
+    getDonations,
+    { data: donations, loading, error, refetch }
+  ] = useLazyQuery(GET_TRANSACTIONS)
   // const [getDonations, { data: paymentLinks, loading, error }] = useLazyQuery(
   //   GET_TRANSACTIONS
   // )
 
-  const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS)
+  const { data: dataPaymentMethod } = useQuery(GET_PAYMENT_METHODS, {
+    fetchPolicy: 'network-only',
+    onError: e => {
+      console.log('GET_PAYMENT_METHODS ERROR', e)
+    }
+  })
 
   const DONATIONS = donations?.getDonationsWeb
   const PAYMENT_METHODS = dataPaymentMethod?.getPaymentMethods
@@ -662,6 +668,7 @@ function Transactions() {
       <CreatePaymentModal
         open={showCreateModalModal}
         handleDisplay={handlePaymentLinkModal}
+        refetch={refetch}
       />
       <h3 className="content-title">
         {pathname === '/offerings' || pathname === '/offerings/[id]'
@@ -673,7 +680,7 @@ function Transactions() {
         <Tabs.TabLabels>
           <Tabs.TabLabel id="1">Transaction History</Tabs.TabLabel>
           <Tabs.TabLabel id="2">Manage QR Codes</Tabs.TabLabel>
-          <Tabs.TabLabel id="3">Pending Payments</Tabs.TabLabel>
+          <Tabs.TabLabel id="3">Payment Links</Tabs.TabLabel>
         </Tabs.TabLabels>
         <Tabs.TabPanels>
           <Tabs.TabPanel id="1">
