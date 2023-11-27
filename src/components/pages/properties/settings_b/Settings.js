@@ -144,6 +144,11 @@ const TOGGLESETTINGS = [
     label: 'Pastoral Works',
     id: 'pastoralWorks',
     toggle: false
+  },
+  {
+    label: 'E Prayers',
+    id: 'ePrayers',
+    toggle: false
   }
 ]
 

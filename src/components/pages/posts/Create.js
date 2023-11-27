@@ -186,6 +186,7 @@ const CreatePosts = () => {
   const isQRCodePage = pathname === '/qr-code/create'
   const isDailyReadingsPage = pathname === '/daily-readings/create'
   const isBulletinPostsPage = pathname === '/posts/create'
+  const isEPrayersPage = pathname === '/e-prayers/create'
   const isPastoralWorksPage = pathname === '/pastoral-works/create'
   const isWebsiteContentPage = pathname === '/website-content/create'
 
@@ -195,12 +196,14 @@ const CreatePosts = () => {
     dailyText = 'daily_reading',
     bulletinText = 'post',
     pastoralText = 'pastoral_works',
+    ePrayersText = 'e_prayers',
     websiteContentText = 'website_content'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
       (isPastoralWorksPage && pastoralText) ||
+      (isEPrayersPage && ePrayersText) ||
       (isWebsiteContentPage && websiteContentText)
     )
   }
@@ -209,7 +212,13 @@ const CreatePosts = () => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
+    : typeOfPage(
+        'daily-readings',
+        'posts',
+        'pastoral-works',
+        'e-prayers',
+        'website-content'
+      )
 
   const [
     createPost,
@@ -1416,6 +1425,7 @@ const CreatePosts = () => {
                                 '',
                                 'post',
                                 'pastoral_works',
+                                'e_prayers',
                                 'website_content'
                               )}
                               onChange={e => {

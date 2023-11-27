@@ -357,7 +357,8 @@ const CreatePosts = () => {
 
   const isDailyReadingsPage = pathname === '/daily-readings/edit/[id]'
   const isBulletinPostsPage = pathname === '/posts/edit/[id]'
-  const isPastoralWorksPage = pathname === '/pastoral-works/edit/[id]'
+  const isPastoralWorksPage = pathname === '/e-prayers/edit/[id]'
+  const isEPrayersPage = pathname === '/pastoral-works/edit/[id]'
   const isWebsiteContentPage = pathname === '/website-content/edit/[id]'
 
   const AttachmentUploader = Uploader
@@ -366,12 +367,14 @@ const CreatePosts = () => {
     dailyText = 'daily_reading',
     bulletinText = 'post',
     pastoralText = 'pastoral_works',
+    ePrayersText = 'e_prayers',
     websiteContentText = 'website_content'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
       (isPastoralWorksPage && pastoralText) ||
+      (isEPrayersPage && ePrayersText) ||
       (isWebsiteContentPage && websiteContentText)
     )
   }
