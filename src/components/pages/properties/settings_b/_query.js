@@ -126,6 +126,11 @@ const getCompanySettings = gql`
           group
           enable
         }
+        ePrayers {
+          displayName
+          group
+          enable
+        }
       }
     }
   }

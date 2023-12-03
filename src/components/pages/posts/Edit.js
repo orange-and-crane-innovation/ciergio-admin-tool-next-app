@@ -367,8 +367,8 @@ const CreatePosts = () => {
     dailyText = 'daily_reading',
     bulletinText = 'post',
     pastoralText = 'pastoral_works',
-    ePrayersText = 'e_prayers',
-    websiteContentText = 'website_content'
+    websiteContentText = 'website_content',
+    ePrayersText = 'e_prayers'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
@@ -383,7 +383,7 @@ const CreatePosts = () => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
+    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content', 'e-prayers')
 
   const [
     updatePost,
@@ -1938,7 +1938,8 @@ const CreatePosts = () => {
                                 '',
                                 'post',
                                 'pastoral_works',
-                                'website_content'
+                                'website_content',
+                                'e_prayers'
                               )}
                               onChange={e => {
                                 onChange(e.value)

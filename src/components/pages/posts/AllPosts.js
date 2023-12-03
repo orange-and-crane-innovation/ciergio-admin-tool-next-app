@@ -193,7 +193,13 @@ const PostComponent = ({ typeOfPage }) => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'e-prayers', 'website-content')
+    : typeOfPage(
+        'daily-readings',
+        'posts',
+        'pastoral-works',
+        'website-content',
+        'e-prayers'
+      )
 
   const headerName = isQRCodePage ? 'Active QR Codes' : typeOfPage()
 
@@ -247,7 +253,8 @@ const PostComponent = ({ typeOfPage }) => {
       'daily_reading',
       'post',
       'pastoral_works',
-      'website_content'
+      'website_content',
+      'e_prayer'
     ),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {
@@ -339,7 +346,8 @@ const PostComponent = ({ typeOfPage }) => {
                   'Daily Reading Details',
                   'Article Details',
                   'Pastoral Work Details',
-                  'Website Content Details'
+                  'Website Content Details',
+                  'E Prayer Details'
                 ),
                 icon: <FiFileText />,
                 function: () => handleShowModal('details', item._id)
@@ -1126,7 +1134,8 @@ const PostComponent = ({ typeOfPage }) => {
             'Daily Reading Details',
             'Article Details',
             'Pastoral Work Details',
-            'Website Content Details'
+            'Website Content Details',
+            'E Prayer Details'
           ),
           icon: <FiFileText />,
           function: () => handleShowModal('details', item._id)
@@ -1488,7 +1497,13 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type={typeOfPage('', 'post', 'pastoral_works', 'e_prayers', 'website_content')}
+              type={typeOfPage(
+                '',
+                'post',
+                'pastoral_works',
+                'website_content',
+                'e_prayers'
+              )}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -1562,7 +1577,8 @@ const PostComponent = ({ typeOfPage }) => {
                                 'Add Daily Reading',
                                 'Create Post',
                                 'Add Pastoral Work',
-                                'Add Website Content'
+                                'Add Website Content',
+                                'Add E Prayer'
                               )
                         }
                         onClick={goToCreatePage}
@@ -1600,13 +1616,15 @@ const PostComponent = ({ typeOfPage }) => {
                       'Daily Reading',
                       'Bulletin',
                       'Pastoral Work',
-                      'Website Content'
+                      'Website Content',
+                      'E Prayer'
                     )} post yet`}
                     content={`${typeOfPage(
                       'Daily Reading',
                       'Bulletin',
                       'Pastoral Work',
-                      'Website Content'
+                      'Website Content',
+                      'E Prayer'
                     )} posts are a great way to share information with your members. Create one now!`}
                   />
                 }

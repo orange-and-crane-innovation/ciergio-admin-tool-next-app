@@ -21,15 +21,15 @@ const PostComponent = () => {
     dailyText = 'Daily Readings',
     bulletinText = 'Bulletin Board',
     pastoralText = 'Pastoral Works',
-    ePrayersText = 'E-Prayers',
-    websiteContentText = 'Website Content'
+    websiteContentText = 'Website Content',
+    ePrayersText = 'E-Prayers'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
       (isPastoralWorksPage && pastoralText) ||
-      (isEPrayers && ePrayersText) ||
-      (isWebsiteContentPage && websiteContentText)
+      (isWebsiteContentPage && websiteContentText) ||
+      (isEPrayers && ePrayersText)
     )
   }
 

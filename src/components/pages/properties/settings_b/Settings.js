@@ -296,6 +296,7 @@ const SettingsTab = ({ companyId, type }) => {
         const toggle = subscriptionModules[toggleSetting.id]
         const keys = toggle ? Object.keys(toggle) : []
         console.log('toggleSetting', toggleSetting)
+        console.log('keys', keys)
 
         const isCanEnableKey = keys.indexOf('enable') > 0
 

@@ -196,8 +196,8 @@ const CreatePosts = () => {
     dailyText = 'daily_reading',
     bulletinText = 'post',
     pastoralText = 'pastoral_works',
-    ePrayersText = 'e_prayers',
-    websiteContentText = 'website_content'
+    websiteContentText = 'website_content',
+    ePrayersText = 'e_prayers'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
@@ -216,8 +216,8 @@ const CreatePosts = () => {
         'daily-readings',
         'posts',
         'pastoral-works',
-        'e-prayers',
-        'website-content'
+        'website-content',
+        'e-prayers'
       )
 
   const [
@@ -711,7 +711,8 @@ const CreatePosts = () => {
             'daily_reading',
             'post',
             'pastoral_works',
-            'website_content'
+            'website_content',
+            'e_prayers'
           ) || '',
         embeddedMediaFiles: videoUrl
           ? [
@@ -978,7 +979,8 @@ const CreatePosts = () => {
             'Create Daily Reading',
             'Create Post',
             'Create Pastoral Work',
-            'Create Website Content'
+            'Create Website Content',
+            'Create E Prayer',
           )}
         </h1>
         <form>
@@ -1084,6 +1086,7 @@ const CreatePosts = () => {
                     'Daily Reading Title',
                     'Title',
                     'Pastoral Work Title',
+                    'Title',
                     'Title'
                   )}
                 </h2>
@@ -1425,8 +1428,8 @@ const CreatePosts = () => {
                                 '',
                                 'post',
                                 'pastoral_works',
-                                'e_prayers',
-                                'website_content'
+                                'website_content',
+                                'e_prayers'
                               )}
                               onChange={e => {
                                 onChange(e.value)
