@@ -235,6 +235,25 @@ const navigation = [
         ]
       },
       {
+        url: '/e-prayers',
+        icon: 'ciergio-list',
+        title: 'Prayers',
+        permissionGroup: 'post',
+        moduleName: 'ePrayers',
+        items: [
+          {
+            url: '/e-prayers',
+            title: 'View All Posts',
+            items: []
+          },
+          {
+            url: '/e-prayers/create',
+            title: 'Create Prayer',
+            items: []
+          }
+        ]
+      },
+      {
         url: '/prayer-requests',
         icon: 'ciergio-prayer',
         title: 'Prayer Requests',

@@ -37,10 +37,10 @@ const isAllowedModule = (modulespermissions, module) => {
   }
   const moduleChecker = companyModules[module]
   if (moduleChecker !== undefined) {
-    if (moduleChecker.enable === undefined) {
+    if (moduleChecker?.enable === undefined) {
       return true
-    } else if (moduleChecker.enable !== undefined) {
-      return moduleChecker.enable
+    } else if (moduleChecker?.enable !== undefined) {
+      return moduleChecker?.enable
     }
 
     return true

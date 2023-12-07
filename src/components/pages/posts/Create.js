@@ -186,6 +186,7 @@ const CreatePosts = () => {
   const isQRCodePage = pathname === '/qr-code/create'
   const isDailyReadingsPage = pathname === '/daily-readings/create'
   const isBulletinPostsPage = pathname === '/posts/create'
+  const isEPrayersPage = pathname === '/e-prayers/create'
   const isPastoralWorksPage = pathname === '/pastoral-works/create'
   const isWebsiteContentPage = pathname === '/website-content/create'
 
@@ -195,12 +196,14 @@ const CreatePosts = () => {
     dailyText = 'daily_reading',
     bulletinText = 'post',
     pastoralText = 'pastoral_works',
-    websiteContentText = 'website_content'
+    websiteContentText = 'website_content',
+    ePrayersText = 'e_prayers'
   ) => {
     return (
       (isDailyReadingsPage && dailyText) ||
       (isBulletinPostsPage && bulletinText) ||
       (isPastoralWorksPage && pastoralText) ||
+      (isEPrayersPage && ePrayersText) ||
       (isWebsiteContentPage && websiteContentText)
     )
   }
@@ -209,7 +212,13 @@ const CreatePosts = () => {
     ? 'attractions-events'
     : isQRCodePage
     ? 'qr-code'
-    : typeOfPage('daily-readings', 'posts', 'pastoral-works', 'website-content')
+    : typeOfPage(
+        'daily-readings',
+        'posts',
+        'pastoral-works',
+        'website-content',
+        'e-prayers'
+      )
 
   const [
     createPost,
@@ -702,7 +711,8 @@ const CreatePosts = () => {
             'daily_reading',
             'post',
             'pastoral_works',
-            'website_content'
+            'website_content',
+            'e_prayers'
           ) || '',
         embeddedMediaFiles: videoUrl
           ? [
@@ -969,7 +979,8 @@ const CreatePosts = () => {
             'Create Daily Reading',
             'Create Post',
             'Create Pastoral Work',
-            'Create Website Content'
+            'Create Website Content',
+            'Create E Prayer',
           )}
         </h1>
         <form>
@@ -1075,6 +1086,7 @@ const CreatePosts = () => {
                     'Daily Reading Title',
                     'Title',
                     'Pastoral Work Title',
+                    'Title',
                     'Title'
                   )}
                 </h2>
@@ -1416,7 +1428,8 @@ const CreatePosts = () => {
                                 '',
                                 'post',
                                 'pastoral_works',
-                                'website_content'
+                                'website_content',
+                                'e_prayers'
                               )}
                               onChange={e => {
                                 onChange(e.value)

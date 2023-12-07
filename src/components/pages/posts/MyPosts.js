@@ -274,7 +274,8 @@ const PostComponent = ({ typeOfPage }) => {
       'daily_reading',
       'post',
       'pastoral_works',
-      'website_content'
+      'website_content',
+      'e_prayers'
     ),
     mypost: true,
     categoryId: selectedCategory !== '' ? selectedCategory : null,
@@ -892,7 +893,7 @@ const PostComponent = ({ typeOfPage }) => {
           {!isDailyReadingsPage && (
             <SelectCategory
               placeholder="Filter Category"
-              type={typeOfPage('', 'post', 'pastoral_works', 'website_content')}
+              type={typeOfPage('', 'post', 'pastoral_works', 'website_content', 'e_prayers')}
               onChange={onCategorySelect}
               onClear={onClearCategory}
               selected={selectedCategory}
@@ -943,7 +944,8 @@ const PostComponent = ({ typeOfPage }) => {
                             'Add Daily Reading',
                             'Create Post',
                             'Add Pastoral Work',
-                            'Add Website Content'
+                            'Add Website Content',
+                            'Add E Prayer'
                           )
                     }
                     onClick={goToCreatePage}
