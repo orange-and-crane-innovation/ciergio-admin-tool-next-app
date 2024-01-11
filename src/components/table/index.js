@@ -55,8 +55,7 @@ const Table = ({
                 listItem = Object.entries(item).map(
                   ([key, value], rowIndex) => {
                     if (
-                      value !== false &&
-                      key !== 'id' &&
+                      (value !== false && key !== 'id') ||
                       !rowNames[rowIndex].hidden
                     ) {
                       return <td key={rowIndex}>{value}</td>
