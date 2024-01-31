@@ -23,6 +23,7 @@ import {
 } from '@app/constants'
 import { ATTR, DATE } from '@app/utils'
 import showToast from '@app/utils/toast'
+import dayjs from 'dayjs'
 
 import { GET_PAYMENT_METHODS, GET_TRANSACTIONS } from './queries'
 import CreatePaymentModal from './CreatePaymentModal'
@@ -422,7 +423,7 @@ function Transactions() {
       data:
         DONATIONS?.data?.length > 0
           ? DONATIONS?.data?.map((donation, index) => {
-              return {
+              let table_data = {
                 date: (
                   <span className="whitespace-nowrap">
                     {DATE.friendlyDateTimeFormat(
@@ -473,13 +474,20 @@ function Transactions() {
                 ref_id: <>{donation?.senderReferenceCode || '-'}</>,
                 campaign: <>{donation?.campaign || '-'}</>
               }
+              if (!isAdmin) {
+                delete table_data.merchant
+                delete table_data.bank_fees
+                delete table_data.oci_fees
+                delete table_data.net_amount
+              }
+              return table_data
             })
           : []
     }),
     [donations]
   )
 
-  const paymentListData = useMemo(
+  const paymentLinkListData = useMemo(
     () => ({
       count: DONATIONS?.overallCount || 0,
       limit: DONATIONS?.limit || 0,
@@ -487,7 +495,11 @@ function Transactions() {
       data:
         DONATIONS?.data?.length > 0
           ? DONATIONS?.data?.map((donation, index) => {
-              return {
+              const isExpired = dayjs().isAfter(
+                dayjs(donation.createdAt).add(15, 'minute'),
+                'minute'
+              )
+              let table_data = {
                 date: (
                   <span className="whitespace-nowrap">
                     {DATE.friendlyDateTimeFormat(
@@ -502,10 +514,15 @@ function Transactions() {
                       className={`${
                         TRANSACTIONSTATUS[donation?.status] === 'Paid'
                           ? 'bg-success-500'
+                          : TRANSACTIONSTATUS[donation?.status] === 'Pending' &&
+                            isExpired
+                          ? 'bg-danger-500'
                           : 'bg-info-500'
                       } border flex items-center justify-center rounded-full flex-col md:flex-row text-white`}
                     >
-                      {TRANSACTIONSTATUS[donation?.status]}
+                      {isExpired
+                        ? 'Expired'
+                        : TRANSACTIONSTATUS[donation?.status]}
                     </span>
                   </>
                 ),
@@ -537,9 +554,17 @@ function Transactions() {
                       showToast('success', 'Payment copied to clipboard')
                     }}
                     label="Copy Link"
+                    disabled={isExpired}
                   />
                 )
               }
+              if (!isAdmin) {
+                delete table_data.merchant
+                delete table_data.bank_fees
+                delete table_data.oci_fees
+                delete table_data.net_amount
+              }
+              return table_data
             })
           : []
     }),
@@ -948,7 +973,7 @@ function Transactions() {
             <Card
               content={
                 <PrimaryDataTable
-                  data={paymentListData}
+                  data={paymentLinkListData}
                   columns={tableRowNames}
                   loading={loading}
                   currentPage={activePage}
