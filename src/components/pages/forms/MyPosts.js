@@ -313,7 +313,7 @@ const PostComponent = () => {
                       yes={
                         <div className="flex text-info-500 text-sm">
                           <Link href={`/forms/edit/${item._id}`}>
-                            <a className="mr-2 hover:underline">Edit</a>
+                            <div className="mr-2 hover:underline">Edit</div>
                           </Link>
                           {` | `}
                           <span

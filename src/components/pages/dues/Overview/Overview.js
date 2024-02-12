@@ -158,12 +158,12 @@ function Overview({ complexID, complexName, accountType }) {
           <Tabs.TabLabels>
             <Tabs.TabLabel id="1">
               <Link href="/dues/overview">
-                <a>Overview</a>
+                <div>Overview</div>
               </Link>
             </Tabs.TabLabel>
             <Tabs.TabLabel id="2">
               <Link href="/dues/manage-categories">
-                <a>Manage Categories</a>
+                <div>Manage Categories</div>
               </Link>
             </Tabs.TabLabel>
           </Tabs.TabLabels>

@@ -456,9 +456,9 @@ const PostComponent = ({ typeOfPage }) => {
                     {isMine ? (
                       <>
                         <Link href={`/${routeName}/view/${item._id}`}>
-                          <a className="mr-2 hover:underline" target="_blank">
+                          <div className="mr-2 hover:underline" target="_blank">
                             View
-                          </a>
+                          </div>
                         </Link>
                         {` | `}
                         <span
@@ -477,9 +477,9 @@ const PostComponent = ({ typeOfPage }) => {
                       </>
                     ) : (
                       <Link href={`/${routeName}/view/${item._id}`}>
-                        <a className="mr-2 hover:underline" target="_blank">
+                        <div className="mr-2 hover:underline" target="_blank">
                           View
-                        </a>
+                        </div>
                       </Link>
                     )}
 
@@ -494,12 +494,12 @@ const PostComponent = ({ typeOfPage }) => {
                           <>
                             {` | `}
                             <Link href={`/${donationsRouteName}/${item._id}`}>
-                              <a
+                              <div
                                 className="mx-2 hover:underline"
                                 target="_blank"
                               >
                                 View Donations
-                              </a>
+                              </div>
                             </Link>
                           </>
                         }
@@ -520,12 +520,12 @@ const PostComponent = ({ typeOfPage }) => {
                       }
                       yes={
                         <Link href={`/${donationsRouteName}/${item._id}`}>
-                          <a
+                          <div
                             className="text-info-500 text-sm hover:underline"
                             target="_blank"
                           >
                             View Donations
-                          </a>
+                          </div>
                         </Link>
                       }
                     />

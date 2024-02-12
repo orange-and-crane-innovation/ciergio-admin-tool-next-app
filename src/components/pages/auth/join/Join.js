@@ -235,12 +235,12 @@ function Join({ onSubmit, isLoading, isSubmitting, done, data }) {
                       <span className="font-body leading-7">
                         <span>I have read and accepted the </span>
                         <Link href={`/terms-and-conditions/${complexID}`}>
-                          <a
+                          <div
                             className="text-info-900 hover:underline"
                             target="_blank"
                           >
                             Terms and Conditions
-                          </a>
+                          </div>
                         </Link>
                       </span>
                     }

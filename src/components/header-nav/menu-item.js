@@ -6,10 +6,10 @@ const MenuItem = ({ url, icon, iconClass, title, onClick }) => {
     return (
       <div className="dropdown-item">
         <Link href={url}>
-          <a className="link">
+          <div className="link">
             {icon && <i className={`icon ${icon} ${iconClass}`}></i>}
             <span className="title pl-3">{title}</span>
-          </a>
+          </div>
         </Link>
       </div>
     )

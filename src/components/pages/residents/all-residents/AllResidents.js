@@ -203,7 +203,7 @@ function AllResidents() {
                 residentsData?.data?.find(item => item.unit === key)?.unitId
               }/overview`}
             >
-              <a className="mr-2 hover:underline">{key}</a>
+              <div className="mr-2 hover:underline">{key}</div>
             </Link>
           </strong>
         </td>
@@ -223,7 +223,7 @@ function AllResidents() {
                 </div>
                 <span className="ml-4 font-bold text-neutral-dark">
                   <Link href={`/residents/view/${item?.residentId}`}>
-                    <a className="mr-2 hover:underline">{item?.resident}</a>
+                    <div className="mr-2 hover:underline">{item?.resident}</div>
                   </Link>
                 </span>
               </div>
