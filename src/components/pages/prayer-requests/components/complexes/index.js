@@ -28,7 +28,7 @@ export default function Complexes() {
           ? complexes.getComplexes.data.map(item => {
               return {
                 name: (
-                  <Link href={`/prayer-requests/list?complexId=${item._id}`}>
+                  <Link legacyBehavior href={`/prayer-requests/list?complexId=${item._id}`}>
                     <span className="text-blue-600 cursor-pointer">
                       {item.name}
                     </span>

@@ -5,7 +5,7 @@ const MenuItem = ({ url, icon, iconClass, title, onClick }) => {
   if (url) {
     return (
       <div className="dropdown-item">
-        <Link href={url}>
+        <Link legacyBehavior href={url}>
           <a className="link">
             {icon && <i className={`icon ${icon} ${iconClass}`}></i>}
             <span className="title pl-3">{title}</span>

@@ -5,7 +5,7 @@ const messages = {
   CreateIssue: data => (
     <span>
       {data?.authorName || ''} submitted a{' '}
-      <Link href={`/maintenance/details/${data?.issueId}` || ''}>
+      <Link legacyBehavior href={`/maintenance/details/${data?.issueId}` || ''}>
         <span className="text-blue-500">ticket</span>
       </Link>
       .
@@ -14,7 +14,7 @@ const messages = {
   AssignIssue: data => (
     <span>
       {data?.authorName || ''} assigned a{' '}
-      <Link href={`/maintenance/details/${data?.issueId}` || ''}>
+      <Link legacyBehavior href={`/maintenance/details/${data?.issueId}` || ''}>
         {' '}
         <span className="text-blue-500">ticket</span>
       </Link>{' '}
@@ -24,7 +24,10 @@ const messages = {
   OnholdIssue: data => (
     <span>
       {data?.authorName || ''} has placed a{' '}
-      <Link href={`/maintenance/details/${data?.issueId} ` || ''}>
+      <Link
+        legacyBehavior
+        href={`/maintenance/details/${data?.issueId} ` || ''}
+      >
         {' '}
         <span className="text-blue-500">ticket</span>
       </Link>{' '}
@@ -34,7 +37,7 @@ const messages = {
   ResolveIssue: data => (
     <span>
       {data?.authorName || ''} resolved a{' '}
-      <Link href={`/maintenance/details/${data?.issueId}` || ''}>
+      <Link legacyBehavior href={`/maintenance/details/${data?.issueId}` || ''}>
         {' '}
         <span className="text-blue-500">ticket</span>
       </Link>

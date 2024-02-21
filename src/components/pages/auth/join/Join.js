@@ -234,7 +234,7 @@ function Join({ onSubmit, isLoading, isSubmitting, done, data }) {
                     label={
                       <span className="font-body leading-7">
                         <span>I have read and accepted the </span>
-                        <Link href={`/terms-and-conditions/${complexID}`}>
+                        <Link legacyBehavior href={`/terms-and-conditions/${complexID}`}>
                           <a
                             className="text-info-900 hover:underline"
                             target="_blank"
@@ -311,7 +311,7 @@ function Join({ onSubmit, isLoading, isSubmitting, done, data }) {
         </div>
 
         <div className={style.PageLink}>
-          <Link href="/auth/login">I want to login instead</Link>
+          <Link legacyBehavior href="/auth/login">I want to login instead</Link>
         </div>
 
         <div className={style.MiniFooter}>

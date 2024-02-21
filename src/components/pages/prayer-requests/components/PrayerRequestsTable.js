@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { useQuery, useMutation } from '@apollo/client'
+import { useQuery, useMutation, gql, useLazyQuery } from '@apollo/client'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useReactToPrint } from 'react-to-print'
@@ -8,7 +8,6 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import P from 'prop-types'
 import * as yup from 'yup'
-import { gql, useLazyQuery } from '@apollo/client'
 
 import FormInput from '@app/components/forms/form-input'
 import FormSelect from '@app/components/forms/form-select'
@@ -355,7 +354,7 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                   category: (
                     <>
                       <span>{category?.name}</span>
-                      <Link href={path}>
+                      <Link legacyBehavior href={path}>
                         <p className="text-sm text-info-500 cursor-pointer hover:underline">
                           <span>View</span>
                         </p>
@@ -363,7 +362,10 @@ function PrayerRequestsTable({ queryTemplate, status, user, refetchCounts }) {
                     </>
                   ),
                   requestor: (
-                    <Link href={`/residents/view/${reporter?._id}`}>
+                    <Link
+                      legacyBehavior
+                      href={`/residents/view/${reporter?._id}`}
+                    >
                       <span className="text-info-500 cursor-pointer hover:underline">{`${req?.firstName} ${req?.lastName}`}</span>
                     </Link>
                   ),

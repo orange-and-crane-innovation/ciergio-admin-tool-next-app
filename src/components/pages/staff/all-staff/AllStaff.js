@@ -608,7 +608,7 @@ function AllStaff() {
                       />
                     </div>
                     <span>
-                      <Link href={`/staff/view/${user?._id}`}>
+                      <Link legacyBehavior href={`/staff/view/${user?._id}`}>
                         <a className="mx-2 hover:underline capitalize">
                           {`${user?.firstName} ${user?.lastName}`}
                         </a>

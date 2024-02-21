@@ -312,7 +312,7 @@ const PostComponent = () => {
                       perform="forms:update::trash"
                       yes={
                         <div className="flex text-info-500 text-sm">
-                          <Link href={`/forms/edit/${item._id}`}>
+                          <Link legacyBehavior href={`/forms/edit/${item._id}`}>
                             <a className="mr-2 hover:underline">Edit</a>
                           </Link>
                           {` | `}

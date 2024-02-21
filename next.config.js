@@ -25,6 +25,6 @@ module.exports = {
   experimental: {
     esmExternals: false
   },
-  target: 'serverless',
+ /*  target: 'serverless', */
   productionBrowserSourceMaps: true
 }

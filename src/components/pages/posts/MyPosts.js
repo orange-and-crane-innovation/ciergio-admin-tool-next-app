@@ -447,11 +447,17 @@ const PostComponent = ({ typeOfPage }) => {
                   <div className="flex text-info-500 text-sm">
                     {isMine ? (
                       <>
-                        <Link href={`/${routeName}/edit/${item._id}`}>
+                        <Link
+                          legacyBehavior
+                          href={`/${routeName}/edit/${item._id}`}
+                        >
                           <a className="mr-2 hover:underline">Edit</a>
                         </Link>
                         {` | `}
-                        <Link href={`/${routeName}/view/${item._id}`}>
+                        <Link
+                          legacyBehavior
+                          href={`/${routeName}/view/${item._id}`}
+                        >
                           <a className="mx-2 hover:underline" target="_blank">
                             View
                           </a>
@@ -479,7 +485,10 @@ const PostComponent = ({ typeOfPage }) => {
                         />
                       </>
                     ) : (
-                      <Link href={`/${routeName}/view/${item._id}`}>
+                      <Link
+                        legacyBehavior
+                        href={`/${routeName}/view/${item._id}`}
+                      >
                         <a className="mr-2 hover:underline" target="_blank">
                           View
                         </a>
@@ -496,7 +505,10 @@ const PostComponent = ({ typeOfPage }) => {
                         yes={
                           <>
                             {` | `}
-                            <Link href={`/${donationsRouteName}/${item._id}`}>
+                            <Link
+                              legacyBehavior
+                              href={`/${donationsRouteName}/${item._id}`}
+                            >
                               <a
                                 className="mx-2 hover:underline"
                                 target="_blank"
@@ -522,7 +534,10 @@ const PostComponent = ({ typeOfPage }) => {
                           : 'bulletin:view::donations'
                       }
                       yes={
-                        <Link href={`/${donationsRouteName}/${item._id}`}>
+                        <Link
+                          legacyBehavior
+                          href={`/${donationsRouteName}/${item._id}`}
+                        >
                           <a
                             className="text-info-500 text-sm hover:underline"
                             target="_blank"

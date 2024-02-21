@@ -411,7 +411,7 @@ function Notifications({
                           perform="notifications:update"
                           yes={
                             <>
-                              <Link href={`/notifications/edit/${notif._id}`}>
+                              <Link legacyBehavior href={`/notifications/edit/${notif._id}`}>
                                 <a className="text-blue-600 hover:underline">
                                   Edit
                                 </a>

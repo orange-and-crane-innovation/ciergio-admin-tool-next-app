@@ -18,7 +18,7 @@ const Item = ({ url, icon, title, items, badge }) => {
     let parentUrl = ''
     if (items.length === 0) {
       setSidebarItem(
-        <Link href={url}>
+        <Link legacyBehavior href={url}>
           <a className={`left-sidebar-item ${active ? 'active' : ''}`}>
             {icon && <i className={`icon ${icon}`}></i>}
             <span className="title">{title}</span>

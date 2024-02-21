@@ -339,7 +339,7 @@ const Groups = () => {
 
           return {
             name: (
-              <Link href={`/members/groups/${item?._id}`}>
+              <Link legacyBehavior href={`/members/groups/${item?._id}`}>
                 <a className="mx-2 hover:underline capitalize">{item?.name}</a>
               </Link>
             ),

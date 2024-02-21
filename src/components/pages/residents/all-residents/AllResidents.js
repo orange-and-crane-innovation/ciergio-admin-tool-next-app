@@ -222,7 +222,10 @@ function AllResidents() {
                   />
                 </div>
                 <span className="ml-4 font-bold text-neutral-dark">
-                  <Link href={`/residents/view/${item?.residentId}`}>
+                  <Link
+                    legacyBehavior
+                    href={`/residents/view/${item?.residentId}`}
+                  >
                     <a className="mr-2 hover:underline">{item?.resident}</a>
                   </Link>
                 </span>

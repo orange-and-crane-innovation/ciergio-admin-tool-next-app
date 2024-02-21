@@ -33,7 +33,7 @@ const historyMessages = {
   CreateIssue: data => (
     <span>
       {(data && data.authorName) || ''} submitted a{' '}
-      <Link href={`/dashboard/issues/view/${data && data.issueId}` || ''}>
+      <Link legacyBehavior href={`/dashboard/issues/view/${data && data.issueId}` || ''}>
         ticket
       </Link>
       .
@@ -42,7 +42,7 @@ const historyMessages = {
   AssignIssue: data => (
     <span>
       {(data && data.authorName) || ''} assigned a{' '}
-      <Link href={`/dashboard/issues/view/${data && data.issueId}` || ''}>
+      <Link legacyBehavior href={`/dashboard/issues/view/${data && data.issueId}` || ''}>
         ticket
       </Link>{' '}
       to {(data && data.assigneeName && data.assigneeName) || ''}.
@@ -51,7 +51,7 @@ const historyMessages = {
   OnholdIssue: data => (
     <span>
       {(data && data.authorName) || ''} has placed a{' '}
-      <Link href={`/dashboard/issues/view/${data && data.issueId} ` || ''}>
+      <Link legacyBehavior href={`/dashboard/issues/view/${data && data.issueId} ` || ''}>
         ticket
       </Link>{' '}
       on hold.
@@ -60,7 +60,7 @@ const historyMessages = {
   ResolveIssue: data => (
     <span>
       {(data && data.authorName) || ''} resolved a{' '}
-      <Link href={`/dashboard/issues/view/${data && data.issueId}` || ''}>
+      <Link legacyBehavior href={`/dashboard/issues/view/${data && data.issueId}` || ''}>
         ticket
       </Link>
       .

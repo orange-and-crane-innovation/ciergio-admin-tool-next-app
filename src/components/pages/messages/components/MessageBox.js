@@ -27,6 +27,15 @@ import getAccountTypeName from '@app/utils/getAccountTypeName'
 import { getDefaultKeyBinding } from 'draft-js'
 import styles from '../messages.module.css'
 
+/* import {
+  FirebaseContext,
+  useFirebase
+} from '../../../../lib/firebase/firebase-context'
+ */
+import { db, ref } from '../../../../lib/firebase/firebase'
+
+import { /* getDatabase, ref,  */ onValue } from 'firebase/database'
+
 const defaultRemoveModalState = {
   type: 'delete',
   visible: false,
@@ -51,8 +60,26 @@ export default function MessageBox({
   onRemove,
   removeParticipant,
   parentFunc,
-  selectedConvoType
+  selectedConvoType,
+  convoId
 }) {
+  // code near the html...
+  const [testData, setTestData] = useState(null)
+  const firebase = db // useFirebase()
+  useEffect(() => {
+    const conversationsRef = ref(firebase, `conversations/${convoId}`)
+
+    onValue(conversationsRef, snapshot => {
+      const data = snapshot.val()
+      if (data) {
+        console.log(data)
+        setTestData(data)
+      } else {
+        console.log('Data not found')
+      }
+    })
+  }, [firebase, ref, convoId])
+
   const profile = JSON.parse(localStorage.getItem('profile'))
   const [message, setMessage] = useState()
   const [isOver, setIsOver] = useState(false)
@@ -182,6 +209,30 @@ export default function MessageBox({
         </h2>
         <Dropdown label={<FiMoreHorizontal />} items={dropdownData} />
       </div>
+      {testData && (
+        <div
+          className="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md"
+          role="alert"
+        >
+          <div className="flex">
+            <div className="py-1">
+              <svg
+                className="fill-current h-6 w-6 text-teal-500 mr-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-bold">{convoId}</p>
+              <p className="text-sm">
+                {testData.by} : {testData.messageData}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className={styles.messageBoxList}>
         {loading ? <Spinner /> : null}
         {messages?.length > 0 && (

@@ -45,7 +45,7 @@ function Main() {
         data?.getBuildings?.data?.length > 0
           ? data.getBuildings.data.map(({ _id, name }) => ({
               name: (
-                <Link href={getNextPath(_id)}>
+                <Link legacyBehavior href={getNextPath(_id)}>
                   <span className="text-secondary-500 hover:underline hover:cursor-pointer">
                     {name}
                   </span>

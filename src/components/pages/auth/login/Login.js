@@ -115,7 +115,7 @@ function Login({ onLoginSubmit, isSubmitting }) {
         </div>
 
         <div className={style.PageLink}>
-          <Link href="/auth/forgot-password">I forgot my password</Link>
+          <Link legacyBehavior href="/auth/forgot-password">I forgot my password</Link>
         </div>
 
         <div className={style.MiniFooter}>

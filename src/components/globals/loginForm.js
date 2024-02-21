@@ -44,7 +44,7 @@ function Button() {
             </button>
           </form>
         </div>
-        <Link href="/auth/forgot-password">I forgot my password</Link>
+        <Link legacyBehavior href="/auth/forgot-password">I forgot my password</Link>
       </div>
     </main>
   )

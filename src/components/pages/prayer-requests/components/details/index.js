@@ -109,7 +109,7 @@ export default function PrayerRequestDetails() {
             {toFriendlyDate(pr?.createdAt)}
           </small>{' '}
           <span className="text-neutral-500 text-base">&middot; </span>
-          <Link href={path}>
+          <Link legacyBehavior href={path}>
             <small className="text-blue-500 cursor-pointer font-normal text-base">
               {pr?.category?.name}
             </small>

@@ -276,27 +276,40 @@ const historyMessages = {
   CreateIssue: data => (
     <span>
       {data?.authorName || ''} submitted a{' '}
-      <Link href={`/maintenance/details/${data?.issueId}` || ''}>ticket</Link>.
+      <Link legacyBehavior href={`/maintenance/details/${data?.issueId}` || ''}>
+        ticket
+      </Link>
+      .
     </span>
   ),
   AssignIssue: data => (
     <span>
       {data?.authorName || ''} assigned a{' '}
-      <Link href={`/maintenance/details/${data?.issueId}` || ''}>ticket</Link>{' '}
+      <Link legacyBehavior href={`/maintenance/details/${data?.issueId}` || ''}>
+        ticket
+      </Link>{' '}
       to {(data?.assigneeName && data?.assigneeName) || ''}.
     </span>
   ),
   OnholdIssue: data => (
     <span>
       {data?.authorName || ''} has placed a{' '}
-      <Link href={`/maintenance/details/${data?.issueId} ` || ''}>ticket</Link>{' '}
+      <Link
+        legacyBehavior
+        href={`/maintenance/details/${data?.issueId} ` || ''}
+      >
+        ticket
+      </Link>{' '}
       on hold.
     </span>
   ),
   ResolveIssue: data => (
     <span>
       {data?.authorName || ''} resolved a{' '}
-      <Link href={`/maintenance/details/${data?.issueId}` || ''}>ticket</Link>.
+      <Link legacyBehavior href={`/maintenance/details/${data?.issueId}` || ''}>
+        ticket
+      </Link>
+      .
     </span>
   ),
   ViewBill: data => (

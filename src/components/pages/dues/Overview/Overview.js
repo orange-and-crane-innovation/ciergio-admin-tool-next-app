@@ -157,12 +157,12 @@ function Overview({ complexID, complexName, accountType }) {
         >
           <Tabs.TabLabels>
             <Tabs.TabLabel id="1">
-              <Link href="/dues/overview">
+              <Link legacyBehavior href="/dues/overview">
                 <a>Overview</a>
               </Link>
             </Tabs.TabLabel>
             <Tabs.TabLabel id="2">
-              <Link href="/dues/manage-categories">
+              <Link legacyBehavior href="/dues/manage-categories">
                 <a>Manage Categories</a>
               </Link>
             </Tabs.TabLabel>

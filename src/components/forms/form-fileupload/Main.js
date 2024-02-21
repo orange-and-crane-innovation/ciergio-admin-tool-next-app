@@ -63,7 +63,7 @@ export default function FileUpload({
       <div className={styles.editContainer}>
         <FaPencilAlt onClick={handleFileUpload} className="cursor-pointer" />
 
-        <Link href={fileName}>
+        <Link legacyBehavior href={fileName}>
           <a
             className={styles.longName}
             style={{ direction: 'rtl', width: '150px' }}

@@ -8,7 +8,7 @@ import CiergioLogoH from '@app/assets/svg/ciergio-logo-h.svg'
 const Logo = ({ onToggle, isCollapsed }) => {
   return (
     <div className="logo truncate">
-      <Link href="/">
+      <Link legacyBehavior href="/">
         <>
           <CiergioLogo
             className={`-ml-2 mr-2 hidden ${

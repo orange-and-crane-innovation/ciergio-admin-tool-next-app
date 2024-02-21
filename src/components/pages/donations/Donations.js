@@ -227,7 +227,7 @@ function Donations() {
             <td>{ATTR.toCurrency(item?.amount)}</td>
             <td>
               {item?.campaign?.title ? (
-                <Link href={`/posts/view/${item?.campaign?._id}`}>
+                <Link legacyBehavior href={`/posts/view/${item?.campaign?._id}`}>
                   <a className="mr-2 hover:underline" target="_blank">
                     {item?.campaign?.title}
                   </a>

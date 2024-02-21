@@ -81,7 +81,7 @@ function ForgotPassword({ onSubmit, isSubmitting }) {
         </div>
 
         <div className={style.PageLink}>
-          <Link href="/auth/login">I want to login instead</Link>
+          <Link legacyBehavior href="/auth/login">I want to login instead</Link>
         </div>
 
         <div className={style.MiniFooter}>

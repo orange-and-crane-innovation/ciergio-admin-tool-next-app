@@ -43,7 +43,7 @@ function Main() {
 
               return {
                 name: (
-                  <Link href={nextPath}>
+                  <Link legacyBehavior href={nextPath}>
                     <span className="text-secondary-500 hover:underline hover:cursor-pointer">
                       {name}
                     </span>

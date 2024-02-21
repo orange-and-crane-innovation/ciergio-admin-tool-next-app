@@ -27,6 +27,13 @@ import { uniqBy } from 'lodash'
 import useDebounce from '@app/utils/useDebounce'
 import { useRouter } from 'next/router'
 
+import { db } from '../../../lib/firebase/firebase'
+
+import {
+  FirebaseContext,
+  useFirebase
+} from '../../../lib/firebase/firebase-context'
+
 const convoOptions = [
   {
     label: 'Group',
@@ -648,80 +655,94 @@ export default function Main() {
     }
   }
 
+  /* // code near the html...
+  const firebase = useFirebase()
+  useEffect(() => {
+    firebase
+      .ref(`conversations`)
+      .on('value')
+      .then(snapshot => {
+        const data = snapshot.value()
+        console.log(data)
+      })
+  }, [firebase]) */
   return (
-    <div className={styles.messagesContainer}>
-      <div className={styles.messagesListContainer}>
-        <div className={styles.messagesListHeader}>
-          <div className="w-3/4 mt-4">
-            <FormSelect
-              options={convoOptions}
-              onChange={onSelectConvoType}
-              defaultValue={convoOptions.filter(
-                item => item.value === convoType
-              )}
+    <FirebaseContext.Provider value={db}>
+      <div className={styles.messagesContainer}>
+        <div className={styles.messagesListContainer}>
+          <div className={styles.messagesListHeader}>
+            <div className="w-3/4 mt-4">
+              <FormSelect
+                options={convoOptions}
+                onChange={onSelectConvoType}
+                defaultValue={convoOptions.filter(
+                  item => item.value === convoType
+                )}
+              />
+            </div>
+            <div className="flex items-center">
+              <button
+                className={styles.messagesButton}
+                onClick={() => {
+                  doFetchAccounts()
+                  handleNewMessageModal()
+                }}
+              >
+                <FiEdit className="text-orange-600" />
+              </button>
+            </div>
+          </div>
+          <div className={styles.pendingToggleContainer}>
+            <span>Show only pending &amp; active messages </span>
+            <Toggle onChange={togglePendingMessages} />
+          </div>
+          <div className={styles.messagesListItems}>
+            <ConversationBox
+              conversations={conversations}
+              loading={loadingConvo}
+              selectedConvoType={convoType}
+              selectedConvo={selectedConvo?._id}
+              currentUserId={profile?._id}
+              currentAccountId={profile?.accounts?.data[0]._id}
+              newMessage={newMsg || messageData}
+              onFetchMore={onFetchMoreConversations}
+              onConvoSelect={handleMessagePreviewClick}
             />
           </div>
-          <div className="flex items-center">
-            <button
-              className={styles.messagesButton}
-              onClick={() => {
-                doFetchAccounts()
-                handleNewMessageModal()
-              }}
-            >
-              <FiEdit className="text-orange-600" />
-            </button>
-          </div>
         </div>
-        <div className={styles.pendingToggleContainer}>
-          <span>Show only pending &amp; active messages </span>
-          <Toggle onChange={togglePendingMessages} />
-        </div>
-        <div className={styles.messagesListItems}>
-          <ConversationBox
-            conversations={conversations}
-            loading={loadingConvo}
-            selectedConvoType={convoType}
-            selectedConvo={selectedConvo?._id}
-            currentUserId={profile?._id}
-            currentAccountId={profile?.accounts?.data[0]._id}
-            newMessage={newMsg || messageData}
-            onFetchMore={onFetchMoreConversations}
-            onConvoSelect={handleMessagePreviewClick}
-          />
-        </div>
+        <MessageBox
+          convoId={selectedConvo ? selectedConvo?._id : null}
+          parentFunc={messageBoxFunc}
+          endMessageRef={endMessage}
+          participant={selectedConvo}
+          name={selectedConvo?.name}
+          conversation={selectedConvo ? convoMessages : {}}
+          loading={loadingMessages}
+          loadingSend={loadingSendMessage}
+          onSubmitMessage={handleSubmitMessage}
+          currentUserid={profile?._id}
+          onUpload={onUploadAttachment}
+          onRemove={onRemoveAttachment}
+          loadingAttachment={isUploadingAttachment}
+          attachments={uploadedAttachments}
+          attachmentURLs={attachmentURLs}
+          newMessage={newMsg?.conversation?._id === selectedConvo?._id}
+          onReadNewMessage={onReadNewMessage}
+          onFetchMoreMessage={onFetchMoreMessage}
+          removeParticipant={removeParticipant}
+          selectedConvoType={convoType}
+        />
+        <NewMessageModal
+          visible={showNewMessageModal}
+          onCancel={handleCloseNewMessageModal}
+          onSelectUser={handleAccountClick}
+          loadingUsers={loadingAccounts}
+          users={accounts?.getAccounts?.data || []}
+          accountId={accountId}
+          onSearchChange={handleSearchAccounts}
+          searchText={search}
+        />
       </div>
-      <MessageBox
-        parentFunc={messageBoxFunc}
-        endMessageRef={endMessage}
-        participant={selectedConvo}
-        name={selectedConvo?.name}
-        conversation={selectedConvo ? convoMessages : {}}
-        loading={loadingMessages}
-        loadingSend={loadingSendMessage}
-        onSubmitMessage={handleSubmitMessage}
-        currentUserid={profile?._id}
-        onUpload={onUploadAttachment}
-        onRemove={onRemoveAttachment}
-        loadingAttachment={isUploadingAttachment}
-        attachments={uploadedAttachments}
-        attachmentURLs={attachmentURLs}
-        newMessage={newMsg?.conversation?._id === selectedConvo?._id}
-        onReadNewMessage={onReadNewMessage}
-        onFetchMoreMessage={onFetchMoreMessage}
-        removeParticipant={removeParticipant}
-        selectedConvoType={convoType}
-      />
-      <NewMessageModal
-        visible={showNewMessageModal}
-        onCancel={handleCloseNewMessageModal}
-        onSelectUser={handleAccountClick}
-        loadingUsers={loadingAccounts}
-        users={accounts?.getAccounts?.data || []}
-        accountId={accountId}
-        onSearchChange={handleSearchAccounts}
-        searchText={search}
-      />
-    </div>
+    </FirebaseContext.Provider>
   )
 }

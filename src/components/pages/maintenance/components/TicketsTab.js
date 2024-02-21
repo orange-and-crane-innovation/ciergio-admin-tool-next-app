@@ -145,7 +145,10 @@ function TicketsTab({
                         issue?.readAt ? 'font-normal' : 'font-semibold'
                       }`}
                     >
-                      <Link href={`/maintenance/details/${issue._id}`}>
+                      <Link
+                        legacyBehavior
+                        href={`/maintenance/details/${issue._id}`}
+                      >
                         <a className="mr-2 hover:underline">{issue?.title}</a>
                       </Link>
                     </div>
@@ -163,7 +166,10 @@ function TicketsTab({
                 reportedBy: (
                   <div>
                     <div className="text-secondary-500 text-base">
-                      <Link href={`/residents/view/${reporter?._id}`}>
+                      <Link
+                        legacyBehavior
+                        href={`/residents/view/${reporter?._id}`}
+                      >
                         <a className="hover:underline">
                           {`${reporter?.user?.firstName} ${reporter?.user?.lastName}`}
                         </a>
