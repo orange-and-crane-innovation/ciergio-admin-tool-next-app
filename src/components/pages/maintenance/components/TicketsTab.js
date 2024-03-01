@@ -146,7 +146,7 @@ function TicketsTab({
                       }`}
                     >
                       <Link href={`/maintenance/details/${issue._id}`}>
-                        <a className="mr-2 hover:underline">{issue?.title}</a>
+                        <div className="mr-2 hover:underline">{issue?.title}</div>
                       </Link>
                     </div>
                     <div className="flex items-center justify-start">
@@ -164,9 +164,9 @@ function TicketsTab({
                   <div>
                     <div className="text-secondary-500 text-base">
                       <Link href={`/residents/view/${reporter?._id}`}>
-                        <a className="hover:underline">
+                        <div className="hover:underline">
                           {`${reporter?.user?.firstName} ${reporter?.user?.lastName}`}
-                        </a>
+                        </div>
                       </Link>
                     </div>
                     <div className="text-neutral-dark text-md">{`Unit ${reporter?.unit?.name}`}</div>

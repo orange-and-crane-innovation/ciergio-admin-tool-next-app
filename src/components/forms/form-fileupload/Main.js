@@ -64,12 +64,12 @@ export default function FileUpload({
         <FaPencilAlt onClick={handleFileUpload} className="cursor-pointer" />
 
         <Link href={fileName}>
-          <a
+          <div
             className={styles.longName}
             style={{ direction: 'rtl', width: '150px' }}
           >
             {fileName}
-          </a>
+          </div>
         </Link>
       </div>
     )

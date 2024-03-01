@@ -412,9 +412,9 @@ function Notifications({
                           yes={
                             <>
                               <Link href={`/notifications/edit/${notif._id}`}>
-                                <a className="text-blue-600 hover:underline">
+                                <div className="text-blue-600 hover:underline">
                                   Edit
-                                </a>
+                                </div>
                               </Link>
                               {' | '}
                             </>

@@ -340,7 +340,7 @@ const Groups = () => {
           return {
             name: (
               <Link href={`/members/groups/${item?._id}`}>
-                <a className="mx-2 hover:underline capitalize">{item?.name}</a>
+                <div className="mx-2 hover:underline capitalize">{item?.name}</div>
               </Link>
             ),
             button: <Dropdown label={<FaEllipsisH />} items={dropdownData} />
