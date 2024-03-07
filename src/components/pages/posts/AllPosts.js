@@ -254,7 +254,7 @@ const PostComponent = ({ typeOfPage }) => {
       'post',
       'pastoral_works',
       'website_content',
-      'e_prayer'
+      'e_prayers'
     ),
     categoryId: selectedCategory !== '' ? selectedCategory : null,
     search: {

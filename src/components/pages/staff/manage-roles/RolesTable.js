@@ -51,8 +51,8 @@ const Headers = ({ headers }) => {
             const title = replaceWithSpace(item)
             const description = headers[item]
               ?.map(i => i.displayName)
-              .toString()
-              .replaceAll(',', ', ')
+              ?.toString()
+              ?.replaceAll(',', ', ')
 
             return (
               <Header
