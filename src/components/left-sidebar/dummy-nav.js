@@ -236,14 +236,14 @@ const navigation = [
       },
       {
         url: '/e-prayers',
-        icon: 'ciergio-list',
+        icon: 'ciergio-prayer',
         title: 'Prayers',
         permissionGroup: 'post',
         moduleName: 'ePrayers',
         items: [
           {
             url: '/e-prayers',
-            title: 'View All Posts',
+            title: 'View All Prayers',
             items: []
           },
           {

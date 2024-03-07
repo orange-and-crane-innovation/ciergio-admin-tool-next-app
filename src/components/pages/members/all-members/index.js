@@ -427,8 +427,8 @@ function MyMembers() {
                 companyGroups.length > 0
                   ? companyGroups
                       ?.map(i => i.name)
-                      .toString()
-                      .replaceAll(',', ', ')
+                      ?.toString()
+                      ?.replaceAll(',', ', ')
                   : undefined
 
               // VIEW
