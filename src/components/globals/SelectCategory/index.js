@@ -69,8 +69,6 @@ const SelectCategoryComponent = ({
   const accountType = user?.accounts?.data[0]?.accountType
   const company = user?.accounts?.data[0]?.company?._id
   const system = process.env.NEXT_PUBLIC_SYSTEM_TYPE
-  const isSystemPray = system === 'pray'
-  const isSystemCircle = system === 'circle'
 
   let categoryWhere = {
     type: type

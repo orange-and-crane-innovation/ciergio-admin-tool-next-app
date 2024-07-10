@@ -17,6 +17,7 @@ const Layouts = ({ children }) => {
     [
       '/auth/login',
       '/auth/forgot-password',
+      '/auth/delete-account',
       '/auth/reset',
       '/auth/reset/verify',
       '/auth/reset/password'
