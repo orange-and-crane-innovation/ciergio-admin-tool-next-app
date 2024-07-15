@@ -15,7 +15,7 @@ const validationSchema = yup.object().shape({
   email: yup.string().email().label('Email Address').required()
 })
 
-function DeleteAccount({ onSubmit, isSubmitting, isDeleted }) {
+function DeleteAccount({ onSubmit, isSubmitting, isDeleted, company }) {
   const [isDisabled, setIsDisabled] = useState(true)
 
   const { handleSubmit, control, errors } = useForm({
@@ -37,7 +37,11 @@ function DeleteAccount({ onSubmit, isSubmitting, isDeleted }) {
     <main className={style.ForgotPassword}>
       <div className={style.ForgotPasswordWrapper}>
         <div className={style.LogoContainer}>
-          <CiergioLogo className={style.Logo} />
+          {company ? (
+            <img width={180} src={company.avatar} />
+          ) : (
+            <CiergioLogo className={style.Logo} />
+          )}
         </div>
 
         <div className={style.ForgotPasswordCard}>

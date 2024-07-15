@@ -1,4 +1,4 @@
-import { gql, useMutation } from '@apollo/client'
+import { gql, useMutation, useQuery } from '@apollo/client'
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -14,15 +14,38 @@ const DELETE_MY_MUTATION = gql`
     }
   }
 `
+const GET_COMPANY = gql`
+  query getCompanyPublic($id: String) {
+    getCompanyPublic(_id: $id) {
+      _id
+      name
+      avatar
+      status
+    }
+  }
+`
 
 function DeleteAccountPage() {
-  const router = useRouter()
+  const { query } = useRouter()
+  const companyId = query.companyId
   const [isDeleted, setIsDeleted] = useState(false)
+  const [companyDetails, setCompanyDetails] = useState(null)
+
+  console.log('companyId', companyId)
 
   const [
     deleteMyAccount,
     { loading, data, called, error }
   ] = useMutation(DELETE_MY_MUTATION, { onError: _e => {} })
+
+  const { data: company, error: companyError } = useQuery(GET_COMPANY, {
+    variables: { id: companyId },
+    enabled: false
+  })
+
+  useEffect(() => {
+    if (company?.getCompanyPublic) setCompanyDetails(company?.getCompanyPublic)
+  }, [company])
 
   useEffect(() => {
     if (!loading) {
@@ -42,7 +65,6 @@ function DeleteAccountPage() {
 
   const onSubmit = useCallback(
     values => {
-      console.log('valuesvalues', values)
       try {
         deleteMyAccount({
           variables: {
@@ -80,6 +102,7 @@ function DeleteAccountPage() {
 
   return (
     <DeleteAccount
+      company={companyDetails}
       onSubmit={onSubmit}
       isSubmitting={loading}
       isDeleted={isDeleted}
